@@ -2,18 +2,18 @@ use std::rc::Rc;
 
 use geop_geometry::geometry::{points::{point3d::Point3d, point2d::Point2d}, surfaces::surface::Surface};
 
-use super::Edge::Edge;
+use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
 
-pub struct EdgeLoop {
-    pub outer_loop: Edge,
-    pub inner_loops: Vec<Edge>,
+pub struct Face {
+    pub outer_loop: EdgeLoop,
+    pub inner_loops: Vec<EdgeLoop>,
     pub surface: Rc<dyn Surface>
 }
 
-impl EdgeLoop {
-    pub fn new(outer_loop: Edge, inner_loops: Vec<Edge>, surface: Rc<dyn Surface>) -> EdgeLoop {
-        EdgeLoop {
+impl Face {
+    pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<dyn Surface>) -> Face {
+        Face {
             outer_loop,
             inner_loops,
             surface
