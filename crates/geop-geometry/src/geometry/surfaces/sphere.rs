@@ -17,7 +17,7 @@ impl Sphere {
 }
 
 impl Surface for Sphere {
-    fn get_value(&self, u: Point2d) -> Point3d {
+    fn point_at(&self, u: Point2d) -> Point3d {
         let x = self.basis.x + self.radius * u.x.cos() * u.y.sin();
         let y = self.basis.y + self.radius * u.x.sin() * u.y.sin();
         let z = self.basis.z + self.radius * u.y.cos();

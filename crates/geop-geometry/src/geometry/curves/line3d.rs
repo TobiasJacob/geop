@@ -19,7 +19,7 @@ impl Line3d {
 }
 
 impl Curve3d for Line3d {
-    fn get_value(&self, u: f64) -> Point3d {
+    fn point_at(&self, u: f64) -> Point3d {
         self.basis + self.slope * u
     }
 

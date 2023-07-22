@@ -2,4 +2,9 @@
 
 members = [
     "crates/geop-geometry",
+    "crates/geop-topology",
 ]
+
+[workspace.dependencies.geop-geometry]
+version = "0.1.0"
+path = "crates/geop-geometry"

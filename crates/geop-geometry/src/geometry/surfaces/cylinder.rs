@@ -19,7 +19,7 @@ impl Cylinder {
 }
 
 impl Surface3d for Sphere {
-    fn get_value(&self, u: f64, v: f64) -> Point3d {
+    fn point_at(&self, u: f64, v: f64) -> Point3d {
         let x = self.basis.x + self.radius * u.cos() * v.sin();
         let y = self.basis.y + self.radius * u.sin() * v.sin();
         let z = self.basis.z + self.radius * v.cos();

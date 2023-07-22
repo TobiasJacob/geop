@@ -18,7 +18,7 @@ impl Plane {
 }
 
 impl Curve3d for Plane {
-    fn get_value(&self, u: f64) -> Point3d {
+    fn point_at(&self, u: f64) -> Point3d {
         self.basis + self.u_slope * u
     }
 
