@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use geop_geometry::geometry::points::point3d::Point3d;
+
 use super::Volume::Volume;
 
 pub struct VolumeGroup {
@@ -12,6 +16,6 @@ impl VolumeGroup {
     }
 
     pub fn rasterize(&self) -> Vec<Vec<Vec<Vec<Point3d>>>> {
-        self.volumes.iter().flat_map(|volume| volume.rasterize()).collect()
+        todo!("Rasterize the volume group")
     }
 }

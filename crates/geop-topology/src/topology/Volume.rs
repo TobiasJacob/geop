@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use geop_geometry::geometry::points::point3d::Point3d;
+
 use super::FaceGroup::FaceGroup;
 
 
