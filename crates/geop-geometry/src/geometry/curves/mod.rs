@@ -1,3 +1,3 @@
-mod curve2d;
-mod curve3d;
-mod line3d;
+pub mod curve2d;
+pub mod curve3d;
+pub mod line3d;

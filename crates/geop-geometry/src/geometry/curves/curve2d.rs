@@ -1,4 +1,6 @@
-trait Curve2d {
+use crate::geometry::points::point2d::Point2d;
+
+pub trait Curve2d {
     fn get_value(&self, u: f64) -> Point2d;
     fn project(&self, x: Point2d) -> f64;
     fn normalize(&mut self);

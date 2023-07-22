@@ -1,2 +1,2 @@
-mod point2d;
-mod point3d;
+pub mod point2d;
+pub mod point3d;

@@ -1,15 +1,26 @@
-use crate::geometry::curves::Curve3d;
-use crate::geometry::points::Point3d;
+use crate::geometry::points::point3d::Point3d;
 
-struct Line3d {
+use super::curve3d::Curve3d;
+
+pub struct Line3d {
     basis: Point3d,
     slope: Point3d,
     is_normalized: bool
 }
 
+impl Line3d {
+    pub fn new(basis: Point3d, slope: Point3d) -> Line3d {
+        Line3d {
+            basis,
+            slope,
+            is_normalized: false
+        }
+    }
+}
+
 impl Curve3d for Line3d {
     fn get_value(&self, u: f64) -> Point3d {
-        self.basis + u * self.slope
+        self.basis + self.slope * u
     }
 
     fn project(&self, x: Point3d) -> f64 {
@@ -19,7 +30,7 @@ impl Curve3d for Line3d {
 
     fn normalize(&mut self) {
         if !self.is_normalized {
-            self.slope /= self.slope.norm();
+            self.slope = self.slope / self.slope.norm();
             self.is_normalized = true;
         }
     }
