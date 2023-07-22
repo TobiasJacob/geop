@@ -1,15 +1,15 @@
 use crate::geometry::curves::curve3d::Curve3d;
 use crate::geometry::points::point3d::Point3d;
 
-pub struct LinearSurface {
-    basis: Point3d,
-    u_slope: Point3d,
-    v_slope: Point3d
+pub struct Plane {
+    pub basis: Point3d,
+    pub u_slope: Point3d,
+    pub v_slope: Point3d
 }
 
-impl LinearSurface {
-    pub fn new(basis: Point3d, u_slope: Point3d, v_slope: Point3d) -> LinearSurface {
-        LinearSurface {
+impl Plane {
+    pub fn new(basis: Point3d, u_slope: Point3d, v_slope: Point3d) -> Plane {
+        Plane {
             basis,
             u_slope,
             v_slope
@@ -17,7 +17,7 @@ impl LinearSurface {
     }
 }
 
-impl Curve3d for LinearSurface {
+impl Curve3d for Plane {
     fn get_value(&self, u: f64) -> Point3d {
         self.basis + self.u_slope * u
     }
@@ -28,6 +28,7 @@ impl Curve3d for LinearSurface {
     }
 
     fn normalize(&mut self) {
+        // Use this to make redundant representations of surfaces unique
         self.u_slope = self.u_slope / self.u_slope.norm();
         self.v_slope = self.v_slope / self.v_slope.norm();
     }

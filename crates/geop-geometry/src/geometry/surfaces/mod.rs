@@ -1,3 +1,3 @@
-pub mod surface2d;
-pub mod surface3d;
-pub mod linear_surface;
+pub mod surface;
+pub mod plane;
+pub mod sphere;

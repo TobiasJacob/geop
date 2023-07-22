@@ -2,9 +2,9 @@ use std::ops::{Add, Sub, Mul, Div};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point3d {
-    x: f64,
-    y: f64,
-    z: f64
+    pub x: f64,
+    pub y: f64,
+    pub z: f64
 }
 
 impl Point3d {

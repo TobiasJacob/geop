@@ -3,9 +3,9 @@ use crate::geometry::points::point3d::Point3d;
 use super::curve3d::Curve3d;
 
 pub struct Line3d {
-    basis: Point3d,
-    slope: Point3d,
-    is_normalized: bool
+    pub basis: Point3d,
+    pub slope: Point3d,
+    pub is_normalized: bool
 }
 
 impl Line3d {
