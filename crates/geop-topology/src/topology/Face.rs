@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::geometry::{points::{point3d::Point3d, point2d::Point2d}, surfaces::surface::Surface};
+use geop_geometry::{geometry::{points::{point3d::Point3d, point2d::Point2d}, surfaces::surface::Surface}, intersections::IntersectableSurface};
 
 use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
@@ -8,11 +8,11 @@ use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 pub struct Face {
     pub outer_loop: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
-    pub surface: Rc<dyn Surface>
+    pub surface: Rc<IntersectableSurface>
 }
 
 impl Face {
-    pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<dyn Surface>) -> Face {
+    pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<IntersectableSurface>) -> Face {
         Face {
             outer_loop,
             inner_loops,
@@ -44,5 +44,13 @@ impl Face {
             raster.push(raster_line);
         }
         raster
+    }
+
+    pub fn intersect(&self, other: &Face) {
+        let intersection_curve = self.surface.intersect(&other.surface);
+
+        let outer_bounds = intersection_curve.intersections(self.outer_loop);
+
+        let inner_bounds = self.inner_loops[0].edges[0].intersections(intersection_curve);
     }
 }
