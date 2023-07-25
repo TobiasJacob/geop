@@ -30,7 +30,12 @@ impl Edge {
     }
 
     pub fn interval(&self) -> (f64, f64) {
-        (self.curve.project(*self.vertices[0].point), self.curve.project(*self.vertices[1].point))
+        let start = self.curve.project(*self.vertices[0].point);
+        let end = self.curve.project(*self.vertices[1].point);
+        if self.vertices[0].equals(&self.vertices[1]) || end <= start {
+            return (start, end + self.curve.period());
+        }
+        (start, end)
     }
 
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve.

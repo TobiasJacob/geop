@@ -38,4 +38,8 @@ impl Curve3d for Line3d {
     fn is_normalized(&self) -> bool {
         self.is_normalized
     }
+
+    fn period(&self) -> f64 {
+        std::f64::INFINITY
+    }
 }

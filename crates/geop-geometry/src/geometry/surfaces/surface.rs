@@ -5,4 +5,5 @@ pub trait Surface {
     fn project(&self, x: Point3d) -> Point2d;
     fn normalize(&mut self);
     fn is_normalized(&self) -> bool;
+    fn period(&self) -> Point2d;
 }

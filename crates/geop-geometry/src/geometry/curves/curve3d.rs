@@ -5,4 +5,5 @@ pub trait Curve3d {
     fn project(&self, x: Point3d) -> f64;
     fn normalize(&mut self);
     fn is_normalized(&self) -> bool;
+    fn period(&self) -> f64;
 }

@@ -39,4 +39,8 @@ impl Surface for Sphere {
     fn is_normalized(&self) -> bool {
         self.radius >= 0.0
     }
+
+    fn period(&self) -> Point2d {
+        Point2d::new(2.0 * std::f64::consts::PI, std::f64::consts::PI)
+    }
 }

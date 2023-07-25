@@ -42,6 +42,12 @@ impl IntersectableCurve3d {
             }
         }
     }
+
+    pub fn period(&self) -> f64 {
+        match self {
+            IntersectableCurve3d::Line3d(line) => line.period(),
+        }
+    }
 }
 
 pub fn intersect(a: IntersectableSurface, b: IntersectableSurface) {
