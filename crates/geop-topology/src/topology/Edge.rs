@@ -9,6 +9,7 @@ pub struct Edge {
     pub curve: Rc<IntersectableCurve3d>
 }
 
+// TODO: Implement an periodic / circular edge
 impl Edge {
     pub fn new(vertices: [Vertex; 2], curve: Rc<IntersectableCurve3d>) -> Edge {
         Edge {

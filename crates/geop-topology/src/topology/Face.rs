@@ -47,6 +47,20 @@ impl Face {
     }
 
     pub fn intersect(&self, other: &Face) {
+        if (parallel) { // Results in a Face
+            let outer_bounds = self.outer_loop.edges[0].split(other.outer_loop.edges[0]);
+            for (edge1, edge2) in outer_bounds {
+                let inner_dir = cross_product(self.surface.normal(edge1.vertices[0]), edge1.tangent(edge1.vertices[1]));
+                let edge1_prod = dot_product(inner_dir, edge1.tangent(edge1.vertices[0]));
+                let edge2_prod = dot_product(inner_dir, edge2.tangent(edge2.vertices[0]));
+                if edge1_prod < edge2_prod {
+                    // Keep edge1
+                } else {
+                    // Keep edge2
+                }
+            }
+        }
+        // Results in a line
         let intersection_curve = self.surface.intersect(&other.surface);
 
         let outer_bounds = intersection_curve.intersections(self.outer_loop);
