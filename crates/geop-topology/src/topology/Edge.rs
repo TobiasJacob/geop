@@ -33,10 +33,6 @@ impl Edge {
         (self.curve.project(*self.vertices[0].point), self.curve.project(*self.vertices[1].point))
     }
 
-    pub fn flip(&self) -> Edge {
-        Edge::new([self.vertices[1].clone(), self.vertices[0].clone()], self.curve.clone())
-    }
-
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve.
     pub fn intersections(&self, other: &Edge) -> Vec<Point3d> {
         let intersections = self.curve.intersections(&other.curve);
