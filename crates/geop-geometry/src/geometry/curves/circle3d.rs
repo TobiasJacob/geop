@@ -1,4 +1,4 @@
-use crate::geometry::points::point3d::Point3d;
+use crate::{geometry::points::point3d::Point3d, EQ_THRESHOLD};
 
 use super::curve3d::Curve3d;
 
@@ -38,7 +38,7 @@ impl Curve3d for Circle3d {
     fn interval(&self, start: Point3d, end: Point3d) -> (f64, f64) {
         let start_angle = self.project(start);
         let end_angle = self.project(end);
-        if start_angle < end_angle {
+        if start_angle + EQ_THRESHOLD < end_angle {
             (start_angle, end_angle)
         } else {
             (start_angle, end_angle + 2.0 * std::f64::consts::PI)
