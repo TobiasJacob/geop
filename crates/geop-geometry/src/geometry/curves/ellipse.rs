@@ -28,25 +28,21 @@ impl Ellipse {
 }
 
 impl Curve for Ellipse {
-    fn point_at(&self, start: &Point, u: f64) -> Point {
-        let angle = u + self.project(start) * 2.0 * std::f64::consts::PI;
-        let x = self.basis + self.dir_u * angle.cos() + self.dir_v * angle.sin();
-        x
+    fn point_at(&self, u: f64) -> Point {
+        self.basis + self.dir_u * u.cos() + self.dir_v * u.sin()
     }
 
-    fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
-        let start_angle = self.project(start);
-        let end_angle = self.project(end);
-        if start_angle + EQ_THRESHOLD <= end_angle {
-            (start_angle, end_angle)
-        } else {
-            (start_angle, end_angle + 2.0 * std::f64::consts::PI)
-        }
+    fn project(&self, p: &Point) -> f64 {
+        let v = *p - self.basis;
+        let u = v.dot(self.dir_u) / self.dir_u.norm();
+        let v = v - self.dir_u * u;
+        let v = v.dot(self.dir_v) / self.dir_v.norm();
+        let v = v.atan2(u);
+        v / (2.0 * std::f64::consts::PI)
     }
 
-    fn length(&self, start: &Point, end: &Point) -> f64 {
-        let (start_angle, end_angle) = self.interval(start, end);
-        (end_angle - start_angle) * self.dir_u.norm()
+    fn derivative(&self, u: f64) -> Point {
+        -self.dir_u * u.sin() + self.dir_v * u.cos()
     }
 
     fn normalize(&mut self) {
@@ -55,9 +51,5 @@ impl Curve for Ellipse {
 
     fn is_normalized(&self) -> bool {
         true
-    }
-
-    fn period(&self) -> f64 {
-        1.0
     }
 }

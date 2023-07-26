@@ -1,4 +1,4 @@
-use crate::{geometry::points::point::Point, EQ_THRESHOLD};
+use crate::geometry::points::point::Point;
 
 use super::curve::Curve;
 
@@ -28,28 +28,25 @@ impl Circle {
 }
 
 impl Curve for Circle {
-    fn point_at(&self, start: &Point, u: f64) -> Point {
-        let angle = self.project(start) + u;
-        let x = self.basis.x + self.radius * angle.cos();
-        let y = self.basis.y + self.radius * angle.sin();
+    fn point_at(&self, u: f64) -> Point {
+        let x = self.basis.x + self.radius * u.cos();
+        let y = self.basis.y + self.radius * u.sin();
         let z = self.basis.z;
         Point::new(x, y, z)
     }
 
-    fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
-        let start_angle = self.project(start);
-        let end_angle = self.project(end);
-        if start_angle + EQ_THRESHOLD <= end_angle {
-            (start_angle, end_angle)
-        } else {
-            (start_angle, end_angle + 2.0 * std::f64::consts::PI)
-        }
+    fn project(&self, p: &Point) -> f64 {
+        let v = *p - self.basis;
+        let v = v - self.normal * v.dot(self.normal);
+        let angle = v.y.atan2(v.x);
+        angle
     }
 
-    fn length(&self, start: &Point, end: &Point) -> f64 {
-        let (start_angle, end_angle) = self.interval(start, end);
-        let length = self.radius * (end_angle - start_angle);
-        length
+    fn derivative(&self, u: f64) -> Point {
+        let x = -self.radius * u.sin();
+        let y = self.radius * u.cos();
+        let z = 0.0;
+        Point::new(x, y, z)
     }
 
     fn normalize(&mut self) {
@@ -63,36 +60,5 @@ impl Curve for Circle {
         self.is_normalized
     }
 
-    fn period(&self) -> f64 {
-        2.0 * std::f64::consts::PI
-    }
 
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::EQ_THRESHOLD;
-
-    use super::*;
-
-    #[test]
-    fn test_circle3d() {
-        let circle = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
-        assert!((circle.point_at(&Point::new(0.0, 0.0, 0.0), 0.0) - Point::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
-    }
-
-    #[test]
-    fn test_inteval() {
-        let circle = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
-        let (start, end) = circle.interval(&Point::new(1.0, 0.0, 0.0), &Point::new(0.0, 1.0, 0.0));
-        assert!((start - 0.0).abs() < EQ_THRESHOLD);
-        assert!((end - std::f64::consts::PI / 2.0).abs() < EQ_THRESHOLD);
-    }
-
-    #[test]
-    fn test_interval_at_boundary() {
-        let circle = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
-        let (start, end) = circle.interval(&Point::new(-1.0, 0.0, 0.0), &Point::new(-1.0, 0.0, 0.0));
-        assert!((start - end + std::f64::consts::PI * 2.0).abs() < EQ_THRESHOLD);
-    }
 }

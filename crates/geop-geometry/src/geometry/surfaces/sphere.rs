@@ -14,13 +14,6 @@ impl Sphere {
             radius,
         }
     }
-
-    fn project(&self, x: Point) -> (f64, f64) {
-        let v = x - self.basis;
-        let u = v.dot(Point::new(1.0, 0.0, 0.0));
-        let v = v.dot(Point::new(0.0, 1.0, 0.0));
-        (u, v)
-    }
 }
 
 impl Surface for Sphere {
@@ -29,6 +22,31 @@ impl Surface for Sphere {
         let y = self.basis.y + self.radius * u.sin() * v.sin();
         let z = self.basis.z + self.radius * v.cos();
         Point::new(x, y, z)
+    }
+
+    fn project(&self, p: &Point) -> (f64, f64) {
+        let v = *p - self.basis;
+        let u = v.dot(Point::new(1.0, 0.0, 0.0));
+        let v = v.dot(Point::new(0.0, 1.0, 0.0));
+        (u, v)
+    }
+
+    fn derivative_u(&self, u: f64, v: f64) -> Point {
+        let x = -self.radius * u.sin() * v.sin();
+        let y = self.radius * u.cos() * v.sin();
+        let z = 0.0;
+        Point::new(x, y, z)
+    }
+
+    fn derivative_v(&self, u: f64, v: f64) -> Point {
+        let x = self.radius * u.cos() * v.cos();
+        let y = self.radius * u.sin() * v.cos();
+        let z = -self.radius * v.sin();
+        Point::new(x, y, z)
+    }
+
+    fn normal(&self, p: Point) -> Point {
+        (p - self.basis).normalize()
     }
 
     fn normalize(&mut self) {

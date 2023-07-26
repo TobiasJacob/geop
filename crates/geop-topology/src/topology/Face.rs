@@ -1,28 +1,42 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::{points::{point::Point, point2d::Point2d}, surfaces::surface::Surface}, intersections::surface_surface::IntersectableSurface};
+use geop_geometry::{geometry::{points::{point::Point, point2d::Point2d}, surfaces::{surface::Surface, plane::Plane}}, intersections::surface_surface::IntersectableSurface};
 
 use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
+enum PlanarFaceSurface {
+    Plane(Plane),
+    Cylinder(Cylinder),
+    Sphere(Sphere)
+}
 
+// No surface dimensions are periodic. Its boundary is a closed loop. Note that for example a small cutout from a sphere bound by an outer edge is a planar face, despite the sphere being periodic.
 pub struct PlanarFace {
     pub outer_loop: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
-    pub surface: Rc<IntersectableSurface>
+    pub surface: Rc<PlanarFaceSurface>
 }
 
-// One surface dimension is periodic
+enum CylindricalFaceSurface {
+    Cylinder(Cylinder),
+    Sphere(Sphere)
+}
+
+// One surface dimension is periodic. Two boundaries are needed.
 pub struct CylindricalFace {
     pub outer_loop_1: EdgeLoop,
     pub outer_loop_2: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
-    pub surface: Rc<IntersectableSurface>
+    pub surface: Rc<CylindricalFaceSurface>
 }
 
+enum SphericalFaceSurface {
+    Sphere(Sphere)
+}
 // Two surface dimensions are periodic / There are no boundaries needed
 pub struct SphericalFace {
     pub inner_loops: Vec<EdgeLoop>,
-    pub surface: Rc<IntersectableSurface>
+    pub surface: Rc<SphericalFaceSurface>
 }
 
 

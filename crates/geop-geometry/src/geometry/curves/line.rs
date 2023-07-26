@@ -16,29 +16,20 @@ impl Line {
             is_normalized: false
         }
     }
-
-    fn project(&self, x: &Point) -> f64 {
-        let v = *x - self.basis;
-        v.dot(self.direction) / self.direction.norm()
-    }
 }
 
 impl Curve for Line {
-    fn point_at(&self, start: &Point, u: f64) -> Point {
+    fn project(&self, p: &Point) -> f64 {
+        let v = *p - self.basis;
+        v.dot(self.direction) / self.direction.norm()
+    }
+
+    fn point_at(&self, u: f64) -> Point {
         self.basis + self.direction * u
     }
 
-    fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
-        let start_proj = self.project(start);
-        let end_proj = self.project(end);
-        assert!(start_proj <= end_proj);
-        (start_proj, end_proj)
-    }
-
-    fn length(&self, start: &Point, end: &Point) -> f64 {
-        let start_proj = self.project(start);
-        let end_proj = self.project(end);
-        (end_proj - start_proj).abs()
+    fn derivative(&self, u: f64) -> Point {
+        self.direction
     }
 
     fn normalize(&mut self) {
@@ -50,9 +41,5 @@ impl Curve for Line {
 
     fn is_normalized(&self) -> bool {
         self.is_normalized
-    }
-
-    fn period(&self) -> f64 {
-        std::f64::INFINITY
     }
 }

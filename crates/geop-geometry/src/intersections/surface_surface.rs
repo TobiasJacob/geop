@@ -1,5 +1,3 @@
-use crate::geometry::curves::circle::Circle;
-use crate::geometry::curves::curve::Curve;
 use crate::geometry::curves::line::Line;
 use crate::geometry::points::point::Point;
 use crate::geometry::surfaces::sphere::Sphere;

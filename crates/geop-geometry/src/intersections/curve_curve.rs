@@ -5,7 +5,7 @@ use crate::geometry::curves::ellipse::Ellipse;
 use crate::geometry::curves::line::Line;
 use crate::geometry::points::point::Point;
 
-use super::line_line::{self, line_line};
+use super::line_line::line_line;
 
 pub enum IntersectableCurve3dResult {
     MultiPoint(Vec<Point>),
@@ -46,13 +46,6 @@ impl IntersectableCurve3d {
                     todo!("asdf")
                 }
             },
-            _ => {todo!("asdf")}
-        }
-    }
-
-    pub fn period(&self) -> f64 {
-        match self {
-            IntersectableCurve3d::Line3d(line) => line.period(),
             _ => {todo!("asdf")}
         }
     }

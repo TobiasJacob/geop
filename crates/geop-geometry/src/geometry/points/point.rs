@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Sub, Mul, Div, Neg};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -26,6 +26,11 @@ impl Point {
             self.z * v_slope.x - self.x * v_slope.z,
             self.x * v_slope.y - self.y * v_slope.x
         )
+    }
+
+    pub fn normalize(&self) -> Point {
+        let norm = self.norm();
+        Point::new(self.x / norm, self.y / norm, self.z / norm)
     }
 }
 
@@ -74,5 +79,13 @@ impl Div<f64> for Point {
 
     fn div(self, other: f64) -> Point {
         Point::new(self.x / other, self.y / other, self.z / other)
+    }
+}
+
+impl Neg for Point {
+    type Output = Self;
+
+    fn neg(self) -> Point {
+        Point::new(-self.x, -self.y, -self.z)
     }
 }

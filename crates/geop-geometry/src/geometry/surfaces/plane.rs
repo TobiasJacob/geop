@@ -17,22 +17,31 @@ impl Plane {
         }
     }
 
-    fn project(&self, x: Point) -> (f64, f64) {
-        let v = x - self.basis;
+}
+
+impl Surface for Plane {
+    fn point_at(&self, u: f64, v: f64) -> Point {
+        self.basis + self.u_slope * u + self.v_slope * v
+    }
+
+    fn project(&self, p: &Point) -> (f64, f64) {
+        let v = *p - self.basis;
         let u = v.dot(self.u_slope) / self.u_slope.norm();
         let v = v - self.u_slope * u;
         let v = v.dot(self.v_slope) / self.v_slope.norm();
         (u, v)
     }
 
-    pub fn normal(&self) -> Point {
-        self.u_slope.cross(self.v_slope)
+    fn derivative_u(&self, u: f64, v: f64) -> Point {
+        self.u_slope
     }
-}
 
-impl Surface for Plane {
-    fn point_at(&self, u: f64, v: f64) -> Point {
-        self.basis + self.u_slope * u + self.v_slope * v
+    fn derivative_v(&self, u: f64, v: f64) -> Point {
+        self.v_slope
+    }
+
+    fn normal(&self, p: Point) -> Point {
+        self.u_slope.cross(self.v_slope)
     }
 
     fn normalize(&mut self) {
