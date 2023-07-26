@@ -25,6 +25,10 @@ impl Plane {
         let v = v.dot(self.v_slope) / self.v_slope.norm();
         Point2d::new(u, v)
     }
+
+    pub fn normal(&self) -> Point3d {
+        self.u_slope.cross(self.v_slope)
+    }
 }
 
 impl Surface for Plane {

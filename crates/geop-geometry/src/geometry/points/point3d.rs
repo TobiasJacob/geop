@@ -19,6 +19,14 @@ impl Point3d {
     pub fn dot(&self, other: Point3d) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
+
+    pub fn cross(&self, v_slope: Point3d) -> Point3d {
+        Point3d::new(
+            self.y * v_slope.z - self.z * v_slope.y,
+            self.z * v_slope.x - self.x * v_slope.z,
+            self.x * v_slope.y - self.y * v_slope.x
+        )
+    }
 }
 
 impl Add for Point3d {
