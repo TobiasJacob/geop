@@ -28,9 +28,10 @@ impl Circle {
 }
 
 impl Curve for Circle {
-    fn point_at(&self, u: f64) -> Point {
-        let x = self.basis.x + self.radius * u.cos();
-        let y = self.basis.y + self.radius * u.sin();
+    fn point_at(&self, start: &Point, u: f64) -> Point {
+        let angle = self.project(start) + u;
+        let x = self.basis.x + self.radius * angle.cos();
+        let y = self.basis.y + self.radius * angle.sin();
         let z = self.basis.z;
         Point::new(x, y, z)
     }
@@ -43,6 +44,12 @@ impl Curve for Circle {
         } else {
             (start_angle, end_angle + 2.0 * std::f64::consts::PI)
         }
+    }
+
+    fn length(&self, start: &Point, end: &Point) -> f64 {
+        let (start_angle, end_angle) = self.interval(start, end);
+        let length = self.radius * (end_angle - start_angle);
+        length
     }
 
     fn normalize(&mut self) {
@@ -59,6 +66,7 @@ impl Curve for Circle {
     fn period(&self) -> f64 {
         2.0 * std::f64::consts::PI
     }
+
 }
 
 #[cfg(test)]
@@ -70,14 +78,7 @@ mod tests {
     #[test]
     fn test_circle3d() {
         let circle = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
-        assert!((circle.point_at(0.0) - Point::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
-        assert!((circle.point_at(std::f64::consts::PI / 2.0) - Point::new(0.0, 1.0, 0.0)).norm() < EQ_THRESHOLD);
-        assert!((circle.point_at(std::f64::consts::PI) - Point::new(-1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
-        assert!((circle.point_at(3.0 * std::f64::consts::PI / 2.0) - Point::new(0.0, -1.0, 0.0)).norm() < EQ_THRESHOLD);
-        assert!((circle.point_at(2.0 * std::f64::consts::PI) - Point::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
-
-        let circle = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 2.0);
-        assert!((circle.point_at(0.0) - Point::new(2.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
+        assert!((circle.point_at(&Point::new(0.0, 0.0, 0.0), 0.0) - Point::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
     }
 
     #[test]

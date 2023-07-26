@@ -24,14 +24,21 @@ impl Line {
 }
 
 impl Curve for Line {
-    fn point_at(&self, u: f64) -> Point {
+    fn point_at(&self, start: &Point, u: f64) -> Point {
         self.basis + self.direction * u
     }
 
     fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
         let start_proj = self.project(start);
         let end_proj = self.project(end);
+        assert!(start_proj <= end_proj);
         (start_proj, end_proj)
+    }
+
+    fn length(&self, start: &Point, end: &Point) -> f64 {
+        let start_proj = self.project(start);
+        let end_proj = self.project(end);
+        (end_proj - start_proj).abs()
     }
 
     fn normalize(&mut self) {

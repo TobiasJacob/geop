@@ -5,11 +5,26 @@ use geop_geometry::{geometry::{points::{point::Point, point2d::Point2d}, surface
 use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
 
-pub struct Face {
+pub struct PlanarFace {
     pub outer_loop: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
     pub surface: Rc<IntersectableSurface>
 }
+
+// One surface dimension is periodic
+pub struct CylindricalFace {
+    pub outer_loop_1: EdgeLoop,
+    pub outer_loop_2: EdgeLoop,
+    pub inner_loops: Vec<EdgeLoop>,
+    pub surface: Rc<IntersectableSurface>
+}
+
+// Two surface dimensions are periodic / There are no boundaries needed
+pub struct SphericalFace {
+    pub inner_loops: Vec<EdgeLoop>,
+    pub surface: Rc<IntersectableSurface>
+}
+
 
 impl Face {
     pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<IntersectableSurface>) -> Face {

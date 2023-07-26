@@ -1,12 +1,28 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::points::point::Point, intersections::curve_curve::IntersectableCurve3d, EQ_THRESHOLD};
+use geop_geometry::{geometry::{points::point::Point, curves::curve::CurveParameterSpace}, intersections::curve_curve::IntersectableCurve3d, EQ_THRESHOLD};
 
 use crate::topology::Vertex::Vertex;
 
-pub struct Edge {
-    pub vertices: [Vertex; 2],
-    pub curve: Rc<IntersectableCurve3d>
+pub enum LinearEdgeCurve {
+    Line(Line),
+    Circle(Circle),
+    Ellipse(Ellipse),
+}
+
+pub struct LinearEdge {
+    pub start: Point,
+    pub end: Point,
+    pub curve: Rc<LinearEdgeCurve>
+}
+
+pub enum CircularEdgeCurve {
+    Circle(Circle),
+    Ellipse(Ellipse),
+}
+pub struct CircularEdge {
+    pub origin: Point,
+    pub curve: Rc<CircularEdgeCurve>
 }
 
 // TODO: Implement an periodic / circular edge
@@ -14,8 +30,29 @@ impl Edge {
     pub fn new(vertices: [Vertex; 2], curve: Rc<IntersectableCurve3d>) -> Edge {
         Edge {
             vertices,
-            curve
+            curve,
+            parameter_space: curve.curve().construct_parameter_space(vertices[0], vertices[1])
         }
+    }
+
+    pub fn interval(&self) -> (f64, f64) {
+        return self.curve.curve().interval(&self.vertices[0].point, &self.vertices[1].point);
+    }
+
+    pub fn length(&self) -> f64 {
+        self.parameter_space.length()
+    }
+
+    pub fn point_at(&self, u: f64) -> Point {
+        let (start, end) = self.interval();
+        self.curve.curve().point_at(start + u)
+    }
+
+    pub fn project(&self, point: &Point) -> f64 {
+        let (start, end) = self.interval();
+        let (start, u) = self.curve.curve().interval(&self.vertices[0].point, point);
+        assert!(u <= end);
+        return u - start;
     }
 
     pub fn rasterize(&self) -> Vec<Point> {
@@ -30,9 +67,6 @@ impl Edge {
         }).collect()
     }
 
-    pub fn interval(&self) -> (f64, f64) {
-        return self.curve.curve().interval(&self.vertices[0].point, &self.vertices[1].point);
-    }
 
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
     pub fn inner_intersections(&self, other: &Edge) -> Vec<Point> {

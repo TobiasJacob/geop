@@ -3,10 +3,16 @@ use std::rc::Rc;
 use geop_geometry::geometry::points::point::Point;
 
 
-use super::{Edge::Edge, Vertex::Vertex};
+use super::{Edge::{Edge, CircularEdge}, Vertex::Vertex};
+
+pub enum EdgeLoopBasis {
+    Linear(Vec<Rc<LinearEdge>>),
+    Circular(Rc<CircularEdge>)
+}
 
 pub struct EdgeLoop {
-    pub edges: Vec<Rc<Edge>>
+    pub basis: EdgeLoopBasis,
+    pub origin: Point,
 }
 
 // An EdgeLoop is a closed loop of edges which is not self intersecting.

@@ -28,8 +28,10 @@ impl Ellipse {
 }
 
 impl Curve for Ellipse {
-    fn point_at(&self, u: f64) -> Point {
-        self.basis + self.dir_u * u.cos() + self.dir_v * u.sin()
+    fn point_at(&self, start: &Point, u: f64) -> Point {
+        let angle = u + self.project(start) * 2.0 * std::f64::consts::PI;
+        let x = self.basis + self.dir_u * angle.cos() + self.dir_v * angle.sin();
+        x
     }
 
     fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
@@ -40,6 +42,11 @@ impl Curve for Ellipse {
         } else {
             (start_angle, end_angle + 2.0 * std::f64::consts::PI)
         }
+    }
+
+    fn length(&self, start: &Point, end: &Point) -> f64 {
+        let (start_angle, end_angle) = self.interval(start, end);
+        (end_angle - start_angle) * self.dir_u.norm()
     }
 
     fn normalize(&mut self) {
