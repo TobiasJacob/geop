@@ -1,6 +1,6 @@
 use crate::geometry::{curves::line3d::Line3d, points::point3d::Point3d};
 
-use super::intersections_curve::IntersectableCurve3dResult;
+use super::curve_curve::IntersectableCurve3dResult;
 
 pub enum LineLineIntersection {
     Line3d(Line3d),

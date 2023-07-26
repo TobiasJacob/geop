@@ -26,5 +26,8 @@ impl EdgeLoop {
         self.edges.iter().flat_map(|edge| edge.rasterize()).collect()
     }
 
-    // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve.
+    // Splits this edge loop with another edge loop. This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
+    pub fn split(&self, other: &EdgeLoop) -> (Vec<EdgeLoop>, Vec<EdgeLoop>) {
+
+    }
 }

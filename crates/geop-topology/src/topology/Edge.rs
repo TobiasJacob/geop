@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::points::point3d::Point3d, intersections::IntersectableCurve3d};
+use geop_geometry::{geometry::points::point3d::Point3d, intersections::curve_curve::IntersectableCurve3d, EQ_THRESHOLD};
 
 use crate::topology::Vertex::Vertex;
 
@@ -31,27 +31,29 @@ impl Edge {
     }
 
     pub fn interval(&self) -> (f64, f64) {
-        let start = self.curve.project(*self.vertices[0].point);
-        let end = self.curve.project(*self.vertices[1].point);
-        if self.vertices[0].equals(&self.vertices[1]) || end <= start {
-            return (start, end + self.curve.period());
-        }
-        (start, end)
+        return self.curve.curve().interval(self.vertices[0], self.vertices[1]);
     }
 
-    // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve.
-    pub fn intersections(&self, other: &Edge) -> Vec<Point3d> {
+    // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
+    fn inner_intersections(&self, other: &Edge) -> Vec<Point3d> {
         let intersections = self.curve.intersections(&other.curve);
         let (u_min, u_max) = self.interval();
         intersections.into_iter().filter(|p| {
             let u = self.curve.project(*p);
-            u_min <= u && u <= u_max
+            u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD
         }).collect::<Vec<Point3d>>()
     }
 
-    // Splits this curve into subcurves at the intersections with the other curve. Returns a sorted List of new edges.
+    // Splits this curve into subcurves at the intersections with the other curve.
+    // Returns a sorted List of new edges.
+    // This is an important operation, as it makes sure that the edges are not intersecting anymore except at the end points.
+    // Especially, calling this function twice will not return any new edges.
+    // Also, calling intersections with any 2 edges will not return any intersections besides the end points.
     pub fn split(&self, other: &Edge) -> (Vec<Edge>, Vec<Edge>) {
         let intersections_self = self.intersections(other);
+        if (intersections_self.len() == 0) {
+            return (vec![self], vec![other]);
+        }
 
         let vertices_self = intersections_self.into_iter().map(|p| {
             Vertex { point: Rc::new(p) }
@@ -63,30 +65,19 @@ impl Edge {
         let mut edges_self = Vec::with_capacity(vertices_self.len() + 1);
         let mut edges_other = Vec::with_capacity(vertices_self.len() + 1);
 
-        // If the starting points are not connected, there is not going to be an intersection at the starting points, hence we have to connect the starting point to the first intersection.
-        if !(self.vertices[0].equals(&other.vertices[0]) || other.vertices[1].equals(&self.vertices[1])) {
-            edges_self.push(Edge::new([self.vertices[0].clone(), vertices_self[0].clone()], self.curve.clone()));
-        }
-
+        // Only inner intersections are relevant, as the end points are already connected.
+        edges_self.push(Edge::new([self.vertices[0].clone(), vertices_self[0].clone()], self.curve.clone()));
         for i in 0..vertices_self.len() - 1 {
             edges_self.push(Edge::new([vertices_self[i].clone(), vertices_self[i + 1].clone()], self.curve.clone()));
         }
-
-        // If the end points are not connected, there is not going to be an intersection at the end points, hence we have to connect the last intersection to the end point.
-        if !(self.vertices[1].equals(&other.vertices[1]) || other.vertices[0].equals(&self.vertices[0])) {
-            edges_self.push(Edge::new([vertices_self[vertices_self.len() - 1].clone(), self.vertices[1].clone()], self.curve.clone()));
-        }
+        edges_self.push(Edge::new([vertices_self[vertices_self.len() - 1].clone(), self.vertices[1].clone()], self.curve.clone()));
 
         // Same story for edge_b
-        if !(other.vertices[0].equals(&self.vertices[0]) || self.vertices[1].equals(&other.vertices[1])) {
-            edges_other.push(Edge::new([other.vertices[0].clone(), vertices_other[0].clone()], other.curve.clone()));
-        }
+        edges_other.push(Edge::new([other.vertices[0].clone(), vertices_other[0].clone()], other.curve.clone()));
         for i in 0..vertices_other.len() - 1 {
             edges_other.push(Edge::new([vertices_other[i].clone(), vertices_other[i + 1].clone()], other.curve.clone()));
         }
-        if !(other.vertices[1].equals(&self.vertices[1]) || self.vertices[0].equals(&other.vertices[0])) {
-            edges_other.push(Edge::new([vertices_other[vertices_other.len() - 1].clone(), other.vertices[1].clone()], other.curve.clone()));
-        }
+        edges_other.push(Edge::new([vertices_other[vertices_other.len() - 1].clone(), other.vertices[1].clone()], other.curve.clone()));
 
         return (edges_self, edges_other);
     }

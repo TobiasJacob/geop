@@ -5,7 +5,7 @@ use crate::geometry::points::point3d::Point3d;
 use crate::geometry::surfaces::sphere::Sphere;
 use crate::geometry::surfaces::plane::Plane;
 
-use super::intersections_curve::IntersectableCurve3d;
+use super::curve_curve::IntersectableCurve3d;
 
 
 

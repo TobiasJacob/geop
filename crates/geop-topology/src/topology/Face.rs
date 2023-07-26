@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::{points::{point3d::Point3d, point2d::Point2d}, surfaces::surface::Surface}, intersections::IntersectableSurface};
+use geop_geometry::{geometry::{points::{point3d::Point3d, point2d::Point2d}, surfaces::surface::Surface}, intersections::surface_surface::IntersectableSurface};
 
 use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
