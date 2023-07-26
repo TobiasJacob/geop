@@ -35,7 +35,7 @@ impl Edge {
     }
 
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
-    fn inner_intersections(&self, other: &Edge) -> Vec<Point3d> {
+    pub fn inner_intersections(&self, other: &Edge) -> Vec<Point3d> {
         let intersections = self.curve.intersections(&other.curve);
         let (u_min, u_max) = self.interval();
         intersections.into_iter().filter(|p| {
