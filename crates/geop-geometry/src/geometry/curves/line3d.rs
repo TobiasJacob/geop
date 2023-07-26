@@ -17,8 +17,8 @@ impl Line3d {
         }
     }
 
-    fn project(&self, x: Point3d) -> f64 {
-        let v = x - self.basis;
+    fn project(&self, x: &Point3d) -> f64 {
+        let v = *x - self.basis;
         v.dot(self.direction) / self.direction.norm()
     }
 }
@@ -28,7 +28,7 @@ impl Curve3d for Line3d {
         self.basis + self.direction * u
     }
 
-    fn interval(&self, start: Point3d, end: Point3d) -> (f64, f64) {
+    fn interval(&self, start: &Point3d, end: &Point3d) -> (f64, f64) {
         let start_proj = self.project(start);
         let end_proj = self.project(end);
         (start_proj, end_proj)

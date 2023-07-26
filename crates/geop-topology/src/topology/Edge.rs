@@ -24,24 +24,37 @@ impl Edge {
 
         (0..num_points).map(|i| {
             let t = i as f64 / (num_points - 1) as f64;
-            let point = self.curve.point_at(t);
+            let point = self.curve.curve().point_at(t);
             let point = point + (end - start) * t;
             point
         }).collect()
     }
 
     pub fn interval(&self) -> (f64, f64) {
-        return self.curve.curve().interval(self.vertices[0], self.vertices[1]);
+        return self.curve.curve().interval(&self.vertices[0].point, &self.vertices[1].point);
     }
 
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
     pub fn inner_intersections(&self, other: &Edge) -> Vec<Point3d> {
         let intersections = self.curve.intersections(&other.curve);
         let (u_min, u_max) = self.interval();
-        intersections.into_iter().filter(|p| {
-            let u = self.curve.project(*p);
-            u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD
-        }).collect::<Vec<Point3d>>()
+        match intersections {
+            geop_geometry::intersections::curve_curve::IntersectableCurve3dResult::MultiPoint(points) => {
+                points.into_iter().filter(|p| {
+                    let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &p);
+                    u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD
+                }).collect::<Vec<Point3d>>()
+            },
+            geop_geometry::intersections::curve_curve::IntersectableCurve3dResult::Point3d(point) => {
+                let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &point);
+                if u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD {
+                    vec![point]
+                } else {
+                    Vec::new()
+                }
+            },
+            _ => Vec::new()
+        }
     }
 
     // Splits this curve into subcurves at the intersections with the other curve.
@@ -50,9 +63,9 @@ impl Edge {
     // Especially, calling this function twice will not return any new edges.
     // Also, calling intersections with any 2 edges will not return any intersections besides the end points.
     pub fn split(&self, other: &Edge) -> (Vec<Edge>, Vec<Edge>) {
-        let intersections_self = self.intersections(other);
-        if (intersections_self.len() == 0) {
-            return (vec![self], vec![other]);
+        let intersections_self = self.inner_intersections(other);
+        if intersections_self.len() == 0 {
+            return (vec![*self], vec![*other]);
         }
 
         let vertices_self = intersections_self.into_iter().map(|p| {
@@ -60,7 +73,7 @@ impl Edge {
         }).collect::<Vec<Vertex>>();
         // Creates a shallow copy of vertices_a, meaning that they still reference the same points
         let mut vertices_other = vertices_self.clone();
-        vertices_other.sort_by(|b1, b2| other.curve.project(*b1.point).total_cmp(&other.curve.project(*b2.point)));
+        vertices_other.sort_by(|b1, b2| other.curve.curve().interval(&self.vertices[0].point, &b1.point).1.total_cmp(&other.curve.curve().interval(&self.vertices[0].point, &b2.point).1));
 
         let mut edges_self = Vec::with_capacity(vertices_self.len() + 1);
         let mut edges_other = Vec::with_capacity(vertices_self.len() + 1);

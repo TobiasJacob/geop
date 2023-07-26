@@ -3,7 +3,7 @@ use std::rc::Rc;
 use geop_geometry::geometry::points::point3d::Point3d;
 
 
-use super::Edge::Edge;
+use super::{Edge::Edge, Vertex::Vertex};
 
 pub struct EdgeLoop {
     pub edges: Vec<Rc<Edge>>
@@ -18,7 +18,7 @@ impl EdgeLoop {
             assert!(&edge.vertices[1].equals(&next_edge.vertices[0]));
         }
         assert!(edges.len() > 0);
-        assert!(edges[0].vertices[0].equals(&edges[edges.len() - 1].vertices[1]))
+        assert!(edges[0].vertices[0].equals(&edges[edges.len() - 1].vertices[1]));
 
         EdgeLoop {
             edges
@@ -47,7 +47,7 @@ impl EdgeLoop {
         let mut edges_O: Vec<Edge> = Vec::new();
         let intersections = self.inner_intersections(other);
         let vertices_self = intersections.iter().map(|p| {
-            Vertex { point: Rc::new(p) }
+            Vertex { point: Rc::new(*p) }
         }).collect::<Vec<Vertex>>();
         let mut vertices_other = vertices_self.clone();
         vertices_other.sort_by(|b1, b2| other.curve.project(*b1.point).total_cmp(&other.curve.project(*b2.point)));

@@ -19,8 +19,8 @@ impl Circle3d {
         }
     }
 
-    fn project(&self, x: Point3d) -> f64 {
-        let v = x - self.basis;
+    fn project(&self, x: &Point3d) -> f64 {
+        let v = *x - self.basis;
         let v = v - self.normal * v.dot(self.normal);
         let angle = v.y.atan2(v.x);
         angle
@@ -35,10 +35,10 @@ impl Curve3d for Circle3d {
         Point3d::new(x, y, z)
     }
 
-    fn interval(&self, start: Point3d, end: Point3d) -> (f64, f64) {
+    fn interval(&self, start: &Point3d, end: &Point3d) -> (f64, f64) {
         let start_angle = self.project(start);
         let end_angle = self.project(end);
-        if start_angle + EQ_THRESHOLD < end_angle {
+        if start_angle + EQ_THRESHOLD <= end_angle {
             (start_angle, end_angle)
         } else {
             (start_angle, end_angle + 2.0 * std::f64::consts::PI)
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn test_inteval() {
         let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 1.0);
-        let (start, end) = circle.interval(Point3d::new(1.0, 0.0, 0.0), Point3d::new(0.0, 1.0, 0.0));
+        let (start, end) = circle.interval(&Point3d::new(1.0, 0.0, 0.0), &Point3d::new(0.0, 1.0, 0.0));
         assert!((start - 0.0).abs() < EQ_THRESHOLD);
         assert!((end - std::f64::consts::PI / 2.0).abs() < EQ_THRESHOLD);
     }
@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_interval_at_boundary() {
         let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 1.0);
-        let (start, end) = circle.interval(Point3d::new(-1.0, 0.0, 0.0), Point3d::new(-1.0, 0.0, 0.0));
+        let (start, end) = circle.interval(&Point3d::new(-1.0, 0.0, 0.0), &Point3d::new(-1.0, 0.0, 0.0));
         assert!((start - end + std::f64::consts::PI * 2.0).abs() < EQ_THRESHOLD);
     }
 }

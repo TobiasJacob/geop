@@ -21,7 +21,7 @@ impl TopologicalSpace2d {
         TopologicalSpace2d {
             min: Point2d::new(f64::NEG_INFINITY, f64::NEG_INFINITY),
             max: Point2d::new(f64::INFINITY, f64::INFINITY),
-            periodic: Point2d::new(2 * std::f64::consts::PI, f64::INFINITY),
+            periodic: Point2d::new(2.0 * std::f64::consts::PI, f64::INFINITY),
         }
     }
 
@@ -29,7 +29,7 @@ impl TopologicalSpace2d {
         TopologicalSpace2d {
             min: Point2d::new(f64::NEG_INFINITY, -std::f64::consts::PI),
             max: Point2d::new(f64::INFINITY, std::f64::consts::PI),
-            periodic: Point2d::new(2 * std::f64::consts::PI, f64::INFINITY),
+            periodic: Point2d::new(2.0 * std::f64::consts::PI, f64::INFINITY),
         }
     }
 
