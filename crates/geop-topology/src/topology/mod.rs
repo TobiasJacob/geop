@@ -1,6 +1,5 @@
 pub mod Vertex;
-pub mod Edge;
-pub mod EdgeLoop;
+pub mod edge;
 pub mod Face;
 pub mod FaceGroup;
 pub mod Volume;

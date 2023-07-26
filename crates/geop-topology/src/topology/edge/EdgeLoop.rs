@@ -48,7 +48,7 @@ impl EdgeLoop {
 
     // Connects all inner intersections with each other, such that the resulting edge loops are closed and do only intersect at the end points.
     // However, the resulting edge loops may still overlap each other. This could result in a non-manifold topology, so this function is private, and the public function split should be used instead.
-    fn remesh(&self, other: &EdgeLoop) -> (Vec<Edge>, Vec<Edge>) {
+    fn remesh(&self, other: &EdgeLoop) -> (Vec<LinearEdge>, Vec<LinearEdge>) {
         let mut edges_S: Vec<Edge> = Vec::new();
         let mut edges_O: Vec<Edge> = Vec::new();
         let intersections = self.inner_intersections(other);

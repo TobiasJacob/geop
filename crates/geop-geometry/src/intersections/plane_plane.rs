@@ -2,11 +2,11 @@ use crate::geometry::{surfaces::{plane::Plane, surface::Surface}, curves::line::
 
 pub enum PlanePlaneIntersection {
     Plane(Plane),
-    Line3d(Line),
+    Line(Line),
     None
 }
 
-pub fn intersect(a: &Plane, b: &Plane) -> PlanePlaneIntersection {
+pub fn intersect_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection {
     let n_a = a.normal(a.basis);
     let n_b = b.normal(b.basis);
     let b_a: Point = a.basis;
@@ -15,7 +15,7 @@ pub fn intersect(a: &Plane, b: &Plane) -> PlanePlaneIntersection {
     let v = n_a.cross(n_b);
     if v.norm() > crate::EQ_THRESHOLD {
         let t = (n_a.dot(b_b) - n_a.dot(b_a)) / n_a.dot(v);
-        PlanePlaneIntersection::Line3d(Line::new(b_a + v * t, v))
+        PlanePlaneIntersection::Line(Line::new(b_a + v * t, v))
     } else {
         let n = n_a.dot(b_a - b_b);
         if n.abs() < crate::EQ_THRESHOLD {

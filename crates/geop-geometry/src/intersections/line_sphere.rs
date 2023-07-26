@@ -1,12 +1,12 @@
 use crate::{geometry::{surfaces::sphere::Sphere, curves::line::Line, points::point::Point}, EQ_THRESHOLD};
 
 pub enum LineSphereIntersection {
-    TwoPoints3d(Point, Point),
-    Point3d(Point),
+    TwoPoints(Point, Point),
+    Point(Point),
     None
 }
 
-pub fn intersect(line: &Line, sphere: &Sphere) -> LineSphereIntersection {
+pub fn intersect_intersection(line: &Line, sphere: &Sphere) -> LineSphereIntersection {
     let r: f64 = sphere.radius;
     let b: Point = sphere.basis;
     let a: Point = line.basis;
@@ -17,10 +17,10 @@ pub fn intersect(line: &Line, sphere: &Sphere) -> LineSphereIntersection {
     if discriminant > EQ_THRESHOLD {
         let t1 = (-2.0 * v.dot(a - b) + discriminant.sqrt()) / (2.0 * v.norm().powi(2));
         let t2 = (-2.0 * v.dot(a - b) - discriminant.sqrt()) / (2.0 * v.norm().powi(2));
-        LineSphereIntersection::TwoPoints3d(a + v * t1, a + v * t2)
+        LineSphereIntersection::TwoPoints(a + v * t1, a + v * t2)
     } else if discriminant <= EQ_THRESHOLD && discriminant >= -EQ_THRESHOLD {
         let t = (-2.0 * v.dot(a - b)) / (2.0 * v.norm().powi(2));
-        LineSphereIntersection::Point3d(a + v * t)
+        LineSphereIntersection::Point(a + v * t)
     } else {
         LineSphereIntersection::None
     }

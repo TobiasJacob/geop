@@ -6,7 +6,7 @@ pub enum PlaneSphereIntersection {
     None
 }
 
-pub fn intersect(a: &Sphere, b: &Plane) -> PlaneSphereIntersection {
+pub fn intersect_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersection {
     let r: f64 = a.radius;
     let b: Point = b.basis;
     let a: Point = a.basis;
