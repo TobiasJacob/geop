@@ -18,22 +18,31 @@ impl Circle3d {
             is_normalized: false
         }
     }
-}
-
-impl Curve3d for Circle3d {
-    fn point_at(&self, u: f64) -> Point3d {
-        let angle = u * 2.0 * std::f64::consts::PI;
-        let x = self.basis.x + self.radius * angle.cos();
-        let y = self.basis.y + self.radius * angle.sin();
-        let z = self.basis.z;
-        Point3d::new(x, y, z)
-    }
 
     fn project(&self, x: Point3d) -> f64 {
         let v = x - self.basis;
         let v = v - self.normal * v.dot(self.normal);
         let angle = v.y.atan2(v.x);
-        angle / (2.0 * std::f64::consts::PI)
+        angle
+    }
+}
+
+impl Curve3d for Circle3d {
+    fn point_at(&self, u: f64) -> Point3d {
+        let x = self.basis.x + self.radius * u.cos();
+        let y = self.basis.y + self.radius * u.sin();
+        let z = self.basis.z;
+        Point3d::new(x, y, z)
+    }
+
+    fn interval(&self, start: Point3d, end: Point3d) -> (f64, f64) {
+        let start_angle = self.project(start);
+        let end_angle = self.project(end);
+        if start_angle < end_angle {
+            (start_angle, end_angle)
+        } else {
+            (start_angle, end_angle + 2.0 * std::f64::consts::PI)
+        }
     }
 
     fn normalize(&mut self) {
@@ -48,6 +57,41 @@ impl Curve3d for Circle3d {
     }
 
     fn period(&self) -> f64 {
-        1.0
+        2.0 * std::f64::consts::PI
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::EQ_THRESHOLD;
+
+    use super::*;
+
+    #[test]
+    fn test_circle3d() {
+        let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 1.0);
+        assert!((circle.point_at(0.0) - Point3d::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
+        assert!((circle.point_at(std::f64::consts::PI / 2.0) - Point3d::new(0.0, 1.0, 0.0)).norm() < EQ_THRESHOLD);
+        assert!((circle.point_at(std::f64::consts::PI) - Point3d::new(-1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
+        assert!((circle.point_at(3.0 * std::f64::consts::PI / 2.0) - Point3d::new(0.0, -1.0, 0.0)).norm() < EQ_THRESHOLD);
+        assert!((circle.point_at(2.0 * std::f64::consts::PI) - Point3d::new(1.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
+
+        let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 2.0);
+        assert!((circle.point_at(0.0) - Point3d::new(2.0, 0.0, 0.0)).norm() < EQ_THRESHOLD);
+    }
+
+    #[test]
+    fn test_inteval() {
+        let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 1.0);
+        let (start, end) = circle.interval(Point3d::new(1.0, 0.0, 0.0), Point3d::new(0.0, 1.0, 0.0));
+        assert!((start - 0.0).abs() < EQ_THRESHOLD);
+        assert!((end - std::f64::consts::PI / 2.0).abs() < EQ_THRESHOLD);
+    }
+
+    #[test]
+    fn test_interval_at_boundary() {
+        let circle = Circle3d::new(Point3d::new(0.0, 0.0, 0.0), Point3d::new(0.0, 0.0, 1.0), 1.0);
+        let (start, end) = circle.interval(Point3d::new(-1.0, 0.0, 0.0), Point3d::new(-1.0, 0.0, 0.0));
+        assert!((start - end + std::f64::consts::PI * 2.0).abs() < EQ_THRESHOLD);
     }
 }

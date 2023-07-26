@@ -17,12 +17,6 @@ impl Plane {
             v_slope
         }
     }
-}
-
-impl Surface for Plane {
-    fn point_at(&self, u: Point2d) -> Point3d {
-        self.basis + self.u_slope * u.x + self.v_slope * u.y
-    }
 
     fn project(&self, x: Point3d) -> Point2d {
         let v = x - self.basis;
@@ -30,6 +24,12 @@ impl Surface for Plane {
         let v = v - self.u_slope * u;
         let v = v.dot(self.v_slope) / self.v_slope.norm();
         Point2d::new(u, v)
+    }
+}
+
+impl Surface for Plane {
+    fn point_at(&self, u: Point2d) -> Point3d {
+        self.basis + self.u_slope * u.x + self.v_slope * u.y
     }
 
     fn normalize(&mut self) {

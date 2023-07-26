@@ -14,6 +14,13 @@ impl Sphere {
             radius,
         }
     }
+
+    fn project(&self, x: Point3d) -> Point2d {
+        let v = x - self.basis;
+        let u = v.dot(Point3d::new(1.0, 0.0, 0.0));
+        let v = v.dot(Point3d::new(0.0, 1.0, 0.0));
+        Point2d::new(u, v)
+    }
 }
 
 impl Surface for Sphere {
@@ -22,13 +29,6 @@ impl Surface for Sphere {
         let y = self.basis.y + self.radius * u.x.sin() * u.y.sin();
         let z = self.basis.z + self.radius * u.y.cos();
         Point3d::new(x, y, z)
-    }
-
-    fn project(&self, x: Point3d) -> Point2d {
-        let v = x - self.basis;
-        let u = v.dot(Point3d::new(1.0, 0.0, 0.0));
-        let v = v.dot(Point3d::new(0.0, 1.0, 0.0));
-        Point2d::new(u, v)
     }
 
     fn normalize(&mut self) {
