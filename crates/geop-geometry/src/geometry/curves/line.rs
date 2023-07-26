@@ -1,34 +1,34 @@
-use crate::geometry::points::point3d::Point3d;
+use crate::geometry::points::point::Point;
 
-use super::curve3d::Curve3d;
+use super::curve::Curve;
 
-pub struct Line3d {
-    pub basis: Point3d,
-    pub direction: Point3d,
+pub struct Line {
+    pub basis: Point,
+    pub direction: Point,
     pub is_normalized: bool
 }
 
-impl Line3d {
-    pub fn new(basis: Point3d, slope: Point3d) -> Line3d {
-        Line3d {
+impl Line {
+    pub fn new(basis: Point, slope: Point) -> Line {
+        Line {
             basis,
             direction: slope,
             is_normalized: false
         }
     }
 
-    fn project(&self, x: &Point3d) -> f64 {
+    fn project(&self, x: &Point) -> f64 {
         let v = *x - self.basis;
         v.dot(self.direction) / self.direction.norm()
     }
 }
 
-impl Curve3d for Line3d {
-    fn point_at(&self, u: f64) -> Point3d {
+impl Curve for Line {
+    fn point_at(&self, u: f64) -> Point {
         self.basis + self.direction * u
     }
 
-    fn interval(&self, start: &Point3d, end: &Point3d) -> (f64, f64) {
+    fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
         let start_proj = self.project(start);
         let end_proj = self.project(end);
         (start_proj, end_proj)

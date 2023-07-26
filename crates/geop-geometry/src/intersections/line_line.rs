@@ -1,10 +1,10 @@
-use crate::geometry::{curves::line3d::Line3d, points::point3d::Point3d};
+use crate::geometry::{curves::line::Line, points::point::Point};
 
 use super::curve_curve::IntersectableCurve3dResult;
 
 pub enum LineLineIntersection {
-    Line3d(Line3d),
-    Point3d(Point3d),
+    Line3d(Line),
+    Point3d(Point),
     None
 }
 
@@ -18,7 +18,7 @@ impl From<LineLineIntersection> for IntersectableCurve3dResult {
     }
 }
 
-pub fn line_line(a: &Line3d, b: &Line3d) -> LineLineIntersection {
+pub fn line_line(a: &Line, b: &Line) -> LineLineIntersection {
     let n = b.direction.cross(a.direction);
     let p = b.basis;
     let v = a.direction;
@@ -26,7 +26,7 @@ pub fn line_line(a: &Line3d, b: &Line3d) -> LineLineIntersection {
 
     if n.norm() < crate::EQ_THRESHOLD {
         if (n.dot(a - p)).abs() < crate::EQ_THRESHOLD {
-            return LineLineIntersection::Line3d(Line3d::new(a, v));
+            return LineLineIntersection::Line3d(Line::new(a, v));
         } else {
             return LineLineIntersection::None;
         }

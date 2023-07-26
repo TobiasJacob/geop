@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::geometry::points::point3d::Point3d;
+use geop_geometry::geometry::points::point::Point;
 
 use super::Face::Face;
 
@@ -17,7 +17,7 @@ impl FaceGroup {
         }
     }
 
-    pub fn rasterize(&self) -> Vec<Vec<Point3d>> {
+    pub fn rasterize(&self) -> Vec<Vec<Point>> {
         self.faces.iter().flat_map(|face| face.rasterize()).collect()
     }
 

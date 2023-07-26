@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
-use geop_geometry::geometry::points::point3d::Point3d;
+use geop_geometry::geometry::points::point::Point;
 
 #[derive(Clone)]
 pub struct Vertex {
-    pub point: Rc<Point3d>
+    pub point: Rc<Point>
 }
 
 impl Vertex {
-    pub fn new(point: Rc<Point3d>) -> Vertex {
+    pub fn new(point: Rc<Point>) -> Vertex {
         Vertex {
             point
         }

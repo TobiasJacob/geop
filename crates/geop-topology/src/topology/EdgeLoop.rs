@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::geometry::points::point3d::Point3d;
+use geop_geometry::geometry::points::point::Point;
 
 
 use super::{Edge::Edge, Vertex::Vertex};
@@ -25,12 +25,12 @@ impl EdgeLoop {
         }
     }
 
-    pub fn rasterize(&self) -> Vec<Point3d> {
+    pub fn rasterize(&self) -> Vec<Point> {
         self.edges.iter().flat_map(|edge| edge.rasterize()).collect()
     }
 
     // A list of all intersections that are not yet end points or vertices.
-    fn inner_intersections(&self, other: &EdgeLoop) -> Vec<Point3d> {
+    fn inner_intersections(&self, other: &EdgeLoop) -> Vec<Point> {
         let mut intersections = Vec::new();
         for edge in &self.edges {
             for other_edge in &other.edges {

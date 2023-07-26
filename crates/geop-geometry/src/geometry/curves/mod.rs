@@ -1,4 +1,4 @@
-pub mod curve3d;
-pub mod line3d;
-pub mod circle3d;
-pub mod ellipse3d;
+pub mod curve;
+pub mod line;
+pub mod circle;
+pub mod ellipse;

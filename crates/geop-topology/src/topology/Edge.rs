@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::points::point3d::Point3d, intersections::curve_curve::IntersectableCurve3d, EQ_THRESHOLD};
+use geop_geometry::{geometry::points::point::Point, intersections::curve_curve::IntersectableCurve3d, EQ_THRESHOLD};
 
 use crate::topology::Vertex::Vertex;
 
@@ -18,7 +18,7 @@ impl Edge {
         }
     }
 
-    pub fn rasterize(&self) -> Vec<Point3d> {
+    pub fn rasterize(&self) -> Vec<Point> {
         let num_points = 40 as usize;
         let (start, end) = self.interval();
 
@@ -35,7 +35,7 @@ impl Edge {
     }
 
     // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
-    pub fn inner_intersections(&self, other: &Edge) -> Vec<Point3d> {
+    pub fn inner_intersections(&self, other: &Edge) -> Vec<Point> {
         let intersections = self.curve.intersections(&other.curve);
         let (u_min, u_max) = self.interval();
         match intersections {
@@ -43,7 +43,7 @@ impl Edge {
                 points.into_iter().filter(|p| {
                     let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &p);
                     u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD
-                }).collect::<Vec<Point3d>>()
+                }).collect::<Vec<Point>>()
             },
             geop_geometry::intersections::curve_curve::IntersectableCurve3dResult::Point3d(point) => {
                 let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &point);

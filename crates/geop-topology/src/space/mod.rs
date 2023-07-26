@@ -1,9 +1,8 @@
-use geop_geometry::geometry::points::point2d::Point2d;
 
 struct TopologicalSpace2d {
-    min: Point2d,
-    max: Point2d,
-    periodic: Point2d
+    min: (f64, f64),
+    max: (f64, f64),
+    periodic: (f64, f64)
 }
 
 // Topological space assumes:
@@ -11,25 +10,25 @@ struct TopologicalSpace2d {
 impl TopologicalSpace2d {
     pub fn from_plane() -> TopologicalSpace2d {
         TopologicalSpace2d {
-            min: Point2d::new(f64::NEG_INFINITY, f64::NEG_INFINITY),
-            max: Point2d::new(f64::INFINITY, f64::INFINITY),
-            periodic: Point2d::new(f64::INFINITY, f64::INFINITY),
+            min: (f64::NEG_INFINITY, f64::NEG_INFINITY),
+            max: (f64::INFINITY, f64::INFINITY),
+            periodic: (f64::INFINITY, f64::INFINITY),
         }
     }
 
     pub fn from_cylinder() -> TopologicalSpace2d {
         TopologicalSpace2d {
-            min: Point2d::new(f64::NEG_INFINITY, f64::NEG_INFINITY),
-            max: Point2d::new(f64::INFINITY, f64::INFINITY),
-            periodic: Point2d::new(2.0 * std::f64::consts::PI, f64::INFINITY),
+            min: (f64::NEG_INFINITY, f64::NEG_INFINITY),
+            max: (f64::INFINITY, f64::INFINITY),
+            periodic: (2.0 * std::f64::consts::PI, f64::INFINITY),
         }
     }
 
     pub fn from_sphere() -> TopologicalSpace2d {
         TopologicalSpace2d {
-            min: Point2d::new(f64::NEG_INFINITY, -std::f64::consts::PI),
-            max: Point2d::new(f64::INFINITY, std::f64::consts::PI),
-            periodic: Point2d::new(2.0 * std::f64::consts::PI, f64::INFINITY),
+            min: (f64::NEG_INFINITY, -std::f64::consts::PI),
+            max: (f64::INFINITY, std::f64::consts::PI),
+            periodic: (2.0 * std::f64::consts::PI, f64::INFINITY),
         }
     }
 

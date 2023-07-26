@@ -1,23 +1,23 @@
-use crate::{geometry::points::point3d::Point3d, EQ_THRESHOLD};
+use crate::{geometry::points::point::Point, EQ_THRESHOLD};
 
-use super::curve3d::Curve3d;
+use super::curve::Curve;
 
-pub struct Ellipse3d {
-    pub basis: Point3d,
-    pub dir_u: Point3d,
-    pub dir_v: Point3d
+pub struct Ellipse {
+    pub basis: Point,
+    pub dir_u: Point,
+    pub dir_v: Point
 }
 
-impl Ellipse3d {
-    pub fn new(basis: Point3d, dir_u: Point3d, dir_v: Point3d) -> Ellipse3d {
-        Ellipse3d {
+impl Ellipse {
+    pub fn new(basis: Point, dir_u: Point, dir_v: Point) -> Ellipse {
+        Ellipse {
             basis,
             dir_u,
             dir_v
         }
     }
 
-    fn project(&self, x: &Point3d) -> f64 {
+    fn project(&self, x: &Point) -> f64 {
         let v = *x - self.basis;
         let u = v.dot(self.dir_u) / self.dir_u.norm();
         let v = v - self.dir_u * u;
@@ -27,12 +27,12 @@ impl Ellipse3d {
     }
 }
 
-impl Curve3d for Ellipse3d {
-    fn point_at(&self, u: f64) -> Point3d {
+impl Curve for Ellipse {
+    fn point_at(&self, u: f64) -> Point {
         self.basis + self.dir_u * u.cos() + self.dir_v * u.sin()
     }
 
-    fn interval(&self, start: &Point3d, end: &Point3d) -> (f64, f64) {
+    fn interval(&self, start: &Point, end: &Point) -> (f64, f64) {
         let start_angle = self.project(start);
         let end_angle = self.project(end);
         if start_angle + EQ_THRESHOLD <= end_angle {

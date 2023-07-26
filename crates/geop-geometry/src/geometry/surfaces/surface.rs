@@ -1,8 +1,7 @@
-use crate::geometry::points::{point3d::Point3d, point2d::Point2d};
+use crate::geometry::points::point::Point;
 
 pub trait Surface {
-    fn point_at(&self, u: Point2d) -> Point3d;
+    fn point_at(&self, u: f64, v: f64) -> Point;
     fn normalize(&mut self);
     fn is_normalized(&self) -> bool;
-    fn period(&self) -> Point2d;
 }

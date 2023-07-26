@@ -1,30 +1,30 @@
 
-use crate::geometry::curves::circle3d::Circle3d;
-use crate::geometry::curves::curve3d::Curve3d;
-use crate::geometry::curves::ellipse3d::Ellipse3d;
-use crate::geometry::curves::line3d::Line3d;
-use crate::geometry::points::point3d::Point3d;
+use crate::geometry::curves::circle::Circle;
+use crate::geometry::curves::curve::Curve;
+use crate::geometry::curves::ellipse::Ellipse;
+use crate::geometry::curves::line::Line;
+use crate::geometry::points::point::Point;
 
 use super::line_line::{self, line_line};
 
 pub enum IntersectableCurve3dResult {
-    MultiPoint(Vec<Point3d>),
-    Ellipse3d(Ellipse3d),
-    Circle(Circle3d),
-    Line3d(Line3d),
-    Point3d(Point3d),
+    MultiPoint(Vec<Point>),
+    Ellipse3d(Ellipse),
+    Circle(Circle),
+    Line3d(Line),
+    Point3d(Point),
     None
 }
 
 pub enum IntersectableCurve3d {
-    Line3d(Line3d),
-    Circle3d(Circle3d),
-    Ellipse3d(Ellipse3d),
+    Line3d(Line),
+    Circle3d(Circle),
+    Ellipse3d(Ellipse),
 }
 
 impl IntersectableCurve3d {
     // Get the curve.
-    pub fn curve(&self) -> &dyn Curve3d {
+    pub fn curve(&self) -> &dyn Curve {
         match self {
             IntersectableCurve3d::Line3d(line) => line,
             IntersectableCurve3d::Circle3d(circle) => circle,

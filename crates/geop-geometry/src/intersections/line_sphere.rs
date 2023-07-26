@@ -1,16 +1,16 @@
-use crate::{geometry::{surfaces::sphere::Sphere, curves::line3d::Line3d, points::point3d::Point3d}, EQ_THRESHOLD};
+use crate::{geometry::{surfaces::sphere::Sphere, curves::line::Line, points::point::Point}, EQ_THRESHOLD};
 
 pub enum LineSphereIntersection {
-    TwoPoints3d(Point3d, Point3d),
-    Point3d(Point3d),
+    TwoPoints3d(Point, Point),
+    Point3d(Point),
     None
 }
 
-pub fn intersect(line: &Line3d, sphere: &Sphere) -> LineSphereIntersection {
+pub fn intersect(line: &Line, sphere: &Sphere) -> LineSphereIntersection {
     let r: f64 = sphere.radius;
-    let b: Point3d = sphere.basis;
-    let a: Point3d = line.basis;
-    let v: Point3d = line.direction;
+    let b: Point = sphere.basis;
+    let a: Point = line.basis;
+    let v: Point = line.direction;
 
     let discriminant = 4.0 * (v.dot(a - b)).powi(2) - 4.0 * (v.norm().powi(2)) * ((a - b).norm().powi(2) - r.powi(2));
 
