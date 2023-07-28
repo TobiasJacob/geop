@@ -1,5 +1,7 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
 
+use crate::EQ_THRESHOLD;
+
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
     pub x: f64,
@@ -87,5 +89,11 @@ impl Neg for Point {
 
     fn neg(self) -> Point {
         Point::new(-self.x, -self.y, -self.z)
+    }
+}
+
+impl PartialEq for Point {
+    fn eq(&self, other: &Point) -> bool {
+        (self.x - other.x).abs() < EQ_THRESHOLD && (self.y - other.y).abs() < EQ_THRESHOLD && (self.z - other.z).abs() < EQ_THRESHOLD
     }
 }

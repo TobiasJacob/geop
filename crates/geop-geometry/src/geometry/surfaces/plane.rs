@@ -53,3 +53,9 @@ impl Surface for Plane {
         self.u_slope.norm() == 1.0 && self.v_slope.norm() == 1.0
     }
 }
+
+impl PartialEq for Plane {
+    fn eq(&self, other: &Plane) -> bool {
+        self.basis == other.basis && self.u_slope.normalize() == other.u_slope.normalize() && self.v_slope.normalize() == other.v_slope.normalize()
+    }
+}

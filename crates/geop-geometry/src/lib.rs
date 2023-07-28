@@ -1,4 +1,4 @@
-pub const EQ_THRESHOLD: f64 = 1e-6;
+pub const EQ_THRESHOLD: f64 = 1e-10;
 
 pub mod geometry;
 pub mod intersections;

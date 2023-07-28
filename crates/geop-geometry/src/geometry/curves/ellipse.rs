@@ -53,3 +53,9 @@ impl Curve for Ellipse {
         true
     }
 }
+
+impl PartialEq for Ellipse {
+    fn eq(&self, other: &Ellipse) -> bool {
+        self.basis == other.basis && self.dir_u == other.dir_u && self.dir_v == other.dir_v
+    }
+}

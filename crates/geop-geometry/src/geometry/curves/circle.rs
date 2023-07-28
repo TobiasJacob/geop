@@ -62,3 +62,10 @@ impl Curve for Circle {
 
 
 }
+
+// Implement partial eqality for Circle
+impl PartialEq for Circle {
+    fn eq(&self, other: &Circle) -> bool {
+        self.basis == other.basis && self.normal == other.normal && self.radius == other.radius
+    }
+}

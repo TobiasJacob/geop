@@ -1,4 +1,4 @@
-use crate::geometry::points::point::Point;
+use crate::{geometry::points::point::Point, EQ_THRESHOLD};
 
 use super::surface::Surface;
 
@@ -56,5 +56,11 @@ impl Surface for Sphere {
 
     fn is_normalized(&self) -> bool {
         self.radius >= 0.0
+    }
+}
+
+impl PartialEq for Sphere {
+    fn eq(&self, other: &Sphere) -> bool {
+        self.basis == other.basis && (self.radius - other.radius).abs() < EQ_THRESHOLD
     }
 }

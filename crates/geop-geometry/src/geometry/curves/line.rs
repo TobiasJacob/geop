@@ -1,4 +1,4 @@
-use crate::geometry::points::point::Point;
+use crate::{geometry::points::point::Point, EQ_THRESHOLD};
 
 use super::curve::Curve;
 
@@ -41,5 +41,11 @@ impl Curve for Line {
 
     fn is_normalized(&self) -> bool {
         self.is_normalized
+    }
+}
+
+impl PartialEq for Line {
+    fn eq(&self, other: &Line) -> bool {
+        self.basis == other.basis && self.direction.normalize() == other.direction.normalize()
     }
 }
