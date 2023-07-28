@@ -1,9 +1,10 @@
 use std::rc::Rc;
 
-use geop_geometry::{geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse}}, EQ_THRESHOLD};
+use geop_geometry::{geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}}, EQ_THRESHOLD, intersections::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}, self}};
 
 use crate::topology::Vertex::Vertex;
 
+#[derive(PartialEq)]
 pub enum LinearEdgeCurve {
     Line(Line),
     Circle(Circle),
@@ -82,26 +83,111 @@ impl LinearEdge {
         }).collect()
     }
 
-    // Returns a sorted list of intersections. The intersections are sorted by the parameter of the first curve. Start and end points are not included.
-    pub fn inner_intersections(&self, other: &LinearEdge) -> Vec<Point> {
-        let intersections = self.curve.intersections(&other.curve);
-        let (u_min, u_max) = self.interval();
-        match intersections {
-            geop_geometry::intersections::curve_curve::IntersectableCurveResult::MultiPoint(points) => {
-                points.into_iter().filter(|p| {
-                    let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &p);
-                    u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD
-                }).collect::<Vec<Point>>()
-            },
-            geop_geometry::intersections::curve_curve::IntersectableCurveResult::Point(point) => {
-                let (_, u) = self.curve.curve().interval(&self.vertices[0].point, &point);
-                if u_min + EQ_THRESHOLD < u && u < u_max - EQ_THRESHOLD {
-                    vec![point]
-                } else {
-                    Vec::new()
+    // All intersections with other edge. The end points are not included.
+    pub fn inner_intersections(&self, other: &LinearEdge) -> Result<(Vec<(f64, Vertex)>, Vec<(f64, Vertex)>), &str> {
+        let intersections: Result<Vec<Point>, &str> = match *self.curve {
+            LinearEdgeCurve::Circle(ref circle) => {
+                match *other.curve {
+                    LinearEdgeCurve::Circle(ref other_circle) => {
+                        match circle_circle_intersection(circle, other_circle) {
+                            CircleCircleIntersection::TwoPoint(a, b) => {
+                                Ok(vec![a, b])
+                            },
+                            CircleCircleIntersection::OnePoint(a) => {
+                                Ok(vec![a])
+                            },
+                            CircleCircleIntersection::None => {
+                                Ok(vec![])
+                            }
+                            _ => {
+                                Err("Geometries overlap")
+                            }
+                        }
+                    },
+                    LinearEdgeCurve::Ellipse(ref ellipse) => {
+                        todo!("Implement circle-ellipse intersection")
+                    },
+                    LinearEdgeCurve::Line(ref line) => {
+                        todo!("Implement circle-line intersection")
+                    },
                 }
             },
-            _ => Vec::new()
+            LinearEdgeCurve::Ellipse(ref ellipse) => {
+                todo!("Implement ellipse intersection")
+            },
+            LinearEdgeCurve::Line(ref line) => {
+                match *other.curve {
+                    LinearEdgeCurve::Circle(ref circle) => {
+                        todo!("Implement line-circle intersection")
+                    },
+                    LinearEdgeCurve::Ellipse(ref ellipse) => {
+                        todo!("Implement line-ellipse intersection")
+                    },
+                    LinearEdgeCurve::Line(ref other_line) => {
+                        match line_line_intersection(line, other_line) {
+                            LineLineIntersection::Point(a) => {
+                                Ok(vec![a])
+                            },
+                            LineLineIntersection::None => {
+                                Ok(vec![])
+                            },
+                            LineLineIntersection::Line(a) => {
+                                Err("Geometries overlap")
+                            },
+                        }
+                    },
+                }
+            },
+        };
+
+        let intersections = intersections?.iter().map(|intersection| {
+            let u = self.project(intersection);
+            let v = other.project(intersection);
+            let vertex = Vertex::new(Rc::new(*intersection));
+            (u, v, vertex)
+        }).filter(|&e| {
+            let (u, v, vertex) = e;
+            u > 0.0 + EQ_THRESHOLD && u < 1.0 - EQ_THRESHOLD && v > 0.0 + EQ_THRESHOLD && v < 1.0 - EQ_THRESHOLD
+        }).collect::<Vec<(f64, f64, Vertex)>>();
+
+        let mut intersectionsA = intersections.iter().map(|e| {
+            let (u, v, vertex) = *e;
+            (u, vertex)
+        }).collect::<Vec<(f64, Vertex)>>();
+
+        let mut intersectionsB = intersections.iter().map(|e| {
+            let (u, v, vertex) = *e;
+            (v, vertex)
+        }).collect::<Vec<(f64, Vertex)>>();
+
+        intersectionsA.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        intersectionsB.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        Ok((intersectionsA, intersectionsB))
+    }
+
+    pub fn remesh(&self, other: &LinearEdge) -> Result<(Vec<LinearEdge>, Vec<LinearEdge>), &str> {
+        let (intersectionsA, intersectionsB) = self.inner_intersections(other)?;
+        let mut edgesA = Vec::<LinearEdge>::with_capacity(intersectionsA.len() + 1);
+        edgesA.push(LinearEdge::new(self.start, intersectionsA[0].1, self.curve));
+        for i in 0..intersectionsA.len() - 1 {
+            edgesA.push(LinearEdge::new(intersectionsA[i].1, intersectionsA[i + 1].1, self.curve));
         }
+        edgesA.push(LinearEdge::new(intersectionsA[intersectionsA.len() - 1].1, self.end, self.curve));
+
+        let mut edgesB = Vec::<LinearEdge>::with_capacity(intersectionsB.len() + 1);
+        edgesB.push(LinearEdge::new(other.start, intersectionsB[0].1, other.curve));
+        for i in 0..intersectionsB.len() - 1 {
+            edgesB.push(LinearEdge::new(intersectionsB[i].1, intersectionsB[i + 1].1, other.curve));
+        }
+        edgesB.push(LinearEdge::new(intersectionsB[intersectionsB.len() - 1].1, other.end, other.curve));
+
+        Ok((edgesA, edgesB))
+    }
+}
+
+impl PartialEq for LinearEdge {
+    fn eq(&self, other: &LinearEdge) -> bool {
+        (Rc::ptr_eq(&self.curve, &other.curve) || self.curve == other.curve) && self.start == other.start && self.end == other.end
     }
 }

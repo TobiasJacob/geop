@@ -60,7 +60,7 @@ impl CircularEdge {
                 match *other.curve {
                     CircularEdgeCurve::Circle(ref other_circle) => {
                         match circle_circle_intersection(circle, other_circle) {
-                            CircleCircleIntersection::SinglePoint(point) => {
+                            CircleCircleIntersection::OnePoint(point) => {
                                 Ok(vec![point])
                             },
                             CircleCircleIntersection::TwoPoint(point1, point2) => {

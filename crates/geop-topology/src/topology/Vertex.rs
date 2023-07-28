@@ -13,9 +13,10 @@ impl Vertex {
             point
         }
     }
+}
 
-    // Implement equality by checking that references point to the same memory adress
-    pub fn equals(&self, other: &Vertex) -> bool {
-        Rc::ptr_eq(&self.point, &other.point)
+impl PartialEq for Vertex {
+    fn eq(&self, other: &Vertex) -> bool {
+        Rc::ptr_eq(&self.point, &other.point) || *self.point == *other.point
     }
 }

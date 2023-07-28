@@ -3,7 +3,7 @@ use crate::{geometry::{curves::circle::Circle, points::point::Point}, EQ_THRESHO
 pub enum CircleCircleIntersection {
     Circle(Circle),
     TwoPoint(Point, Point),
-    SinglePoint(Point),
+    OnePoint(Point),
     None
 }
 
@@ -21,7 +21,7 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
     
     if (d - (r1 + r2)).abs() < EQ_THRESHOLD {
         let p3 = p1 + (p2 - p1) * (r1 / (r1 + r2));
-        return CircleCircleIntersection::SinglePoint(p3);
+        return CircleCircleIntersection::OnePoint(p3);
     }
 
     if d > r1 + r2 {
