@@ -1,12 +1,21 @@
-use std::rc::Rc;
+use std::{rc::Rc, env::consts};
 
-use geop_geometry::{geometry::{points::point::Point, curves::ellipse::Ellipse, curves::circle::Circle}, intersections::circle_circle::{circle_circle_intersection, CircleCircleIntersection}};
+use geop_geometry::{geometry::{points::point::Point, curves::{ellipse::Ellipse, curve::Curve}, curves::circle::Circle}, intersections::circle_circle::{circle_circle_intersection, CircleCircleIntersection}};
 
 #[derive(PartialEq)]
 pub enum CircularEdgeCurve {
     Circle(Circle),
     Ellipse(Ellipse),
 }
+impl CircularEdgeCurve {
+    pub fn curve(&self) -> &dyn Curve {
+        match self {
+            CircularEdgeCurve::Circle(circle) => circle,
+            CircularEdgeCurve::Ellipse(ellipse) => ellipse,
+        }
+    }
+}
+
 pub struct CircularEdge {
     pub curve: Rc<CircularEdgeCurve>
 }
@@ -26,7 +35,14 @@ impl CircularEdge {
 
     pub fn rasterize(&self) -> Vec<Point> {
         let num_points = 40 as usize;
-        let (start, end) = self.interval();
+        let (start, end): (f64, f64) = match *self.curve {
+            CircularEdgeCurve::Circle(ref circle) => 
+                (0.0 as f64, 2.0 * std::f64::consts::PI)
+            ,
+            CircularEdgeCurve::Ellipse(ref ellipse) => 
+                (0.0 as f64, 2.0 * std::f64::consts::PI)
+            ,
+        };
 
         (0..num_points).map(|i| {
             let t = i as f64 / (num_points - 1) as f64;
@@ -59,19 +75,12 @@ impl CircularEdge {
                         }
                     },
                     CircularEdgeCurve::Ellipse(ref other_ellipse) => {
-                        circle.intersections(other_ellipse)
+                        todo!("Implement circle-ellipse intersection")
                     }
                 }
             },
             CircularEdgeCurve::Ellipse(ref ellipse) => {
-                match other.curve {
-                    CircularEdgeCurve::Circle(ref other_circle) => {
-                        ellipse.intersections(other_circle)
-                    },
-                    CircularEdgeCurve::Ellipse(ref other_ellipse) => {
-                        ellipse.intersections(other_ellipse)
-                    }
-                }
+                todo!("Implement circle-ellipse intersection")
             }
         }
     }
