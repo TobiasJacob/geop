@@ -2,8 +2,8 @@ use crate::geometry::points::point::Point;
 
 // This represents an oriented curve.
 pub trait Curve {
-    // Projects a point onto the curve.
-    fn project(&self, p: &Point) -> f64;
+    // Projects a point onto the curve. Returns the parameter of the curve and the distance of the point to the curve.
+    fn project(&self, p: &Point) -> (f64, f64);
     // Returns the interval of the curve.
     fn point_at(&self, u: f64) -> Point;
     // Tangent / Direction of the curve at the given point. Not normalized.

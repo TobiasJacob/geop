@@ -18,13 +18,6 @@ impl Circle {
             is_normalized: false
         }
     }
-
-    fn project(&self, x: &Point) -> f64 {
-        let v = *x - self.basis;
-        let v = v - self.normal * v.dot(self.normal);
-        let angle = v.y.atan2(v.x);
-        angle
-    }
 }
 
 impl Curve for Circle {
@@ -35,11 +28,14 @@ impl Curve for Circle {
         Point::new(x, y, z)
     }
 
-    fn project(&self, p: &Point) -> f64 {
+    fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
         let v = v - self.normal * v.dot(self.normal);
-        let angle = v.y.atan2(v.x);
-        angle
+        let u = v.dot(self.normal) / self.normal.norm();
+        let v = v.dot(self.normal.cross(Point::new(0.0, 0.0, 1.0))) / self.normal.cross(Point::new(0.0, 0.0, 1.0)).norm();
+        let v = v.atan2(u);
+        let u = u.atan2(v);
+        (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
     }
 
     fn derivative(&self, u: f64) -> Point {

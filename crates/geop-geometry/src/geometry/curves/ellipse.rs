@@ -1,4 +1,4 @@
-use crate::{geometry::points::point::Point, EQ_THRESHOLD};
+use crate::geometry::points::point::Point;
 
 use super::curve::Curve;
 
@@ -16,15 +16,6 @@ impl Ellipse {
             dir_v
         }
     }
-
-    fn project(&self, x: &Point) -> f64 {
-        let v = *x - self.basis;
-        let u = v.dot(self.dir_u) / self.dir_u.norm();
-        let v = v - self.dir_u * u;
-        let v = v.dot(self.dir_v) / self.dir_v.norm();
-        let v = v.atan2(u);
-        v / (2.0 * std::f64::consts::PI)
-    }
 }
 
 impl Curve for Ellipse {
@@ -32,13 +23,14 @@ impl Curve for Ellipse {
         self.basis + self.dir_u * u.cos() + self.dir_v * u.sin()
     }
 
-    fn project(&self, p: &Point) -> f64 {
+    fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
         let u = v.dot(self.dir_u) / self.dir_u.norm();
         let v = v - self.dir_u * u;
         let v = v.dot(self.dir_v) / self.dir_v.norm();
         let v = v.atan2(u);
-        v / (2.0 * std::f64::consts::PI)
+        let u = u.atan2(v);
+        (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
     }
 
     fn derivative(&self, u: f64) -> Point {

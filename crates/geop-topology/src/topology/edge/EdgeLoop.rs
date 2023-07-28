@@ -1,54 +1,128 @@
+use core::num;
 use std::rc::Rc;
 
 use geop_geometry::geometry::points::point::Point;
 
 
-use super::{Edge::{Edge, CircularEdge}, Vertex::Vertex};
+use crate::topology::Vertex::Vertex;
 
-pub enum EdgeLoopBasis {
+use super::{LinearEdge::LinearEdge, CircularEdge::CircularEdge};
+
+pub enum EdgeLoopCurve {
     Linear(Vec<Rc<LinearEdge>>),
     Circular(Rc<CircularEdge>)
 }
 
 pub struct EdgeLoop {
-    pub basis: EdgeLoopBasis,
-    pub origin: Point,
+    pub curve: EdgeLoopCurve,
 }
 
 // An EdgeLoop is a closed loop of edges which is not self intersecting.
 impl EdgeLoop {
-    pub fn new(edges: Vec<Rc<Edge>>) -> EdgeLoop {
+    pub fn new(edges: Vec<Rc<LinearEdge>>) -> EdgeLoop {
         for i in 0..edges.len() {
             let edge = edges[i].clone();
             let next_edge = edges[(i + 1) % edges.len()].clone();
-            assert!(&edge.vertices[1].equals(&next_edge.vertices[0]));
+            assert!(edge.end == next_edge.start);
         }
         assert!(edges.len() > 0);
-        assert!(edges[0].vertices[0].equals(&edges[edges.len() - 1].vertices[1]));
-
+        assert!(edges[0].start == edges[edges.len() - 1].end);
         EdgeLoop {
-            edges
+            curve: EdgeLoopCurve::Linear(edges),
+        }
+    }
+
+    pub fn point_at(&self, u: f64) -> Point {
+        assert!(u >= 0.0 && u < 1.0);
+        match &self.curve {
+            EdgeLoopCurve::Linear(edges) => {
+                let mut u = u * edges.len() as f64;
+                let mut i = u.floor() as usize;
+                u = u - i as f64;
+                let edge = edges[i].clone();
+                edge.point_at(u)
+            },
+            EdgeLoopCurve::Circular(edge) => {
+                todo!("Not yet implemented");
+            }
+        }
+    }
+
+    pub fn project(&self, point: &Point) -> Option<f64> {
+        match &self.curve {
+            EdgeLoopCurve::Linear(edges) => {
+                let mut u = 0.0;
+                for edge in edges {
+                    match edge.project(point) {
+                        Some(u_p) => {
+                            return Some((u + u_p) / edges.len() as f64);
+                        },
+                        None => {
+                            u += 1.0;
+                        }
+                    }
+                }
+                None
+            },
+            EdgeLoopCurve::Circular(edge) => {
+                todo!("Not yet implemented");
+            }
         }
     }
 
     pub fn rasterize(&self) -> Vec<Point> {
-        self.edges.iter().flat_map(|edge| edge.rasterize()).collect()
+        match &self.curve {
+            EdgeLoopCurve::Linear(edges) => {
+                edges.iter().map(|edge| edge.rasterize()).flatten().collect()
+            },
+            EdgeLoopCurve::Circular(edge) => {
+                todo!("Not yet implemented");
+            }
+        }
     }
 
     // A list of all intersections that are not yet end points or vertices.
-    fn inner_intersections(&self, other: &EdgeLoop) -> Vec<Point> {
-        let mut intersections = Vec::new();
-        for edge in &self.edges {
-            for other_edge in &other.edges {
-                intersections.append(&mut edge.inner_intersections(other_edge));
+    fn inner_intersections(&self, other: &EdgeLoop) -> Result<(Vec<(f64, Vertex)>, Vec<(f64, Vertex)>), &str> {
+        match self.curve {
+            EdgeLoopCurve::Linear(ref edges_self) => {
+                match other.curve {
+                    EdgeLoopCurve::Linear(ref edges_other) => {
+                        let mut intersections_self = Vec::new();
+                        let mut intersections_other = Vec::new();
+                        for (i_self, edge_self) in edges_self.iter().enumerate() {
+                            for (i_other, edge_other) in edges_other.iter().enumerate() {
+                                let (intersections_edge_self, intersections_edge_other) = edge_self.inner_intersections(&edge_other)?;
+                                for (u, vertex) in intersections_edge_self {
+                                    intersections_self.push(((u + i_self as f64) / edges_self.len() as f64, vertex));
+                                }
+                                for (u, vertex) in intersections_edge_other {
+                                    intersections_other.push(((u + i_other as f64) / edges_other.len() as f64, vertex));
+                                }
+                            }
+                        }
+                        Ok((intersections_self, intersections_other))
+                    },
+                    EdgeLoopCurve::Circular(ref edge_other) => {
+                        todo!("Not yet implemented")
+                    }
+                }
+            },
+            EdgeLoopCurve::Circular(ref edge_self) => {
+                match other.curve {
+                    EdgeLoopCurve::Linear(ref edges_other) => {
+                        todo!("Not yet implemented")
+                    },
+                    EdgeLoopCurve::Circular(ref edge_other) => {
+                        todo!("Not yet implemented")
+                    }
+                }
             }
         }
-        intersections
     }
 
     // Connects all inner intersections with each other, such that the resulting edge loops are closed and do only intersect at the end points.
     // However, the resulting edge loops may still overlap each other. This could result in a non-manifold topology, so this function is private, and the public function split should be used instead.
-    fn remesh(&self, other: &EdgeLoop) -> (Vec<LinearEdge>, Vec<LinearEdge>) {
+    fn remesh(&self, other: &EdgeLoop) -> (Vec<EdgeLoop>, Vec<EdgeLoop>) {
         let mut edges_S: Vec<Edge> = Vec::new();
         let mut edges_O: Vec<Edge> = Vec::new();
         let intersections = self.inner_intersections(other);
