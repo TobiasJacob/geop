@@ -9,51 +9,75 @@ pub enum LinearEdgeCurve {
     Circle(Circle),
     Ellipse(Ellipse),
 }
+impl LinearEdgeCurve {
+    pub fn curve(&self) -> &dyn Curve {
+        match self {
+            LinearEdgeCurve::Line(line) => line,
+            LinearEdgeCurve::Circle(circle) => circle,
+            LinearEdgeCurve::Ellipse(ellipse) => ellipse,
+        }
+    }
+}
 
 pub struct LinearEdge {
     pub start: Vertex,
     pub end: Vertex,
-    pub curve: Rc<LinearEdgeCurve>
+    pub curve: Rc<LinearEdgeCurve>,
+    start_u: f64,
+    end_u: f64,
 }
 
 // TODO: Implement an periodic / circular edge
 impl LinearEdge {
     pub fn new(start: Vertex, end: Vertex, curve: Rc<LinearEdgeCurve>) -> LinearEdge {
+        let start_u = curve.curve().project(&start.point);
+        let end_u_p = curve.curve().project(&end.point);
+        // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
+        // The reason is that for edges it is possible to find parameter spaces relativly easy.
+        // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an EdgeLoop.
+        // In both cases, the parameter space is defined by the start and end point of the curve or the outer edge loop.
+        // So the code that generates the parameter space (which depends on start and end) belongs here.
+        let end_u = match *curve {
+            LinearEdgeCurve::Line(_) => end_u_p,
+            LinearEdgeCurve::Circle(_) => match end_u_p > start_u {
+                true => end_u_p,
+                false => end_u_p + 2.0 * std::f64::consts::PI,
+            }
+            LinearEdgeCurve::Ellipse(_) => match end_u_p > start_u {
+                true => end_u_p,
+                false => end_u_p + 2.0 * std::f64::consts::PI,
+            }
+        };
+        
         LinearEdge {
             start,
             end,
             curve,
+            start_u: curve.curve().project(&start.point),
+            end_u: curve.curve().project(&start.point),
         }
     }
 
-    pub fn interval(&self) -> (f64, f64) {
-        return self.curve.curve().interval(&self.vertices[0].point, &self.vertices[1].point);
-    }
-
-    pub fn length(&self) -> f64 {
-        self.parameter_space.length()
-    }
-
     pub fn point_at(&self, u: f64) -> Point {
-        let (start, end) = self.interval();
-        self.curve.curve().point_at(start + u)
+        let u = self.start_u + u * (self.end_u - self.start_u);
+        self.curve.curve().point_at(u)
     }
 
     pub fn project(&self, point: &Point) -> f64 {
-        let (start, end) = self.interval();
-        let (start, u) = self.curve.curve().interval(&self.vertices[0].point, point);
-        assert!(u <= end);
-        return u - start;
+        let u_p = self.curve.curve().project(point);
+        let u = match u_p > self.start_u {
+            true => u_p,
+            false => u_p + 2.0 * std::f64::consts::PI,
+        };
+        (u - self.start_u) / (self.end_u - self.start_u)
     }
 
     pub fn rasterize(&self) -> Vec<Point> {
         let num_points = 40 as usize;
-        let (start, end) = self.interval();
 
         (0..num_points).map(|i| {
             let t = i as f64 / (num_points - 1) as f64;
             let point = self.curve.curve().point_at(t);
-            let point = point + (end - start) * t;
             point
         }).collect()
     }
