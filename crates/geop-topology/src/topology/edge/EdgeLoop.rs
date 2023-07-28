@@ -117,7 +117,7 @@ impl EdgeLoop {
     }
 
     // A list of all intersections that are not yet end points or vertices.
-    fn inner_intersections(&self, other: &EdgeLoop) -> Result<(Vec<Vec<LinearEdge>>, Vec<Vec<LinearEdge>>), &str> {
+    fn intersections(&self, other: &EdgeLoop) -> Result<(Vec<Vec<LinearEdge>>, Vec<Vec<LinearEdge>>), &str> {
         match self.curve {
             EdgeLoopCurve::Linear(ref edges_self) => {
                 match other.curve {
@@ -178,7 +178,7 @@ impl EdgeLoop {
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
-        let (mut segments_self, segments_other) = self.inner_intersections(other)?;
+        let (mut segments_self, segments_other) = self.intersections(other)?;
 
         let find_segment_starting = |vertex: Vertex, segment_is_self: bool| -> Vec<LinearEdge> {
             let relevant_segments = if segment_is_self { segments_self } else { segments_other };

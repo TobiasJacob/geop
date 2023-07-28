@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::geometry::points::point::Point;
 
-use super::Face::Face;
+use super::{Face::Face, edge::EdgeLoop::EdgeLoop};
 
 
 // A watertight group of faces.
@@ -21,17 +21,15 @@ impl FaceGroup {
         self.faces.iter().flat_map(|face| face.rasterize()).collect()
     }
 
-    fn inner_intersections(&self, other: &FaceGroup) -> Vec<Edge> {
-        let mut intersections = Vec::new();
-        for face in &self.faces {
-            for other_face in &other.faces {
-                intersections.append(&mut face.inner_intersections(other_face));
-            }
-        }
-        intersections
+    fn get_subface(&self, border: &EdgeLoop) -> Result<FaceGroup, &'static str> {
+        todo!("Subface")
     }
 
-    fn remesh(&self, other: &EdgeLoop) -> (Vec<Face>, Vec<Face>) {
+    fn intersections(&self, other: &FaceGroup) -> Vec<EdgeLoop> {
+        todo!("inner_intersections")
+    }
+
+    fn remesh_self_other(&self, other: &FaceGroup) -> (Vec<FaceGroup>, Vec<FaceGroup>) {
 
     }
 
