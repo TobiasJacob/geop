@@ -50,7 +50,7 @@ impl Surface for Plane {
     }
 
     fn is_normalized(&self) -> bool {
-        self.u_slope.norm() == 1.0 && self.v_slope.norm() == 1.0
+        self.u_slope.is_normalized() && self.v_slope.is_normalized()
     }
 }
 

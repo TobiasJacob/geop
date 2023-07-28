@@ -18,6 +18,10 @@ impl Point {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    pub fn is_normalized(&self) -> bool {
+        (self.x * self.x + self.y * self.y + self.z * self.z) < EQ_THRESHOLD
+    }
+
     pub fn dot(&self, other: Point) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
