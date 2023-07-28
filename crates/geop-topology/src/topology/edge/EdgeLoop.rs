@@ -142,19 +142,19 @@ impl EdgeLoop {
                         assert!(intersections_self.len() % 2 == 0);
                         assert!(intersections_other.len() == intersections_self.len());
 
-                        let mut edges_in_self = Vec::with_capacity(intersections_other.len() / 2);
+                        let mut segments_self = Vec::with_capacity(intersections_self.len());
                         for i in 0..intersections_other.len() / 2 {
-                            let edge_self = self.get_subcurve(intersections_other[2 * i].1, intersections_other[2 * i + 1].1)?;
-                            edges_in_self.push(edge_self);
+                            let edge_self = self.get_subcurve(intersections_self[i].1, intersections_self[(i + 1) % intersections_self.len()].1)?;
+                            segments_self.push(edge_self);
                         }
 
-                        let mut edges_in_other = Vec::with_capacity(intersections_self.len() / 2);
+                        let mut segments_other = Vec::with_capacity(intersections_other.len());
                         for i in 0..intersections_other.len() / 2 {
-                            let edge_other = other.get_subcurve(intersections_self[2 * i].1, intersections_self[2 * i + 1].1)?;
-                            edges_in_other.push(edge_other);
+                            let edge_other = other.get_subcurve(intersections_other[i].1, intersections_other[(i + 1) % intersections_other.len()].1)?;
+                            segments_other.push(edge_other);
                         }
 
-                        Ok((edges_in_self, edges_in_other))
+                        Ok((segments_self, segments_other))
                     },
                     EdgeLoopCurve::Circular(ref edge_other) => {
                         todo!("Not yet implemented")
@@ -177,9 +177,35 @@ impl EdgeLoop {
     // Splits this edge loop with another edge loop.
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
-    pub fn remesh(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
-        let (intersections_self, intersections_other) = self.inner_intersections(other)?;
+    pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
+        let (mut segments_self, segments_other) = self.inner_intersections(other)?;
 
-        todo!("Not yet implemented")
+        let find_segment_starting = |vertex: Vertex, segment_is_self: bool| -> Vec<LinearEdge> {
+            let relevant_segments = if segment_is_self { segments_self } else { segments_other };
+            for segment in relevant_segments {
+                if segment[0].start == vertex {
+                    return segment;
+                }
+            }
+            panic!("Called find_segment_self_starting with invalid vertex") // This should never happen
+        };
+
+        let mut edge_loops = Vec::new();
+        let mut segment_is_self = false;
+        while let Some(mut current_segment) = segments_self.pop(){
+            let mut edge_loop: Vec<Rc<LinearEdge>> = Vec::new();
+            let mut next_segment = current_segment;
+            while next_segment[next_segment.len()].end != edge_loop[0].start {
+                edge_loop.extend(next_segment.drain(..).map(|edge| Rc::new(edge)));
+                next_segment = find_segment_starting(next_segment[next_segment.len()].end, segment_is_self);
+                // remove next_segment from segments_self if it is in there
+                if let Some(i) = segments_self.iter().position(|segment| segment[0].start == next_segment[0].start) {
+                    segments_self.remove(i);
+                }
+                segment_is_self = !segment_is_self;
+            }
+            edge_loops.push(EdgeLoop::new(edge_loop));
+        }
+        Ok(edge_loops)
     }
 }
