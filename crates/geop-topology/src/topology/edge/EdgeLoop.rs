@@ -126,7 +126,7 @@ impl EdgeLoop {
                         let mut intersections_other = Vec::new();
                         for (i_self, edge_self) in edges_self.iter().enumerate() {
                             for (i_other, edge_other) in edges_other.iter().enumerate() {
-                                let (intersections_edge_self, intersections_edge_other) = edge_self.inner_intersections(&edge_other)?;
+                                let (intersections_edge_self, intersections_edge_other) = edge_self.intersections(&edge_other)?;
                                 for (u, vertex) in intersections_edge_self {
                                     intersections_self.push(((u + i_self as f64) / edges_self.len() as f64, vertex));
                                 }

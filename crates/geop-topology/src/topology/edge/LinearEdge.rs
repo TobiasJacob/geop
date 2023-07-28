@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, vec};
 
 use geop_geometry::{geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}}, intersections::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}};
 
@@ -26,6 +26,12 @@ pub struct LinearEdge {
     pub curve: Rc<LinearEdgeCurve>,
     start_u: f64,
     end_u: f64,
+}
+
+enum LinearEdgeIntersection {
+    Point(f64, f64, Point),
+    Line(f64, f64, f64, f64, LinearEdge),
+    None,
 }
 
 // TODO: Implement an periodic / circular edge
@@ -92,27 +98,71 @@ impl LinearEdge {
         }).collect()
     }
 
-    // All intersections with other edge. The end points are not included.
-    pub fn inner_intersections(&self, other: &LinearEdge) -> Result<(Vec<(f64, Vertex)>, Vec<(f64, Vertex)>), &str> {
-        if self == other {
-            return Err("The edges are equal")
-        }
-        let intersections: Result<Vec<Point>, &str> = match *self.curve {
+    // All intersections with other edge. The end points are not included as they should already refer to the same Vertex.
+    pub fn intersections(&self, other: &LinearEdge) -> (Vec<LinearEdgeIntersection>, Vec<LinearEdgeIntersection>) {
+        let intersections: Vec<LinearEdgeIntersection> = match *self.curve {
             LinearEdgeCurve::Circle(ref circle) => {
                 match *other.curve {
                     LinearEdgeCurve::Circle(ref other_circle) => {
                         match circle_circle_intersection(circle, other_circle) {
                             CircleCircleIntersection::TwoPoint(a, b) => {
-                                Ok(vec![a, b])
+                                let mut intersections = Vec::new();
+
+                                if let Some(u_a_self) = self.project(&a) {
+                                    if let Some(u_a_other) = other.project(&a) {
+                                        intersections.push(LinearEdgeIntersection::Point(u_a_self, u_a_other, a));
+                                    }
+                                }
+
+                                if let Some(u_b_self) = self.project(&b) {
+                                    if let Some(u_b_other) = other.project(&b) {
+                                        intersections.push(LinearEdgeIntersection::Point(u_b_self, u_b_other, b));
+                                    }
+                                }
+
+                                intersections
                             },
                             CircleCircleIntersection::OnePoint(a) => {
-                                Ok(vec![a])
+                                if let Some(u_a_self) = self.project(&a) {
+                                    if let Some(u_a_other) = other.project(&a) {
+                                        vec![LinearEdgeIntersection::Point(u_a_self, u_a_other, a)]
+                                    } else {
+                                        vec![]
+                                    }
+                                } else {
+                                    vec![]
+                                }
                             },
                             CircleCircleIntersection::None => {
-                                Ok(vec![])
+                                vec![]
                             }
-                            _ => {
-                                Err("Geometries overlap")
+                            CircleCircleIntersection::Circle(_) => {
+                                let mut self_start_u = circle.project(&self.start.point).0;
+                                let mut self_end_u = circle.project(&self.end.point).0;
+                                let mut other_start_u = circle.project(&other.start.point).0;
+                                let mut other_end_u = circle.project(&other.end.point).0;
+
+                                if self_end_u < self_start_u.max(other_start_u) {
+                                    self_start_u += 2.0 * std::f64::consts::PI;
+                                    self_end_u += 2.0 * std::f64::consts::PI;
+                                }
+                                
+                                if other_end_u < self_start_u.max(other_start_u) {
+                                    other_start_u += 2.0 * std::f64::consts::PI;
+                                    other_end_u += 2.0 * std::f64::consts::PI;
+                                }
+
+                                let start_u = self_start_u.max(other_start_u);
+                                let end_u = self_end_u.min(other_end_u);
+
+                                let start_u_in_other_space = other.project(&self.point_at(start_u)).unwrap();
+                                let end_u_in_other_space = other.project(&self.point_at(end_u)).unwrap();
+
+                                if end_u < start_u {
+                                    vec![]
+                                } else {
+                                    vec![LinearEdgeIntersection::Line(start_u, end_u, start_u_in_other_space, end_u_in_other_space, LinearEdge::new(self.start, self.end, self.curve))]
+                                }
                             }
                         }
                     },
@@ -176,7 +226,7 @@ impl LinearEdge {
     }
 
     pub fn remesh(&self, other: &LinearEdge) -> Result<(Vec<LinearEdge>, Vec<LinearEdge>), &str> {
-        let (intersections_a, intersections_b) = self.inner_intersections(other)?;
+        let (intersections_a, intersections_b) = self.intersections(other)?;
         let mut edges_a = Vec::<LinearEdge>::with_capacity(intersections_a.len() + 1);
         edges_a.push(LinearEdge::new(self.start, intersections_a[0].1, self.curve));
         for i in 0..intersections_a.len() - 1 {
