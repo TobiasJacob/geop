@@ -27,9 +27,9 @@ impl EdgeLoop {
     }
 
     pub fn point_at(&self, u: f64) -> Point {
-        u = u % 1.0;
-        let mut u = u * self.edges.len() as f64;
-        let mut i = u.floor() as usize;
+        let mut u = u % 1.0;
+        u = u * self.edges.len() as f64;
+        let i = u.floor() as usize;
         u = u - i as f64;
         let edge = self.edges[i].clone();
         edge.point_at(u)

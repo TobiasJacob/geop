@@ -1,4 +1,4 @@
-use std::{rc::Rc, vec, f32::consts::E};
+use std::{rc::Rc, vec};
 
 use geop_geometry::{geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}}, intersections::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}};
 
@@ -208,7 +208,7 @@ impl Edge {
                                 let mut intersections = Vec::new();
                                 if let Some(u_a_self) = self.project(&a) {
                                     if let Some(u_a_other) = other.project(&a) {
-                                        intersections.push(EdgeIntersection::Point(Vertex::new(Rc::new(a))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                     }
                                 }
                                 intersections
