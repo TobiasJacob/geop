@@ -1,3 +1,2 @@
-pub mod CircularEdge;
-pub mod LinearEdge;
+pub mod Edge;
 pub mod EdgeLoop;

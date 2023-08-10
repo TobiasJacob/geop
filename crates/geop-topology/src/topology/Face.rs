@@ -4,6 +4,7 @@ use geop_geometry::{geometry::{points::{point::Point, point2d::Point2d}, surface
 
 use super::{Edge::Edge, EdgeLoop::EdgeLoop};
 
+
 enum PlanarFaceSurface {
     Plane(Plane),
     Cylinder(Cylinder),
@@ -12,7 +13,7 @@ enum PlanarFaceSurface {
 
 // No surface dimensions are periodic. Its boundary is a closed loop. Note that for example a small cutout from a sphere bound by an outer edge is a planar face, despite the sphere being periodic.
 pub struct PlanarFace {
-    pub outer_loop: EdgeLoop,
+    pub outer_loops: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
     pub surface: Rc<PlanarFaceSurface>
 }
@@ -22,7 +23,7 @@ enum CylindricalFaceSurface {
     Sphere(Sphere)
 }
 
-// One surface dimension is periodic. Two boundaries are needed.
+// One surface dimension is periodic. Two boundaries are needed. Don't implement this yet, as this is opening up a can of worms. What for example, if we have a pyramid with 4 edges? This could result in 4 outer edges.
 pub struct CylindricalFace {
     pub outer_loop_1: EdgeLoop,
     pub outer_loop_2: EdgeLoop,
@@ -37,6 +38,11 @@ enum SphericalFaceSurface {
 pub struct SphericalFace {
     pub inner_loops: Vec<EdgeLoop>,
     pub surface: Rc<SphericalFaceSurface>
+}
+
+pub struct Face {
+    pub borders: Vec<EdgeLoop>,
+    pub surface: Rc<IntersectableSurface>
 }
 
 
