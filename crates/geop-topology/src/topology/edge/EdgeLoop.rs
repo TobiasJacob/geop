@@ -37,7 +37,7 @@ impl EdgeLoop {
 
     pub fn project(&self, point: &Point) -> Option<f64> {
         let mut u = 0.0;
-        for edge in self.edges {
+        for edge in self.edges.iter() {
             match edge.project(point) {
                 Some(u_p) => {
                     return Some((u + u_p) / self.edges.len() as f64);
@@ -54,7 +54,7 @@ impl EdgeLoop {
         self.edges.iter().map(|edge| edge.rasterize()).flatten().collect()
     }
 
-    fn get_subcurve(self, start: Vertex, end: Vertex) -> Result<Vec<Rc<Edge>>, &'static str> {
+    fn get_subcurve(&self, start: Vertex, end: Vertex) -> Result<Vec<Rc<Edge>>, &'static str> {
         let u_start = match self.project(&start.point) {
             Some(it) => it,
             None => return Err("First point is not on the edge loop"),
@@ -70,13 +70,13 @@ impl EdgeLoop {
         let start_i = (u_start * self.edges.len() as f64).floor() as usize;
         let end_i = (u_end * self.edges.len() as f64).floor() as usize;
         if start_i == end_i {
-            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve)));
+            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone())));
         } else {
-            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end, self.edges[start_i].curve)));
+            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone())));
             for i in start_i + 1..end_i {
-                edges.push(edges[i]);
+                edges.push(edges[i].clone());
             }
-            edges.push(Rc::new(Edge::new(self.edges[end_i].start, end, self.edges[end_i].curve)));
+            edges.push(Rc::new(Edge::new(self.edges[end_i].start.clone(), end, self.edges[end_i].curve.clone())));
         }
         Ok(edges)
     }
@@ -86,20 +86,23 @@ impl EdgeLoop {
         // First, find all intersections and order them by position on the edge loop.
         let mut split_verts_self: Vec<(f64, Vertex)> = Vec::new();
         let mut split_verts_other: Vec<(f64, Vertex)> = Vec::new();
-        for (i_self, edge_self) in self.edges.iter().enumerate() {
-            for (i_other, edge_other) in other.edges.iter().enumerate() {
+        for edge_self in self.edges.iter() {
+            for edge_other in other.edges.iter() {
                 let intersections = edge_self.intersections(&edge_other);
                 for intersection in intersections {
                     match intersection {
                         EdgeIntersection::Vertex(intersect_vertex) => {
-                            split_verts_self.push((self.project(&intersect_vertex.point).expect("Intersection point has to be on edge"), intersect_vertex));
-                            split_verts_other.push((other.project(&intersect_vertex.point).expect("Intersection point has to be on edge"), intersect_vertex));
+                            let p = *intersect_vertex.point;
+                            split_verts_self.push((self.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
+                            split_verts_other.push((other.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
                         },
                         EdgeIntersection::Edge(intersect_edge) => {
-                            split_verts_self.push((self.project(&intersect_edge.start.point).expect("Intersection point has to be on edge"), intersect_edge.start));
-                            split_verts_self.push((self.project(&intersect_edge.end.point).expect("Intersection point has to be on edge"), intersect_edge.end));
-                            split_verts_other.push((self.project(&intersect_edge.start.point).expect("Intersection point has to be on edge"), intersect_edge.start));
-                            split_verts_other.push((self.project(&intersect_edge.end.point).expect("Intersection point has to be on edge"), intersect_edge.end));
+                            let p_start = *intersect_edge.start.point;
+                            let p_end = *intersect_edge.end.point;
+                            split_verts_self.push((self.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));
+                            split_verts_self.push((self.project(&p_end).expect("Intersection point has to be on edge"), intersect_edge.end.clone()));
+                            split_verts_other.push((other.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));
+                            split_verts_other.push((other.project(&p_end).expect("Intersection point has to be on edge"), intersect_edge.end.clone()));
                         },
                     }
                 }
@@ -119,13 +122,17 @@ impl EdgeLoop {
 
         let mut segments_self = Vec::with_capacity(n);
         for i in 0..n {
-            let edge_self = self.get_subcurve(split_verts_self[i].1, split_verts_self[(i + 1) % n].1).expect("Intersection points have to be on edge");
+            let start_vert = split_verts_self[i].1.clone();
+            let end_vert = split_verts_self[(i + 1) % n].1.clone();
+            let edge_self = self.get_subcurve(start_vert, end_vert).expect("Intersection points have to be on edge");
             segments_self.push(edge_self);
         }
 
         let mut segments_other = Vec::with_capacity(n);
         for i in 0..n {
-            let edge_other = other.get_subcurve(split_verts_other[i].1, split_verts_other[(i + 1) % n].1).expect("Intersection points have to be on edge");
+            let start_vert = split_verts_other[i].1.clone();
+            let end_vert = split_verts_other[(i + 1) % n].1.clone();
+            let edge_other = other.get_subcurve(start_vert, end_vert).expect("Intersection points have to be on edge");
             segments_other.push(edge_other);
         }
 
@@ -136,29 +143,20 @@ impl EdgeLoop {
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
-        let (mut segments_self, segments_other) = self.split(other);
-
-        let find_segment_starting = |vertex: Vertex, segment_is_self: bool| -> Vec<Rc<Edge>> {
-            let relevant_segments = if segment_is_self { segments_self } else { segments_other };
-            for segment in relevant_segments {
-                if segment[0].start == vertex {
-                    return segment;
-                }
-            }
-            panic!("Called find_segment_self_starting with invalid vertex") // This should never happen
-        };
+        let (mut segments_self, mut segments_other) = self.split(other);
 
         let mut edge_loops = Vec::new();
         let mut segment_is_self = false;
-        while let Some(mut current_segment) = segments_self.pop(){
+        while let Some(mut next_segment) = segments_self.pop(){
             let mut edge_loop: Vec<Rc<Edge>> = Vec::new();
-            let mut next_segment = current_segment;
             while next_segment[next_segment.len()].end != edge_loop[0].start {
                 edge_loop.extend(next_segment.drain(..).map(|edge| edge));
-                next_segment = find_segment_starting(next_segment[next_segment.len()].end, segment_is_self);
-                // remove next_segment from segments_self if it is in there
-                if let Some(i) = segments_self.iter().position(|segment| segment[0].start == next_segment[0].start) {
-                    segments_self.remove(i);
+                let relevant_segments = if segment_is_self { &mut segments_self } else { &mut segments_other };
+                for (i, segment) in relevant_segments.iter().enumerate() {
+                    if segment[0].start == next_segment[next_segment.len()].end {
+                        next_segment = relevant_segments.remove(i);
+                        break;
+                    }
                 }
                 segment_is_self = !segment_is_self;
             }
