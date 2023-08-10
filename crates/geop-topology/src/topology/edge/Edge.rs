@@ -28,63 +28,10 @@ pub struct Edge {
     end_u: f64,
 }
 
-pub struct EdgeIntersectionPoint {
-    pub u_self: f64,
-    pub u_other: f64,
-    pub vertex: Vertex,
-}
-
-impl EdgeIntersectionPoint {
-    pub fn new(u_self: f64, u_other: f64, vertex: Vertex) -> EdgeIntersectionPoint {
-        EdgeIntersectionPoint {
-            u_self,
-            u_other,
-            vertex,
-        }
-    }
-}
-
-pub struct EdgeIntersectionLine {
-    pub start_u_self: f64,
-    pub end_u_self: f64,
-    pub start_u_other: f64,
-    pub end_u_other: f64,
-    pub edge: Edge,
-}
-
-impl EdgeIntersectionLine {
-    pub fn new(start_u_self: f64, end_u_self: f64, start_u_other: f64, end_u_other: f64, edge: Edge) -> EdgeIntersectionLine {
-        EdgeIntersectionLine {
-            start_u_self,
-            end_u_self,
-            start_u_other,
-            end_u_other,
-            edge,
-        }
-    }
-}
-
 pub enum EdgeIntersection {
     Vertex(Vertex),
     Edge(Edge),
 }
-
-impl EdgeIntersection {
-    pub fn start_u_self(&self) -> f64 {
-        match self {
-            EdgeIntersection::Point(point) => point.u_self,
-            EdgeIntersection::Edge(line) => line.start_u_self,
-        }
-    }
-
-    pub fn start_u_other(&self) -> f64 {
-        match self {
-            EdgeIntersection::Point(point) => point.u_other,
-            EdgeIntersection::Edge(line) => line.start_u_other,
-        }
-    }
-}
-
 
 // TODO: Implement an periodic / circular edge
 impl Edge {
@@ -162,7 +109,7 @@ impl Edge {
 
                                 if let Some(u_a_self) = self.project(&a) {
                                     if let Some(u_a_other) = other.project(&a) {
-                                        intersections.push(EdgeIntersection::Point(EdgeIntersectionPoint::new(u_a_self, u_a_other, Vertex::new(Rc::new(a)))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                     } else {
                                         panic!("Circle intersection point is not on other circle")
                                     }
@@ -172,7 +119,7 @@ impl Edge {
 
                                 if let Some(u_b_self) = self.project(&b) {
                                     if let Some(u_b_other) = other.project(&b) {
-                                        intersections.push(EdgeIntersection::Point(EdgeIntersectionPoint::new(u_b_self, u_b_other, Vertex::new(Rc::new(b)))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
                                     } else {
                                         panic!("Circle intersection point is not on other circle")
                                     }
@@ -185,7 +132,7 @@ impl Edge {
                             CircleCircleIntersection::OnePoint(a) => {
                                 if let Some(u_a_self) = self.project(&a) {
                                     if let Some(u_a_other) = other.project(&a) {
-                                        vec![EdgeIntersection::Point(EdgeIntersectionPoint::new(u_a_self, u_a_other, Vertex::new(Rc::new(a))))]
+                                        vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
                                     } else {
                                         panic!("Circle intersection point is not on other circle")
                                     }
@@ -219,19 +166,19 @@ impl Edge {
                                 let end_u_in_other_space = other.project(&self.point_at(end_u)).unwrap();
 
                                 if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(self.start, self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, self.end, self.curve))]
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, start_u_in_other_space, end_u_in_other_space, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 }
                             }
                         }
@@ -261,7 +208,7 @@ impl Edge {
                                 let mut intersections = Vec::new();
                                 if let Some(u_a_self) = self.project(&a) {
                                     if let Some(u_a_other) = other.project(&a) {
-                                        intersections.push(EdgeIntersection::Point(EdgeIntersectionPoint::new(u_a_self, u_a_other, Vertex::new(Rc::new(a)))));
+                                        intersections.push(EdgeIntersection::Point(Vertex::new(Rc::new(a))));
                                     }
                                 }
                                 intersections
@@ -276,19 +223,19 @@ impl Edge {
                                 let mut other_end_u = other_line.project(&other.end.point).0;
 
                                 if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(self.start, self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, self.end, self.curve))]
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start, Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end, self.curve))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(EdgeIntersectionLine::new(start_u, end_u, other_start_u, other_end_u, Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve)))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve))]
                                 }
                             },
                         }

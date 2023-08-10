@@ -54,7 +54,7 @@ impl EdgeLoop {
         self.edges.iter().map(|edge| edge.rasterize()).flatten().collect()
     }
 
-    fn get_subcurve(self, start: Vertex, end: Vertex) -> Result<Vec<Edge>, &'static str> {
+    fn get_subcurve(self, start: Vertex, end: Vertex) -> Result<Vec<Rc<Edge>>, &'static str> {
         let u_start = match self.project(&start.point) {
             Some(it) => it,
             None => return Err("First point is not on the edge loop"),
@@ -66,79 +66,79 @@ impl EdgeLoop {
         if u_end < u_start {
             u_end += 1.0;
         }
-        let mut edges = Vec::new();
+        let mut edges: Vec<Rc<Edge>> = Vec::new();
         let start_i = (u_start * self.edges.len() as f64).floor() as usize;
         let end_i = (u_end * self.edges.len() as f64).floor() as usize;
         if start_i == end_i {
-            edges.push(Edge::new(start, end, self.edges[start_i].curve));
+            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve)));
         } else {
-            edges.push(Edge::new(start, self.edges[start_i].end, self.edges[start_i].curve));
+            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end, self.edges[start_i].curve)));
             for i in start_i + 1..end_i {
-                edges.push(Edge::new(self.edges[i].start, self.edges[i].end, self.edges[i].curve));
+                edges.push(edges[i]);
             }
-            edges.push(Edge::new(self.edges[end_i].start, end, self.edges[end_i].curve));
+            edges.push(Rc::new(Edge::new(self.edges[end_i].start, end, self.edges[end_i].curve)));
         }
         Ok(edges)
     }
 
     // Takes 2 EdgeLoops and connects them at intersecting points with new vertices. If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop. If there are no intersections, the outer vector will have length 1.
-    fn split(&self, other: &EdgeLoop) -> (Vec<Vec<Edge>>, Vec<Vec<Edge>>) {
+    fn split(&self, other: &EdgeLoop) -> (Vec<Vec<Rc<Edge>>>, Vec<Vec<Rc<Edge>>>) {
         // First, find all intersections and order them by position on the edge loop.
-        let mut intersections_self: Vec<(f64, Vertex)> = Vec::new();
-        let mut intersections_other: Vec<(f64, Vertex)> = Vec::new();
+        let mut split_verts_self: Vec<(f64, Vertex)> = Vec::new();
+        let mut split_verts_other: Vec<(f64, Vertex)> = Vec::new();
         for (i_self, edge_self) in self.edges.iter().enumerate() {
             for (i_other, edge_other) in other.edges.iter().enumerate() {
                 let intersections = edge_self.intersections(&edge_other);
                 for intersection in intersections {
                     match intersection {
-                        EdgeIntersection::Point(point) => {
-                            intersections_self.push(((i_self as f64) / self.edges.len() as f64, point.vertex));
-                            intersections_other.push(((i_other as f64) / other.edges.len() as f64, point.vertex));
+                        EdgeIntersection::Vertex(intersect_vertex) => {
+                            split_verts_self.push((self.project(&intersect_vertex.point).expect("Intersection point has to be on edge"), intersect_vertex));
+                            split_verts_other.push((other.project(&intersect_vertex.point).expect("Intersection point has to be on edge"), intersect_vertex));
                         },
-                        EdgeIntersection::Edge(edge) => {
-                            intersections_self.push(((i_self as f64) / self.edges.len() as f64, edge.));
-                            intersections_self.push(((i_self as f64 + 1.0) / self.edges.len() as f64, edge.end));
-                            intersections_other.push(((i_other as f64) / other.edges.len() as f64, edge.start));
-                            intersections_other.push(((i_other as f64 + 1.0) / other.edges.len() as f64, edge.end));
+                        EdgeIntersection::Edge(intersect_edge) => {
+                            split_verts_self.push((self.project(&intersect_edge.start.point).expect("Intersection point has to be on edge"), intersect_edge.start));
+                            split_verts_self.push((self.project(&intersect_edge.end.point).expect("Intersection point has to be on edge"), intersect_edge.end));
+                            split_verts_other.push((self.project(&intersect_edge.start.point).expect("Intersection point has to be on edge"), intersect_edge.start));
+                            split_verts_other.push((self.project(&intersect_edge.end.point).expect("Intersection point has to be on edge"), intersect_edge.end));
                         },
                     }
-                    let u_self = intersection.start_u_self();
-                    let u_other = intersection.start_u_other();
-                    intersections_self.push(((u_self + i_self as f64) / self.edges.len() as f64, intersection));
-                    intersections_other.push(((u_other + i_other as f64) / other.edges.len() as f64, intersection));
                 }
             }
         }
-        intersections_other.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        intersections_self.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        split_verts_self.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        split_verts_other.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
         // Due to the properties of edge loops, the edges intersecting the other edge loop can be generated by zipping two following vertices.
-        assert!(intersections_self.len() % 2 == 0);
-        assert!(intersections_other.len() == intersections_self.len());
+        let n: usize = split_verts_self.len();
+        assert!(n % 2 == 0);
+        assert!(n == split_verts_other.len());
 
-        let mut segments_self = Vec::with_capacity(intersections_self.len());
-        for i in 0..intersections_self.len() {
-            let intersection_start = intersections_self[i].1;
-            let edge_self = self.get_subcurve(intersection_start.0, intersections_self[(i + 1) % intersections_self.len()].1)?;
+        if n == 0 {
+            return (vec![self.edges.clone()], vec![other.edges.clone()]);
+        }
+
+        let mut segments_self = Vec::with_capacity(n);
+        for i in 0..n {
+            let edge_self = self.get_subcurve(split_verts_self[i].1, split_verts_self[(i + 1) % n].1).expect("Intersection points have to be on edge");
             segments_self.push(edge_self);
         }
 
-        let mut segments_other = Vec::with_capacity(intersections_other.len());
-        for i in 0..intersections_other.len() / 2 {
-            let edge_other = other.get_subcurve(intersections_other[i].1, intersections_other[(i + 1) % intersections_other.len()].1)?;
+        let mut segments_other = Vec::with_capacity(n);
+        for i in 0..n {
+            let edge_other = other.get_subcurve(split_verts_other[i].1, split_verts_other[(i + 1) % n].1).expect("Intersection points have to be on edge");
             segments_other.push(edge_other);
         }
 
-        Ok((segments_self, segments_other))
+        (segments_self, segments_other)
     }
 
     // Splits this edge loop with another edge loop.
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
-        let (mut segments_self, segments_other) = self.split(other)?;
+        let (mut segments_self, segments_other) = self.split(other);
 
-        let find_segment_starting = |vertex: Vertex, segment_is_self: bool| -> Vec<Edge> {
+        let find_segment_starting = |vertex: Vertex, segment_is_self: bool| -> Vec<Rc<Edge>> {
             let relevant_segments = if segment_is_self { segments_self } else { segments_other };
             for segment in relevant_segments {
                 if segment[0].start == vertex {
@@ -154,7 +154,7 @@ impl EdgeLoop {
             let mut edge_loop: Vec<Rc<Edge>> = Vec::new();
             let mut next_segment = current_segment;
             while next_segment[next_segment.len()].end != edge_loop[0].start {
-                edge_loop.extend(next_segment.drain(..).map(|edge| Rc::new(edge)));
+                edge_loop.extend(next_segment.drain(..).map(|edge| edge));
                 next_segment = find_segment_starting(next_segment[next_segment.len()].end, segment_is_self);
                 // remove next_segment from segments_self if it is in there
                 if let Some(i) = segments_self.iter().position(|segment| segment[0].start == next_segment[0].start) {
