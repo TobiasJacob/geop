@@ -1,4 +1,4 @@
-use crate::{geometry::points::point::Point, EQ_THRESHOLD};
+use crate::{points::point::Point, EQ_THRESHOLD};
 
 use super::surface::Surface;
 

@@ -1,4 +1,4 @@
-use crate::geometry::points::point::Point;
+use crate::points::point::Point;
 
 pub trait Surface {
     // Constructs a parameter space which is guaranteed to be continuous and monotonically increasing in both u and v except for the vanishing point.

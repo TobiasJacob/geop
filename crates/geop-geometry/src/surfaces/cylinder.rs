@@ -1,4 +1,4 @@
-use crate::geometry::points::point::Point;
+use crate::points::point::Point;
 
 use super::surface::Surface;
 

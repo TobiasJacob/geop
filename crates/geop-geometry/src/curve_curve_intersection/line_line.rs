@@ -1,4 +1,4 @@
-use crate::geometry::{curves::line::Line, points::point::Point};
+use crate::{curves::line::Line, points::point::Point};
 
 pub enum LineLineIntersection {
     Line(Line),

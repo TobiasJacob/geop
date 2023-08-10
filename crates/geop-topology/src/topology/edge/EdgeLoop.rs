@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::geometry::points::point::Point;
+use geop_geometry::points::point::Point;
 
 
 use crate::topology::{Vertex::Vertex, edge::Edge::EdgeIntersection};

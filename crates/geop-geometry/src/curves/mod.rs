@@ -1,4 +1,6 @@
 pub mod curve;
-pub mod line;
+
+// Alphabetic order
 pub mod circle;
 pub mod ellipse;
+pub mod line;
