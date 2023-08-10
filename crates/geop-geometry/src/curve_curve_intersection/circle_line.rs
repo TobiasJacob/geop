@@ -7,16 +7,16 @@ pub enum CircleLineIntersection {
 }
 
 pub fn circle_line_intersection(a: &Circle, b: &Line) -> CircleLineIntersection {
+    // Assume that the line is normalized
     let v = b.basis - a.basis;
-    let u = b.direction.dot(b.direction);
     let v = v.dot(b.direction);
-    let w = v * v - u * (v * v - a.radius * a.radius);
+    let w = v * v - (v * v - a.radius * a.radius);
     if w < -EQ_THRESHOLD {
         CircleLineIntersection::None
     } else if w < EQ_THRESHOLD {
-        CircleLineIntersection::OnePoint(a.basis + b.direction * v / u)
+        CircleLineIntersection::OnePoint(a.basis + b.direction * v)
     } else {
         let w = w.sqrt();
-        CircleLineIntersection::TwoPoint(a.basis + b.direction * (v - w) / u, a.basis + b.direction * (v + w) / u)
+        CircleLineIntersection::TwoPoint(a.basis + b.direction * (v - w), a.basis + b.direction * (v + w))
     }
 }
