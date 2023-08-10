@@ -36,14 +36,6 @@ impl Curve for Ellipse {
     fn derivative(&self, u: f64) -> Point {
         -self.dir0 * u.sin() + self.dir1 * u.cos()
     }
-
-    fn normalize(&mut self) {
-        // Ellipse is always normalized, as each representation is unique
-    }
-
-    fn is_normalized(&self) -> bool {
-        true
-    }
 }
 
 impl PartialEq for Ellipse {

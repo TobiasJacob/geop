@@ -4,16 +4,14 @@ use super::curve::Curve;
 
 pub struct Line {
     pub basis: Point,
-    pub direction: Point,
-    pub is_normalized: bool
+    pub direction: Point
 }
 
 impl Line {
     pub fn new(basis: Point, slope: Point) -> Line {
         Line {
             basis,
-            direction: slope,
-            is_normalized: false
+            direction: slope.normalize(),
         }
     }
 }
@@ -32,17 +30,6 @@ impl Curve for Line {
 
     fn derivative(&self, _: f64) -> Point {
         self.direction
-    }
-
-    fn normalize(&mut self) {
-        if !self.is_normalized {
-            self.direction = self.direction / self.direction.norm();
-            self.is_normalized = true;
-        }
-    }
-
-    fn is_normalized(&self) -> bool {
-        self.is_normalized
     }
 }
 

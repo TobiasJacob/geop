@@ -6,16 +6,14 @@ pub struct Circle {
     pub basis: Point,
     pub normal: Point,
     pub radius: f64,
-    pub is_normalized: bool
 }
 
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
         Circle {
             basis,
-            normal,
+            normal: normal.normalize(),
             radius,
-            is_normalized: false
         }
     }
 }
@@ -44,19 +42,6 @@ impl Curve for Circle {
         let z = 0.0;
         Point::new(x, y, z)
     }
-
-    fn normalize(&mut self) {
-        if !self.is_normalized {
-            self.normal = self.normal / self.normal.norm();
-            self.is_normalized = true;
-        }
-    }
-
-    fn is_normalized(&self) -> bool {
-        self.is_normalized
-    }
-
-
 }
 
 // Implement partial eqality for Circle
