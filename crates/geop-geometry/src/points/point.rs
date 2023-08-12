@@ -48,6 +48,11 @@ impl Point {
         let cross = self.cross(other);
         cross.is_zero()
     }
+
+    pub fn is_perpendicular(self, other: Point) -> bool {
+        let dot = self.dot(other);
+        dot.abs() < EQ_THRESHOLD
+    }
 }
 
 impl Add for Point {
@@ -87,6 +92,14 @@ impl Mul<f64> for Point {
 
     fn mul(self, other: f64) -> Point {
         Point::new(self.x * other, self.y * other, self.z * other)
+    }
+}
+
+impl Mul<Point> for f64 {
+    type Output = Point;
+
+    fn mul(self, other: Point) -> Point {
+        Point::new(self * other.x, self * other.y, self * other.z)
     }
 }
 
