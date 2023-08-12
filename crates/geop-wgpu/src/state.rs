@@ -156,7 +156,7 @@ impl State {
                 })],
             }),
             primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList, // 1.
+                topology: wgpu::PrimitiveTopology::LineStrip, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
                 cull_mode: Some(wgpu::Face::Back),
@@ -176,7 +176,7 @@ impl State {
             multiview: None, // 5.
         });
          
-        let num_vertices = VERTICES.len() as u32;
+        let num_vertices = vertices.len() as u32 / 24;
         Self {
             surface,
             device,

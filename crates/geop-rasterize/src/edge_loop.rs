@@ -5,7 +5,7 @@ use crate::vertex_buffer::{RenderVertex, VertexBuffer};
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_edge_loop_into_line(edge_loop: EdgeLoop, color: [f32; 3]) -> VertexBuffer {
-    let n = 50;
+    let n = 200;
     let mut vertices = Vec::<RenderVertex>::with_capacity(n);
     for i in 0..n {
         let u = i as f64 / n as f64;
@@ -47,8 +47,8 @@ pub fn rasterize_edge_loop_triangle(edge_loop: EdgeLoop, camera_pos: Point, widt
         let e4 = offset_points[2 * ((i + 1) % n) + 1];
 
         vertices.push(RenderVertex::new(e1, color));
-        vertices.push(RenderVertex::new(e2, color));
         vertices.push(RenderVertex::new(e3, color));
+        vertices.push(RenderVertex::new(e2, color));
 
         vertices.push(RenderVertex::new(e2, color));
         vertices.push(RenderVertex::new(e3, color));

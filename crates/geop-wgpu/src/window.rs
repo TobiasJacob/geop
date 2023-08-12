@@ -1,5 +1,5 @@
 use geop_geometry::points::point::Point;
-use geop_rasterize::edge_loop::rasterize_edge_loop_triangle;
+use geop_rasterize::edge_loop::{rasterize_edge_loop_triangle, rasterize_edge_loop_into_line};
 use geop_topology::topology::edge::edge_loop::EdgeLoop;
 use winit::{
     event::*,
@@ -47,10 +47,14 @@ impl GeopWindow {
                 .expect("Couldn't append canvas to document body.");
         }
     
-        let vertex_buffer = rasterize_edge_loop_triangle(
+        // let vertex_buffer = rasterize_edge_loop_triangle(
+        //     edge_loop,
+        //     Point::new(0.0, 0.0, 100.0),
+        //     0.01,
+        //     [1.0, 1.0, 1.0]
+        // );
+        let vertex_buffer = rasterize_edge_loop_into_line(
             edge_loop,
-            Point::new(0.0, 0.0, 100.0),
-            0.05,
             [1.0, 1.0, 1.0]
         );
         let state = State::new(window, vertex_buffer.to_u8_slice()).await;
