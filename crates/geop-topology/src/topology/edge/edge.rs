@@ -38,8 +38,8 @@ impl Edge {
     pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>) -> Edge {
         let start_u = curve.curve().project(*start.point);
         let end_u_p = curve.curve().project(*end.point);
-        assert!(start_u.1 < PROJECTION_THRESHOLD);
-        assert!(end_u_p.1 < PROJECTION_THRESHOLD);
+        assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is not on curve {start_u:?}");
+        assert!(end_u_p.1 < PROJECTION_THRESHOLD, "End point is not on curve {end_u_p:?}");
         // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
         // The reason is that for edges it is possible to find parameter spaces relativly easy.
         // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an EdgeLoop.

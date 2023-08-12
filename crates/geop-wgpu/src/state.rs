@@ -1,6 +1,6 @@
 use std::iter;
 
-use wgpu::util::DeviceExt;
+use wgpu::{util::DeviceExt, BufferSlice};
 use winit::{
     event::*,
     window::Window,
@@ -57,7 +57,7 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(window: Window) -> Self {
+    pub async fn new(window: Window, vertices: &[u8]) -> Self {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -131,7 +131,7 @@ impl State {
         let vertex_buffer = device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(VERTICES),
+                contents: vertices,
                 usage: wgpu::BufferUsages::VERTEX,
             }
         );

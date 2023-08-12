@@ -1,3 +1,6 @@
+use geop_geometry::points::point::Point;
+use geop_rasterize::edge_loop::rasterize_edge_loop_triangle;
+use geop_topology::topology::edge::edge_loop::EdgeLoop;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
@@ -8,11 +11,11 @@ use crate::state::State;
 
 pub struct GeopWindow {
     event_loop: EventLoop<()>,
-    state: State,
+    state: State
 }
 
 impl GeopWindow {
-    pub async fn new() -> Self {
+    pub async fn new(edge_loop: EdgeLoop) -> Self {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -44,7 +47,13 @@ impl GeopWindow {
                 .expect("Couldn't append canvas to document body.");
         }
     
-        let state = State::new(window).await;
+        let vertex_buffer = rasterize_edge_loop_triangle(
+            edge_loop,
+            Point::new(0.0, 0.0, 100.0),
+            0.05,
+            [1.0, 1.0, 1.0]
+        );
+        let state = State::new(window, vertex_buffer.to_u8_slice()).await;
 
         Self {
             event_loop,

@@ -20,8 +20,9 @@ impl Line {
 impl Curve for Line {
     fn project(&self, p: Point) -> (f64, f64) {
         let v = p - self.basis;
-        let u = v.dot(self.direction);
-        let v = v.dot(self.direction);
+        let u = self.direction.dot(v);
+        let perp = v - self.direction * u;
+        let v = perp.norm();
         (u, v)
     }
 
