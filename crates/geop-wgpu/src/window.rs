@@ -48,7 +48,7 @@ impl GeopWindow {
 
         Self {
             event_loop,
-            state
+            state,
         }
     }
 
