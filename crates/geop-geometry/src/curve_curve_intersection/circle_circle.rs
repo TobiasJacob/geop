@@ -67,8 +67,8 @@ mod tests {
             CircleCircleIntersection::TwoPoint(p1, p2) => {
                 let i1 = Point::new(0.5, -f64::sqrt(3.75), 0.0);
                 let i2 = Point::new(0.5, f64::sqrt(3.75), 0.0);
-                assert_eq!(i1, p1);
-                assert_eq!(i2, p2);
+                assert_eq!(p1, i1);
+                assert_eq!(p2, i2);
             },
             _ => panic!("Should be two points but is {:?}", circle_circle_intersection(&a, &b)),
         }
@@ -76,21 +76,22 @@ mod tests {
         match circle_circle_intersection(&a, &c) {
             CircleCircleIntersection::OnePoint(p1) => {
                 let i1 = Point::new(2.0, 0.0, 0.0);
-                assert_eq!(i1, p1);
+                assert_eq!(p1, i1);
             },
             _ => panic!("Should be one point but is {:?}", circle_circle_intersection(&a, &c)),
         }
 
         match circle_circle_intersection(&a, &d) {
-            CircleCircleIntersection::None => {},
+            CircleCircleIntersection::None => {
+            },
             _ => panic!("Should be none but is {:?}", circle_circle_intersection(&a, &d)),
         }
 
         match circle_circle_intersection(&a, &a) {
             CircleCircleIntersection::Circle(c) => {
-                assert_eq!(a.basis, c.basis);
-                assert_eq!(a.normal, c.normal);
-                assert_eq!(a.radius, c.radius);
+                assert_eq!(c.basis, a.basis);
+                assert_eq!(c.normal, a.normal);
+                assert_eq!(c.radius, a.radius);
             },
             _ => panic!("Should be a circle but is {:?}", circle_circle_intersection(&a, &a)),
         }

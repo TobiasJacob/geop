@@ -8,19 +8,43 @@ pub enum LineLineIntersection {
 }
 
 pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
-    let n = b.direction.cross(a.direction);
-    let p = b.basis;
-    let v = a.direction;
-    let a = a.basis;
+    let v1 = a.direction;
+    let v2 = b.direction;
+    let p1 = a.basis;
+    let p2 = b.basis;
 
-    if n.norm() < crate::EQ_THRESHOLD {
-        if (n.dot(a - p)).abs() < crate::EQ_THRESHOLD {
-            return LineLineIntersection::Line(Line::new(a, v));
+    if v1.is_parallel(v2) {
+        if (p1 - p2).is_parallel(v1) {
+            return LineLineIntersection::Line(Line::new(p1, v1));
         } else {
             return LineLineIntersection::None;
         }
     }
 
-    let t = (n.dot(p) - n.dot(a)) / n.dot(v);
-    LineLineIntersection::Point(a + v * t)
+    let t = (p2 - p1).cross(v2).dot(v1) / v1.cross(v2).norm_sq();
+    let s = (p2 - p1).cross(v1).dot(v2) / v1.cross(v2).norm_sq();
+
+    if t.is_finite() && s.is_finite() {
+        return LineLineIntersection::Point(p1 + v1 * t);
+    } else {
+        return LineLineIntersection::None;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_line_line_intersection() {
+        let l1 = Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(1.0, 0.0, 0.0));
+        let l2 = Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(0.0, 1.0, 0.0));
+        let i = line_line_intersection(&l1, &l2);
+        match i {
+            LineLineIntersection::Point(p) => {
+                assert_eq!(p, Point::new(-2.0, 1.0, 4.0));
+            },
+            _ => panic!("Expected point intersection")
+        }
+    }
 }

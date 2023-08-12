@@ -18,9 +18,12 @@ impl Point {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    pub fn norm_sq(self) -> f64 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
+
     pub fn is_normalized(self) -> bool {
-        let norm_sq = self.x * self.x + self.y * self.y + self.z * self.z;
-        return (norm_sq - 1.0).abs() < EQ_THRESHOLD
+        return (self.norm_sq() - 1.0).abs() < EQ_THRESHOLD
     }
 
     pub fn is_zero(self) -> bool {
@@ -31,11 +34,11 @@ impl Point {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn cross(self, v_slope: Point) -> Point {
+    pub fn cross(self, other: Point) -> Point {
         Point::new(
-            self.y * v_slope.z - self.z * v_slope.y,
-            self.z * v_slope.x - self.x * v_slope.z,
-            self.x * v_slope.y - self.y * v_slope.x
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
         )
     }
 
