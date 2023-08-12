@@ -3,6 +3,7 @@
 members = [
     "crates/geop-geometry",
     "crates/geop-topology",
+    "crates/geop-wgpu",
 ]
 
 [workspace.dependencies.geop-geometry]
