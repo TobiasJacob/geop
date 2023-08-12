@@ -2,6 +2,7 @@ use crate::points::point::Point;
 
 use super::curve::Curve;
 
+#[derive(Debug)]
 pub struct Line {
     pub basis: Point,
     pub direction: Point
@@ -17,8 +18,8 @@ impl Line {
 }
 
 impl Curve for Line {
-    fn project(&self, p: &Point) -> (f64, f64) {
-        let v = *p - self.basis;
+    fn project(&self, p: Point) -> (f64, f64) {
+        let v = p - self.basis;
         let u = v.dot(self.direction) / self.direction.norm();
         let v = v.dot(self.direction) / self.direction.norm();
         (u, v)
@@ -29,7 +30,7 @@ impl Curve for Line {
     }
 
     fn derivative(&self, _: f64) -> Point {
-        self.direction
+        self.direction.clone()
     }
 }
 

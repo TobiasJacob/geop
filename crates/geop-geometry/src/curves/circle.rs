@@ -2,6 +2,7 @@ use crate::points::point::Point;
 
 use super::curve::Curve;
 
+#[derive(Debug)]
 pub struct Circle {
     pub basis: Point,
     pub normal: Point,
@@ -26,8 +27,8 @@ impl Curve for Circle {
         Point::new(x, y, z)
     }
 
-    fn project(&self, p: &Point) -> (f64, f64) {
-        let v = *p - self.basis;
+    fn project(&self, p: Point) -> (f64, f64) {
+        let v = p - self.basis;
         let v = v - self.normal * v.dot(self.normal);
         let u = v.dot(self.normal) / self.normal.norm();
         let v = v.dot(self.normal.cross(Point::new(0.0, 0.0, 1.0))) / self.normal.cross(Point::new(0.0, 0.0, 1.0)).norm();

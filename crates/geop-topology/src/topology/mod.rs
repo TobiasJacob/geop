@@ -1,6 +1,6 @@
-pub mod Vertex;
+pub mod vertex;
 pub mod edge;
-pub mod Face;
-pub mod FaceGroup;
-pub mod Volume;
-pub mod VolumeGroup;
+pub mod face;
+pub mod face_group;
+pub mod volume;
+pub mod volume_group;

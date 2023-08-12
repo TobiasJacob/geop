@@ -20,22 +20,22 @@ impl Cylinder {
 
 impl Surface for Cylinder {
     fn point_at(&self, u: f64, v: f64) -> Point {
-        let x = self.basis + self.direction * v + self.extend * u.cos() + self.direction.cross(self.extend) * u.sin();
+        let x = self.basis + self.direction * v + self.extend * u.cos() + self.direction.cross(&self.extend) * u.sin();
         x
     }
 
     fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
-        let v = v - self.direction * v.dot(self.direction);
-        let u = v.dot(self.extend) / self.extend.norm();
-        let v = v.dot(self.direction) / self.direction.norm();
+        let v = v - self.direction * v.dot(&self.direction);
+        let u = v.dot(&self.extend) / self.extend.norm();
+        let v = v.dot(&self.direction) / self.direction.norm();
         let v = v.atan2(u);
         let u = u.atan2(v);
         (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
     }
 
     fn derivative_u(&self, u: f64, v: f64) -> Point {
-        let x = -self.extend * u.sin() + self.direction.cross(self.extend) * u.cos();
+        let x = -self.extend * u.sin() + self.direction.cross(&self.extend) * u.cos();
         x
     }
 
@@ -46,7 +46,7 @@ impl Surface for Cylinder {
 
     fn normal(&self, p: Point) -> Point {
         let v = p - self.basis;
-        let v = v - self.direction * v.dot(self.direction);
+        let v = v - self.direction * v.dot(&self.direction);
         let v = v.normalize();
         v
     }

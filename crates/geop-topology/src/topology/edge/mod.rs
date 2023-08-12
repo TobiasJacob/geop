@@ -1,2 +1,2 @@
-pub mod Edge;
-pub mod EdgeLoop;
+pub mod edge;
+pub mod edge_loop;

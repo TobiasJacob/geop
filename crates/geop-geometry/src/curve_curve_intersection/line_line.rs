@@ -1,5 +1,6 @@
 use crate::{curves::line::Line, points::point::Point};
 
+#[derive(Debug)]
 pub enum LineLineIntersection {
     Line(Line),
     Point(Point),

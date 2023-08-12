@@ -14,19 +14,24 @@ impl Point {
         Point { x, y, z }
     }
 
-    pub fn norm(&self) -> f64 {
+    pub fn norm(self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
-    pub fn is_normalized(&self) -> bool {
-        (self.x * self.x + self.y * self.y + self.z * self.z) < EQ_THRESHOLD
+    pub fn is_normalized(self) -> bool {
+        let norm_sq = self.x * self.x + self.y * self.y + self.z * self.z;
+        return (norm_sq - 1.0).abs() < EQ_THRESHOLD
     }
 
-    pub fn dot(&self, other: Point) -> f64 {
+    pub fn is_zero(self) -> bool {
+        self.x.abs() < EQ_THRESHOLD && self.y.abs() < EQ_THRESHOLD && self.z.abs() < EQ_THRESHOLD
+    }
+
+    pub fn dot(self, other: Point) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn cross(&self, v_slope: Point) -> Point {
+    pub fn cross(self, v_slope: Point) -> Point {
         Point::new(
             self.y * v_slope.z - self.z * v_slope.y,
             self.z * v_slope.x - self.x * v_slope.z,
@@ -34,9 +39,14 @@ impl Point {
         )
     }
 
-    pub fn normalize(&self) -> Point {
+    pub fn normalize(self) -> Point {
         let norm = self.norm();
         Point::new(self.x / norm, self.y / norm, self.z / norm)
+    }
+
+    pub fn is_parallel(self, other: Point) -> bool {
+        let cross = self.cross(other);
+        cross.is_zero()
     }
 }
 
@@ -62,7 +72,7 @@ impl Add<f64> for Point {
     fn add(self, other: f64) -> Point {
         Point::new(self.x + other, self.y + other, self.z + other)
     }
-}
+    }
 
 impl Sub<f64> for Point {
     type Output = Self;

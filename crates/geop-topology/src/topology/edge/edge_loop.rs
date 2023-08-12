@@ -3,9 +3,9 @@ use std::rc::Rc;
 use geop_geometry::points::point::Point;
 
 
-use crate::topology::{Vertex::Vertex, edge::Edge::EdgeIntersection};
+use crate::topology::{vertex::Vertex, edge::edge::EdgeIntersection};
 
-use super::Edge::Edge;
+use super::edge::Edge;
 
 pub struct EdgeLoop {
     pub edges: Vec<Rc<Edge>>,
@@ -92,13 +92,13 @@ impl EdgeLoop {
                 for intersection in intersections {
                     match intersection {
                         EdgeIntersection::Vertex(intersect_vertex) => {
-                            let p = *intersect_vertex.point;
+                            let p = (*intersect_vertex.point).clone();
                             split_verts_self.push((self.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
                             split_verts_other.push((other.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
                         },
                         EdgeIntersection::Edge(intersect_edge) => {
-                            let p_start = *intersect_edge.start.point;
-                            let p_end = *intersect_edge.end.point;
+                            let p_start = (*intersect_edge.start.point).clone();
+                            let p_end = (*intersect_edge.end.point).clone();
                             split_verts_self.push((self.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));
                             split_verts_self.push((self.project(&p_end).expect("Intersection point has to be on edge"), intersect_edge.end.clone()));
                             split_verts_other.push((other.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));

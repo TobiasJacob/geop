@@ -2,7 +2,7 @@ use std::{rc::Rc, vec};
 
 use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, curve_curve_intersection::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}};
 
-use crate::{topology::Vertex::Vertex, PROJECTION_THRESHOLD};
+use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
 #[derive(PartialEq)]
 pub enum EdgeCurve {
@@ -36,8 +36,8 @@ pub enum EdgeIntersection {
 // TODO: Implement an periodic / circular edge
 impl Edge {
     pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>) -> Edge {
-        let start_u = curve.curve().project(&start.point);
-        let end_u_p = curve.curve().project(&end.point);
+        let start_u = curve.curve().project(*start.point);
+        let end_u_p = curve.curve().project(*end.point);
         assert!(start_u.1 < PROJECTION_THRESHOLD);
         assert!(end_u_p.1 < PROJECTION_THRESHOLD);
         // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
@@ -57,7 +57,7 @@ impl Edge {
             }
         };
 
-        let start_u = curve.curve().project(&start.point).0;
+        let start_u = curve.curve().project(*start.point).0;
         
         Edge {
             start,
@@ -75,7 +75,7 @@ impl Edge {
     }
 
     pub fn project(&self, point: &Point) -> Option<f64> {
-        let u_p = self.curve.curve().project(point);
+        let u_p = self.curve.curve().project(*point);
         if u_p.1 > PROJECTION_THRESHOLD {
             return None;
         }
@@ -146,10 +146,10 @@ impl Edge {
                                 vec![]
                             }
                             CircleCircleIntersection::Circle(_) => {
-                                let mut self_start_u = circle.project(&self.start.point).0;
-                                let mut self_end_u = circle.project(&self.end.point).0;
-                                let mut other_start_u = other_circle.project(&other.start.point).0;
-                                let mut other_end_u = other_circle.project(&other.end.point).0;
+                                let mut self_start_u = circle.project(*self.start.point).0;
+                                let mut self_end_u = circle.project(*self.end.point).0;
+                                let mut other_start_u = other_circle.project(*other.start.point).0;
+                                let mut other_end_u = other_circle.project(*other.end.point).0;
 
                                 if self_end_u < self_start_u.max(other_start_u) {
                                     self_start_u += 2.0 * std::f64::consts::PI;
@@ -216,10 +216,8 @@ impl Edge {
                                 vec![]
                             },
                             LineLineIntersection::Line(_) => {
-                                let mut start_u = other_line.project(&self.start.point).0;
-                                let mut end_u = other_line.project(&self.end.point).0;
-                                let mut other_start_u = other_line.project(&other.start.point).0;
-                                let mut other_end_u = other_line.project(&other.end.point).0;
+                                let start_u = other_line.project(*self.start.point).0;
+                                let end_u = other_line.project(*self.end.point).0;
 
                                 if self.start == other.start && self.end == other.end {
                                     vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone()))]

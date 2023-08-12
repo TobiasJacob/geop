@@ -26,8 +26,8 @@ impl Surface for Sphere {
 
     fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
-        let u = v.dot(Point::new(1.0, 0.0, 0.0));
-        let v = v.dot(Point::new(0.0, 1.0, 0.0));
+        let u = v.dot(&Point::new(1.0, 0.0, 0.0));
+        let v = v.dot(&Point::new(0.0, 1.0, 0.0));
         (u, v)
     }
 

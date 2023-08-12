@@ -1,5 +1,6 @@
 use crate::{curves::{circle::Circle, line::Line}, points::point::Point, EQ_THRESHOLD};
 
+#[derive(Debug)]
 pub enum CircleLineIntersection {
     TwoPoint(Point, Point),
     OnePoint(Point),

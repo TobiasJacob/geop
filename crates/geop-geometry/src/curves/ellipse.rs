@@ -2,6 +2,7 @@ use crate::points::point::Point;
 
 use super::curve::Curve;
 
+#[derive(Debug)]
 pub struct Ellipse {
     pub basis: Point,
     pub dir0: Point,
@@ -23,8 +24,8 @@ impl Curve for Ellipse {
         self.basis + self.dir0 * u.cos() + self.dir1 * u.sin()
     }
 
-    fn project(&self, p: &Point) -> (f64, f64) {
-        let v = *p - self.basis;
+    fn project(&self, p: Point) -> (f64, f64) {
+        let v = p - self.basis;
         let u = v.dot(self.dir0) / self.dir0.norm();
         let v = v - self.dir0 * u;
         let v = v.dot(self.dir1) / self.dir1.norm();
