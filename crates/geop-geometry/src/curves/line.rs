@@ -9,10 +9,10 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(basis: Point, slope: Point) -> Line {
+    pub fn new(basis: Point, direction: Point) -> Line {
         Line {
             basis,
-            direction: slope.normalize(),
+            direction: direction.normalize(),
         }
     }
 }
@@ -20,8 +20,8 @@ impl Line {
 impl Curve for Line {
     fn project(&self, p: Point) -> (f64, f64) {
         let v = p - self.basis;
-        let u = v.dot(self.direction) / self.direction.norm();
-        let v = v.dot(self.direction) / self.direction.norm();
+        let u = v.dot(self.direction);
+        let v = v.dot(self.direction);
         (u, v)
     }
 
@@ -36,6 +36,6 @@ impl Curve for Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.basis == other.basis && self.direction.normalize() == other.direction.normalize()
+        self.basis == other.basis && self.direction == other.direction
     }
 }

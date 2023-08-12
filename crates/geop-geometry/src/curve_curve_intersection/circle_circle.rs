@@ -89,9 +89,7 @@ mod tests {
 
         match circle_circle_intersection(&a, &a) {
             CircleCircleIntersection::Circle(c) => {
-                assert_eq!(c.basis, a.basis);
-                assert_eq!(c.normal, a.normal);
-                assert_eq!(c.radius, a.radius);
+                assert_eq!(c, a);
             },
             _ => panic!("Should be a circle but is {:?}", circle_circle_intersection(&a, &a)),
         }
