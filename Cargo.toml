@@ -3,9 +3,18 @@
 members = [
     "crates/geop-geometry",
     "crates/geop-topology",
+    "crates/geop-rasterize",
     "crates/geop-wgpu",
 ]
 
 [workspace.dependencies.geop-geometry]
 version = "0.1.0"
 path = "crates/geop-geometry"
+
+[workspace.dependencies.geop-topology]
+version = "0.1.0"
+path = "crates/geop-topology"
+
+[workspace.dependencies.geop-rasterize]
+version = "0.1.0"
+path = "crates/geop-rasterize"
