@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use geop_geometry::{curves::{line::Line, circle::Circle}, points::point::Point, EQ_THRESHOLD};
-use geop_rasterize::edge_loop::rasterize_edge_loop_into_line;
+use geop_rasterize::edge_loop::{rasterize_edge_loop_into_line_list, rasterize_edge_loops_into_line_list};
 use geop_topology::topology::{edge::{edge_loop::EdgeLoop, edge::{Edge, EdgeCurve, Direction}}, vertex::Vertex};
 use geop_wgpu::window::GeopWindow;
 
@@ -34,8 +34,18 @@ async fn run() {
         linear_edge(v6.clone(), v1.clone()),
     ]);
 
-    let vertex_buffer = rasterize_edge_loop_into_line(
-        edge_loop,
+    // Loop shifted by 0.1 in x and y direction
+    let shift = Point::new(0.1, 0.1, 0.0);
+    let edge_loop_shifted = EdgeLoop::new(vec![
+        linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
+        linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
+        linear_edge(Vertex::new(Rc::new(*v3.point + shift)), Vertex::new(Rc::new(*v4.point + shift))),
+        circular_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v6.point + shift)), *v5.point + shift),
+        linear_edge(Vertex::new(Rc::new(*v6.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
+    ]);
+
+    let vertex_buffer = rasterize_edge_loops_into_line_list(
+        &[edge_loop, edge_loop_shifted],
         [1.0, 1.0, 1.0]
     );
     let window = GeopWindow::new(vertex_buffer).await;

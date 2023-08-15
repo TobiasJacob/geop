@@ -1,6 +1,4 @@
-use geop_geometry::points::point::Point;
-use geop_rasterize::{edge_loop::{rasterize_edge_loop_triangle, rasterize_edge_loop_into_line}, vertex_buffer::VertexBuffer};
-use geop_topology::topology::edge::edge_loop::EdgeLoop;
+use geop_rasterize::vertex_buffer::VertexBuffer;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},

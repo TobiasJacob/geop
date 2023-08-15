@@ -33,4 +33,8 @@ impl VertexBuffer {
     pub fn to_u8_slice(&self) -> &[u8] {
         bytemuck::cast_slice(&self.vertices)
     }
+
+    pub fn join(&mut self, other: &VertexBuffer) {
+        self.vertices.extend_from_slice(&other.vertices);
+    }
 }

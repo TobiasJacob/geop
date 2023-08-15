@@ -4,14 +4,25 @@ use geop_topology::topology::edge::edge_loop::EdgeLoop;
 use crate::vertex_buffer::{RenderVertex, VertexBuffer};
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_edge_loop_into_line(edge_loop: EdgeLoop, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_edge_loop_into_line_list(edge_loop: &EdgeLoop, color: [f32; 3]) -> VertexBuffer {
     let n = 200;
-    let mut vertices = Vec::<RenderVertex>::with_capacity(n);
-    for i in 0..n {
+    let mut vertices = Vec::<RenderVertex>::with_capacity(2 * n);
+    vertices.push(RenderVertex::new(edge_loop.point_at(0.0), color));
+    for i in 1..n {
         let u = i as f64 / n as f64;
         vertices.push(RenderVertex::new(edge_loop.point_at(u), color));
+        vertices.push(RenderVertex::new(edge_loop.point_at(u), color));
     }
+    vertices.push(RenderVertex::new(edge_loop.point_at(1.0), color));
     VertexBuffer::new(vertices)
+}
+
+// Rasterizes multiple edge loop into triangle list.
+pub fn rasterize_edge_loops_into_line_list(edge_loop: &[EdgeLoop], color: [f32; 3]) -> VertexBuffer {
+    edge_loop.iter().fold(VertexBuffer::new(Vec::new()), |mut acc, edge_loop| {
+        acc.join(&rasterize_edge_loop_into_line_list(edge_loop, color));
+        acc
+    })
 }
 
 // Rasterizes an edge loop into triangle list.
