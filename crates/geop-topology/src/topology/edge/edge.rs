@@ -20,10 +20,17 @@ impl EdgeCurve {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum Direction {
+    Increasing,
+    Decreasing,
+}
+
 pub struct Edge {
     pub start: Vertex,
     pub end: Vertex,
     pub curve: Rc<EdgeCurve>,
+    pub direction: Direction,
     start_u: f64,
     end_u: f64,
 }
@@ -35,7 +42,7 @@ pub enum EdgeIntersection {
 
 // TODO: Implement an periodic / circular edge
 impl Edge {
-    pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>) -> Edge {
+    pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>, direction: Direction) -> Edge {
         let start_u = curve.curve().project(*start.point);
         let end_u_p = curve.curve().project(*end.point);
         assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is not on curve {start_u:?}");
@@ -47,22 +54,37 @@ impl Edge {
         // So the code that generates the parameter space (which depends on start and end) belongs here.
         let end_u = match *curve {
             EdgeCurve::Line(_) => end_u_p.0,
-            EdgeCurve::Circle(_) => match end_u_p < start_u {
-                true => end_u_p.0 + 2.0 * std::f64::consts::PI,
-                false => end_u_p.0,
+            EdgeCurve::Circle(_) => match direction {
+                Direction::Increasing => match end_u_p < start_u {
+                    true => end_u_p.0 + 2.0 * std::f64::consts::PI,
+                    false => end_u_p.0,
+                },
+                Direction::Decreasing => match end_u_p > start_u {
+                    true => end_u_p.0 - 2.0 * std::f64::consts::PI,
+                    false => end_u_p.0,
+                },
             }
-            EdgeCurve::Ellipse(_) => match end_u_p < start_u {
-                true => end_u_p.0 + 2.0 * std::f64::consts::PI,
-                false => end_u_p.0,
+            EdgeCurve::Ellipse(_) => match direction {
+                Direction::Increasing => match end_u_p < start_u {
+                    true => end_u_p.0 + 2.0 * std::f64::consts::PI,
+                    false => end_u_p.0,
+                },
+                Direction::Decreasing => match end_u_p > start_u {
+                    true => end_u_p.0 - 2.0 * std::f64::consts::PI,
+                    false => end_u_p.0,
+                },
             }
         };
 
-        let start_u = curve.curve().project(*start.point).0;
+        let start_u = start_u.0;
+
+        println!("start_u: {start_u}, end_u: {end_u}", start_u = start_u, end_u = end_u);
         
         Edge {
             start,
             end,
             curve,
+            direction,
             start_u,
             end_u,
         }
@@ -165,19 +187,19 @@ impl Edge {
                                 let end_u = self_end_u.min(other_end_u);
 
                                 if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 }
                             }
                         }
@@ -220,19 +242,19 @@ impl Edge {
                                 let end_u = other_line.project(*self.end.point).0;
 
                                 if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 }
                             },
                         }

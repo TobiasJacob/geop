@@ -6,42 +6,39 @@ use super::curve::Curve;
 pub struct Circle {
     pub basis: Point,
     pub normal: Point,
-    pub radius: f64,
+    pub radius: Point,
+    dir_cross: Point,
 }
 
 impl Circle {
-    pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
+    pub fn new(basis: Point, normal: Point, radius: Point) -> Circle {
+        let normal = normal.normalize();
         Circle {
             basis,
-            normal: normal.normalize(),
+            normal,
             radius,
+            dir_cross: normal.cross(radius),
         }
     }
 }
 
 impl Curve for Circle {
     fn point_at(&self, u: f64) -> Point {
-        let x = self.basis.x + self.radius * u.cos();
-        let y = self.basis.y + self.radius * u.sin();
-        let z = self.basis.z;
-        Point::new(x, y, z)
+        self.radius * u.cos() + self.dir_cross * u.sin() + self.basis
     }
 
     fn project(&self, p: Point) -> (f64, f64) {
-        let v = p - self.basis;
-        let v = v - self.normal * v.dot(self.normal);
-        let u = v.dot(self.normal) / self.normal.norm();
-        let v = v.dot(self.normal.cross(Point::new(0.0, 0.0, 1.0))) / self.normal.cross(Point::new(0.0, 0.0, 1.0)).norm();
-        let v = v.atan2(u);
-        let u = u.atan2(v);
-        (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
+        let dir = p - self.basis;
+        let dir = dir - self.normal * dir.dot(self.normal);
+        let u = dir.dot(self.radius);
+        let v = dir.dot(self.dir_cross);
+        let angle = v.atan2(u);
+        let dist = (dir.norm() - self.radius.norm()).abs();
+        return (angle, dist);
     }
 
     fn derivative(&self, u: f64) -> Point {
-        let x = -self.radius * u.sin();
-        let y = self.radius * u.cos();
-        let z = 0.0;
-        Point::new(x, y, z)
+        todo!("Implement derivative for Circle")
     }
 }
 

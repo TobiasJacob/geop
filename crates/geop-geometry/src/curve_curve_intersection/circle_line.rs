@@ -12,7 +12,7 @@ pub fn circle_line_intersection(a: &Circle, b: &Line) -> CircleLineIntersection 
     // Assume that the line is normalized
     let v = b.basis - a.basis;
     let v = v.dot(b.direction);
-    let w = v * v - (v * v - a.radius * a.radius);
+    let w = v * v - (v * v - a.radius.norm_sq());
     if w < -EQ_THRESHOLD {
         CircleLineIntersection::None
     } else if w < EQ_THRESHOLD {
@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn test_circle_line_intersection() {
-        let c = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
+        let c = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), Point::new(1.0, 0.0, 0.0));
         let l = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
         let i = circle_line_intersection(&c, &l);
         match i {

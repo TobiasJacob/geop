@@ -70,13 +70,13 @@ impl EdgeLoop {
         let start_i = (u_start * self.edges.len() as f64).floor() as usize;
         let end_i = (u_end * self.edges.len() as f64).floor() as usize;
         if start_i == end_i {
-            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone())));
+            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
         } else {
-            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone())));
+            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
             for i in start_i + 1..end_i {
                 edges.push(edges[i].clone());
             }
-            edges.push(Rc::new(Edge::new(self.edges[end_i].start.clone(), end, self.edges[end_i].curve.clone())));
+            edges.push(Rc::new(Edge::new(self.edges[end_i].start.clone(), end, self.edges[end_i].curve.clone(), self.edges[end_i].direction.clone())));
         }
         Ok(edges)
     }

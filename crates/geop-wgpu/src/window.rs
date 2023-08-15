@@ -1,5 +1,5 @@
 use geop_geometry::points::point::Point;
-use geop_rasterize::edge_loop::{rasterize_edge_loop_triangle, rasterize_edge_loop_into_line};
+use geop_rasterize::{edge_loop::{rasterize_edge_loop_triangle, rasterize_edge_loop_into_line}, vertex_buffer::VertexBuffer};
 use geop_topology::topology::edge::edge_loop::EdgeLoop;
 use winit::{
     event::*,
@@ -15,7 +15,7 @@ pub struct GeopWindow {
 }
 
 impl GeopWindow {
-    pub async fn new(edge_loop: EdgeLoop) -> Self {
+    pub async fn new(vertex_buffer: VertexBuffer) -> Self {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -53,10 +53,6 @@ impl GeopWindow {
         //     0.01,
         //     [1.0, 1.0, 1.0]
         // );
-        let vertex_buffer = rasterize_edge_loop_into_line(
-            edge_loop,
-            [1.0, 1.0, 1.0]
-        );
         let state = State::new(window, vertex_buffer.to_u8_slice()).await;
 
         Self {
