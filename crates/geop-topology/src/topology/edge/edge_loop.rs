@@ -66,19 +66,20 @@ impl EdgeLoop {
         if u_end < u_start {
             u_end += 1.0;
         }
-        let mut edges: Vec<Rc<Edge>> = Vec::new();
-        let start_i = (u_start * self.edges.len() as f64).floor() as usize;
-        let end_i = (u_end * self.edges.len() as f64).floor() as usize;
+        let mut sub_edges: Vec<Rc<Edge>> = Vec::new();
+        let n = self.edges.len();
+        let start_i = (u_start * n as f64).floor() as usize;
+        let end_i = (u_end * n as f64).floor() as usize;
         if start_i == end_i {
-            edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
+            sub_edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
         } else {
-            edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
+            sub_edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
             for i in start_i + 1..end_i {
-                edges.push(edges[i].clone());
+                sub_edges.push(self.edges[i % n].clone());
             }
-            edges.push(Rc::new(Edge::new(self.edges[end_i].start.clone(), end, self.edges[end_i].curve.clone(), self.edges[end_i].direction.clone())));
+            sub_edges.push(Rc::new(Edge::new(self.edges[end_i % n].start.clone(), end, self.edges[end_i % n].curve.clone(), self.edges[end_i % n].direction.clone())));
         }
-        Ok(edges)
+        Ok(sub_edges)
     }
 
     // Takes 2 EdgeLoops and connects them at intersecting points with new vertices. If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop. If there are no intersections, the outer vector will have length 1.
@@ -144,21 +145,34 @@ impl EdgeLoop {
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
         let (mut segments_self, mut segments_other) = self.split(other);
+        for segment in segments_self.iter() {
+            println!("New segment");
+            for edge in segment.iter() {
+                println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
+            }
+        }
+
+        for segment in segments_other.iter() {
+            println!("New segment");
+            for edge in segment.iter() {
+                println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
+            }
+        }
 
         let mut edge_loops = Vec::new();
-        let mut segment_is_self = false;
+        let mut next_segment_is_self = false;
         while let Some(mut next_segment) = segments_self.pop(){
-            let mut edge_loop: Vec<Rc<Edge>> = Vec::new();
-            while next_segment[next_segment.len()].end != edge_loop[0].start {
-                edge_loop.extend(next_segment.drain(..).map(|edge| edge));
-                let relevant_segments = if segment_is_self { &mut segments_self } else { &mut segments_other };
+            let mut edge_loop: Vec<Rc<Edge>> = next_segment.drain(..).collect();
+            while edge_loop.len() == 0 || edge_loop[edge_loop.len() - 1].end != edge_loop[0].start {
+                let relevant_segments = if next_segment_is_self { &mut segments_self } else { &mut segments_other };
                 for (i, segment) in relevant_segments.iter().enumerate() {
-                    if segment[0].start == next_segment[next_segment.len()].end {
+                    if segment[0].start == edge_loop[edge_loop.len() - 1].end {
                         next_segment = relevant_segments.remove(i);
                         break;
                     }
                 }
-                segment_is_self = !segment_is_self;
+                edge_loop.extend(next_segment.drain(..));
+                next_segment_is_self = !next_segment_is_self;
             }
             edge_loops.push(EdgeLoop::new(edge_loop));
         }

@@ -30,8 +30,8 @@ async fn run() {
         linear_edge(v1.clone(), v2.clone()),
         linear_edge(v2.clone(), v3.clone()),
         linear_edge(v3.clone(), v4.clone()),
-        circular_edge(v4.clone(), v6.clone(), *v5.point),
-        linear_edge(v6.clone(), v1.clone()),
+        // circular_edge(v4.clone(), v6.clone(), *v5.point),
+        linear_edge(v4.clone(), v1.clone()),
     ]);
 
     // Loop shifted by 0.1 in x and y direction
@@ -40,12 +40,14 @@ async fn run() {
         linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v3.point + shift)), Vertex::new(Rc::new(*v4.point + shift))),
-        circular_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v6.point + shift)), *v5.point + shift),
-        linear_edge(Vertex::new(Rc::new(*v6.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
+        // circular_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v6.point + shift)), *v5.point + shift),
+        linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
     ]);
 
+    let remesh = edge_loop.remesh_self_other(&edge_loop_shifted).unwrap();
+
     let vertex_buffer = rasterize_edge_loops_into_line_list(
-        &[edge_loop, edge_loop_shifted],
+        &remesh.as_slice()[0..1],
         [1.0, 1.0, 1.0]
     );
     let window = GeopWindow::new(vertex_buffer).await;

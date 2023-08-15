@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::points::point::Point;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Vertex {
     pub point: Rc<Point>
 }

@@ -2,7 +2,7 @@ use crate::points::point::Point;
 
 use super::curve::Curve;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Circle {
     pub basis: Point,
     pub normal: Point,

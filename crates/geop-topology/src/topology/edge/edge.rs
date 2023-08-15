@@ -4,7 +4,7 @@ use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, e
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum EdgeCurve {
     Line(Line),
     Circle(Circle),
@@ -26,6 +26,7 @@ pub enum Direction {
     Decreasing,
 }
 
+#[derive(Clone, Debug)]
 pub struct Edge {
     pub start: Vertex,
     pub end: Vertex,
@@ -78,8 +79,6 @@ impl Edge {
 
         let start_u = start_u.0;
 
-        println!("start_u: {start_u}, end_u: {end_u}", start_u = start_u, end_u = end_u);
-        
         Edge {
             start,
             end,
