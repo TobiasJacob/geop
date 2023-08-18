@@ -7,11 +7,12 @@ use crate::topology::{vertex::Vertex, edge::edge::EdgeIntersection};
 
 use super::edge::Edge;
 
+#[derive(Debug)]
 pub struct EdgeLoop {
     pub edges: Vec<Rc<Edge>>,
 }
 
-// An EdgeLoop is a closed loop of edges which is not self intersecting.
+// An EdgeLoop is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
 impl EdgeLoop {
     pub fn new(edges: Vec<Rc<Edge>>) -> EdgeLoop {
         for i in 0..edges.len() {
@@ -68,12 +69,13 @@ impl EdgeLoop {
         }
         let mut sub_edges: Vec<Rc<Edge>> = Vec::new();
         let n = self.edges.len();
+        // Keep in mind that for u == 1.0, start_i or end_i can be n.
         let start_i = (u_start * n as f64).floor() as usize;
         let end_i = (u_end * n as f64).floor() as usize;
         if start_i == end_i {
-            sub_edges.push(Rc::new(Edge::new(start, end, self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
+            sub_edges.push(Rc::new(Edge::new(start, end, self.edges[start_i % n].curve.clone(), self.edges[start_i % n].direction.clone())));
         } else {
-            sub_edges.push(Rc::new(Edge::new(start, self.edges[start_i].end.clone(), self.edges[start_i].curve.clone(), self.edges[start_i].direction.clone())));
+            sub_edges.push(Rc::new(Edge::new(start, self.edges[start_i % n].end.clone(), self.edges[start_i % n].curve.clone(), self.edges[start_i % n].direction.clone())));
             for i in start_i + 1..end_i {
                 sub_edges.push(self.edges[i % n].clone());
             }
@@ -82,40 +84,55 @@ impl EdgeLoop {
         Ok(sub_edges)
     }
 
-    // Takes 2 EdgeLoops and connects them at intersecting points with new vertices. If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop. If there are no intersections, the outer vector will have length 1.
-    fn split(&self, other: &EdgeLoop) -> (Vec<Vec<Rc<Edge>>>, Vec<Vec<Rc<Edge>>>) {
+    // Takes 2 EdgeLoops and connects them at intersecting points with new vertices.
+    // If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop.
+    // If there are no intersections, the outer vector will have length 1.
+    fn cutting_split(&self, other: &EdgeLoop) -> (Vec<Vec<Rc<Edge>>>, Vec<Vec<Rc<Edge>>>) {
         // First, find all intersections and order them by position on the edge loop.
-        let mut split_verts_self: Vec<(f64, Vertex)> = Vec::new();
-        let mut split_verts_other: Vec<(f64, Vertex)> = Vec::new();
+        let mut split_verts: Vec<Vertex> = Vec::new();
         for edge_self in self.edges.iter() {
             for edge_other in other.edges.iter() {
-                let intersections = edge_self.intersections(&edge_other);
+                let intersections = edge_self.cutting_intersections(&edge_other);
                 for intersection in intersections {
                     match intersection {
                         EdgeIntersection::Vertex(intersect_vertex) => {
-                            let p = (*intersect_vertex.point).clone();
-                            split_verts_self.push((self.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
-                            split_verts_other.push((other.project(&p).expect("Intersection point has to be on edge"), intersect_vertex.clone()));
+                            // If we have another intersection at the same point, this is a touching edge.
+                            if split_verts.contains(&intersect_vertex) {
+                                split_verts.retain(|vert| vert != &intersect_vertex);
+                            }
                         },
                         EdgeIntersection::Edge(intersect_edge) => {
-                            let p_start = (*intersect_edge.start.point).clone();
-                            let p_end = (*intersect_edge.end.point).clone();
-                            split_verts_self.push((self.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));
-                            split_verts_self.push((self.project(&p_end).expect("Intersection point has to be on edge"), intersect_edge.end.clone()));
-                            split_verts_other.push((other.project(&p_start).expect("Intersection point has to be on edge"), intersect_edge.start.clone()));
-                            split_verts_other.push((other.project(&p_end).expect("Intersection point has to be on edge"), intersect_edge.end.clone()));
+                            // If two squares are touching with one side, the edge points will be found 4 times.
+                            // A1--- + --- B1 <-- this point is going to be found 4 times
+                            //       | <-- Edge A2 and B2 
+                            //       |
+                            // A3--- + --- B3
+                            // One time for A1 & B1, A1 & B2, A2 & B1, A2 & B2
+                            if !split_verts.contains(&intersect_edge.start) {
+                                split_verts.retain(|vert| vert != &intersect_edge.start)
+                            }
+                            if !split_verts.contains(&intersect_edge.end) {
+                                split_verts.retain(|vert| vert != &intersect_edge.end)
+                            }
                         },
                     }
                 }
             }
+        }
+
+        let mut split_verts_self: Vec<(f64, Vertex)> = Vec::new();
+        let mut split_verts_other: Vec<(f64, Vertex)> = Vec::new();
+        for vert in split_verts.iter() {
+            split_verts_self.push((self.project(&vert.point).expect("Intersection point has to be on edge"), vert.clone()));
+            split_verts_other.push((other.project(&vert.point).expect("Intersection point has to be on edge"), vert.clone()));
         }
         split_verts_self.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         split_verts_other.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
         // Due to the properties of edge loops, the edges intersecting the other edge loop can be generated by zipping two following vertices.
         let n: usize = split_verts_self.len();
-        assert!(n % 2 == 0);
-        assert!(n == split_verts_other.len());
+        // assert!(n % 2 == 0); // This is not true in cases where edges only touch.
+        // assert!(n == split_verts_other.len());
 
         if n == 0 {
             return (vec![self.edges.clone()], vec![other.edges.clone()]);
@@ -144,16 +161,16 @@ impl EdgeLoop {
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     pub fn remesh_self_other(&self, other: &EdgeLoop) -> Result<Vec<EdgeLoop>, &str> {
-        let (mut segments_self, mut segments_other) = self.split(other);
+        let (mut segments_self, mut segments_other) = self.cutting_split(other);
         for segment in segments_self.iter() {
-            println!("New segment");
+            println!("New segment self");
             for edge in segment.iter() {
                 println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
             }
         }
 
         for segment in segments_other.iter() {
-            println!("New segment");
+            println!("New segment other");
             for edge in segment.iter() {
                 println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
             }

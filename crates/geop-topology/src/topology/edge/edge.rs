@@ -120,8 +120,28 @@ impl Edge {
         }).collect()
     }
 
-    // All intersections with other edge. The end points are included, but if they overlap they will continue to refer to the same vertex. The list is unsorted.
-    pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
+    // All intersections where it crosses other edge. The end points are included, but if they overlap they will continue to refer to the same vertex. The list is unsorted.
+    // Touching edges are not considered intersections, except if the distance is > 0.
+    // This is so that we can use this function to remesh an edge loop, mostly because touching edge loops are not going to be remeshed, because they would be self-intersecting.
+    // oi  so
+    //  \ /
+    //   x  <-- This is fine for remeshing, as connecting self_in (si) with other_out (oo) can not return to this point. This is because there has to be another intersection between self and other, and since the edges are not self-intersecting, this is another point.
+    //  / \
+    // si  oo
+    // Compare to
+    // so  oi
+    //  \ /
+    //   x  <-- This is not fine for remeshing, as connecting self_in (si) with other_out (oo) can return to this point. This is because there is no other intersection between self and other, and this means there does not have to be another intersection. Consider e.g. two circles touching each other. Remeshing them would result in a self intersecting curve.
+    //  / \
+    // si  ou
+    // However, if the intersection is more than a point, but a line, then it is fine as there are two different points (start and end), which in remeshing will prevent the curve from becoming self intersecting.
+    // so  oi
+    //  \ /
+    //   I <- This will be remeshed into two edge loops
+    //   I
+    //  / \
+    // si  ou
+pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
         match *self.curve {
             EdgeCurve::Circle(ref circle) => {
                 match *other.curve {
@@ -153,15 +173,8 @@ impl Edge {
                                 intersections
                             },
                             CircleCircleIntersection::OnePoint(a) => {
-                                if let Some(u_a_self) = self.project(&a) {
-                                    if let Some(u_a_other) = other.project(&a) {
-                                        vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
-                                    } else {
-                                        panic!("Circle intersection point is not on other circle")
-                                    }
-                                } else {
-                                    panic!("Circle intersection point is not on circle")
-                                }
+                                // Two touching circles are not considered for remeshing.
+                                vec![]
                             },
                             CircleCircleIntersection::None => {
                                 vec![]
