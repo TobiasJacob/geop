@@ -44,11 +44,11 @@ async fn run() {
         linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
     ]);
 
-    let remesh = edge_loop.remesh_self_other(&edge_loop).unwrap();
-    println!("{:?}", remesh.len());
+    let remesh = edge_loop.union(&edge_loop_shifted).unwrap();
+    // println!("{:?}", remesh.len());
 
     let vertex_buffer = rasterize_edge_loops_into_line_list(
-        &remesh.as_slice()[0..1],
+        &[remesh].as_slice()[0..1],
         [1.0, 1.0, 1.0]
     );
     let window = GeopWindow::new(vertex_buffer).await;
