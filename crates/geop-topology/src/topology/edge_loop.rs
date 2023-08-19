@@ -226,6 +226,10 @@ impl EdgeLoop {
         Some(result)
     }
 
+    pub fn neg(&self) -> EdgeLoop {
+        todo!()
+    }
+
     // // If no intersection is there, the result is None. Otherwise we can be sure that the result is a single edge loop.
     // pub fn union(&self, other: &EdgeLoop) -> Option<EdgeLoop> {
     //     let mut edge_loops = self.remesh_self_other(other)?;

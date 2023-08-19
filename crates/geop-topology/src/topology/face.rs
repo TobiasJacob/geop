@@ -91,9 +91,29 @@ impl Face {
         (split_self, split_other)
     }
 
-    pub fn union(&self, other: &Face) -> Vec<Face> {
-        assert!(self.surface == other.surface);
+    pub fn neg(&self) -> Face {
+        let neg_outer_loop = self.outer_loop.neg();
+        let neg_inner_loops = self.inner_loops.iter().map(|l| l.neg()).collect();
+        Face {
+            outer_loop: neg_outer_loop,
+            inner_loops: neg_inner_loops,
+            surface: self.surface.clone(),
+        }
+    }
 
+    pub fn union(&self, other: &Face) -> Option<Face> {
+        assert!(self.surface == other.surface);
+        Some(self.split_parts(other)?.0)
+    }
+
+    pub fn intersection(&self, other: &Face) -> Option<Vec<Face>> {
+        assert!(self.surface == other.surface);
+        Some(self.split_parts(other)?.1)
+    }
+
+    pub fn difference(&self, other: &Face) -> Option<Face> {
+        assert!(self.surface == other.surface);
+        Some(self.neg().union(other)?.neg())
     }
 }
 
