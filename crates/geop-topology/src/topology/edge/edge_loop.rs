@@ -116,12 +116,13 @@ impl EdgeLoop {
                             println!("Intersection at {:?}", intersect_vertex.point);
                             let index = split_verts.iter().position(|vert| vert == &intersect_vertex);
                             match index {
-                                Some(index) => {
-                                    split_verts.swap_remove(index);
-                                },
+                                // Some(index) => {
+                                //     split_verts.swap_remove(index);
+                                // },
                                 None => {
                                     split_verts.push(intersect_vertex);
-                                }
+                                },
+                                _ => {}
                             }
                         }
                         EdgeIntersection::Edge(_) => {

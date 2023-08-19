@@ -2,6 +2,7 @@ use crate::points::point::Point;
 
 use super::surface::Surface;
 
+#[derive(Clone, Debug)]
 pub struct Plane {
     pub basis: Point,
     pub u_slope: Point,
@@ -26,9 +27,9 @@ impl Surface for Plane {
 
     fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
-        let u = v.dot(&self.u_slope) / self.u_slope.norm();
+        let u = v.dot(self.u_slope) / self.u_slope.norm();
         let v = v - self.u_slope * u;
-        let v = v.dot(&self.v_slope) / self.v_slope.norm();
+        let v = v.dot(self.v_slope) / self.v_slope.norm();
         (u, v)
     }
 
@@ -41,7 +42,7 @@ impl Surface for Plane {
     }
 
     fn normal(&self, p: Point) -> Point {
-        self.u_slope.cross(&self.v_slope)
+        self.u_slope.cross(self.v_slope)
     }
 
     fn normalize(&mut self) {

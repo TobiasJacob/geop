@@ -2,6 +2,7 @@ use crate::{points::point::Point, EQ_THRESHOLD};
 
 use super::surface::Surface;
 
+#[derive(Clone, Debug)]
 pub struct Sphere {
     pub basis: Point,
     pub radius: f64,
@@ -26,8 +27,8 @@ impl Surface for Sphere {
 
     fn project(&self, p: &Point) -> (f64, f64) {
         let v = *p - self.basis;
-        let u = v.dot(&Point::new(1.0, 0.0, 0.0));
-        let v = v.dot(&Point::new(0.0, 1.0, 0.0));
+        let u = v.dot(Point::new(1.0, 0.0, 0.0));
+        let v = v.dot(Point::new(0.0, 1.0, 0.0));
         (u, v)
     }
 
