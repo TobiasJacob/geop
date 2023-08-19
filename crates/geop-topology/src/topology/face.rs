@@ -26,6 +26,7 @@ pub struct Face {
     pub outer_loop: EdgeLoop,
     pub inner_loops: Vec<EdgeLoop>,
     pub surface: Rc<FaceSurface>,
+    convex_boundary: EdgeLoop,
     center_point: Point,
 }
 
@@ -33,25 +34,27 @@ pub struct Face {
 // We will assert that the Face is shaped such that there is a midpoint, and each line from the midpoint to the boundary is within the face.
 // The centerpoint cannot be on the boundary, and the boundary cannot intersect itself.
 impl Face {
-    pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<FaceSurface>, center_point: Point) -> Face {
+    pub fn new(outer_loop: EdgeLoop, inner_loops: Vec<EdgeLoop>, surface: Rc<FaceSurface>) -> Face {
         Face {
             outer_loop,
             inner_loops,
             surface,
-            center_point
+            convex_boundary: todo!("Implement convex boundary"),
+            center_point: todo!("Implement center point of convex boundary"),
         }
     }
 
     pub fn point_at(&self, u: f64, v: f64) -> Point {
-        let anchor_point = self.outer_loop.point_at(u);
+        let anchor_point_1 = self.outer_loop.point_at(u);
+        let anchor_point_2 = self.center_point;
         match &*self.surface {
             FaceSurface::Plane(plane) => {
-                self.center_point + (anchor_point - self.center_point) * v
+                anchor_point_1 + (anchor_point_2 - anchor_point_1) * v
             },
             FaceSurface::Sphere(sphere) => {
-                let axis = (sphere.basis - self.center_point).cross(anchor_point - self.center_point).normalize();
-                let angle = (anchor_point - self.center_point).angle(anchor_point - sphere.basis);
-                sphere.basis + axis.rotate(self.center_point - sphere.basis, angle * v)
+                let axis = (anchor_point_1 - sphere.basis).cross(anchor_point_2 - sphere.basis).normalize();
+                let angle = (anchor_point_1 - sphere.basis).angle(anchor_point_2 - sphere.basis);
+                sphere.basis + axis.rotate(anchor_point_1 - sphere.basis, angle * v)
             },
         }
     }
