@@ -2,15 +2,17 @@ use std::rc::Rc;
 
 use geop_geometry::points::point::Point;
 
+use super::edge::Edge;
+
 #[derive(Clone, Debug)]
 pub struct Vertex {
-    pub point: Rc<Point>
+    pub point: Rc<Point>,
 }
 
 impl Vertex {
     pub fn new(point: Rc<Point>) -> Vertex {
         Vertex {
-            point
+            point,
         }
     }
 }

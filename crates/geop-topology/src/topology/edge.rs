@@ -4,6 +4,8 @@ use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, e
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
+use super::edge_loop::EdgeLoop;
+
 #[derive(PartialEq, Clone, Debug)]
 pub enum EdgeCurve {
     Line(Line),
@@ -32,6 +34,7 @@ pub struct Edge {
     pub end: Vertex,
     pub curve: Rc<EdgeCurve>,
     pub direction: Direction,
+
     start_u: f64,
     end_u: f64,
 }
@@ -89,39 +92,67 @@ impl Edge {
         }
     }
 
-    pub fn point_at(&self, u: f64) -> Point {
-        assert!(u >= 0.0 && u < 1.0);
-        let u = self.start_u + u * (self.end_u - self.start_u);
-        self.curve.curve().point_at(u)
+    pub fn contains(&self, other: &Point) -> bool {
+        if *self.start.point == *other || *self.end.point == *other {
+            return true;
+        }
+
+        match *self.curve {
+            EdgeCurve::Line(ref line) => {
+                let u = line.project(*other).0;
+                u >= self.start_u && u <= self.end_u
+            },
+            EdgeCurve::Circle(ref circle) => {
+                let u = circle.project(*other).0;
+                u >= self.start_u && u <= self.end_u
+            },
+            EdgeCurve::Ellipse(ref ellipse) => {
+                let u = ellipse.project(*other).0;
+                u >= self.start_u && u <= self.end_u
+            },
+        }
     }
 
-    pub fn project(&self, point: &Point) -> Option<f64> {
-        let u_p = self.curve.curve().project(*point);
-        if u_p.1 > PROJECTION_THRESHOLD {
+    pub fn split_if_necessary(&self, other: Vertex) -> Option<(Edge, Edge)> {
+        if !self.contains(&other.point) {
             return None;
         }
-        let u = match u_p.0 > self.start_u {
-            true => u_p.0,
-            false => u_p.0 + 2.0 * std::f64::consts::PI,
-        };
-        if u < self.start_u || u > self.end_u {
-            return None;
-        }
-        Some((u - self.start_u) / (self.end_u - self.start_u))
+        return Some((Edge::new(self.start, other, self.curve, self.direction), Edge::new(other, self.end, self.curve, self.direction)));
     }
 
-    pub fn rasterize(&self) -> Vec<Point> {
-        let num_points = 40 as usize;
+    // Avoid using these functions as they are not well defined for periodic curves.
+    // pub fn point_at(&self, u: f64) -> Point {
+    //     assert!(u >= 0.0 && u < 1.0);
+    //     let u = self.start_u + u * (self.end_u - self.start_u);
+    //     self.curve.curve().point_at(u)
+    // }
 
-        (0..num_points).map(|i| {
-            let t = i as f64 / (num_points - 1) as f64;
-            let point = self.curve.curve().point_at(t);
-            point
-        }).collect()
-    }
+    // pub fn project(&self, point: &Point) -> Option<f64> {
+    //     let u_p = self.curve.curve().project(*point);
+    //     if u_p.1 > PROJECTION_THRESHOLD {
+    //         return None;
+    //     }
+    //     let u = match u_p.0 > self.start_u {
+    //         true => u_p.0,
+    //         false => u_p.0 + 2.0 * std::f64::consts::PI,
+    //     };
+    //     if u < self.start_u || u > self.end_u {
+    //         return None;
+    //     }
+    //     Some((u - self.start_u) / (self.end_u - self.start_u))
+    // }
+
+    // pub fn rasterize(&self) -> Vec<Point> {
+    //     let num_points = 40 as usize;
+
+    //     (0..num_points).map(|i| {
+    //         let t = i as f64 / (num_points - 1) as f64;
+    //         let point = self.curve.curve().point_at(t);
+    //         point
+    //     }).collect()
+    // }
 
     // All intersections where it crosses other edge. The end points are included, but if they overlap they will continue to refer to the same vertex. The list is unsorted.
-    // Touching edges are not considered intersections, except if the distance is > 0.
     // This is so that we can use this function to remesh an edge loop, mostly because touching edge loops are not going to be remeshed, because they would be self-intersecting.
     // oi  so
     //  \ /
@@ -141,7 +172,8 @@ impl Edge {
     //   I
     //  / \
     // si  ou
-pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
+    // The intersections are returned in the order they appear on self, starting with the start point.
+    pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
         match *self.curve {
             EdgeCurve::Circle(ref circle) => {
                 match *other.curve {
@@ -149,32 +181,13 @@ pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
                         match circle_circle_intersection(circle, other_circle) {
                             CircleCircleIntersection::TwoPoint(a, b) => {
                                 let mut intersections = Vec::new();
-
-                                if let Some(u_a_self) = self.project(&a) {
-                                    if let Some(u_a_other) = other.project(&a) {
-                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
-                                    } else {
-                                        panic!("Circle intersection point is not on other circle")
-                                    }
-                                } else {
-                                    panic!("Circle intersection point is not on circle")
-                                }
-
-                                if let Some(u_b_self) = self.project(&b) {
-                                    if let Some(u_b_other) = other.project(&b) {
-                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
-                                    } else {
-                                        panic!("Circle intersection point is not on other circle")
-                                    }
-                                } else {
-                                    panic!("Circle intersection point is not on circle")
-                                }
-
+                                todo!("Order them by self.");
+                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
                                 intersections
                             },
                             CircleCircleIntersection::OnePoint(a) => {
-                                // Two touching circles are not considered for remeshing.
-                                vec![]
+                                vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
                             },
                             CircleCircleIntersection::None => {
                                 vec![]
@@ -203,15 +216,15 @@ pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 }
                             }
                         }
@@ -239,17 +252,13 @@ pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
                         match line_line_intersection(line, other_line) {
                             LineLineIntersection::Point(a) => {
                                 let mut intersections = Vec::new();
-                                if let Some(u_a_self) = self.project(&a) {
-                                    if let Some(u_a_other) = other.project(&a) {
-                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
-                                    }
-                                }
+                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                 intersections
                             },
                             LineLineIntersection::None => {
                                 vec![]
                             },
-                            LineLineIntersection::Line(_) => {
+                            LineLineIntersection::Line(line) => {
                                 let start_u = other_line.project(*self.start.point).0;
                                 let end_u = other_line.project(*self.end.point).0;
 
@@ -258,15 +267,15 @@ pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
                                 } else if end_u < start_u {
                                     vec![]
                                 } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
                                 } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(self.point_at(start_u))), Vertex::new(Rc::new(self.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
                                 }
                             },
                         }
@@ -275,6 +284,7 @@ pub fn cutting_intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
             },
         }
     }
+
 
     // pub fn remesh(&self, other: &Edge) -> (Vec<Edge>, Vec<Edge>) {
     //     let (intersections_a, intersections_b) = self.intersections(other);
