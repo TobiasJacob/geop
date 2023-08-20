@@ -22,7 +22,7 @@ impl FaceSurface {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-enum ContourDirection {
+pub enum ContourDirection {
     Clockwise,
     CounterClockwise,
 }
@@ -89,7 +89,7 @@ impl Face {
     }
 
     pub fn subsurface(&self, cutting_contour: Contour) -> Rc<Face> {
-        let contours_self = self.inner_loops.clone();
+        let mut contours_self = self.inner_loops.clone();
         contours_self.push(self.outer_loop.clone());
 
         let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());

@@ -22,7 +22,7 @@ impl EdgeCurve {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Direction {
     Increasing,
     Decreasing,
@@ -39,6 +39,7 @@ pub struct Edge {
     end_u: f64,
 }
 
+#[derive(Clone, Debug)]
 pub enum EdgeIntersection {
     Vertex(Vertex),
     Edge(Edge),
@@ -92,6 +93,13 @@ impl Edge {
         }
     }
 
+    pub fn neg(&self) -> Edge {
+        Edge::new(self.end.clone(), self.start.clone(), self.curve.clone(), match self.direction {
+            Direction::Increasing => Direction::Decreasing,
+            Direction::Decreasing => Direction::Increasing,
+        })
+    }
+
     pub fn contains(&self, other: &Point) -> bool {
         if *self.start.point == *other || *self.end.point == *other {
             return true;
@@ -115,14 +123,14 @@ impl Edge {
 
     // Checks if the edge contains the point, and if so, splits the edge into two edges.
     // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
-    pub fn split_if_necessary(&self, other: Vertex) -> Vec<Rc<Edge>> {
+    pub fn split_if_necessary(&self, other: &Vertex) -> Vec<Rc<Edge>> {
         if !self.contains(&other.point) {
             return vec![Rc::new(self.clone())];
         }
-        if self.start == other || self.end == other {
+        if self.start == *other || self.end == *other {
             return vec![Rc::new(self.clone())];
         }
-        return vec![Rc::new(Edge::new(self.start, other, self.curve, self.direction)), Rc::new(Edge::new(other, self.end, self.curve, self.direction))];
+        return vec![Rc::new(Edge::new(self.start.clone(), other.clone(), self.curve.clone(), self.direction)), Rc::new(Edge::new(other.clone(), self.end.clone(), self.curve.clone(), self.direction))];
     }
 
     // Avoid using these functions as they are not well defined for periodic curves.
