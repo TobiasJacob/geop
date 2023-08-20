@@ -1,10 +1,11 @@
+use core::slice::SlicePattern;
 use std::{rc::Rc, slice::Iter};
 
 use geop_geometry::{surfaces::{plane::Plane, sphere::Sphere, surface::Surface}, points::point::Point, curves::line::Line};
 
-use crate::{PROJECTION_THRESHOLD, topology::{edge::{Direction, EdgeCurve, EdgeIntersection}, edge_loop::remesh_multiple_multiple}};
+use crate::{PROJECTION_THRESHOLD, topology::{edge::{Direction, EdgeCurve, EdgeIntersection}, contour::remesh_multiple_multiple}};
 
-use super::{{edge_loop::EdgeLoop, edge::Edge}, vertex::Vertex};
+use super::{{contour::EdgeLoop, edge::Edge}, vertex::Vertex, contour::Contour};
 
 
 #[derive(PartialEq, Clone, Debug)]
@@ -21,11 +22,17 @@ impl FaceSurface {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+enum EdgeLoopDirection {
+    Clockwise,
+    CounterClockwise,
+}
+
 
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub outer_loop: EdgeLoop, // Clockwise
-    pub inner_loops: Vec<EdgeLoop>, // Coutner-clockwise
+    pub outer_loop: Contour, // Clockwise
+    pub inner_loops: Vec<Contour>, // Coutner-clockwise
     pub surface: Rc<FaceSurface>,
     // convex_boundary: EdgeLoop, // TODO: Probably not needed
     // center_point: Point, // TODO: Probably not needed
@@ -33,7 +40,7 @@ pub struct Face {
 
 pub enum FaceIntersection {
     Face(Face),
-    EdgeLoop(EdgeLoop),
+    EdgeLoop(Contour),
     Edge(Edge),
     Vertex(Vertex)
 }
@@ -42,53 +49,132 @@ pub enum FaceIntersection {
 // We will assert that the Face is shaped such that there is a midpoint, and each line from the midpoint to the boundary is within the face.
 // The centerpoint cannot be on the boundary, and the boundary cannot intersect itself.
 impl Face {
+    pub fn new(outer_loop: Contour, inner_loops: Vec<Contour>, surface: Rc<FaceSurface>) -> Face {
+        Face {
+            outer_loop,
+            inner_loops,
+            surface,
+        }
+    }
+
     pub fn all_edges(&self) -> Vec<Rc<Edge>> {
         let mut edges = Vec::<Rc<Edge>>::new();
         for edge in self.outer_loop.edges.iter() {
             edges.push(edge.clone());
         }
 
-        for edge_loop in self.inner_loops.iter() {
-            for edge in edge_loop.edges.iter() {
+        for contour in self.inner_loops.iter() {
+            for edge in contour.edges.iter() {
                 edges.push(edge.clone());
             }
         }
         return edges;
     }
 
-    pub fn contains(&self, other: &Point) -> bool {
+    pub fn contains_point(&self, other: &Point) -> bool {
         todo!("Implement contains");
     }
 
-    pub fn subsurface(&self, cutting_edges: Vec<Edge>) -> Face {
-        todo!("Cut this face with the given edges, such that outer loop is cw");
+    pub fn contains_edge(&self, other: &Edge) -> bool {
+        todo!("Implement contains");
+    }
+
+    pub fn contains_contour(&self, other: &Contour) -> bool {
+        todo!("Implement contains");
+    }
+
+    pub fn contour_direction(&self, other: &Contour) -> EdgeLoopDirection {
+        todo!("Implement contour_direction");
     }
 
     pub fn intersect(&self, other: &Face) -> Vec<FaceIntersection> {
         todo!("Implement intersect");
     }
 
+    pub fn subsurface(&self, cutting_contour: Contour) -> Face {
+        let contours_self = self.inner_loops.clone();
+        contours_self.push(self.outer_loop.clone());
+
+        let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());
+
+        let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == EdgeLoopDirection::CounterClockwise);
+        assert!(ccw_conts.len() == 2, "Expected 2 counter clockwise edge loops, found {}", ccw_conts.len());
+        let (outer_loops, invalid_loops): (Vec<Contour>, Vec<Contour>) = ccw_conts.into_iter().partition(|l| {
+            for edge in &l.edges {
+                if !self.contains_edge(edge) {
+                    return false;
+                }
+            }
+            true
+        });
+        assert!(outer_loops.len() == 1, "Expected 1 counter clockwise edge loop, found {}", outer_loops.len());
+        let outer_loop = outer_loops[0].clone();
+        let inner_loops = cw_conts;
+
+        Face::new(
+            outer_loop,
+            inner_loops,
+            self.surface.clone(),
+        )
+    }
+
     pub fn split_parts(&self, other: &Face) -> Option<(Face, Vec<Face>)> {
         assert!(self.surface == other.surface);
         
-        let edge_loops_self = self.inner_loops.clone();
-        edge_loops_self.push(self.outer_loop.clone());
+        let mut contours_self = self.inner_loops.clone();
+        contours_self.push(self.outer_loop.clone());
 
-        let edge_loops_other = other.inner_loops.clone();
-        edge_loops_other.push(other.outer_loop.clone());
+        let mut contours_other = other.inner_loops.clone();
+        contours_other.push(other.outer_loop.clone());
         
-        let remeshed = remesh_multiple_multiple(edge_loops_self, edge_loops_other);
+        let remeshed = remesh_multiple_multiple(contours_self.as_slice(), contours_other.as_slice());
+        let (mut ccw_conts, mut cw_conts): (Vec<Contour>, Vec<Contour>) = remeshed.into_iter().partition(|l| self.contour_direction(l) == EdgeLoopDirection::CounterClockwise);
 
-        if did_not_intersect {
-            return None;
-        }
         // Now its simple.
         // All clockwise edge loops are caveties in the union.
         // The largest counter clockwise edge loop is the outer loop of the union.
         // All remaining counter clockwise edge loops are intersections.
+        let mut i_max = 0;
+        let mut result_valid = false;
+        for (i, ccw_cont) in ccw_conts.iter().enumerate() {
+            let temp_face = Face::new(
+                ccw_cont.clone(),
+                vec![],
+                self.surface.clone(),
+            );
+            if temp_face.contains_contour(&ccw_conts[i_max]) {
+                i_max = i;
+                result_valid = true;
+            }
+        }
 
+        // This means the Faces did not intersect
+        if !result_valid {
+            return None;
+        }
 
-        (split_self, split_other)
+        let union_contour = ccw_conts.remove(i_max);
+
+        let mut intersecions = Vec::<Face>::new();
+        for ccw_cont in ccw_conts {
+            let mut face = Face::new(
+                ccw_cont.clone(),
+                vec![],
+                self.surface.clone(),
+            );
+            let (inner_loops, cw_conts_new): (Vec<Contour>, Vec<Contour>) = cw_conts.into_iter().partition(|l| face.contains_contour(l));
+            cw_conts = cw_conts_new;
+            face.inner_loops = inner_loops;
+            intersecions.push(face);
+        }
+
+        let union_face = Face::new(
+            union_contour,
+            cw_conts,
+            self.surface.clone(),
+        );
+
+        Some((union_face, intersecions))
     }
 
     pub fn neg(&self) -> Face {
@@ -101,17 +187,17 @@ impl Face {
         }
     }
 
-    pub fn union(&self, other: &Face) -> Option<Face> {
+    pub fn surface_union(&self, other: &Face) -> Option<Face> {
         assert!(self.surface == other.surface);
         Some(self.split_parts(other)?.0)
     }
 
-    pub fn intersection(&self, other: &Face) -> Option<Vec<Face>> {
+    pub fn surface_intersection(&self, other: &Face) -> Option<Vec<Face>> {
         assert!(self.surface == other.surface);
         Some(self.split_parts(other)?.1)
     }
 
-    pub fn difference(&self, other: &Face) -> Option<Face> {
+    pub fn surface_difference(&self, other: &Face) -> Option<Face> {
         assert!(self.surface == other.surface);
         Some(self.neg().union(other)?.neg())
     }

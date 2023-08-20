@@ -4,7 +4,7 @@ use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, e
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
-use super::edge_loop::EdgeLoop;
+use super::contour::Contour;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum EdgeCurve {
@@ -113,11 +113,16 @@ impl Edge {
         }
     }
 
-    pub fn split_if_necessary(&self, other: Vertex) -> Option<(Edge, Edge)> {
+    // Checks if the edge contains the point, and if so, splits the edge into two edges.
+    // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
+    pub fn split_if_necessary(&self, other: Vertex) -> Vec<Rc<Edge>> {
         if !self.contains(&other.point) {
-            return None;
+            return vec![Rc::new(self.clone())];
         }
-        return Some((Edge::new(self.start, other, self.curve, self.direction), Edge::new(other, self.end, self.curve, self.direction)));
+        if self.start == other || self.end == other {
+            return vec![Rc::new(self.clone())];
+        }
+        return vec![Rc::new(Edge::new(self.start, other, self.curve, self.direction)), Rc::new(Edge::new(other, self.end, self.curve, self.direction))];
     }
 
     // Avoid using these functions as they are not well defined for periodic curves.

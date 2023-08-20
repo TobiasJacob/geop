@@ -1,37 +1,37 @@
 use geop_geometry::points::point::Point;
-use geop_topology::topology::edge::edge_loop::EdgeLoop;
+use geop_topology::topology::edge::contour::EdgeLoop;
 
 use crate::vertex_buffer::{RenderVertex, VertexBuffer};
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_edge_loop_into_line_list(edge_loop: &EdgeLoop, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_contour_into_line_list(contour: &EdgeLoop, color: [f32; 3]) -> VertexBuffer {
     let n = 200;
     let mut vertices = Vec::<RenderVertex>::with_capacity(2 * n);
-    vertices.push(RenderVertex::new(edge_loop.point_at(0.0), color));
+    vertices.push(RenderVertex::new(contour.point_at(0.0), color));
     for i in 1..n {
         let u = i as f64 / n as f64;
-        vertices.push(RenderVertex::new(edge_loop.point_at(u), color));
-        vertices.push(RenderVertex::new(edge_loop.point_at(u), color));
+        vertices.push(RenderVertex::new(contour.point_at(u), color));
+        vertices.push(RenderVertex::new(contour.point_at(u), color));
     }
-    vertices.push(RenderVertex::new(edge_loop.point_at(1.0), color));
+    vertices.push(RenderVertex::new(contour.point_at(1.0), color));
     VertexBuffer::new(vertices)
 }
 
 // Rasterizes multiple edge loop into triangle list.
-pub fn rasterize_edge_loops_into_line_list(edge_loop: &[EdgeLoop], color: [f32; 3]) -> VertexBuffer {
-    edge_loop.iter().fold(VertexBuffer::new(Vec::new()), |mut acc, edge_loop| {
-        acc.join(&rasterize_edge_loop_into_line_list(edge_loop, color));
+pub fn rasterize_contours_into_line_list(contour: &[EdgeLoop], color: [f32; 3]) -> VertexBuffer {
+    contour.iter().fold(VertexBuffer::new(Vec::new()), |mut acc, contour| {
+        acc.join(&rasterize_contour_into_line_list(contour, color));
         acc
     })
 }
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_edge_loop_triangle(edge_loop: EdgeLoop, camera_pos: Point, width: f64, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_contour_triangle(contour: EdgeLoop, camera_pos: Point, width: f64, color: [f32; 3]) -> VertexBuffer {
     let n = 50;
     let mut points = Vec::<Point>::with_capacity(n);
     for i in 0..n {
         let u = i as f64 / n as f64;
-        points.push(edge_loop.point_at(u));
+        points.push(contour.point_at(u));
     }
 
     let mut offset_points = Vec::<Point>::with_capacity(2 * n);

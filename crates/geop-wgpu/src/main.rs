@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use geop_geometry::{curves::{line::Line, circle::Circle}, points::point::Point, EQ_THRESHOLD};
-use geop_rasterize::edge_loop::{rasterize_edge_loop_into_line_list, rasterize_edge_loops_into_line_list};
-use geop_topology::topology::{edge::{edge_loop::EdgeLoop, edge::{Edge, EdgeCurve, Direction}}, vertex::Vertex};
+use geop_rasterize::contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list};
+use geop_topology::topology::{edge::{contour::EdgeLoop, edge::{Edge, EdgeCurve, Direction}}, vertex::Vertex};
 use geop_wgpu::window::GeopWindow;
 
 
@@ -26,7 +26,7 @@ async fn run() {
     let v5 = Vertex::new(Rc::new(Point::new(0.4, 0.6, 0.0)));
     let v6 = Vertex::new(Rc::new(Point::new(0.2, 0.6, 0.0)));
 
-    let edge_loop = EdgeLoop::new(vec![
+    let contour = EdgeLoop::new(vec![
         linear_edge(v1.clone(), v2.clone()),
         linear_edge(v2.clone(), v3.clone()),
         linear_edge(v3.clone(), v4.clone()),
@@ -36,7 +36,7 @@ async fn run() {
 
     // Loop shifted by 0.1 in x and y direction
     let shift = Point::new(0.1, 0.1, 0.0);
-    let edge_loop_shifted = EdgeLoop::new(vec![
+    let contour_shifted = EdgeLoop::new(vec![
         linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v3.point + shift)), Vertex::new(Rc::new(*v4.point + shift))),
@@ -44,10 +44,10 @@ async fn run() {
         linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
     ]);
 
-    let remesh = edge_loop.union(&edge_loop_shifted).unwrap();
+    let remesh = contour.union(&contour_shifted).unwrap();
     // println!("{:?}", remesh.len());
 
-    let vertex_buffer = rasterize_edge_loops_into_line_list(
+    let vertex_buffer = rasterize_contours_into_line_list(
         &[remesh].as_slice()[0..1],
         [1.0, 1.0, 1.0]
     );

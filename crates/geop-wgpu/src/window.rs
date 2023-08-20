@@ -45,8 +45,8 @@ impl GeopWindow {
                 .expect("Couldn't append canvas to document body.");
         }
     
-        // let vertex_buffer = rasterize_edge_loop_triangle(
-        //     edge_loop,
+        // let vertex_buffer = rasterize_contour_triangle(
+        //     contour,
         //     Point::new(0.0, 0.0, 100.0),
         //     0.01,
         //     [1.0, 1.0, 1.0]
