@@ -11,7 +11,7 @@ pub struct Contour {
     pub edges: Vec<Rc<Edge>>,
 }
 
-// An EdgeLoop is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
+// An Contour is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
 // It has a defined inside and outside, which is determined by the direction of the edges.
 impl Contour {
     pub fn new(edges: Vec<Rc<Edge>>) -> Contour {
@@ -106,7 +106,7 @@ impl Contour {
     }
 
 
-    // Takes 2 EdgeLoops and connects them at intersecting points with new vertices.
+    // Takes 2 Contours and connects them at intersecting points with new vertices.
     // If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop.
     // If there are no intersections, the outer vector will have length 1.
     fn split_if_necessary(&self, other: &Contour) -> (Contour, Contour) {
@@ -217,7 +217,7 @@ impl Contour {
     }
 
     // // If no intersection is there, the result is None. Otherwise we can be sure that the result is a single edge loop.
-    // pub fn union(&self, other: &EdgeLoop) -> Option<EdgeLoop> {
+    // pub fn union(&self, other: &Contour) -> Option<Contour> {
     //     let mut contours = self.remesh_self_other(other)?;
 
     //     // Find an outer vertex

@@ -33,15 +33,15 @@ impl Surface for Plane {
         (u, v)
     }
 
-    fn derivative_u(&self, u: f64, v: f64) -> Point {
+    fn derivative_u(&self, _u: f64, _v: f64) -> Point {
         self.u_slope
     }
 
-    fn derivative_v(&self, u: f64, v: f64) -> Point {
+    fn derivative_v(&self, _u: f64, _v: f64) -> Point {
         self.v_slope
     }
 
-    fn normal(&self, p: Point) -> Point {
+    fn normal(&self, _p: Point) -> Point {
         self.u_slope.cross(self.v_slope)
     }
 

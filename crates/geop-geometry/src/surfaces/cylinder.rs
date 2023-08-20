@@ -35,12 +35,12 @@ impl Surface for Cylinder {
         (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
     }
 
-    fn derivative_u(&self, u: f64, v: f64) -> Point {
+    fn derivative_u(&self, u: f64, _v: f64) -> Point {
         let x = -self.extend * u.sin() + self.direction.cross(self.extend) * u.cos();
         x
     }
 
-    fn derivative_v(&self, u: f64, v: f64) -> Point {
+    fn derivative_v(&self, _u: f64, _v: f64) -> Point {
         let x = self.direction;
         x
     }

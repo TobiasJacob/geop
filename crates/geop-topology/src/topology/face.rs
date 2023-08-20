@@ -1,11 +1,10 @@
-use core::slice::SlicePattern;
-use std::{rc::Rc, slice::Iter};
+use std::rc::Rc;
 
 use geop_geometry::{surfaces::{plane::Plane, sphere::Sphere, surface::Surface}, points::point::Point, curves::line::Line};
 
 use crate::{PROJECTION_THRESHOLD, topology::{edge::{Direction, EdgeCurve, EdgeIntersection}, contour::remesh_multiple_multiple}};
 
-use super::{{contour::EdgeLoop, edge::Edge}, vertex::Vertex, contour::Contour};
+use super::{{contour::Contour, edge::Edge}, vertex::Vertex};
 
 
 #[derive(PartialEq, Clone, Debug)]
@@ -23,7 +22,7 @@ impl FaceSurface {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-enum EdgeLoopDirection {
+enum ContourDirection {
     Clockwise,
     CounterClockwise,
 }
@@ -34,13 +33,11 @@ pub struct Face {
     pub outer_loop: Contour, // Clockwise
     pub inner_loops: Vec<Contour>, // Coutner-clockwise
     pub surface: Rc<FaceSurface>,
-    // convex_boundary: EdgeLoop, // TODO: Probably not needed
-    // center_point: Point, // TODO: Probably not needed
 }
 
 pub enum FaceIntersection {
     Face(Face),
-    EdgeLoop(Contour),
+    Contour(Contour),
     Edge(Edge),
     Vertex(Vertex)
 }
@@ -83,7 +80,7 @@ impl Face {
         todo!("Implement contains");
     }
 
-    pub fn contour_direction(&self, other: &Contour) -> EdgeLoopDirection {
+    pub fn contour_direction(&self, other: &Contour) -> ContourDirection {
         todo!("Implement contour_direction");
     }
 
@@ -91,13 +88,13 @@ impl Face {
         todo!("Implement intersect");
     }
 
-    pub fn subsurface(&self, cutting_contour: Contour) -> Face {
+    pub fn subsurface(&self, cutting_contour: Contour) -> Rc<Face> {
         let contours_self = self.inner_loops.clone();
         contours_self.push(self.outer_loop.clone());
 
         let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());
 
-        let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == EdgeLoopDirection::CounterClockwise);
+        let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
         assert!(ccw_conts.len() == 2, "Expected 2 counter clockwise edge loops, found {}", ccw_conts.len());
         let (outer_loops, invalid_loops): (Vec<Contour>, Vec<Contour>) = ccw_conts.into_iter().partition(|l| {
             for edge in &l.edges {
@@ -111,11 +108,11 @@ impl Face {
         let outer_loop = outer_loops[0].clone();
         let inner_loops = cw_conts;
 
-        Face::new(
+        Rc::new(Face::new(
             outer_loop,
             inner_loops,
             self.surface.clone(),
-        )
+        ))
     }
 
     pub fn split_parts(&self, other: &Face) -> Option<(Face, Vec<Face>)> {
@@ -128,7 +125,7 @@ impl Face {
         contours_other.push(other.outer_loop.clone());
         
         let remeshed = remesh_multiple_multiple(contours_self.as_slice(), contours_other.as_slice());
-        let (mut ccw_conts, mut cw_conts): (Vec<Contour>, Vec<Contour>) = remeshed.into_iter().partition(|l| self.contour_direction(l) == EdgeLoopDirection::CounterClockwise);
+        let (mut ccw_conts, mut cw_conts): (Vec<Contour>, Vec<Contour>) = remeshed.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
 
         // Now its simple.
         // All clockwise edge loops are caveties in the union.
@@ -199,7 +196,7 @@ impl Face {
 
     pub fn surface_difference(&self, other: &Face) -> Option<Face> {
         assert!(self.surface == other.surface);
-        Some(self.neg().union(other)?.neg())
+        Some(self.neg().surface_union(other)?.neg())
     }
 }
 

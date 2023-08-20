@@ -53,7 +53,7 @@ impl Edge {
         assert!(end_u_p.1 < PROJECTION_THRESHOLD, "End point is not on curve {end_u_p:?}");
         // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
         // The reason is that for edges it is possible to find parameter spaces relativly easy.
-        // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an EdgeLoop.
+        // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an Contour.
         // In both cases, the parameter space is defined by the start and end point of the curve or the outer edge loop.
         // So the code that generates the parameter space (which depends on start and end) belongs here.
         let end_u = match *curve {

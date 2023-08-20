@@ -2,7 +2,7 @@
 
 // use geop_geometry::geometry::points::point::Point;
 
-// use super::{Face::Face, edge::{EdgeLoop::EdgeLoop}, Vertex};
+// use super::{Face::Face, edge::{Contour::Contour}, Vertex};
 
 use std::rc::Rc;
 
@@ -27,12 +27,12 @@ impl Volume {
         todo!("Implement contains");
     }
 
-    pub fn subsurface(&self, contours: &Vec<Contour>) -> Vec<Vec<Rc<Face>>> {
-        let result = Vec::<Rc<Face>>::new();
+    pub fn subsurface(&self, contours: &Vec<Contour>) -> Vec<Rc<Face>> {
+        let mut result = Vec::<Rc<Face>>::new();
         for face in &self.faces {
             let mut face = face.clone();
             for contour in contours {
-                face = face.split_if_necessary(contour);
+                face = face.subsurface(*contour);
             }
             result.push(face);
         }
@@ -61,9 +61,9 @@ impl Volume {
         for intersect in face_intersections {
             match intersect {
                 FaceIntersection::Face(face) => {
-                    result.extend(face.boundaries);
+                    todo!("Todo");
                 },
-                FaceIntersection::EdgeLoop(contour) => {
+                FaceIntersection::Contour(contour) => {
                     result.push(contour);
                 },
                 FaceIntersection::Edge(edge) => {
@@ -76,14 +76,13 @@ impl Volume {
             }
         }
 
-        let mut contour = Vec::<Edge>::new();
-        while let Some(edge) = edges.pop() {
-            let mut contour = Vec::<Edge>::new();
-            contour.push(edge);
+        while let Some(mut edge) = edges.pop() {
+            let mut contour = Vec::<Rc<Edge>>::new();
+            contour.push(Rc::new(edge.clone()));
             while contour[0].start != contour.last().unwrap().end {
                 for next_edge in edges.iter() {
                     if contour.last().unwrap().end == next_edge.start {
-                        contour.push(next_edge.clone());
+                        contour.push(Rc::new(next_edge.clone()));
                         edge = next_edge.clone();
                     }
                 }
@@ -95,25 +94,26 @@ impl Volume {
     }
 
     pub fn split_parts(&self, other: &Volume) -> (Volume, Volume, Vec<Volume>) {
-        let split_loops = self.intersect(other);
+        todo!("Implement split_parts");
+        // let split_loops = self.intersect(other);
 
-        let a_without_b = Vec::<Rc<Face>>::new();
-        a_without_b.extend(self.subsurface(&split_loops));
-        a_without_b.extend(other.subsurface(split_loops.iter().map(|contour| contour.flip())));
-        let a_without_b = Volume::new(a_without_b);
+        // let a_without_b = Vec::<Rc<Face>>::new();
+        // a_without_b.extend(self.subsurface(&split_loops));
+        // a_without_b.extend(other.subsurface(split_loops.iter().map(|contour| contour.neg())));
+        // let a_without_b = Volume::new(a_without_b);
 
-        let b_without_a = Vec::<Rc<Face>>::new();
-        b_without_a.extend(other.subsurface(&split_loops));
-        b_without_a.extend(self.subsurface(split_loops.iter().map(|contour| contour.flip())));
-        let b_without_a = Volume::new(b_without_a);
+        // let b_without_a = Vec::<Rc<Face>>::new();
+        // b_without_a.extend(other.subsurface(&split_loops));
+        // b_without_a.extend(self.subsurface(split_loops.iter().map(|contour| contour.neg())));
+        // let b_without_a = Volume::new(b_without_a);
 
-        let int = Vec::<Volume>::new();
-        for intersection in split_loops {
-            let faces_s = self.subsurface(&intersection.flip());
-            let faces_o = other.subsurface(&intersection.flip());
-            faces_s.extend(faces_o);
-            int.push(Volume::new(faces_s));
-        }
-        return (a_without_b, b_without_a, int);
+        // let int = Vec::<Volume>::new();
+        // for intersection in split_loops {
+        //     let faces_s = self.subsurface(&intersection.neg());
+        //     let faces_o = other.subsurface(&intersection.neg());
+        //     faces_s.extend(faces_o);
+        //     int.push(Volume::new(faces_s));
+        // }
+        // return (a_without_b, b_without_a, int);
     }
 }

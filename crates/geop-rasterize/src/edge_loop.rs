@@ -1,10 +1,10 @@
 use geop_geometry::points::point::Point;
-use geop_topology::topology::edge::contour::EdgeLoop;
+use geop_topology::topology::edge::contour::Contour;
 
 use crate::vertex_buffer::{RenderVertex, VertexBuffer};
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_contour_into_line_list(contour: &EdgeLoop, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> VertexBuffer {
     let n = 200;
     let mut vertices = Vec::<RenderVertex>::with_capacity(2 * n);
     vertices.push(RenderVertex::new(contour.point_at(0.0), color));
@@ -18,7 +18,7 @@ pub fn rasterize_contour_into_line_list(contour: &EdgeLoop, color: [f32; 3]) -> 
 }
 
 // Rasterizes multiple edge loop into triangle list.
-pub fn rasterize_contours_into_line_list(contour: &[EdgeLoop], color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_contours_into_line_list(contour: &[Contour], color: [f32; 3]) -> VertexBuffer {
     contour.iter().fold(VertexBuffer::new(Vec::new()), |mut acc, contour| {
         acc.join(&rasterize_contour_into_line_list(contour, color));
         acc
@@ -26,7 +26,7 @@ pub fn rasterize_contours_into_line_list(contour: &[EdgeLoop], color: [f32; 3]) 
 }
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_contour_triangle(contour: EdgeLoop, camera_pos: Point, width: f64, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_contour_triangle(contour: Contour, camera_pos: Point, width: f64, color: [f32; 3]) -> VertexBuffer {
     let n = 50;
     let mut points = Vec::<Point>::with_capacity(n);
     for i in 0..n {
