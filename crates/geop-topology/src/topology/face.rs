@@ -68,52 +68,57 @@ impl Face {
         return edges;
     }
 
-    pub fn contains_point(&self, other: &Point) -> bool {
-        todo!("Implement contains");
-    }
+    // pub fn contains_point(&self, other: &Point) -> bool {
+    //     todo!("Implement contains");
+    // }
 
     pub fn contains_edge(&self, other: &Edge) -> bool {
         todo!("Implement contains");
     }
 
     pub fn contains_contour(&self, other: &Contour) -> bool {
-        todo!("Implement contains");
+        for edge in other.edges.iter() {
+            if !self.contains_edge(edge) {
+                return false;
+            }
+        }
+        true
     }
 
     pub fn contour_direction(&self, other: &Contour) -> ContourDirection {
         todo!("Implement contour_direction");
     }
 
-    pub fn intersect(&self, other: &Face) -> Vec<FaceIntersection> {
-        todo!("Implement intersect");
-    }
+    // pub fn intersect(&self, other: &Face) -> Vec<FaceIntersection> {
+    //     todo!("Implement intersect");
+    // }
 
-    pub fn subsurface(&self, cutting_contour: Contour) -> Rc<Face> {
-        let mut contours_self = self.inner_loops.clone();
-        contours_self.push(self.outer_loop.clone());
+    // pub fn subsurface(&self, cutting_contour: Contour) -> Rc<Face> {
+    //     let mut contours_self = self.inner_loops.clone();
+    //     contours_self.push(self.outer_loop.clone());
 
-        let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());
+    //     let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());
 
-        let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
-        assert!(ccw_conts.len() == 2, "Expected 2 counter clockwise edge loops, found {}", ccw_conts.len());
-        let (outer_loops, invalid_loops): (Vec<Contour>, Vec<Contour>) = ccw_conts.into_iter().partition(|l| {
-            for edge in &l.edges {
-                if !self.contains_edge(edge) {
-                    return false;
-                }
-            }
-            true
-        });
-        assert!(outer_loops.len() == 1, "Expected 1 counter clockwise edge loop, found {}", outer_loops.len());
-        let outer_loop = outer_loops[0].clone();
-        let inner_loops = cw_conts;
+    //     let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
+    //     assert!(ccw_conts.len() == 2, "Expected 2 counter clockwise edge loops, found {}", ccw_conts.len());
+    //     let (outer_loops, invalid_loops): (Vec<Contour>, Vec<Contour>) = ccw_conts.into_iter().partition(|l| {
+    //         for edge in &l.edges {
+    //             if !self.contains_edge(edge) {
+    //                 return false;
+    //             }
+    //         }
+    //         true
+    //     });
+    //     assert!(outer_loops.len() == 1, "Expected 1 counter clockwise edge loop, found {}", outer_loops.len());
+    //     let outer_loop = outer_loops[0].clone();
+    //     let inner_loops = cw_conts;
 
-        Rc::new(Face::new(
-            outer_loop,
-            inner_loops,
-            self.surface.clone(),
-        ))
-    }
+    //     Rc::new(Face::new(
+    //         outer_loop,
+    //         inner_loops,
+    //         self.surface.clone(),
+    //     ))
+    // }
 
     pub fn split_parts(&self, other: &Face) -> Option<(Face, Vec<Face>)> {
         assert!(self.surface == other.surface);
