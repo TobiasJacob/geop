@@ -50,9 +50,10 @@ pub enum FaceContains {
     Outside,
 }
 
-// Every face is homeomorphic to a disk or a square, hence we can use a parametrization of the form (u, v) \in [0, 1]^2.
-// We will assert that the Face is shaped such that there is a midpoint, and each line from the midpoint to the boundary is within the face.
-// The centerpoint cannot be on the boundary, and the boundary cannot intersect itself.
+// Implements a Face. A Face is bounded by the outer_loop and might have holes in inner_loops.
+// outer_loop has to be clockwise, if the face is looked at from normal direction (normal facing towards you).
+// inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
+// The contours are not allowed to intersect in any way. Keep in mind that a vertex is not considered an intersection, hence it is allowed that the contours touch each other at vertices.
 impl Face {
     pub fn new(outer_loop: Contour, inner_loops: Vec<Contour>, surface: Rc<FaceSurface>) -> Face {
         Face {
@@ -76,6 +77,14 @@ impl Face {
         return edges;
     }
 
+    pub fn construct_ray_to_outside(&self, point: Point, direction: Point) -> Edge {
+
+    }
+
+    pub fn ray_intersections(&self, direction: Point) -> usize {
+
+    }
+
     pub fn contains_point(&self, other: &Point) -> FaceContains {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
@@ -88,6 +97,7 @@ impl Face {
         todo!("Implement contains");
     }
 
+    // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
     pub fn contains_edge(&self, other: &Edge) -> bool {
         // Start and end point can be inside or on border
         if self.contains_point(&other.start.point) == FaceContains::Outside {
@@ -103,10 +113,6 @@ impl Face {
         }
         // Must be inside
         if intersections.len() == 0 {
-            return true;
-        }
-        // Must be touching since start and end are inside
-        if intersections.len() == 1 {
             return true;
         }
         return false;
@@ -127,7 +133,7 @@ impl Face {
             vec![],
             self.surface.clone(),
         );
-        if temp_face.contains_contour(&other) {
+        if point_inside {
             ContourDirection::CounterClockwise
         } else {
             ContourDirection::Clockwise
