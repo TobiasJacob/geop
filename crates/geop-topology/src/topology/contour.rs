@@ -256,6 +256,29 @@ impl Contour {
 
     //     Some(contours.swap_remove(outer_contour_index))
     // }
+
+    // Avoid using these functions
+    pub fn point_at(&self, u: f64) -> Point {
+        let u = u * self.edges.len() as f64;
+        let i = u.floor() as usize;
+        let u = u - i as f64;
+        let i = i % self.edges.len();
+        return self.edges[i].point_at(u);
+    }
+
+    // Avoid using these functions
+    pub fn project(&self, point: &Point) -> Option<f64> {
+        for (i, edge) in self.edges.iter().enumerate() {
+            let u = edge.project(point);
+            match u {
+                Some(u) => {
+                    return Some((i as f64 + u) / self.edges.len() as f64);
+                },
+                None => {}
+            }
+        }
+        None
+    }
 }
 
 // It is required that the contours within contours_self and within contours_other do not overlap.

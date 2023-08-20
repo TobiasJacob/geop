@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{curves::{line::Line, circle::Circle}, points::point::Point, EQ_THRESHOLD};
 use geop_rasterize::contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list};
-use geop_topology::topology::{edge::{contour::Contour, edge::{Edge, EdgeCurve, Direction}}, vertex::Vertex};
+use geop_topology::topology::{contour::Contour, edge::{Edge, EdgeCurve, Direction}, vertex::Vertex};
 use geop_wgpu::window::GeopWindow;
 
 
@@ -44,11 +44,11 @@ async fn run() {
         linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
     ]);
 
-    let remesh = contour.union(&contour_shifted).unwrap();
+    let remesh = contour.remesh(&contour_shifted);
     // println!("{:?}", remesh.len());
 
     let vertex_buffer = rasterize_contours_into_line_list(
-        &[remesh].as_slice()[0..1],
+        &remesh.as_slice()[0..1],
         [1.0, 1.0, 1.0]
     );
     let window = GeopWindow::new(vertex_buffer).await;

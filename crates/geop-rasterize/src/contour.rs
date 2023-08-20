@@ -1,5 +1,5 @@
 use geop_geometry::points::point::Point;
-use geop_topology::topology::contour::Contour;
+use geop_topology::topology::{contour::Contour, edge::Edge};
 
 use crate::vertex_buffer::{RenderVertex, VertexBuffer};
 

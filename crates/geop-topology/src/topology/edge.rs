@@ -4,8 +4,6 @@ use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, e
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
-use super::contour::Contour;
-
 #[derive(PartialEq, Clone, Debug)]
 pub enum EdgeCurve {
     Line(Line),
@@ -134,26 +132,26 @@ impl Edge {
     }
 
     // Avoid using these functions as they are not well defined for periodic curves.
-    // pub fn point_at(&self, u: f64) -> Point {
-    //     assert!(u >= 0.0 && u < 1.0);
-    //     let u = self.start_u + u * (self.end_u - self.start_u);
-    //     self.curve.curve().point_at(u)
-    // }
+    pub fn point_at(&self, u: f64) -> Point {
+        assert!(u >= 0.0 && u < 1.0);
+        let u = self.start_u + u * (self.end_u - self.start_u);
+        self.curve.curve().point_at(u)
+    }
 
-    // pub fn project(&self, point: &Point) -> Option<f64> {
-    //     let u_p = self.curve.curve().project(*point);
-    //     if u_p.1 > PROJECTION_THRESHOLD {
-    //         return None;
-    //     }
-    //     let u = match u_p.0 > self.start_u {
-    //         true => u_p.0,
-    //         false => u_p.0 + 2.0 * std::f64::consts::PI,
-    //     };
-    //     if u < self.start_u || u > self.end_u {
-    //         return None;
-    //     }
-    //     Some((u - self.start_u) / (self.end_u - self.start_u))
-    // }
+    pub fn project(&self, point: &Point) -> Option<f64> {
+        let u_p = self.curve.curve().project(*point);
+        if u_p.1 > PROJECTION_THRESHOLD {
+            return None;
+        }
+        let u = match u_p.0 > self.start_u {
+            true => u_p.0,
+            false => u_p.0 + 2.0 * std::f64::consts::PI,
+        };
+        if u < self.start_u || u > self.end_u {
+            return None;
+        }
+        Some((u - self.start_u) / (self.end_u - self.start_u))
+    }
 
     // pub fn rasterize(&self) -> Vec<Point> {
     //     let num_points = 40 as usize;
@@ -185,7 +183,6 @@ impl Edge {
     //   I
     //  / \
     // si  ou
-    // The intersections are returned in the order they appear on self, starting with the start point.
     pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
         match *self.curve {
             EdgeCurve::Circle(ref circle) => {
@@ -194,7 +191,6 @@ impl Edge {
                         match circle_circle_intersection(circle, other_circle) {
                             CircleCircleIntersection::TwoPoint(a, b) => {
                                 let mut intersections = Vec::new();
-                                todo!("Order them by self.");
                                 intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                 intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
                                 intersections
