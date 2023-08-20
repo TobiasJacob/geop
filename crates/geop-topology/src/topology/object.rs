@@ -1,19 +1,19 @@
 use std::rc::Rc;
 
-use super::{vertex::Vertex, face::{Face, FaceIntersection}, edge::Edge, edge_loop::EdgeLoop};
+use super::{vertex::Vertex, face::{Face, FaceIntersection}, edge::Edge, contour::Contour};
 
 pub struct Object {
     vertices: Vec<Vertex>,
     edges: Vec<Edge>,
     faces: Vec<Face>,
-    hole_loops: Vec<EdgeLoop>,
+    hole_loops: Vec<Contour>,
     multiplicity: usize,
     genus: usize
 }
 
 pub enum ObjectIntersection {
-    TouchingEdgeLoop(EdgeLoop),
-    CrossingEdgeLoop(EdgeLoop),
+    TouchingEdgeLoop(Contour),
+    CrossingEdgeLoop(Contour),
     TouchingVertex(Vertex)
 }
 
