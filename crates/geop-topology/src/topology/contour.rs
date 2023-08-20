@@ -155,7 +155,7 @@ impl Contour {
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     // If edge loops are not overlapping, the result will be two edge loops.
     pub fn remesh(&self, other: &Contour) -> Vec<Contour> {
-        let (mut segments_self, mut segments_other) = self.split_if_necessary(other);
+        let (segments_self, segments_other) = self.split_if_necessary(other);
         let mut edges_self = segments_self.edges;
         let mut edges_other = segments_other.edges;
         for edge in edges_self.iter() {
@@ -166,9 +166,8 @@ impl Contour {
             println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
         }
 
-
         let mut contours = Vec::new();
-        let mut next_segment_is_self = false;
+        let mut next_segment_is_self;
         loop {
             let mut contour: Vec<Rc<Edge>> = Vec::new();
             if edges_self.len() > 0 {

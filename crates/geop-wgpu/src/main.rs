@@ -35,7 +35,7 @@ async fn run() {
     ]);
 
     // Loop shifted by 0.1 in x and y direction
-    let shift = Point::new(0.1, 0.1, 0.0);
+    let shift = Point::new(-0.0, -0.2, 0.0);
     let contour_shifted = Contour::new(vec![
         linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
@@ -45,7 +45,7 @@ async fn run() {
     ]);
 
     let remesh = contour.remesh(&contour_shifted);
-    // println!("{:?}", remesh.len());
+    println!("{:?}", remesh.len());
 
     let vertex_buffer = rasterize_contours_into_line_list(
         &remesh.as_slice()[0..1],

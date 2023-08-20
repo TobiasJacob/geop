@@ -48,8 +48,8 @@ impl Edge {
     pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>, direction: Direction) -> Edge {
         let start_u = curve.curve().project(*start.point);
         let end_u_p = curve.curve().project(*end.point);
-        assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is not on curve {start_u:?}");
-        assert!(end_u_p.1 < PROJECTION_THRESHOLD, "End point is not on curve {end_u_p:?}");
+        assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is {start:?} not on curve {curve:?}, projection returned {start_u:?}");
+        assert!(end_u_p.1 < PROJECTION_THRESHOLD, "End point is {end:?} not on curve {curve:?}, projection returned {end_u_p:?}");
         // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
         // The reason is that for edges it is possible to find parameter spaces relativly easy.
         // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an Contour.
@@ -98,27 +98,6 @@ impl Edge {
         })
     }
 
-    pub fn contains(&self, other: &Point) -> bool {
-        if *self.start.point == *other || *self.end.point == *other {
-            return true;
-        }
-
-        match *self.curve {
-            EdgeCurve::Line(ref line) => {
-                let u = line.project(*other).0;
-                u >= self.start_u && u <= self.end_u
-            },
-            EdgeCurve::Circle(ref circle) => {
-                let u = circle.project(*other).0;
-                u >= self.start_u && u <= self.end_u
-            },
-            EdgeCurve::Ellipse(ref ellipse) => {
-                let u = ellipse.project(*other).0;
-                u >= self.start_u && u <= self.end_u
-            },
-        }
-    }
-
     // Checks if the edge contains the point, and if so, splits the edge into two edges.
     // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
     pub fn split_if_necessary(&self, other: &Vertex) -> Vec<Rc<Edge>> {
@@ -151,6 +130,10 @@ impl Edge {
             return None;
         }
         Some((u - self.start_u) / (self.end_u - self.start_u))
+    }
+
+    pub fn contains(&self, other: &Point) -> bool {
+        self.project(other).is_some()
     }
 
     // pub fn rasterize(&self) -> Vec<Point> {
