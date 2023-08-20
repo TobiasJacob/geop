@@ -4,7 +4,7 @@ use geop_geometry::{points::point::Point};
 
 use crate::topology::vertex::Vertex;
 
-use super::{edge::{Edge, EdgeIntersection}};
+use super::{edge::{Edge, EdgeIntersection, EdgeContains}};
 
 #[derive(Debug, Clone)]
 pub struct Contour {
@@ -29,6 +29,8 @@ fn pop_next_segment(edges_self: &mut Vec<Rc<Edge>>, edges_other: &mut Vec<Rc<Edg
 
 // An Contour is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
 // It has a defined inside and outside, which is determined by the direction of the edges.
+// The vertices of edges are not part of the contour, e.g. the intersection of two contours at the same vertex is empty.
+// Keep in mind that the contour is still closed, but the vertices are "next to" the edges, not "part of" the edges, because otherwise two neighbouring edges would overlap at the vertex, making things a lot more complicated.
 impl Contour {
     pub fn new(edges: Vec<Rc<Edge>>) -> Contour {
         for i in 0..edges.len() {
@@ -50,17 +52,21 @@ impl Contour {
         return self.get_edge_index(point).is_some();
     }
 
+    // Returns an edge that contains the point, or None if the point is not on the contour.
+    // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: &Point) -> Option<usize> {
         for (i, edge) in self.edges.iter().enumerate() {
-            if edge.contains(point) {
+            if edge.contains(point) != EdgeContains::Outside {
                 return Some(i);
             }
         }
         None
     }
 
-    // Gets the subcurve between these two points
+    // Gets the subcurve between these two points. It is guaranteed that there will be no zero length edges.
     pub fn get_subcurve(&self, start: Vertex, end: Vertex) -> Vec<Rc<Edge>> {
+        assert!(start != end);
+
         let mut result = Vec::<Rc<Edge>>::new();
         let start_i = self
             .get_edge_index(&start.point)
@@ -75,25 +81,22 @@ impl Contour {
         }
 
         let mut edge = &self.edges[start_i];
-        result.push(Rc::new(Edge::new(start.clone(), edge.end.clone(), edge.curve.clone(), edge.direction)));
+        if start != edge.end {
+            result.push(Rc::new(Edge::new(start.clone(), edge.end.clone(), edge.curve.clone(), edge.direction)));
+        }
         for i in start_i + 1..end_i {
             edge = &self.edges[i % self.edges.len()];
             result.push(edge.clone());
         }
         edge = &self.edges[end_i % self.edges.len()];
-        result.push(Rc::new(Edge::new(edge.start.clone(), end.clone(), edge.curve.clone(), edge.direction)));
-        result
-    }
-
-    pub fn get_subcurves(&self, vertices: Vec<(Vertex, Vertex)>) -> Vec<Vec<Rc<Edge>>> {
-        let mut result = Vec::<Vec<Rc<Edge>>>::new();
-        for (seg_start, seg_end) in vertices.iter() {
-            let segment = self.get_subcurve(seg_start.clone(), seg_end.clone());            
-            result.push(segment);
+        if edge.start != end {
+            result.push(Rc::new(Edge::new(edge.start.clone(), end.clone(), edge.curve.clone(), edge.direction)));
         }
         result
     }
 
+    // Gets all intersections between this contour and another contour.
+    // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same vertex is empty.
     pub fn intersect(&self, other: &Contour) -> Vec<Vertex> {
         let mut intersections = Vec::<Vertex>::new();
         for edge_self in self.edges.iter() {
@@ -123,7 +126,7 @@ impl Contour {
     }
 
 
-    // Takes 2 Contours and connects them at intersecting points with new vertices.
+    // Takes 2 Contours and connects them at intersecting points with new vertices if there are some.
     // If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop.
     // If there are no intersections, the outer vector will have length 1.
     fn split_if_necessary(&self, other: &Contour) -> (Contour, Contour) {

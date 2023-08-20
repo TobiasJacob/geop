@@ -1,6 +1,6 @@
 use std::{rc::Rc, vec};
 
-use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, curve_curve_intersection::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}};
+use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, curve_curve_intersection::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}, EQ_THRESHOLD};
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
@@ -43,9 +43,20 @@ pub enum EdgeIntersection {
     Edge(Edge),
 }
 
-// TODO: Implement an periodic / circular edge
+#[derive(Clone, Debug, PartialEq)]
+pub enum EdgeContains {
+    Inside,
+    Outside,
+    OnVertex,
+}
+
+
+// Represents an Edge, defined by a curve, and a start and end vertex.
+// It is important to know that the start and end vertex are not considered a part of the edge.
+// E.g. "intersection" between two edges at end points are not considered intersections.
 impl Edge {
     pub fn new(start: Vertex, end: Vertex, curve: Rc<EdgeCurve>, direction: Direction) -> Edge {
+        assert!(start != end); // Prevent zero length edges
         let start_u = curve.curve().project(*start.point);
         let end_u_p = curve.curve().project(*end.point);
         assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is {start:?} not on curve {curve:?}, projection returned {start_u:?}");
@@ -101,10 +112,7 @@ impl Edge {
     // Checks if the edge contains the point, and if so, splits the edge into two edges.
     // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
     pub fn split_if_necessary(&self, other: &Vertex) -> Vec<Rc<Edge>> {
-        if !self.contains(&other.point) {
-            return vec![Rc::new(self.clone())];
-        }
-        if self.start == *other || self.end == *other {
+        if self.contains(&other.point) != EdgeContains::Inside {
             return vec![Rc::new(self.clone())];
         }
         return vec![Rc::new(Edge::new(self.start.clone(), other.clone(), self.curve.clone(), self.direction)), Rc::new(Edge::new(other.clone(), self.end.clone(), self.curve.clone(), self.direction))];
@@ -126,14 +134,24 @@ impl Edge {
             true => u_p.0,
             false => u_p.0 + 2.0 * std::f64::consts::PI,
         };
-        if u < self.start_u || u > self.end_u {
+        if u < self.start_u - EQ_THRESHOLD || u > self.end_u + EQ_THRESHOLD {
             return None;
         }
         Some((u - self.start_u) / (self.end_u - self.start_u))
     }
 
-    pub fn contains(&self, other: &Point) -> bool {
-        self.project(other).is_some()
+    pub fn contains(&self, other: &Point) -> EdgeContains {
+        let u = self.project(other);
+        match u {
+            Some(u) => {
+                if u < EQ_THRESHOLD || u > 1.0 - EQ_THRESHOLD {
+                    EdgeContains::OnVertex
+                } else {
+                    EdgeContains::Inside
+                }
+            },
+            None => EdgeContains::Outside,
+        }
     }
 
     // pub fn rasterize(&self) -> Vec<Point> {
@@ -176,6 +194,9 @@ impl Edge {
                                 let mut intersections = Vec::new();
                                 intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                 intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
+                                if self.contains(&a) == EdgeContains::Inside && other.contains(&a) == EdgeContains::Inside {
+                                    intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                }
                                 intersections
                             },
                             CircleCircleIntersection::OnePoint(a) => {
@@ -244,7 +265,10 @@ impl Edge {
                         match line_line_intersection(line, other_line) {
                             LineLineIntersection::Point(a) => {
                                 let mut intersections = Vec::new();
-                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                // Check if it is contained
+                                if self.contains(&a) == EdgeContains::Inside && other.contains(&a) == EdgeContains::Inside {
+                                    intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                }
                                 intersections
                             },
                             LineLineIntersection::None => {

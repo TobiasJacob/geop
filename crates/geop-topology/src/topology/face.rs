@@ -4,7 +4,7 @@ use geop_geometry::{surfaces::{plane::Plane, sphere::Sphere, surface::Surface}, 
 
 use crate::{PROJECTION_THRESHOLD, topology::{edge::{Direction, EdgeCurve, EdgeIntersection}, contour::remesh_multiple_multiple}};
 
-use super::{{contour::Contour, edge::Edge}, vertex::Vertex};
+use super::{{contour::Contour, edge::Edge}, vertex::Vertex, edge::EdgeContains};
 
 
 #[derive(PartialEq, Clone, Debug)]
@@ -42,6 +42,14 @@ pub enum FaceIntersection {
     Vertex(Vertex)
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum FaceContains {
+    Inside,
+    OnEdge,
+    OnVertex,
+    Outside,
+}
+
 // Every face is homeomorphic to a disk or a square, hence we can use a parametrization of the form (u, v) \in [0, 1]^2.
 // We will assert that the Face is shaped such that there is a midpoint, and each line from the midpoint to the boundary is within the face.
 // The centerpoint cannot be on the boundary, and the boundary cannot intersect itself.
@@ -68,12 +76,40 @@ impl Face {
         return edges;
     }
 
-    // pub fn contains_point(&self, other: &Point) -> bool {
-    //     todo!("Implement contains");
-    // }
+    pub fn contains_point(&self, other: &Point) -> FaceContains {
+        // If the point is on the border, it is part of the set
+        for edge in self.all_edges() {
+            match edge.contains(other) {
+                EdgeContains::Inside => return FaceContains::OnEdge, 
+                EdgeContains::OnVertex => return FaceContains::OnVertex,
+                EdgeContains::Outside => continue,
+            }
+        }
+        todo!("Implement contains");
+    }
 
     pub fn contains_edge(&self, other: &Edge) -> bool {
-        todo!("Implement contains");
+        // Start and end point can be inside or on border
+        if self.contains_point(&other.start.point) == FaceContains::Outside {
+            return false;
+        }
+        if self.contains_point(&other.end.point) == FaceContains::Outside{
+            return false;
+        }
+        let mut intersections = Vec::<EdgeIntersection>::new();
+        for edge in self.all_edges() {
+            let intersection = edge.intersections(other);
+            intersections.extend(intersection);
+        }
+        // Must be inside
+        if intersections.len() == 0 {
+            return true;
+        }
+        // Must be touching since start and end are inside
+        if intersections.len() == 1 {
+            return true;
+        }
+        return false;
     }
 
     pub fn contains_contour(&self, other: &Contour) -> bool {
@@ -86,7 +122,16 @@ impl Face {
     }
 
     pub fn contour_direction(&self, other: &Contour) -> ContourDirection {
-        todo!("Implement contour_direction");
+        let temp_face = Face::new(
+            other.clone(),
+            vec![],
+            self.surface.clone(),
+        );
+        if temp_face.contains_contour(&other) {
+            ContourDirection::CounterClockwise
+        } else {
+            ContourDirection::Clockwise
+        }
     }
 
     // pub fn intersect(&self, other: &Face) -> Vec<FaceIntersection> {
