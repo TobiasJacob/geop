@@ -77,12 +77,18 @@ impl Face {
         return edges;
     }
 
-    pub fn construct_ray_to_outside(&self, point: Point, direction: Point) -> Edge {
+    pub fn winding_number(&self, point: Point) -> i32 {
+        // let normal = self.surface.normal(point);
+        // Now check how often the contours wind around the point
+        todo!();
+    }
 
+    pub fn construct_ray_to_outside(&self, point: Point, direction: Point) -> Edge {
+        todo!();
     }
 
     pub fn ray_intersections(&self, direction: Point) -> usize {
-
+        todo!();
     }
 
     pub fn contains_point(&self, other: &Point) -> FaceContains {
@@ -133,6 +139,7 @@ impl Face {
             vec![],
             self.surface.clone(),
         );
+        let point_inside = todo!();
         if point_inside {
             ContourDirection::CounterClockwise
         } else {

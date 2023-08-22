@@ -52,6 +52,11 @@ impl Contour {
         return self.get_edge_index(point).is_some();
     }
 
+    // Calculates how often the contour winds around the axis defined by (point, normal) in clockwise direction, if the normal is facing towards the camera.
+    pub fn winding_number(&self, point: &Point, normal: Point) -> i32 {
+        todo!();
+    }
+
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: &Point) -> Option<usize> {
