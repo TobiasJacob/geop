@@ -13,7 +13,7 @@ pub struct GeopWindow {
 }
 
 impl GeopWindow {
-    pub async fn new(vertex_buffer: VertexBuffer) -> Self {
+    pub async fn new(vertex_buffer_line: VertexBuffer, vertex_buffer_triange: VertexBuffer) -> Self {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 std::panic::set_hook(Box::new(console_error_panic_hook::hook));
@@ -51,7 +51,7 @@ impl GeopWindow {
         //     0.01,
         //     [1.0, 1.0, 1.0]
         // );
-        let state = State::new(window, vertex_buffer.to_u8_slice()).await;
+        let state = State::new(window, vertex_buffer_line.to_u8_slice(), vertex_buffer_triange.to_u8_slice()).await;
 
         Self {
             event_loop,
