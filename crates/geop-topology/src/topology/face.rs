@@ -63,6 +63,16 @@ impl Face {
         }
     }
 
+    pub fn all_vertices(&self) -> Vec<Rc<Vertex>> {
+        let mut vertices = Vec::<Rc<Vertex>>::new();
+        vertices.extend(self.outer_loop.all_vertices());
+
+        for contour in self.inner_loops.iter() {
+            vertices.extend(contour.all_vertices());
+        }
+        return vertices;
+    }
+
     pub fn all_edges(&self) -> Vec<Rc<Edge>> {
         let mut edges = Vec::<Rc<Edge>>::new();
         for edge in self.outer_loop.edges.iter() {
@@ -77,21 +87,12 @@ impl Face {
         return edges;
     }
 
-    pub fn winding_number(&self, point: Point) -> i32 {
-        // let normal = self.surface.normal(point);
-        // Now check how often the contours wind around the point
-        todo!();
+    pub fn edge_from_to(&self, from: &Vertex, to: &Vertex) -> Rc<Edge> {
+        let curve = self.surface.surface().geodesic(from.point, to.point);
+        return Rc::new(Edge::new(from.clone(), to.clone(), Rc::new(EdgeCurve::Line(curve)), Direction::Increasing));
     }
 
-    pub fn construct_ray_to_outside(&self, point: Point, direction: Point) -> Edge {
-        todo!();
-    }
-
-    pub fn ray_intersections(&self, direction: Point) -> usize {
-        todo!();
-    }
-
-    pub fn contains_point(&self, other: &Point) -> FaceContains {
+    pub fn contains_point(&self, other: &Vertex) -> FaceContains {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
             match edge.contains(other) {
@@ -100,7 +101,48 @@ impl Face {
                 EdgeContains::Outside => continue,
             }
         }
-        todo!("Implement contains");
+        // Draw a line from the point to a random point on the border.
+        let q = self.outer_loop.edges[0].start;
+        let curve = self.edge_from_to(other, &q);
+
+        // Find the closest intersection point
+        let mut closest_point = *q.point;
+        let mut closest_distance = std::f64::INFINITY;
+        let mut closest_intersect_from_left = false;
+        for contour in self.inner_loops.iter() {
+            let intersection = contour.intersections(curve);
+            match intersection {
+                EdgeContains::Outside => continue,
+                _ => {
+                    let distance = self.surface.surface().distance(*other, vertex.point);
+                    if distance < closest_distance {
+                        let curve_dir = curve.tangent(vertex.point);
+                        let normal = self.surface.surface().normal(vertex.point);
+                        let curve_prod = contour.tangent(vertex.point);
+                        closest_distance = distance;
+                        closest_point = vertex.point;
+                        closest_intersect_from_left = curve_dir.cross(normal).dot(curve_prod) > 0.0; // TODO: Check this is correct
+                    }
+                },
+            }
+        }
+        let intersection = self.outer_loop.intersections(curve);
+        match intersection {
+            EdgeContains::Outside => return FaceContains::Outside,
+            _ => {
+                let distance = self.surface.surface().distance(*other, vertex.point);
+                if distance < closest_distance {
+                    let curve_dir = curve.tangent(vertex.point);
+                    let normal = self.surface.surface().normal(vertex.point);
+                    let curve_prod = contour.tangent(vertex.point);
+                    closest_distance = distance;
+                    closest_point = vertex.point;
+                    closest_intersect_from_left = curve_dir.cross(normal).dot(curve_prod) > 0.0; // TODO: Check this is correct
+                }
+            },
+        }
+
+        return closest_intersect_from_left;
     }
 
     // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.

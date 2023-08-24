@@ -1,4 +1,4 @@
-use crate::points::point::Point;
+use crate::{points::point::Point, curves::curve::Curve};
 
 pub trait Surface {
     // Constructs a parameter space which is guaranteed to be continuous and monotonically increasing in both u and v except for the vanishing point.
@@ -12,4 +12,18 @@ pub trait Surface {
     fn normal(&self, p: Point) -> Point;
     fn normalize(&mut self);
     fn is_normalized(&self) -> bool;
+    // Returns the metric between u and v
+    fn metric(&self, u: Point, v: Point) -> f64;
+    // Distance between x and y.
+    fn distance(&self, x: Point, y: Point) -> f64;
+    // Exponential of u at base x. u_z is ignored.
+    fn exp(&self, x: Point, u: Point) -> f64;
+    // Log of y at base x. Z coordinate is set to 0.
+    fn log(&self, x: Point, y: Point) -> Point;
+    // Parallel transport of v from x to y.
+    fn parallel_transport(&self, v: Point, x: Point, y: Point) -> Point;
+    // Returns the geodesic between p and q.
+    fn geodesic(&self, p: Point, q: Point) -> dyn Curve;
+    // Angle between a and b at x.
+    fn angle(&self, x: Point, a: Point, b: Point) -> f64;
 }

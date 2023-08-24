@@ -43,6 +43,15 @@ impl Contour {
         Contour { edges }
     }
 
+    pub fn all_vertices(&self) -> Vec<Rc<Vertex>> {
+        let mut vertices = Vec::<Rc<Vertex>>::new();
+        for edge in self.edges.iter() {
+            vertices.push(edge.start.clone());
+        }
+        vertices.push(self.edges.last().unwrap().end.clone());
+        return vertices;
+    }
+
     pub fn neg(&self) -> Contour {
         let edges = self.edges.iter().rev().map(|e| Rc::new(e.neg())).collect::<Vec<Rc<Edge>>>();
         Contour::new(edges)
