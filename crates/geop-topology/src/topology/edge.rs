@@ -118,6 +118,13 @@ impl Edge {
         return vec![Rc::new(Edge::new(self.start.clone(), other.clone(), self.curve.clone(), self.direction)), Rc::new(Edge::new(other.clone(), self.end.clone(), self.curve.clone(), self.direction))];
     }
 
+    pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
+        let a = self.curve.curve().project(a).0;
+        let b = self.curve.curve().project(b).0;
+        let mid = (a + b) / 2.0;
+        self.curve.curve().point_at(mid)
+    }
+
     // Avoid using these functions as they are not well defined for periodic curves.
     pub fn point_at(&self, u: f64) -> Point {
         assert!(u >= 0.0 && u < 1.0);
@@ -164,26 +171,7 @@ impl Edge {
     //     }).collect()
     // }
 
-    // All intersections where it crosses other edge. The end points are included, but if they overlap they will continue to refer to the same vertex. The list is unsorted.
-    // This is so that we can use this function to remesh an edge loop, mostly because touching edge loops are not going to be remeshed, because they would be self-intersecting.
-    // oi  so
-    //  \ /
-    //   x  <-- This is fine for remeshing, as connecting self_in (si) with other_out (oo) can not return to this point. This is because there has to be another intersection between self and other, and since the edges are not self-intersecting, this is another point.
-    //  / \
-    // si  oo
-    // Compare to
-    // so  oi
-    //  \ /
-    //   x  <-- This is not fine for remeshing, as connecting self_in (si) with other_out (oo) can return to this point. This is because there is no other intersection between self and other, and this means there does not have to be another intersection. Consider e.g. two circles touching each other. Remeshing them would result in a self intersecting curve.
-    //  / \
-    // si  ou
-    // However, if the intersection is more than a point, but a line, then it is fine as there are two different points (start and end), which in remeshing will prevent the curve from becoming self intersecting.
-    // so  oi
-    //  \ /
-    //   I <- This will be remeshed into two edge loops
-    //   I
-    //  / \
-    // si  ou
+    // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
     pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
         match *self.curve {
             EdgeCurve::Circle(ref circle) => {
@@ -192,11 +180,28 @@ impl Edge {
                         match circle_circle_intersection(circle, other_circle) {
                             CircleCircleIntersection::TwoPoint(a, b) => {
                                 let mut intersections = Vec::new();
-                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
-                                intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
-                                if self.contains(&a) == EdgeContains::Inside && other.contains(&a) == EdgeContains::Inside {
-                                    intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                let u_a = circle.project(a).0;
+                                let u_b = circle.project(b).0;
+                                if self.direction == Direction::Increasing {
+                                    if u_a < u_b {
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
+                                    } else {
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                    }
+                                } else {
+                                    if u_a < u_b {
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                    } else {
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                        intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(b))));
+                                    }
                                 }
+                                intersections = intersections.into_iter().filter(|intersection| {
+                                    self.contains(intersection) == EdgeContains::Inside && other.contains(intersection) == EdgeContains::Inside
+                                }).collect();
                                 intersections
                             },
                             CircleCircleIntersection::OnePoint(a) => {

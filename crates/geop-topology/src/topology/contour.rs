@@ -61,11 +61,6 @@ impl Contour {
         return self.get_edge_index(point).is_some();
     }
 
-    // Calculates how often the contour winds around the axis defined by (point, normal) in clockwise direction, if the normal is facing towards the camera.
-    pub fn winding_number(&self, point: &Point, normal: Point) -> i32 {
-        todo!();
-    }
-
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: &Point) -> Option<usize> {
@@ -75,6 +70,25 @@ impl Contour {
             }
         }
         None
+    }
+
+    // Checks if the contour contains the point, and if so, splits the edge into two edges.
+    // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
+    pub fn split_if_necessary(&self, other: &Vertex) -> Contour {
+        if self.contains(&other.point) != EdgeContains::Inside {
+            return vec![Rc::new(self.clone())];
+        }
+        
+        let edge_index = self.get_edge_index(&other.point).unwrap();
+        let edge = self.edges[edge_index].split_if_necessary(other);
+        assert!(edge.len() == 2);
+
+        let mut edges = self.edges.clone();
+        edges.remove(edge_index);
+        edges.insert(edge_index, edge[1].clone());
+        edges.insert(edge_index, edge[0].clone());
+
+        return Contour::new(edges);
     }
 
     // Gets the subcurve between these two points. It is guaranteed that there will be no zero length edges.
@@ -143,97 +157,97 @@ impl Contour {
     // Takes 2 Contours and connects them at intersecting points with new vertices if there are some.
     // If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop.
     // If there are no intersections, the outer vector will have length 1.
-    fn split_if_necessary(&self, other: &Contour) -> (Contour, Contour) {
-        let split_verts: Vec<Vertex> = self.intersect(&other);
+    // fn split_if_necessary(&self, other: &Contour) -> (Contour, Contour) {
+    //     let split_verts: Vec<Vertex> = self.intersect(&other);
 
-        let mut edges_self = self.edges.clone();
-        let mut edges_other = other.edges.clone();
-        for vert in split_verts.iter() {
-            let mut new_edges_self = Vec::<Rc<Edge>>::new();
-            for edge in edges_self.iter() {
-                let new_edges = edge.split_if_necessary(vert);
-                new_edges_self.extend(new_edges);
-            }
-            edges_self = new_edges_self;
+    //     let mut edges_self = self.edges.clone();
+    //     let mut edges_other = other.edges.clone();
+    //     for vert in split_verts.iter() {
+    //         let mut new_edges_self = Vec::<Rc<Edge>>::new();
+    //         for edge in edges_self.iter() {
+    //             let new_edges = edge.split_if_necessary(vert);
+    //             new_edges_self.extend(new_edges);
+    //         }
+    //         edges_self = new_edges_self;
 
-            let mut new_edges_other = Vec::<Rc<Edge>>::new();
-            for edge in edges_other.iter() {
-                let new_edges = edge.split_if_necessary(vert);
-                new_edges_other.extend(new_edges);
-            }
-            edges_other = new_edges_other;
-        }
+    //         let mut new_edges_other = Vec::<Rc<Edge>>::new();
+    //         for edge in edges_other.iter() {
+    //             let new_edges = edge.split_if_necessary(vert);
+    //             new_edges_other.extend(new_edges);
+    //         }
+    //         edges_other = new_edges_other;
+    //     }
 
-        (Contour::new(edges_self), Contour::new(edges_other))
-    }
+    //     (Contour::new(edges_self), Contour::new(edges_other))
+    // }
 
     // Splits this edge loop with another edge loop.
     // This makes sure that the resulting edge loops are closed and do not intersect each other anymore.
     // Neighbouring edge loops will share the same end points for the edges, and the two neighbouring edges will face opposite direction.
     // If edge loops are not overlapping, the result will be two edge loops.
-    pub fn remesh(&self, other: &Contour) -> Vec<Contour> {
-        let (segments_self, segments_other) = self.split_if_necessary(other);
-        let mut edges_self = segments_self.edges;
-        let mut edges_other = segments_other.edges;
-        for edge in edges_self.iter() {
-            println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
-        }
+    // pub fn remesh(&self, other: &Contour) -> Vec<Contour> {
+    //     let (segments_self, segments_other) = self.split_if_necessary(other);
+    //     let mut edges_self = segments_self.edges;
+    //     let mut edges_other = segments_other.edges;
+    //     for edge in edges_self.iter() {
+    //         println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
+    //     }
 
-        for edge in edges_other.iter() {
-            println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
-        }
+    //     for edge in edges_other.iter() {
+    //         println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
+    //     }
 
-        let mut contours = Vec::new();
-        let mut next_segment_is_self;
-        loop {
-            let mut contour: Vec<Rc<Edge>> = Vec::new();
-            if edges_self.len() > 0 {
-                contour.push(edges_self.pop().unwrap());
-                next_segment_is_self = false;
-            } else if edges_other.len() > 0 {
-                contour.push(edges_other.pop().unwrap());
-                next_segment_is_self = true;
-            } else {
-                break;
-            }
-            while contour[0].start != contour[contour.len() - 1].end {
-                let end_point = &contour[contour.len() - 1].end;
-                let next_segment = pop_next_segment(&mut edges_self, &mut edges_other, next_segment_is_self, &end_point);
-                match next_segment {
-                    Some(next_segment) => {
-                        contour.push(next_segment);
-                        next_segment_is_self = !next_segment_is_self;
-                    },
-                    None => {
-                        let next_segment = pop_next_segment(&mut edges_self, &mut edges_other, !next_segment_is_self, &end_point).expect("Edge has to be in one of the edge loops");
-                        contour.push(next_segment);
-                    }
-                }
-            }
-            contours.push(Contour::new(contour));
-        }
+    //     let mut contours = Vec::new();
+    //     let mut next_segment_is_self;
+    //     loop {
+    //         let mut contour: Vec<Rc<Edge>> = Vec::new();
+    //         if edges_self.len() > 0 {
+    //             contour.push(edges_self.pop().unwrap());
+    //             next_segment_is_self = false;
+    //         } else if edges_other.len() > 0 {
+    //             contour.push(edges_other.pop().unwrap());
+    //             next_segment_is_self = true;
+    //         } else {
+    //             break;
+    //         }
+    //         while contour[0].start != contour[contour.len() - 1].end {
+    //             let end_point = &contour[contour.len() - 1].end;
+    //             let next_segment = pop_next_segment(&mut edges_self, &mut edges_other, next_segment_is_self, &end_point);
+    //             match next_segment {
+    //                 Some(next_segment) => {
+    //                     contour.push(next_segment);
+    //                     next_segment_is_self = !next_segment_is_self;
+    //                 },
+    //                 None => {
+    //                     let next_segment = pop_next_segment(&mut edges_self, &mut edges_other, !next_segment_is_self, &end_point).expect("Edge has to be in one of the edge loops");
+    //                     contour.push(next_segment);
+    //                 }
+    //             }
+    //         }
+    //         contours.push(Contour::new(contour));
+    //     }
 
-        contours
-    }
+    //     contours
+    // }
 
     // It is important that the Contours in other do not overlap. This makes sure, that remeshing them with themselfs will not change anything.
-    pub fn remesh_multiple(&self, other: &[Contour]) -> Vec<Contour> {
-        let mut result = vec![self.clone()];
+    // pub fn remesh_multiple(&self, other: &[Contour]) -> Vec<Contour> {
+    //     let mut result = vec![self.clone()];
         
-        // Since all contours in other do not overlap, we can safely remesh them with each other.
-        // It is guaranteed, that whenever we apply a remesh iteration, result will only intersect with other in places where self already intersected with other.
-        // Hence, remeshing it again will keep the result untouched. 
-        for other_contour in other {
-            let mut new_result = Vec::<Contour>::new();
-            for contour in result {
-                let new_contours = contour.remesh(other_contour);
-                new_result.extend(new_contours.into_iter());
-            }
-            result = new_result;
-        }
+    //     // Since all contours in other do not overlap, we can safely remesh them with each other.
+    //     // It is guaranteed, that whenever we apply a remesh iteration, result will only intersect with other in places where self already intersected with other.
+    //     // Hence, remeshing it again will keep the result untouched. 
+    //     for other_contour in other {
+    //         let mut new_result = Vec::<Contour>::new();
+    //         for contour in result {
+    //             let new_contours = contour.remesh(other_contour);
+    //             new_result.extend(new_contours.into_iter());
+    //         }
+    //         result = new_result;
+    //     }
 
-        result
-    }
+    //     result
+    // }
 
     // // If no intersection is there, the result is None. Otherwise we can be sure that the result is a single edge loop.
     // pub fn union(&self, other: &Contour) -> Option<Contour> {
@@ -298,14 +312,14 @@ impl Contour {
 }
 
 // It is required that the contours within contours_self and within contours_other do not overlap.
-pub fn remesh_multiple_multiple(contours_self: &[Contour], contours_other: &[Contour]) -> Vec<Contour> {
-    let mut result = Vec::from(contours_self);
+// pub fn remesh_multiple_multiple(contours_self: &[Contour], contours_other: &[Contour]) -> Vec<Contour> {
+//     let mut result = Vec::from(contours_self);
     
-    for other_contour in contours_other {
-        let mut new_result = Vec::<Contour>::new();
-        let mut new_contours = other_contour.remesh_multiple(&result);
-        result = new_result;
-    }
+//     for other_contour in contours_other {
+//         let mut new_result = Vec::<Contour>::new();
+//         let mut new_contours = other_contour.remesh_multiple(&result);
+//         result = new_result;
+//     }
 
-    result
-}
+//     result
+// }

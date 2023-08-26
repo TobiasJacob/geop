@@ -34,7 +34,8 @@ impl Curve for Ellipse {
         (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
     }
 
-    fn derivative(&self, u: f64) -> Point {
+    fn derivative(&self, p: Point) -> Point {
+        let u = self.project(p).0;
         -self.dir0 * u.sin() + self.dir1 * u.cos()
     }
 }

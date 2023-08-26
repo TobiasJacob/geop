@@ -1,4 +1,4 @@
-use crate::{points::point::Point, EQ_THRESHOLD};
+use crate::{points::point::Point, EQ_THRESHOLD, curves::circle::Circle};
 
 use super::surface::Surface;
 
@@ -14,6 +14,11 @@ impl Sphere {
             basis,
             radius,
         }
+    }
+
+    fn curve_from_to(&self, p: Point, q: Point) -> Circle {
+        let normal = (p - self.basis).cross(q - self.basis).normalize();
+        return Circle::new(self.basis, normal, (q - self.basis).normalize());
     }
 }
 

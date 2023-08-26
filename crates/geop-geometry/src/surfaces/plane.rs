@@ -1,4 +1,4 @@
-use crate::points::point::Point;
+use crate::{points::point::Point, curves::line::Line};
 
 use super::surface::Surface;
 
@@ -18,6 +18,9 @@ impl Plane {
         }
     }
 
+    fn curve_from_to(&self, p: Point, q: Point) -> Line {
+        return Line::new(p, q - p);
+    }
 }
 
 impl Surface for Plane {

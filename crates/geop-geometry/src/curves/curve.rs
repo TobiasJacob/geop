@@ -7,5 +7,5 @@ pub trait Curve {
     // Returns the interval of the curve.
     fn point_at(&self, u: f64) -> Point;
     // Tangent / Direction of the curve at the given point. Not normalized.
-    fn derivative(&self, u: Point) -> Point;
+    fn derivative(&self, p: Point) -> Point;
 }

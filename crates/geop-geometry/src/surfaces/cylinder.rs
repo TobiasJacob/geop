@@ -1,4 +1,4 @@
-use crate::points::point::Point;
+use crate::{points::point::Point, curves::{curve, circle::Circle}};
 
 use super::surface::Surface;
 
@@ -16,6 +16,10 @@ impl Cylinder {
             extend,
             direction,
         }
+    }
+    
+    fn curve_from_to(&self, p: Point, q: Point) -> Circle {
+        todo!("Do the cylinder");
     }
 }
 
