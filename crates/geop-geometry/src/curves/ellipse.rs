@@ -38,6 +38,10 @@ impl Curve for Ellipse {
         let u = self.project(p).0;
         -self.dir0 * u.sin() + self.dir1 * u.cos()
     }
+
+    fn distance(&self, p1: Point, p2: Point) -> f64 {
+        todo!("Todo");
+    }
 }
 
 impl PartialEq for Ellipse {

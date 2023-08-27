@@ -33,6 +33,10 @@ impl Curve for Line {
     fn derivative(&self, p: Point) -> Point {
         self.direction.clone()
     }
+
+    fn distance(&self, p1: Point, p2: Point) -> f64 {
+        return (p2 - p1).norm();
+    }
 }
 
 impl PartialEq for Line {

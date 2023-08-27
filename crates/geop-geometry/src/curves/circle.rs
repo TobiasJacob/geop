@@ -40,6 +40,11 @@ impl Curve for Circle {
     fn derivative(&self, p: Point) -> Point {
         todo!("Implement derivative for Circle")
     }
+
+    fn distance(&self, p1: Point, p2: Point) -> f64 {
+        let angle = self.project(p1).0 - self.project(p2).0;
+        return angle.abs() * self.radius.norm();
+    }
 }
 
 // Implement partial eqality for Circle

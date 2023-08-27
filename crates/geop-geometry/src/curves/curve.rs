@@ -8,4 +8,6 @@ pub trait Curve {
     fn point_at(&self, u: f64) -> Point;
     // Tangent / Direction of the curve at the given point. Not normalized.
     fn derivative(&self, p: Point) -> Point;
+    // Measures distance between two points on the curve.
+    fn distance(&self, p1: Point, p2: Point) -> f64;
 }

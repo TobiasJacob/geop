@@ -287,25 +287,21 @@ impl Edge {
                             LineLineIntersection::None => {
                                 vec![]
                             },
-                            LineLineIntersection::Line(line) => {
-                                let start_u = other_line.project(*self.start.point).0;
-                                let end_u = other_line.project(*self.end.point).0;
+                            LineLineIntersection::Line(_) => {
+                                let start_point = match self.curve.curve().distance(*self.start.point, *self.end.point) < self.curve.curve().distance(*other.end.point, *self.end.point) {
+                                    true => self.start.clone(),
+                                    false => other.end.clone(),
+                                };
+                                let end_point = match self.curve.curve().distance(*self.end.point, *start_point.point) < self.curve.curve().distance(*other.end.point, *start_point.point) {
+                                    true => self.end.clone(),
+                                    false => other.end.clone(),
+                                };
 
-                                if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else if end_u < start_u {
-                                    vec![]
-                                } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
-                                } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
-                                } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(line.point_at(start_u))), Vertex::new(Rc::new(line.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
+                                if start_point == end_point {
+                                    return vec![EdgeIntersection::Vertex(start_point)];
                                 }
+
+                                return vec![EdgeIntersection::Edge(Edge::new(start_point, end_point, self.curve.clone(), self.direction))];
                             },
                         }
                     },

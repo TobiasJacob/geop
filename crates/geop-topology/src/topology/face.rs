@@ -56,6 +56,7 @@ pub enum FaceContainsEdge {
     Wiggeling,
 }
 
+#[derive(Debug)]
 pub enum EdgeSplit {
     AinB(Rc<Edge>),
     AonB(Rc<Edge>),
@@ -127,7 +128,19 @@ impl Face {
         let mut closest_distance = std::f64::INFINITY;
         let mut closest_intersect_from_inside = false;
         for contour in self.boundaries.iter() {
-            let intersections = contour.intersect_edge(&*curve);
+            let edge_intersections = contour.intersect_edge(&*curve);
+            let mut intersections = Vec::<Vertex>::new();
+            for intersection in edge_intersections {
+                match intersection {
+                    EdgeIntersection::Vertex(vertex) => {
+                        intersections.push(vertex);
+                    },
+                    EdgeIntersection::Edge(edge) => {
+                        intersections.push(edge.start);
+                        intersections.push(edge.end);
+                    },
+                }
+            }
             for vertex in intersections {
                 let distance = self.surface.surface().distance(other, *vertex.point);
                 if distance < closest_distance {
@@ -151,7 +164,15 @@ impl Face {
         let mut intersections = Vec::<Vertex>::new();
         for contour in self.boundaries.iter() {
             let intersection = contour.intersect_edge(other);
-            intersections.extend(intersection);
+            for int in intersection {
+                match int {
+                    EdgeIntersection::Vertex(vertex) => intersections.push(vertex),
+                    EdgeIntersection::Edge(edge) => {
+                        intersections.push(edge.start.clone());
+                        intersections.push(edge.end.clone());
+                    },
+                }
+            }
         }
         
         let mut part_inside = false;
@@ -211,16 +232,21 @@ impl Face {
         assert!(self.surface == other.surface);
 
         let mut intersections = Vec::<Vertex>::new();
-        for edge in self.all_edges() {
-            for other_edge in other.all_edges() {
-                let intersection = edge.intersections(&other_edge);
-                for int in intersection {
-                    match int {
+        for edge in self.boundaries.iter() {
+            for other_edge in other.boundaries.iter() {
+                for intersection in edge.intersect_contour(&other_edge) {
+                    match intersection {
                         EdgeIntersection::Vertex(vertex) => intersections.push(vertex),
-                        EdgeIntersection::Edge(edge) => intersections.push(edge.start),
+                        EdgeIntersection::Edge(edge) => {
+                            intersections.push(edge.start.clone());
+                            intersections.push(edge.end.clone());
+                        },
                     }
                 }
             }
+        }
+        for int in intersections.iter() {
+            println!("Intersection: {:?}", int);
         }
 
         let mut contours_self = self.boundaries.clone();
@@ -242,7 +268,7 @@ impl Face {
             }).collect::<Vec<EdgeSplit>>()
         }).chain(
             contours_other.into_iter().map(|contour| {
-                other.all_edges().into_iter().map(|edge| {
+                contour.edges.into_iter().map(|edge| {
                     match self.contains_edge(&edge) {
                         FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
                         FaceContainsEdge::OnBorder => EdgeSplit::BonA(edge),
@@ -260,6 +286,10 @@ impl Face {
                 EdgeSplit::BoutA(edge) => edge,
             }
         }).collect::<Vec<Rc<Edge>>>();
+
+        for edge in edges.iter() {
+            println!("Edge: {:?}", edge);
+        }
 
         // Now find all the contours
         let mut contours = Vec::<Contour>::new();
@@ -351,6 +381,7 @@ impl Face {
 
     pub fn surface_union(&self, other: &Face) -> Face {
         self.split_parts(other, |mode| {
+            println!("EdgeSplit: {:?}", mode);
             match mode {
                 EdgeSplit::AinB(_) => false,
                 EdgeSplit::AonB(_) => true,
