@@ -119,25 +119,39 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
-        let a = self.curve.curve().project(a).0;
-        let b = self.curve.curve().project(b).0;
+        if a == b {
+            return a;
+        }
+        let a = self.project(a).expect("A is not on edge");
+        let b = self.project(b).expect("B is not on edge");
         let mid = (a + b) / 2.0;
-        self.curve.curve().point_at(mid)
+        self.point_at(mid)
     }
 
     // Avoid using these functions as they are not well defined for periodic curves.
     pub fn point_at(&self, u: f64) -> Point {
-        assert!(u >= 0.0 && u < 1.0);
+        assert!(u >= -EQ_THRESHOLD && u < 1.0 + EQ_THRESHOLD);
         let u = self.start_u + u * (self.end_u - self.start_u);
         self.curve.curve().point_at(u)
     }
     
     pub fn tangent(&self, p: Point) -> Point {
         assert!(self.contains(p) != EdgeContains::Outside);
-        match &*self.curve {
-            EdgeCurve::Circle(c) => c.derivative(p).normalize(),
-            EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),
-            EdgeCurve::Line(l) => l.derivative(p).normalize(),
+        match self.direction {
+            Direction::Increasing => {
+                match &*self.curve {
+                    EdgeCurve::Circle(c) => c.derivative(p).normalize(),
+                    EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),
+                    EdgeCurve::Line(l) => l.derivative(p).normalize(),
+                }
+            },
+            Direction::Decreasing => {
+                match &*self.curve {
+                    EdgeCurve::Circle(c) => (-c.derivative(p)).normalize(),
+                    EdgeCurve::Ellipse(e) => (-e.derivative(p)).normalize(),
+                    EdgeCurve::Line(l) => (-l.derivative(p)).normalize(),
+                }
+            },
         }
     }
 
@@ -146,12 +160,18 @@ impl Edge {
         if u_p.1 > PROJECTION_THRESHOLD {
             return None;
         }
-        let u = match u_p.0 > self.start_u {
-            true => u_p.0,
-            false => u_p.0 + 2.0 * std::f64::consts::PI,
-        };
-        if u < self.start_u - EQ_THRESHOLD || u > self.end_u + EQ_THRESHOLD {
-            return None;
+        let u = u_p.0;
+        match self.direction {
+            Direction::Increasing => {
+                if u < self.start_u - EQ_THRESHOLD || u > self.end_u + EQ_THRESHOLD {
+                    return None;
+                }
+            },
+            Direction::Decreasing => {
+                if u > self.start_u + EQ_THRESHOLD || u < self.end_u - EQ_THRESHOLD {
+                    return None;
+                }
+            },
         }
         Some((u - self.start_u) / (self.end_u - self.start_u))
     }
@@ -213,7 +233,11 @@ impl Edge {
                                 }).map(|i| EdgeIntersection::Vertex(i)).collect()
                             },
                             CircleCircleIntersection::OnePoint(a) => {
-                                vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
+                                if self.contains(a) == EdgeContains::Inside && other.contains(a) == EdgeContains::Inside {
+                                    vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
+                                } else {
+                                    vec![]
+                                }
                             },
                             CircleCircleIntersection::None => {
                                 vec![]

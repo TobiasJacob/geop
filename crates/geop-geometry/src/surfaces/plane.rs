@@ -58,9 +58,7 @@ impl Surface for Plane {
     }
 
     fn distance(&self, x: Point, y: Point) -> f64 {
-        let n = self.normal(x);
-        let d = n.dot(x - y);
-        d.abs()
+        (x - y).norm()
     }
 }
 
