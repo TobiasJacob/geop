@@ -288,20 +288,35 @@ impl Edge {
                                 vec![]
                             },
                             LineLineIntersection::Line(_) => {
-                                let start_point = match self.curve.curve().distance(*self.start.point, *self.end.point) < self.curve.curve().distance(*other.end.point, *self.end.point) {
-                                    true => self.start.clone(),
-                                    false => other.end.clone(),
-                                };
-                                let end_point = match self.curve.curve().distance(*self.end.point, *start_point.point) < self.curve.curve().distance(*other.end.point, *start_point.point) {
-                                    true => self.end.clone(),
-                                    false => other.end.clone(),
+                                let start_u_other = self.curve.curve().project(*other.start.point).0;
+                                let end_u_other = self.curve.curve().project(*other.end.point).0;
+
+                                let (other_start, other_end) = match self.direction {
+                                    Direction::Increasing => match start_u_other < end_u_other {
+                                        true => (&other.start, &other.end),
+                                        false => (&other.end, &other.start),
+                                    },
+                                    Direction::Decreasing => match start_u_other < end_u_other {
+                                        true => (&other.end, &other.start),
+                                        false => (&other.start, &other.end),
+                                    },
                                 };
 
-                                if start_point == end_point {
-                                    return vec![EdgeIntersection::Vertex(start_point)];
+                                let start = match self.curve.curve().distance(*self.start.point, *self.end.point) < self.curve.curve().distance(*other_start.point, *self.end.point) {
+                                    true => self.start.clone(),
+                                    false => other_start.clone(),
+                                };
+
+                                let end = match self.curve.curve().distance(*self.end.point, *start.point) < self.curve.curve().distance(*other_end.point, *start.point) {
+                                    true => self.end.clone(),
+                                    false => other_end.clone(),
+                                };
+
+                                if start == end {
+                                    return vec![EdgeIntersection::Vertex(start)];
                                 }
 
-                                return vec![EdgeIntersection::Edge(Edge::new(start_point, end_point, self.curve.clone(), self.direction))];
+                                return vec![EdgeIntersection::Edge(Edge::new(start, end, self.curve.clone(), self.direction))];
                             },
                         }
                     },
