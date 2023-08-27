@@ -18,7 +18,7 @@ impl Plane {
         }
     }
 
-    fn curve_from_to(&self, p: Point, q: Point) -> Line {
+    pub fn curve_from_to(&self, p: Point, q: Point) -> Line {
         return Line::new(p, q - p);
     }
 }
@@ -55,6 +55,12 @@ impl Surface for Plane {
 
     fn is_normalized(&self) -> bool {
         self.u_slope.is_normalized() && self.v_slope.is_normalized()
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        let n = self.normal(x);
+        let d = n.dot(x - y);
+        d.abs()
     }
 }
 

@@ -56,6 +56,12 @@ impl Point {
         let dot = self.dot(other);
         dot.abs() < EQ_THRESHOLD
     }
+
+    pub fn angle(&self, basis: Point) -> f64 {
+        let dot = self.dot(basis);
+        let norm = self.norm() * basis.norm();
+        (dot / norm).acos()
+    }
 }
 
 impl Add for Point {

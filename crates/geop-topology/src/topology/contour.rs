@@ -43,8 +43,8 @@ impl Contour {
         Contour { edges }
     }
 
-    pub fn all_vertices(&self) -> Vec<Rc<Vertex>> {
-        let mut vertices = Vec::<Rc<Vertex>>::new();
+    pub fn all_vertices(&self) -> Vec<Vertex> {
+        let mut vertices = Vec::<Vertex>::new();
         for edge in self.edges.iter() {
             vertices.push(edge.start.clone());
         }
@@ -57,13 +57,25 @@ impl Contour {
         Contour::new(edges)
     }
 
-    pub fn contains(&self, point: &Point) -> bool {
-        return self.get_edge_index(point).is_some();
+    pub fn contains(&self, point: Point) -> EdgeContains {
+        for (i, edge) in self.edges.iter().enumerate() {
+            let contains = edge.contains(point);
+            match contains {
+                EdgeContains::OnVertex => {
+                    return EdgeContains::OnVertex;
+                },
+                EdgeContains::Inside => {
+                    return EdgeContains::Inside;
+                },
+                EdgeContains::Outside => {}
+            }
+        }
+        return EdgeContains::Outside;
     }
 
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
-    fn get_edge_index(&self, point: &Point) -> Option<usize> {
+    fn get_edge_index(&self, point: Point) -> Option<usize> {
         for (i, edge) in self.edges.iter().enumerate() {
             if edge.contains(point) != EdgeContains::Outside {
                 return Some(i);
@@ -72,14 +84,20 @@ impl Contour {
         None
     }
 
+    pub fn tangent(&self, p: Point) -> Point {
+        assert!(self.contains(p) != EdgeContains::Outside);
+        let i = self.get_edge_index(p).unwrap();
+        return self.edges[i].tangent(p);
+    }
+
     // Checks if the contour contains the point, and if so, splits the edge into two edges.
     // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
     pub fn split_if_necessary(&self, other: &Vertex) -> Contour {
-        if self.contains(&other.point) != EdgeContains::Inside {
-            return vec![Rc::new(self.clone())];
+        if self.contains(*other.point) != EdgeContains::Inside {
+            return self.clone();
         }
         
-        let edge_index = self.get_edge_index(&other.point).unwrap();
+        let edge_index = self.get_edge_index(*other.point).unwrap();
         let edge = self.edges[edge_index].split_if_necessary(other);
         assert!(edge.len() == 2);
 
@@ -97,10 +115,10 @@ impl Contour {
 
         let mut result = Vec::<Rc<Edge>>::new();
         let start_i = self
-            .get_edge_index(&start.point)
+            .get_edge_index(*start.point)
             .expect("Start point has to be on edge");
         let end_i = self
-            .get_edge_index(&end.point)
+            .get_edge_index(*end.point)
             .expect("End point has to be on edge");
 
         if start_i == end_i {
@@ -123,33 +141,39 @@ impl Contour {
         result
     }
 
-    // Gets all intersections between this contour and another contour.
-    // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same vertex is empty.
-    pub fn intersect(&self, other: &Contour) -> Vec<Vertex> {
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<Vertex> {
         let mut intersections = Vec::<Vertex>::new();
-        for edge_self in self.edges.iter() {
-            for edge_other in other.edges.iter() {
-                let edge_intersections = edge_self.intersections(edge_other);
-                for edge_intersection in edge_intersections {
-                    match edge_intersection {
-                        EdgeIntersection::Vertex(vertex) => {
-                            if !intersections.contains(&vertex) {
-                                intersections.push(vertex);
-                            }
-                        },
-                        EdgeIntersection::Edge(edge) => {
-                            if !intersections.contains(&edge.start) {
-                                intersections.push(edge.start);
-                            }
-                            if !intersections.contains(&edge.end) {
-                                intersections.push(edge.end);
-                            }
-                        },
-                    }
+        for edge in self.edges.iter() {
+            let edge_intersections = edge.intersections(other);
+            for edge_intersection in edge_intersections {
+                match edge_intersection {
+                    EdgeIntersection::Vertex(vertex) => {
+                        if !intersections.contains(&vertex) {
+                            intersections.push(vertex);
+                        }
+                    },
+                    EdgeIntersection::Edge(edge) => {
+                        if !intersections.contains(&edge.start) {
+                            intersections.push(edge.start);
+                        }
+                        if !intersections.contains(&edge.end) {
+                            intersections.push(edge.end);
+                        }
+                    },
                 }
             }
         }
 
+        intersections
+    }
+
+    // Gets all intersections between this contour and another contour.
+    // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same vertex is empty.
+    pub fn intersect_contour(&self, other: &Contour) -> Vec<Vertex> {
+        let mut intersections = Vec::<Vertex>::new();
+        for edge_other in other.edges.iter() {
+            intersections.extend(self.intersect_edge(edge_other).into_iter());
+        }
         intersections
     }
 
@@ -297,7 +321,7 @@ impl Contour {
     }
 
     // Avoid using these functions
-    pub fn project(&self, point: &Point) -> Option<f64> {
+    pub fn project(&self, point: Point) -> Option<f64> {
         for (i, edge) in self.edges.iter().enumerate() {
             let u = edge.project(point);
             match u {

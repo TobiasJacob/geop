@@ -18,7 +18,7 @@ impl Cylinder {
         }
     }
     
-    fn curve_from_to(&self, p: Point, q: Point) -> Circle {
+    pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
         todo!("Do the cylinder");
     }
 }
@@ -62,6 +62,10 @@ impl Surface for Cylinder {
 
     fn is_normalized(&self) -> bool {
         self.direction.is_normalized()
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        todo!("Do the cylinder")
     }
 }
 

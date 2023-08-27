@@ -16,7 +16,7 @@ impl Sphere {
         }
     }
 
-    fn curve_from_to(&self, p: Point, q: Point) -> Circle {
+    pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
         return Circle::new(self.basis, normal, (q - self.basis).normalize());
     }
@@ -62,6 +62,11 @@ impl Surface for Sphere {
 
     fn is_normalized(&self) -> bool {
         self.radius >= 0.0
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        let angle = (x - self.basis).angle(y - self.basis);
+        self.radius * angle
     }
 }
 

@@ -15,8 +15,8 @@ pub trait Surface {
     // fn curve_from_to(&self, p: Point, q: Point) -> dyn Curve;
     // // Returns the metric between u and v
     // fn metric(&self, u: Point, v: Point) -> f64;
-    // // Distance between x and y.
-    // fn distance(&self, x: Point, y: Point) -> f64;
+    // Distance between x and y.
+    fn distance(&self, x: Point, y: Point) -> f64;
     // // Exponential of u at base x. u_z is ignored.
     // fn exp(&self, x: Point, u: Point) -> f64;
     // // Log of y at base x. Z coordinate is set to 0.
