@@ -50,7 +50,7 @@ async fn run() {
 
     let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
 
-    let union_face = face1.surface_union(&face2);
+    let union_face = face1.surface_difference(&face2);
 
 
     let vertex_buffer_line = rasterize_contours_into_line_list(

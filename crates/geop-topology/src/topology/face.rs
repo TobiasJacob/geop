@@ -51,7 +51,8 @@ pub enum FaceContainsPoint {
 
 pub enum FaceContainsEdge {
     Inside,
-    OnBorder,
+    OnBorderSameDir,
+    OnBorderOppositeDir,
     Outside,
     Wiggeling,
 }
@@ -59,10 +60,12 @@ pub enum FaceContainsEdge {
 #[derive(Debug)]
 pub enum EdgeSplit {
     AinB(Rc<Edge>),
-    AonB(Rc<Edge>),
+    AonBSameSide(Rc<Edge>),
+    AonBOpSide(Rc<Edge>),
     AoutB(Rc<Edge>),
     BinA(Rc<Edge>),
-    BonA(Rc<Edge>),
+    BonASameSide(Rc<Edge>),
+    BonAOpSide(Rc<Edge>),
     BoutA(Rc<Edge>),
 }
 
@@ -111,6 +114,17 @@ impl Face {
         }
     }
 
+    fn boundary_tangent(&self, p: Point) -> Point {
+        for contour in self.boundaries.iter() {
+            match contour.contains(p) {
+                EdgeContains::Inside => return contour.tangent(p),
+                EdgeContains::OnVertex => panic!("Tangent undefined on vertex"),
+                EdgeContains::Outside => continue,
+            }
+        }
+        panic!("Point is not on boundary");
+    }
+
     pub fn contains_point(&self, other: Point) -> FaceContainsPoint {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
@@ -157,8 +171,8 @@ impl Face {
             }
         }
 
-        println!("Distance: {}", closest_distance);
-        println!("Closest intersect from inside: {}", closest_intersect_from_inside);
+        // println!("Distance: {}", closest_distance);
+        // println!("Closest intersect from inside: {}", closest_intersect_from_inside);
         match closest_intersect_from_inside {
             true => FaceContainsPoint::Inside,
             false => FaceContainsPoint::Outside
@@ -167,7 +181,7 @@ impl Face {
 
     // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
     pub fn contains_edge(&self, other: &Edge) -> FaceContainsEdge {
-        println!("Other: {:?}", other);
+        // println!("Other: {:?}", other);
         let mut intersections = Vec::<Vertex>::new();
         for contour in self.boundaries.iter() {
             let intersection = contour.intersect_edge(other);
@@ -188,7 +202,6 @@ impl Face {
             let prev = if i == -1 { &other.start } else { &intersections[i as usize] };
             let next = if i == intersections.len() as isize - 1 { &other.end } else { &intersections[(i + 1) as usize] };
             let p = other.get_midpoint(*prev.point, *next.point);
-            println!("Point: {:?}", p);
             match self.contains_point(p) {
                 FaceContainsPoint::Inside => part_inside = true,
                 FaceContainsPoint::Outside => part_outside = true,
@@ -197,11 +210,16 @@ impl Face {
             }
         }
 
+        let p = other.get_midpoint(*other.start.point, *other.end.point);
+
         match (part_inside, part_outside) {
             (true, true) => FaceContainsEdge::Wiggeling,
             (true, false) => FaceContainsEdge::Inside,
             (false, true) => FaceContainsEdge::Outside,
-            (false, false) => FaceContainsEdge::OnBorder,
+            (false, false) => match self.boundary_tangent(p).dot(other.tangent(p)) > 0.0 {
+                true => FaceContainsEdge::OnBorderSameDir,
+                false => FaceContainsEdge::OnBorderOppositeDir,
+            },
         }
     }
 
@@ -270,7 +288,8 @@ impl Face {
             return contour.edges.into_iter().map(|edge| {
                 match other.contains_edge(&edge) {
                     FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
-                    FaceContainsEdge::OnBorder => EdgeSplit::AonB(edge),
+                    FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
+                    FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
                     FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
                     FaceContainsEdge::Wiggeling => panic!("Should not happen because contours were split at all intersections"),
                 }
@@ -280,7 +299,8 @@ impl Face {
                 contour.edges.into_iter().map(|edge| {
                     match self.contains_edge(&edge) {
                         FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
-                        FaceContainsEdge::OnBorder => EdgeSplit::BonA(edge),
+                        FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
+                        FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
                         FaceContainsEdge::Wiggeling => panic!("Should not happen because contours were split at all intersections"),
                     }
@@ -288,10 +308,12 @@ impl Face {
         })).flatten().filter(filter).map(|e| {
             match e {
                 EdgeSplit::AinB(edge) => edge,
-                EdgeSplit::AonB(edge) => edge,
+                EdgeSplit::AonBSameSide(edge) => edge,
+                EdgeSplit::AonBOpSide(edge) => edge,
                 EdgeSplit::AoutB(edge) => edge,
                 EdgeSplit::BinA(edge) => edge,
-                EdgeSplit::BonA(edge) => edge,
+                EdgeSplit::BonASameSide(edge) => edge,
+                EdgeSplit::BonAOpSide(edge) => edge,
                 EdgeSplit::BoutA(edge) => edge,
             }
         }).collect::<Vec<Rc<Edge>>>();
@@ -305,10 +327,14 @@ impl Face {
         while let Some(current_edge) = edges.pop() {
             let mut new_contour = vec![current_edge];
             loop {
-                let next_i = edges.iter().position(|edge| edge.start == new_contour[new_contour.len() - 1].end);
+                let next_i = edges.iter().position(|edge| edge.start == new_contour[new_contour.len() - 1].end || edge.end == new_contour[new_contour.len() - 1].end);
                 match next_i {
                     Some(i) => {
-                        new_contour.push(edges.remove(i));
+                        if edges[i].start == new_contour[new_contour.len() - 1].end {
+                            new_contour.push(edges.remove(i));
+                        } else {
+                            new_contour.push(Rc::new(edges.remove(i).neg()));
+                        }
                     },
                     None => {
                         assert!(new_contour[0].start == new_contour[new_contour.len() - 1].end);
@@ -390,13 +416,14 @@ impl Face {
 
     pub fn surface_union(&self, other: &Face) -> Face {
         self.split_parts(other, |mode| {
-            println!("EdgeSplit: {:?}", mode);
             match mode {
                 EdgeSplit::AinB(_) => false,
-                EdgeSplit::AonB(_) => true,
+                EdgeSplit::AonBSameSide(_) => true,
+                EdgeSplit::AonBOpSide(_) => false,
                 EdgeSplit::AoutB(_) => true,
                 EdgeSplit::BinA(_) => false,
-                EdgeSplit::BonA(_) => false,
+                EdgeSplit::BonASameSide(_) => false,
+                EdgeSplit::BonAOpSide(_) => false,
                 EdgeSplit::BoutA(_) => true,
             }
         })
@@ -406,10 +433,12 @@ impl Face {
         self.split_parts(other, |mode| {
             match mode {
                 EdgeSplit::AinB(_) => true,
-                EdgeSplit::AonB(_) => true,
+                EdgeSplit::AonBSameSide(_) => true,
+                EdgeSplit::AonBOpSide(_) => false,
                 EdgeSplit::AoutB(_) => false,
                 EdgeSplit::BinA(_) => true,
-                EdgeSplit::BonA(_) => false,
+                EdgeSplit::BonASameSide(_) => false,
+                EdgeSplit::BonAOpSide(_) => false,
                 EdgeSplit::BoutA(_) => false,
             }
         })
@@ -417,16 +446,20 @@ impl Face {
 
     pub fn surface_difference(&self, other: &Face) -> Face {
         self.split_parts(other, |mode| {
+            println!("EdgeSplit: {:?}", mode);
             match mode {
                 EdgeSplit::AinB(_) => false,
-                EdgeSplit::AonB(_) => true,
-                EdgeSplit::AoutB(_) => true,
+                EdgeSplit::AonBSameSide(_) => false,
+                EdgeSplit::AonBOpSide(_) => true,
+                EdgeSplit::AoutB(_) => true, // Maybe...
                 EdgeSplit::BinA(_) => true,
-                EdgeSplit::BonA(_) => false,
+                EdgeSplit::BonASameSide(_) => false,
+                EdgeSplit::BonAOpSide(_) => false,
                 EdgeSplit::BoutA(_) => false,
             }
         })
     }
+
 }
 
 //     pub fn intersect(&self, other: &Face) {
