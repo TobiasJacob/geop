@@ -124,7 +124,6 @@ impl Face {
         let curve = self.edge_from_to(&Vertex::new(Rc::new(other)), &q);
 
         // Find the closest intersection point
-        let mut closest_point = *q.point;
         let mut closest_distance = std::f64::INFINITY;
         let mut closest_intersect_from_inside = false;
         for contour in self.boundaries.iter() {
@@ -136,7 +135,6 @@ impl Face {
                     let normal = self.surface.surface().normal(*vertex.point);
                     let curve_prod = contour.tangent(*vertex.point);
                     closest_distance = distance;
-                    closest_point = *vertex.point;
                     closest_intersect_from_inside = curve_dir.cross(normal).dot(curve_prod) > 0.0; // TODO: Check this is correct
                 }
             }
