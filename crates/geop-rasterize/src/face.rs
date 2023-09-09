@@ -151,15 +151,16 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         contours.push(points);
     }
 
-    let open_edges: Vec<RenderEdge> = contours.iter().flat_map(|contour| contour.edges.iter()).cloned().collect();
+    let mut open_edges: Vec<RenderEdge> = contours.iter().flat_map(|contour| contour.edges.iter()).cloned().collect();
+    let all_edges = open_edges.clone();
     let mut triangles = Vec::<RenderTriangle>::new();
 
     // Now make sure that all discrete boundaries are connected to a single boundary.
-    for edge in open_edges.iter() {
+    while let Some(edge) = open_edges.pop() {
         let mut i = usize::MAX;
         println!("Render Edge: {:?}", edge);
-        for j in 0..open_edges.len() {
-            let point = open_edges[j].start;
+        for j in 0..all_edges.len() {
+            let point = all_edges[j].start;
             if !check_triangle_counter_clockwise(&surface, &[edge.start, edge.end, point]) {
                 continue;
             }
@@ -172,13 +173,12 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         if i == usize::MAX {
             continue;
         }
-        println!("Found start i: {:?}", i);
         loop {
             let mut found_one_inside = false;
             let mut min_det = 0.0;
-            for j in 0..open_edges.len() {
-                let current_point = open_edges[i].start;
-                let new_point = open_edges[j].start;
+            for j in 0..all_edges.len() {
+                let current_point = all_edges[i].start;
+                let new_point = all_edges[j].start;
                 if i == j || current_point.point() == new_point.point() {
                     continue;
                 }
@@ -195,14 +195,15 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
                 i = j;
                 found_one_inside = true;
                 min_det = new_det;
-                println!("{:?} to {:?}, i = {:?}, new_point = {:?}", edge, current_point, i, new_point);
             }
             if !found_one_inside {
                 break;
             }
         }
-        let point = open_edges[i].start;
+        let point = all_edges[i].start;
         triangles.push(RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color));
+        open_edges.push(RenderEdge::new(edge.start.into(), point.into(), color));
+        open_edges.push(RenderEdge::new(point.into(), edge.end.into(), color));
     }
 
     return TriangleBuffer::new(triangles);
