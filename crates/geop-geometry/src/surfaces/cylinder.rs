@@ -1,6 +1,6 @@
 use crate::{points::point::Point, curves::{curve, circle::Circle}};
 
-use super::surface::{Surface, CurveFromTo};
+use super::surface::{Surface, SurfaceCurve};
 
 #[derive(Clone, Debug)]
 pub struct Cylinder {
@@ -24,30 +24,30 @@ impl Cylinder {
 }
 
 impl Surface for Cylinder {
-    fn point_at(&self, u: f64, v: f64) -> Point {
-        let x = self.basis + self.direction * v + self.extend * u.cos() + self.direction.cross(self.extend) * u.sin();
-        x
-    }
+    // fn point_at(&self, u: f64, v: f64) -> Point {
+    //     let x = self.basis + self.direction * v + self.extend * u.cos() + self.direction.cross(self.extend) * u.sin();
+    //     x
+    // }
 
-    fn project(&self, p: &Point) -> (f64, f64) {
-        let v = *p - self.basis;
-        let v = v - self.direction * v.dot(self.direction);
-        let u = v.dot(self.extend) / self.extend.norm();
-        let v = v.dot(self.direction) / self.direction.norm();
-        let v = v.atan2(u);
-        let u = u.atan2(v);
-        (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
-    }
+    // fn project(&self, p: &Point) -> (f64, f64) {
+    //     let v = *p - self.basis;
+    //     let v = v - self.direction * v.dot(self.direction);
+    //     let u = v.dot(self.extend) / self.extend.norm();
+    //     let v = v.dot(self.direction) / self.direction.norm();
+    //     let v = v.atan2(u);
+    //     let u = u.atan2(v);
+    //     (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
+    // }
 
-    fn derivative_u(&self, u: f64, _v: f64) -> Point {
-        let x = -self.extend * u.sin() + self.direction.cross(self.extend) * u.cos();
-        x
-    }
+    // fn derivative_u(&self, u: f64, _v: f64) -> Point {
+    //     let x = -self.extend * u.sin() + self.direction.cross(self.extend) * u.cos();
+    //     x
+    // }
 
-    fn derivative_v(&self, _u: f64, _v: f64) -> Point {
-        let x = self.direction;
-        x
-    }
+    // fn derivative_v(&self, _u: f64, _v: f64) -> Point {
+    //     let x = self.direction;
+    //     x
+    // }
 
     fn normal(&self, p: Point) -> Point {
         let v = p - self.basis;
@@ -56,15 +56,15 @@ impl Surface for Cylinder {
         v
     }
 
-    fn normalize(&mut self) {
-        self.direction = self.direction.normalize();
-    }
+    // fn normalize(&mut self) {
+    //     self.direction = self.direction.normalize();
+    // }
 
-    fn is_normalized(&self) -> bool {
-        self.direction.is_normalized()
-    }
+    // fn is_normalized(&self) -> bool {
+    //     self.direction.is_normalized()
+    // }
 
-    fn curve_from_to(&self, p: Point, q: Point) -> CurveFromTo {
+    fn curve_from_to(&self, p: Point, q: Point) -> SurfaceCurve {
         // let normal = (p - self.basis).cross(q - self.basis).normalize();
         // return CurveFromTo::Circle(Circle::new(self.basis, normal, (q - self.basis).normalize()));
         todo!("Do the cylinder")
