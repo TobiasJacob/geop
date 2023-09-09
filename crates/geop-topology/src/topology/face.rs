@@ -446,6 +446,7 @@ impl Face {
     }
 
     pub fn surface_difference(&self, other: &Face) -> Face {
+        return self.surface_intersection(&other.neg());
         self.split_parts(other, |mode| {
             println!("EdgeSplit: {:?}", mode);
             match mode {

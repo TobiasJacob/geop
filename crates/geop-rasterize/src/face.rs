@@ -84,6 +84,100 @@ pub fn check_triangle_counter_clockwise(surface: &DelaunaySurface, traingle: &[R
     return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
 }
 
+fn edge_overlaps_edge(surface: &DelaunaySurface, edge: RenderEdge, other: RenderEdge) -> bool {
+    if edge.start.point() == other.start.point() || edge.start.point() == other.end.point() || edge.end.point() == other.start.point() || edge.end.point() == other.end.point() {
+        let dir1 = edge.end.point() - edge.start.point();
+        let dir2 = other.end.point() - other.start.point();
+        if dir1.is_parallel(dir2) {
+            return true;
+        }
+        return false;
+    }
+
+    false
+}
+
+pub fn edge_intersects_contour(surface: &DelaunaySurface, edge: &RenderEdge, contour: &EdgeBuffer) -> bool {
+    for other in contour.edges.iter() {
+        if edge_overlaps_edge(surface, *edge, *other) {
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn edge_intersects_contours(surface: &DelaunaySurface, edge: &RenderEdge, contours: &[EdgeBuffer]) -> bool {
+    for contour in contours.iter() {
+        if edge_intersects_contour(surface, edge, contour) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// fn triangle_intersects_edge(surface: &DelaunaySurface, triangle: &RenderTriangle, edge: &RenderEdge) -> bool {
+//     let reference_point = triangle.a;
+
+//     let project_fn = |p: RenderVertex| match surface {
+//         DelaunaySurface::Plane(plane) => plane.log(reference_point.into(), p.into()).0,
+//         DelaunaySurface::Sphere(sphere) => sphere.log(reference_point.into(), p.into()).0,
+//     };
+
+//     // five points with x and y coordinates
+//     let a1 = project_fn(triangle.a);
+//     let b1 = project_fn(triangle.b);
+//     let c1 = project_fn(triangle.c);
+
+//     let a2 = project_fn(edge.start);
+//     let b2 = project_fn(edge.end);
+
+//     // list of edges for possible separating axis
+//     let edges_1 = [(a1, b1), (b1, c1), (c1, a1)];
+//     let edges_2 = [(a2, b2)];
+
+//     for edge in edges_1.iter().chain(edges_2.iter()) {
+//         let normal = Point::new(edge.1.y - edge.0.y, edge.0.x - edge.1.x, 0.0);
+//         let norm = normal.norm();
+//         if norm < EQ_THRESHOLD {
+//             continue;
+//         }
+//         let normal = normal / norm;
+
+//         let mut min_1 = f64::INFINITY;
+//         let mut max_1 = f64::NEG_INFINITY;
+//         let mut min_2 = f64::INFINITY;
+//         let mut max_2 = f64::NEG_INFINITY;
+        
+//         for &point in [a1, b1, c1].iter() {
+//             let projected = normal.dot(point);
+//             min_1 = min_1.min(projected);
+//             max_1 = max_1.max(projected);
+//         }
+//         for &point in [a2, b2].iter() {
+//             let projected = normal.dot(point);
+//             min_2 = min_2.min(projected);
+//             max_2 = max_2.max(projected);
+//         }
+//         // println!("Min 1: {}, Max 1: {}, Min 2: {}, Max 2: {}", min_1, max_1, min_2, max_2);
+//         // Proof that the triangles do not intersect
+//         if max_1 <= min_2 + EQ_THRESHOLD || max_2 <= min_1 + EQ_THRESHOLD {
+//             return false;
+//         }
+//     }
+
+//     true
+
+// }
+
+// fn triangle_intersects_boundary(surface: &DelaunaySurface, triangle: &RenderTriangle, contours: &[EdgeBuffer]) -> bool {
+//     for edge in contours.iter().flat_map(|contour| contour.edges.iter()) {
+//         if triangle_intersects_edge(surface, triangle, edge) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
 pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &RenderTriangle, other_triangle: &RenderTriangle) -> bool {
     let reference_point = triangle.a;
     
@@ -166,7 +260,8 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
     // Now make sure that all discrete boundaries are connected to a single boundary.
     let mut counter = 0;
     while let Some(edge) = open_edges.pop_front() {
-        if counter > 400 {
+        // counter += 1;
+        if counter > 50 {
             break;
         }
         let mut i = usize::MAX;
@@ -216,8 +311,14 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         let point = all_edges[i].start;
         // triangles.push(RenderTriangle::new(edge.start.into(), point.into(), edge.end.into(), color));
         triangles.push(RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color));
-        open_edges.push_back(RenderEdge::new(point.into(), edge.end.into(), color));
-        open_edges.push_back(RenderEdge::new(edge.start.into(), point.into(), color));
+        let inner_edge_1 = RenderEdge::new(point.into(), edge.end.into(), color);
+        if !edge_intersects_contours(&surface, &inner_edge_1, &contours) {
+            open_edges.push_back(inner_edge_1);
+        }
+        let inner_edge_2 = RenderEdge::new(edge.start.into(), point.into(), color);
+        if !edge_intersects_contours(&surface, &inner_edge_2, &contours) {
+            open_edges.push_back(inner_edge_2);
+        }
     }
 
     return TriangleBuffer::new(triangles);
