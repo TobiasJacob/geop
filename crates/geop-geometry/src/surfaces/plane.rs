@@ -14,7 +14,7 @@ impl Plane {
         Plane {
             basis,
             u_slope: u_slope.normalize(),
-            v_slope: u_slope.normalize()
+            v_slope: v_slope.normalize()
         }
     }
 
