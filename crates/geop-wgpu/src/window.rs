@@ -1,4 +1,4 @@
-use geop_rasterize::vertex_buffer::VertexBuffer;
+use geop_rasterize::{vertex_buffer::VertexBuffer, edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer};
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
@@ -13,7 +13,7 @@ pub struct GeopWindow {
 }
 
 impl GeopWindow {
-    pub async fn new(vertex_buffer_line: VertexBuffer, vertex_buffer_triange: VertexBuffer) -> Self {
+    pub async fn new(vertex_buffer_line: EdgeBuffer, vertex_buffer_triange: TriangleBuffer) -> Self {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
                 std::panic::set_hook(Box::new(console_error_panic_hook::hook));

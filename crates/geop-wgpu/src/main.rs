@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use geop_geometry::{curves::{line::Line, circle::Circle}, points::point::Point, EQ_THRESHOLD, surfaces::plane::Plane};
-use geop_rasterize::{contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list}, vertex_buffer::{VertexBuffer, RenderVertex}};
+use geop_rasterize::{contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list}, vertex_buffer::{VertexBuffer, RenderVertex}, triangle_buffer::{TriangleBuffer, RenderTriangle}};
 use geop_topology::topology::{contour::Contour, edge::{Edge, EdgeCurve, Direction}, vertex::Vertex, face::{Face, FaceSurface}};
 use geop_wgpu::window::GeopWindow;
 
@@ -57,12 +57,12 @@ async fn run() {
         &union_face.boundaries,
         [1.0, 1.0, 1.0]
     );
-    let vertices = vec![
-        RenderVertex::new(Point::new(0.0, 0.0, 0.0), [1.0, 1.0, 0.0]),
-        RenderVertex::new(Point::new(1.0, 0.0, 0.0), [0.0, 1.0, 1.0]),
-        RenderVertex::new(Point::new(0.0, 1.0, 0.0), [1.0, 0.0, 1.0]),
-    ];
-    let vertex_buffer_triange = VertexBuffer::new(vertices);
+    let vertex_buffer_triange = TriangleBuffer::new(vec![RenderTriangle::new(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(1.0, 0.0, 0.0),
+        Point::new(0.0, 1.0, 0.0),
+        [1.0, 1.0, 0.0]
+    )]);
     let window = GeopWindow::new(vertex_buffer_line, vertex_buffer_triange).await;
     window.show();
 }

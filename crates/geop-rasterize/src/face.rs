@@ -1,7 +1,7 @@
-use geop_geometry::{points::point::Point, surfaces::{surface::Surface, sphere::Sphere, plane::Plane}};
+use geop_geometry::{points::point::Point, surfaces::{surface::{Surface, TangentPoint}, sphere::Sphere, plane::Plane}};
 use geop_topology::topology::face::Face;
 
-use crate::{vertex_buffer::VertexBuffer, contour::rasterize_contour_into_line_list};
+use crate::{vertex_buffer::VertexBuffer, contour::rasterize_contour_into_line_list, triangle_buffer::TriangleBuffer, edge_buffer::EdgeBuffer};
 
 // struct VertexBuffer {
 //     vertices: Vec<RenderVertex>
@@ -24,6 +24,8 @@ pub enum DelaunaySurface {
 pub fn check_delaunay_triangulation(surface: &DelaunaySurface, traingle: &[Point; 3], point: Point) -> bool {
     match surface {
         DelaunaySurface::Plane(plane) => {
+            let projected_triangle = traingle.iter().map(|p| plane.log(point, *p)).collect::<Vec<TangentPoint>>();
+            // Matrix as in https://en.wikipedia.org/wiki/Delaunay_triangulation
             // For planar Delaunay triangulation, we will check if the point lies inside the circumcircle of the triangle
             // let mat = na::Matrix4::new(
             //     triangle[0].x - point.x, triangle[0].y - point.y, (triangle[0].x - point.x).powi(2) + (triangle[0].y - point.y).powi(2), 1.0,
@@ -33,9 +35,9 @@ pub fn check_delaunay_triangulation(surface: &DelaunaySurface, traingle: &[Point
             // );
             // mat.determinant() <= 0.0;
 
-            let p1 = traingle[0];
-            let p2 = traingle[1];
-            let p3 = traingle[2];
+            let p1 = projected_triangle[0].0;
+            let p2 = projected_triangle[1].0;
+            let p3 = projected_triangle[2].0;
             let p4 = point;
             let a = p1.x - p4.x;
             let b = p1.y - p4.y;
@@ -56,13 +58,14 @@ pub fn check_delaunay_triangulation(surface: &DelaunaySurface, traingle: &[Point
     }
 }
 
-pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> VertexBuffer {
+pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> TriangleBuffer {
     // Now we have to divide the face into triangles. First rasterize the boundaries.
-    let mut vertices = Vec::<VertexBuffer>::new();
+    let mut vertices = Vec::<EdgeBuffer>::new();
     for contour in face.boundaries.iter() {
         let points = rasterize_contour_into_line_list(contour, color);
         vertices.push(points);
     }
+    
     // Now do a delaunay triangulation on the points while making sure that triangles lie within the face.
     // The inside of the face is intersection of all counter clockwise boundaries.
     
