@@ -1,4 +1,4 @@
-use std::f32::consts::E;
+use std::{f32::consts::E, collections::VecDeque};
 
 use geop_geometry::{points::point::Point, surfaces::{surface::{Surface, TangentPoint}, sphere::Sphere, plane::Plane}, EQ_THRESHOLD};
 use geop_topology::topology::{face::{Face, FaceSurface}, edge};
@@ -68,7 +68,7 @@ pub fn inside_triangle_circumcircle(surface: &DelaunaySurface, traingle: &[Rende
         + mat[0][2] * mat[1][0] * mat[2][1] 
         - mat[0][0] * mat[1][2] * mat[2][1];
 
-    determinant // Check this is < -0.0001, which means it is inside the circumcircle
+    -determinant // Check this is < -0.0001, which means it is inside the circumcircle
 }
 
 pub fn check_triangle_counter_clockwise(surface: &DelaunaySurface, traingle: &[RenderVertex; 3]) -> bool {
@@ -107,7 +107,13 @@ pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &Render
 
     // Use the separating axis theorem to check if the triangles intersect
     for edge in edges_triangle_1.iter().chain(edges_triangle_2.iter()) {
-        let normal = [(edge.1).y - (edge.0).y, (edge.0).x - (edge.1).x];
+        let normal = Point::new(edge.1.y - edge.0.y, edge.0.x - edge.1.x, 0.0);
+        let norm = normal.norm();
+        if norm < EQ_THRESHOLD {
+            continue;
+        }
+        let normal = normal / norm;
+
 
         let mut min_1 = f64::INFINITY;
         let mut max_1 = f64::NEG_INFINITY;
@@ -115,16 +121,18 @@ pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &Render
         let mut max_2 = f64::NEG_INFINITY;
 
         for &point in [a1, b1, c1].iter() {
-            let projected = normal[0] * point.x + normal[1] * point.y;
+            let projected = normal.dot(point);
             min_1 = min_1.min(projected);
             max_1 = max_1.max(projected);
         }
         for &point in [a2, b2, c2].iter() {
-            let projected = normal[0] * point.x + normal[1] * point.y;
+            let projected = normal.dot(point);
             min_2 = min_2.min(projected);
             max_2 = max_2.max(projected);
         }
-        if max_1 < min_2 + EQ_THRESHOLD || max_2 < min_1 + EQ_THRESHOLD {
+        // println!("Min 1: {}, Max 1: {}, Min 2: {}, Max 2: {}", min_1, max_1, min_2, max_2);
+        // Proof that the triangles do not intersect
+        if max_1 <= min_2 + EQ_THRESHOLD || max_2 <= min_1 + EQ_THRESHOLD {
             return false;
         }
     }
@@ -151,12 +159,16 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         contours.push(points);
     }
 
-    let mut open_edges: Vec<RenderEdge> = contours.iter().flat_map(|contour| contour.edges.iter()).cloned().collect();
-    let all_edges = open_edges.clone();
+    let all_edges: Vec<RenderEdge> = contours.iter().flat_map(|contour| contour.edges.iter()).cloned().collect();
+    let mut open_edges = VecDeque::from(all_edges.clone());
     let mut triangles = Vec::<RenderTriangle>::new();
 
     // Now make sure that all discrete boundaries are connected to a single boundary.
-    while let Some(edge) = open_edges.pop() {
+    let mut counter = 0;
+    while let Some(edge) = open_edges.pop_front() {
+        if counter > 400 {
+            break;
+        }
         let mut i = usize::MAX;
         println!("Render Edge: {:?}", edge);
         for j in 0..all_edges.len() {
@@ -176,8 +188,8 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         loop {
             let mut found_one_inside = false;
             let mut min_det = 0.0;
+            let current_point = all_edges[i].start;
             for j in 0..all_edges.len() {
-                let current_point = all_edges[i].start;
                 let new_point = all_edges[j].start;
                 if i == j || current_point.point() == new_point.point() {
                     continue;
@@ -195,15 +207,17 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
                 i = j;
                 found_one_inside = true;
                 min_det = new_det;
+                println!("Found new point with i, j: {}, {}", i, j);
             }
             if !found_one_inside {
                 break;
             }
         }
         let point = all_edges[i].start;
+        // triangles.push(RenderTriangle::new(edge.start.into(), point.into(), edge.end.into(), color));
         triangles.push(RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color));
-        open_edges.push(RenderEdge::new(edge.start.into(), point.into(), color));
-        open_edges.push(RenderEdge::new(point.into(), edge.end.into(), color));
+        open_edges.push_back(RenderEdge::new(point.into(), edge.end.into(), color));
+        open_edges.push_back(RenderEdge::new(edge.start.into(), point.into(), color));
     }
 
     return TriangleBuffer::new(triangles);

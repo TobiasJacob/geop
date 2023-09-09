@@ -23,8 +23,6 @@ async fn run() {
     let v2 = Vertex::new(Rc::new(Point::new(0.8, 0.2, 0.0)));
     let v3 = Vertex::new(Rc::new(Point::new(0.8, 0.8, 0.0)));
     let v4: Vertex = Vertex::new(Rc::new(Point::new(0.2, 0.8, 0.0)));
-    let v5 = Vertex::new(Rc::new(Point::new(0.4, 0.6, 0.0)));
-    let v6 = Vertex::new(Rc::new(Point::new(0.2, 0.6, 0.0)));
 
     let contour = Contour::new(vec![
         linear_edge(v1.clone(), v2.clone()),
@@ -34,9 +32,20 @@ async fn run() {
         linear_edge(v4.clone(), v1.clone()),
     ]);
 
+    let v5 = Vertex::new(Rc::new(Point::new(0.5, 0.5, 0.0)));
+    let v6 = Vertex::new(Rc::new(Point::new(0.5, 0.6, 0.0)));
+    let v7 = Vertex::new(Rc::new(Point::new(0.6, 0.6, 0.0)));
+
+    let inner_contour = Contour::new(vec![
+        linear_edge(v5.clone(), v6.clone()),
+        linear_edge(v6.clone(), v7.clone()),
+        linear_edge(v7.clone(), v5.clone()),
+    ]);
+
+
     let surface =Rc::new(FaceSurface::Plane(Plane::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0))));
 
-    let face1 = Face::new(vec![contour.clone()], surface.clone());
+    let face1 = Face::new(vec![contour.clone(), inner_contour.clone()], surface.clone());
 
     // Loop shifted by 0.1 in x and y direction
     let shift = Point::new(-0.0, 0.2, 0.0);
@@ -50,13 +59,13 @@ async fn run() {
 
     let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
 
-    let union_face = face1.surface_difference(&face2);
+    // let union_face = face1.surface_difference(&face2);
 
 
-    let vertex_buffer_line = rasterize_contours_into_line_list(
-        &union_face.boundaries,
-        [1.0, 1.0, 1.0]
-    );
+    // let vertex_buffer_line = rasterize_contours_into_line_list(
+    //     &union_face.boundaries,
+    //     [1.0, 1.0, 1.0]
+    // );
     let vertex_buffer_triange = TriangleBuffer::new(vec![RenderTriangle::new(
         Point::new(0.0, 0.0, 0.0),
         Point::new(1.0, 0.0, 0.0),
