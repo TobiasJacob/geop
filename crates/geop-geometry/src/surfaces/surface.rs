@@ -11,6 +11,7 @@ pub enum SurfaceCurve {
     Ellipse(Ellipse),
 }
 
+#[derive(Clone, Debug)]
 pub struct TangentPoint(pub Point);
 
 pub trait Surface {

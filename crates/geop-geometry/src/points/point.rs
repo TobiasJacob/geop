@@ -44,6 +44,7 @@ impl Point {
 
     pub fn normalize(self) -> Point {
         let norm = self.norm();
+        assert!(norm > EQ_THRESHOLD);
         Point::new(self.x / norm, self.y / norm, self.z / norm)
     }
 

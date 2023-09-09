@@ -1,14 +1,14 @@
 use geop_geometry::points::point::Point;
 
-use crate::vertex_buffer::RenderVertex;
+use crate::{vertex_buffer::RenderVertex, edge_buffer::{RenderEdge, EdgeBuffer}};
 
 // This is a triangle that can be rendered on-screen. The vertices are in counter clockwise order.
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct RenderTriangle {
-    a: RenderVertex,
-    b: RenderVertex,
-    c: RenderVertex,
+    pub a: RenderVertex,
+    pub b: RenderVertex,
+    pub c: RenderVertex,
 }
 
 impl RenderTriangle {
@@ -22,7 +22,7 @@ impl RenderTriangle {
 }
 
 pub struct TriangleBuffer {
-    triangles: Vec<RenderTriangle>,
+    pub triangles: Vec<RenderTriangle>,
 }
 
 impl TriangleBuffer {
@@ -37,6 +37,16 @@ impl TriangleBuffer {
 
     pub fn join(&mut self, other: &TriangleBuffer) {
         self.triangles.extend_from_slice(&other.triangles);
+    }
+
+    pub fn to_line_list(&self, color: [f32; 3]) -> EdgeBuffer {
+        let mut edges = Vec::<RenderEdge>::with_capacity(3 * self.triangles.len());
+        for triangle in &self.triangles {
+            edges.push(RenderEdge::new(triangle.a.into(), triangle.b.into(), color));
+            edges.push(RenderEdge::new(triangle.b.into(), triangle.c.into(), color));
+            edges.push(RenderEdge::new(triangle.c.into(), triangle.a.into(), color));
+        }
+        EdgeBuffer::new(edges)
     }
 }
 

@@ -6,8 +6,8 @@ use crate::vertex_buffer::RenderVertex;
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct RenderEdge {
-    start: RenderVertex,
-    end: RenderVertex,
+    pub start: RenderVertex,
+    pub end: RenderVertex,
 }
 
 impl RenderEdge {
@@ -20,7 +20,7 @@ impl RenderEdge {
 }
 
 pub struct EdgeBuffer {
-    edges: Vec<RenderEdge>,
+    pub edges: Vec<RenderEdge>,
 }
 
 impl EdgeBuffer {

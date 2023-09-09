@@ -4,8 +4,8 @@ use geop_geometry::points::point::Point;
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct RenderVertex {
-    position: [f32; 3],
-    color: [f32; 3]
+    pub position: [f32; 3],
+    pub color: [f32; 3]
 }
 
 impl RenderVertex {
@@ -15,11 +15,21 @@ impl RenderVertex {
             color
         }
     }
+
+    pub fn point(&self) -> Point {
+        (*self).into()
+    }
 }
 
+// Implement conversion to Point
+impl From<RenderVertex> for Point {
+    fn from(v: RenderVertex) -> Self {
+        Point::new(v.position[0] as f64, v.position[1] as f64, v.position[2] as f64)
+    }
+}
 
 pub struct VertexBuffer {
-    vertices: Vec<RenderVertex>
+    pub vertices: Vec<RenderVertex>
 }
 
 impl VertexBuffer {

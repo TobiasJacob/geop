@@ -75,6 +75,7 @@ pub enum EdgeSplit {
 // The contours are not allowed to intersect in any way. Keep in mind that a vertex is not considered an intersection, hence it is allowed that the contours touch each other at vertices.
 impl Face {
     pub fn new(boundaries: Vec<Contour>, surface: Rc<FaceSurface>) -> Face {
+        assert!(boundaries.len() > 0, "Face must have at least one boundary");
         Face {
             boundaries,
             surface,

@@ -4,7 +4,7 @@ use crate::{vertex_buffer::{RenderVertex, VertexBuffer}, edge_buffer::{EdgeBuffe
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> EdgeBuffer {
-    let n = 200;
+    let n = 20;
     let mut edges = Vec::<RenderEdge>::with_capacity(2 * n);
     for i in 0..n {
         let u = i as f64 / n as f64;
