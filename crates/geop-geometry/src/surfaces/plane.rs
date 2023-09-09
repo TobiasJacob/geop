@@ -1,6 +1,6 @@
 use crate::{points::point::Point, curves::line::Line};
 
-use super::surface::Surface;
+use super::surface::{Surface, CurveFromTo};
 
 #[derive(Clone, Debug)]
 pub struct Plane {
@@ -55,6 +55,10 @@ impl Surface for Plane {
 
     fn is_normalized(&self) -> bool {
         self.u_slope.is_normalized() && self.v_slope.is_normalized()
+    }
+
+    fn curve_from_to(&self, p: Point, q: Point) -> CurveFromTo {
+        CurveFromTo::Line(Line::new(p, q - p))
     }
 
     fn distance(&self, x: Point, y: Point) -> f64 {

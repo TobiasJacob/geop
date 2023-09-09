@@ -1,6 +1,6 @@
 use crate::{points::point::Point, curves::{curve, circle::Circle}};
 
-use super::surface::Surface;
+use super::surface::{Surface, CurveFromTo};
 
 #[derive(Clone, Debug)]
 pub struct Cylinder {
@@ -62,6 +62,12 @@ impl Surface for Cylinder {
 
     fn is_normalized(&self) -> bool {
         self.direction.is_normalized()
+    }
+
+    fn curve_from_to(&self, p: Point, q: Point) -> CurveFromTo {
+        // let normal = (p - self.basis).cross(q - self.basis).normalize();
+        // return CurveFromTo::Circle(Circle::new(self.basis, normal, (q - self.basis).normalize()));
+        todo!("Do the cylinder")
     }
 
     fn distance(&self, x: Point, y: Point) -> f64 {

@@ -1,6 +1,6 @@
 use crate::{points::point::Point, EQ_THRESHOLD, curves::circle::Circle};
 
-use super::surface::Surface;
+use super::surface::{Surface, CurveFromTo};
 
 #[derive(Clone, Debug)]
 pub struct Sphere {
@@ -62,6 +62,12 @@ impl Surface for Sphere {
 
     fn is_normalized(&self) -> bool {
         self.radius >= 0.0
+    }
+
+    fn curve_from_to(&self, p: Point, q: Point) -> CurveFromTo {
+        let normal = (p - self.basis).cross(q - self.basis).normalize();
+        let circle = Circle::new(self.basis, normal, (q - self.basis).normalize());
+        CurveFromTo::Circle(circle)
     }
 
     fn distance(&self, x: Point, y: Point) -> f64 {

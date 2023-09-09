@@ -1,4 +1,15 @@
-use crate::{points::point::Point, curves::curve::Curve};
+use std::rc::Rc;
+
+use crate::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}};
+
+pub enum CurveFromTo {
+    // Returns the geodesic between p and q.
+    Line(Line),
+    // Returns the curve between p and q.
+    Circle(Circle),
+    // Returns the curve between p and q.
+    Ellipse(Ellipse),
+}
 
 pub trait Surface {
     // Constructs a parameter space which is guaranteed to be continuous and monotonically increasing in both u and v except for the vanishing point.
@@ -12,7 +23,7 @@ pub trait Surface {
     fn normal(&self, p: Point) -> Point;
     fn normalize(&mut self);
     fn is_normalized(&self) -> bool;
-    // fn curve_from_to(&self, p: Point, q: Point) -> dyn Curve;
+    fn curve_from_to(&self, p: Point, q: Point) -> CurveFromTo;
     // // Returns the metric between u and v
     // fn metric(&self, u: Point, v: Point) -> f64;
     // Distance between x and y.
