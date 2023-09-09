@@ -1,4 +1,4 @@
-use std::{rc::Rc, vec};
+use std::{rc::Rc, vec, fmt::{Display, Formatter}};
 
 use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, curve_curve_intersection::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}, EQ_THRESHOLD};
 
@@ -401,5 +401,15 @@ impl Edge {
 impl PartialEq for Edge {
     fn eq(&self, other: &Edge) -> bool {
         (Rc::ptr_eq(&self.curve, &other.curve) || self.curve == other.curve) && self.start == other.start && self.end == other.end
+    }
+}
+
+impl Display for Edge {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        match self.curve.as_ref() {
+            EdgeCurve::Line(line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Circle(circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Ellipse(ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
+        }
     }
 }

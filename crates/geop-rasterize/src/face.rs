@@ -170,7 +170,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
             break;
         }
         let mut i = usize::MAX;
-        println!("Render Edge: {:?}", edge);
+        // println!("Render Edge: {:?}", edge);
         for j in 0..all_edges.len() {
             let point = all_edges[j].start;
             if !check_triangle_counter_clockwise(&surface, &[edge.start, edge.end, point]) {
@@ -207,7 +207,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
                 i = j;
                 found_one_inside = true;
                 min_det = new_det;
-                println!("Found new point with i, j: {}, {}", i, j);
+                // println!("Found new point with i, j: {}, {}", i, j);
             }
             if !found_one_inside {
                 break;

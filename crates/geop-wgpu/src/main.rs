@@ -47,7 +47,7 @@ async fn run() {
 
 
     // Loop shifted by 0.1 in x and y direction
-    let shift = Point::new(-0.0, 0.2, 0.0);
+    let shift = Point::new(-0.1, -0.1, 0.0);
     let contour_shifted = Contour::new(vec![
         linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
         linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
@@ -59,7 +59,7 @@ async fn run() {
     let face1 = Face::new(vec![contour.clone(), inner_contour.clone()], surface.clone());
     let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
 
-    let union_face = face1.surface_difference(&face2);
+    let union_face = face2.surface_difference(&face1);
 
 
     // let vertex_buffer_line = rasterize_contours_into_line_list(
@@ -72,9 +72,13 @@ async fn run() {
         Point::new(0.0, 1.0, 0.0),
         [1.0, 1.0, 0.0]
     )]);
-    let vertex_buffer_triange = rasterize_face_into_triangle_list(&face1, [0.0, 1.0, 0.0]);
-    let vertex_buffer_triange_line = vertex_buffer_triange.to_line_list([1.0, 1.0, 1.0]);
-    let window = GeopWindow::new(vertex_buffer_triange_line, vertex_buffer_triange).await;
+    println!("Union face: {:?}", union_face);
+    let mut vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
+    let vertex_buffer_triange2 = rasterize_face_into_triangle_list(&face2, [0.0, 0.0, 1.0]);
+    // let vertex_buffer_triange_line = vertex_buffer_triange.to_line_list([1.0, 1.0, 1.0]);
+    // vertex_buffer_triange.join(&vertex_buffer_triange2);
+    let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
+    let window = GeopWindow::new(lines, vertex_buffer_triange).await;
     window.show();
 }
 
