@@ -145,6 +145,18 @@ impl Contour {
         let mut intersections = Vec::<EdgeIntersection>::new();
         for edge in self.edges.iter() {
             let edge_intersections = edge.intersections(other);
+            // for intersection in edge_intersections.iter() {
+            //     match intersection {
+            //         EdgeIntersection::Vertex(vertex) => {
+            //             assert!(other.contains(*vertex.point) != EdgeContains::Outside);
+            //         },
+            //         EdgeIntersection::Edge(edge) => {
+            //             println!("Edge: {:?} - {:?}", edge.start.point, edge.end.point);
+            //             assert!(other.contains(*edge.start.point) != EdgeContains::Outside);
+            //             assert!(other.contains(*edge.end.point) != EdgeContains::Outside);
+            //         }
+            //     }
+            // }
             intersections.extend(edge_intersections.into_iter());
         }
 

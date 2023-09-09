@@ -1,4 +1,4 @@
-pub const EQ_THRESHOLD: f64 = 1e-10;
+pub const EQ_THRESHOLD: f64 = 1e-12;
 
 pub mod curves;
 pub mod points;

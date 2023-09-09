@@ -136,6 +136,9 @@ impl Edge {
     }
     
     pub fn tangent(&self, p: Point) -> Point {
+        // println!("Point: {:?}", p);
+        // println!("Start: {:?}", self.start.point);
+        // println!("End: {:?}", self.end.point);
         assert!(self.contains(p) != EdgeContains::Outside);
         match self.direction {
             Direction::Increasing => {
@@ -325,21 +328,46 @@ impl Edge {
                                         false => (&other.start, &other.end),
                                     },
                                 };
+                                
+                                // Now that we have the right order
+                                let start_u_other = self.curve.curve().project(*other_start.point).0;
+                                let end_u_other = self.curve.curve().project(*other_end.point).0;
 
-                                let start = match self.curve.curve().distance(*self.start.point, *self.end.point) < self.curve.curve().distance(*other_start.point, *self.end.point) {
+                                if start_u_other > self.end_u || end_u_other < self.start_u {
+                                    return vec![];
+                                }
+
+                                let start = match start_u_other < self.start_u {
                                     true => self.start.clone(),
                                     false => other_start.clone(),
                                 };
 
-                                let end = match self.curve.curve().distance(*self.end.point, *start.point) < self.curve.curve().distance(*other_end.point, *start.point) {
+                                let end = match self.end_u < end_u_other {
                                     true => self.end.clone(),
                                     false => other_end.clone(),
                                 };
 
                                 if start == end {
+                                    assert!(self.contains(*start.point) != EdgeContains::Outside && other.contains(*start.point) != EdgeContains::Outside);
                                     return vec![EdgeIntersection::Vertex(start)];
                                 }
 
+                                // println!("Direction: {:?}", self.direction);
+                                // println!("Start: {:?}", start);
+                                // println!("End: {:?}", end);
+
+                                // println!("Self start u: {:?}", self.start_u);
+                                // println!("Self end u: {:?}", self.end_u);
+                                // println!("Other start u: {:?}", start_u_other);
+                                // println!("Other end u: {:?}", end_u_other);
+
+                                // println!("Self: {:?}", self);
+                                // println!("Other: {:?}", other);
+
+                                assert!(self.contains(*start.point) != EdgeContains::Outside);
+                                assert!(other.contains(*start.point) != EdgeContains::Outside);
+                                assert!(self.contains(*end.point) != EdgeContains::Outside);
+                                assert!(other.contains(*end.point) != EdgeContains::Outside);
                                 return vec![EdgeIntersection::Edge(Edge::new(start, end, self.curve.clone(), self.direction))];
                             },
                         }
