@@ -187,7 +187,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         }
         loop {
             let mut found_one_inside = false;
-            let mut min_det = 0.0;
+            let mut min_det = -EQ_THRESHOLD;
             let current_point = all_edges[i].start;
             for j in 0..all_edges.len() {
                 let new_point = all_edges[j].start;

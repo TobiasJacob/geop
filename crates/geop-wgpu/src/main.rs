@@ -45,7 +45,6 @@ async fn run() {
 
     let surface =Rc::new(FaceSurface::Plane(Plane::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0))));
 
-    let face1 = Face::new(vec![contour.clone(), inner_contour.clone()], surface.clone());
 
     // Loop shifted by 0.1 in x and y direction
     let shift = Point::new(-0.0, 0.2, 0.0);
@@ -57,6 +56,7 @@ async fn run() {
         linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
     ]);
 
+    let face1 = Face::new(vec![contour.clone(), inner_contour.clone()], surface.clone());
     let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
 
     // let union_face = face1.surface_difference(&face2);
