@@ -2,7 +2,6 @@ use geop_topology::topology::contour::Contour;
 
 use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
-    vertex_buffer::{RenderVertex, VertexBuffer},
 };
 
 // Rasterizes an edge loop into triangle list.

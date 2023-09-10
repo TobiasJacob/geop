@@ -1,6 +1,6 @@
 use std::iter;
 
-use wgpu::{util::DeviceExt, BufferSlice};
+use wgpu::{util::DeviceExt};
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]

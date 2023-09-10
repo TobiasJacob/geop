@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, f32::consts::E};
+use std::{collections::VecDeque};
 
 use geop_geometry::{
     points::point::Point,
@@ -10,7 +10,6 @@ use geop_geometry::{
     EQ_THRESHOLD,
 };
 use geop_topology::topology::{
-    edge,
     face::{Face, FaceSurface},
 };
 
@@ -18,7 +17,7 @@ use crate::{
     contour::rasterize_contour_into_line_list,
     edge_buffer::{EdgeBuffer, RenderEdge},
     triangle_buffer::{RenderTriangle, TriangleBuffer},
-    vertex_buffer::{RenderVertex, VertexBuffer},
+    vertex_buffer::{RenderVertex},
 };
 
 // struct VertexBuffer {
@@ -110,7 +109,7 @@ pub fn check_triangle_counter_clockwise(
     return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
 }
 
-fn edge_overlaps_edge(surface: &DelaunaySurface, edge: RenderEdge, other: RenderEdge) -> bool {
+fn edge_overlaps_edge(_surface: &DelaunaySurface, edge: RenderEdge, other: RenderEdge) -> bool {
     if edge.start.point() == other.start.point()
         || edge.start.point() == other.end.point()
         || edge.end.point() == other.start.point()
@@ -307,7 +306,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
     let mut triangles = Vec::<RenderTriangle>::new();
 
     // Now make sure that all discrete boundaries are connected to a single boundary.
-    let mut counter = 0;
+    let counter = 0;
     while let Some(edge) = open_edges.pop_front() {
         // counter += 1;
         if counter > 50 {

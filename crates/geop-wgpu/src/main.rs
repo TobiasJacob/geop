@@ -7,10 +7,9 @@ use geop_geometry::{
     EQ_THRESHOLD,
 };
 use geop_rasterize::{
-    contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list},
+    contour::{rasterize_contours_into_line_list},
     face::rasterize_face_into_triangle_list,
     triangle_buffer::{RenderTriangle, TriangleBuffer},
-    vertex_buffer::{RenderVertex, VertexBuffer},
 };
 use geop_topology::topology::{
     contour::Contour,
@@ -113,15 +112,15 @@ async fn run() {
     //     &union_face.boundaries,
     //     [1.0, 1.0, 1.0]
     // );
-    let vertex_buffer_triange = TriangleBuffer::new(vec![RenderTriangle::new(
+    let _vertex_buffer_triange = TriangleBuffer::new(vec![RenderTriangle::new(
         Point::new(0.0, 0.0, 0.0),
         Point::new(1.0, 0.0, 0.0),
         Point::new(0.0, 1.0, 0.0),
         [1.0, 1.0, 0.0],
     )]);
     println!("Union face: {:?}", union_face);
-    let mut vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
-    let vertex_buffer_triange2 = rasterize_face_into_triangle_list(&face2, [0.0, 0.0, 1.0]);
+    let vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
+    let _vertex_buffer_triange2 = rasterize_face_into_triangle_list(&face2, [0.0, 0.0, 1.0]);
     // let vertex_buffer_triange_line = vertex_buffer_triange.to_line_list([1.0, 1.0, 1.0]);
     // vertex_buffer_triange.join(&vertex_buffer_triange2);
     let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
