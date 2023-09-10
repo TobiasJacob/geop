@@ -7,7 +7,7 @@ use geop_geometry::{
     EQ_THRESHOLD,
 };
 use geop_rasterize::{
-    contour::{rasterize_contours_into_line_list},
+    contour::rasterize_contours_into_line_list,
     face::rasterize_face_into_triangle_list,
     triangle_buffer::{RenderTriangle, TriangleBuffer},
 };

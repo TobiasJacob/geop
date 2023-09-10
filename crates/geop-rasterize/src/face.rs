@@ -1,4 +1,4 @@
-use std::{collections::VecDeque};
+use std::collections::VecDeque;
 
 use geop_geometry::{
     points::point::Point,
@@ -9,15 +9,13 @@ use geop_geometry::{
     },
     EQ_THRESHOLD,
 };
-use geop_topology::topology::{
-    face::{Face, FaceSurface},
-};
+use geop_topology::topology::face::{Face, FaceSurface};
 
 use crate::{
     contour::rasterize_contour_into_line_list,
     edge_buffer::{EdgeBuffer, RenderEdge},
     triangle_buffer::{RenderTriangle, TriangleBuffer},
-    vertex_buffer::{RenderVertex},
+    vertex_buffer::RenderVertex,
 };
 
 // struct VertexBuffer {

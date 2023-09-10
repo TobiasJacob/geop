@@ -1,8 +1,6 @@
 use geop_topology::topology::contour::Contour;
 
-use crate::{
-    edge_buffer::{EdgeBuffer, RenderEdge},
-};
+use crate::edge_buffer::{EdgeBuffer, RenderEdge};
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> EdgeBuffer {
