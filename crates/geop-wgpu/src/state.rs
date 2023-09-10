@@ -1,39 +1,11 @@
 use std::iter;
 
-use wgpu::{util::DeviceExt};
+use geop_rasterize::vertex_buffer::RenderVertex;
+use wgpu::util::DeviceExt;
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-struct Vertex {
-    position: [f32; 3],
-    color: [f32; 3],
-}
-
-// lib.rs
-impl Vertex {
-    fn desc() -> wgpu::VertexBufferLayout<'static> {
-        wgpu::VertexBufferLayout {
-            array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-                wgpu::VertexAttribute {
-                    offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
-                    shader_location: 1,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-            ],
-        }
-    }
-}
 
 pub struct State {
     surface: wgpu::Surface,
@@ -140,7 +112,22 @@ impl State {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main", // 1.
-                buffers: &[Vertex::desc()],
+                buffers: &[wgpu::VertexBufferLayout {
+                    array_stride: std::mem::size_of::<RenderVertex>() as wgpu::BufferAddress,
+                    step_mode: wgpu::VertexStepMode::Vertex,
+                    attributes: &[
+                        wgpu::VertexAttribute {
+                            offset: 0,
+                            shader_location: 0,
+                            format: wgpu::VertexFormat::Float32x3,
+                        },
+                        wgpu::VertexAttribute {
+                            offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                            shader_location: 1,
+                            format: wgpu::VertexFormat::Float32x3,
+                        },
+                    ],
+                }],
             },
             fragment: Some(wgpu::FragmentState {
                 // 3.
@@ -181,7 +168,24 @@ impl State {
                 vertex: wgpu::VertexState {
                     module: &shader,
                     entry_point: "vs_main", // 1.
-                    buffers: &[Vertex::desc()],
+                    buffers: &[
+                        wgpu::VertexBufferLayout {
+                            array_stride: std::mem::size_of::<RenderVertex>() as wgpu::BufferAddress,
+                            step_mode: wgpu::VertexStepMode::Vertex,
+                            attributes: &[
+                                wgpu::VertexAttribute {
+                                    offset: 0,
+                                    shader_location: 0,
+                                    format: wgpu::VertexFormat::Float32x3,
+                                },
+                                wgpu::VertexAttribute {
+                                    offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                                    shader_location: 1,
+                                    format: wgpu::VertexFormat::Float32x3,
+                                },
+                            ],
+                        }
+                    ],
                 },
                 fragment: Some(wgpu::FragmentState {
                     // 3.

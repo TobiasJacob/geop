@@ -20,19 +20,4 @@ impl Object {
     pub fn intersect(&self, _other: &Object) -> Vec<Rc<ObjectIntersection>> {
         todo!("Implement intersect");
     }
-
-    // Remeshes this object with another object, dividing it into disjoint non-intersecting faces in 6 categories.
-    pub fn remesh(
-        &self,
-        _other: &Object,
-    ) -> (
-        Vec<Rc<Face>>,
-        Vec<Rc<Face>>,
-        Vec<Rc<Face>>,
-        Vec<Rc<Face>>,
-        Vec<Rc<Face>>,
-        Vec<Rc<Face>>,
-    ) {
-        todo!("Implement remesh");
-    }
 }
