@@ -4,7 +4,7 @@ use crate::{curves::line::Line, points::point::Point};
 pub enum LineLineIntersection {
     Line(Line),
     Point(Point),
-    None
+    None,
 }
 
 pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
@@ -24,7 +24,7 @@ pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
     let cross_product = v1.cross(v2);
     let t = (p2 - p1).cross(v2).dot(cross_product) / cross_product.norm_sq();
     let p = p1 + v1 * t;
-    
+
     if (p - p1).is_parallel(v1) && (p - p2).is_parallel(v2) {
         return LineLineIntersection::Point(p);
     } else {
@@ -44,30 +44,33 @@ mod tests {
         match i {
             LineLineIntersection::Point(p) => {
                 assert_eq!(p, Point::new(-2.0, 1.0, 4.0));
-            },
-            _ => panic!("Expected point intersection")
+            }
+            _ => panic!("Expected point intersection"),
         }
 
         let l3 = Line::new(Point::new(0.0, 1.0, 4.0), Point::new(2.0, 0.0, 0.0));
         match line_line_intersection(&l1, &l3) {
             LineLineIntersection::Line(l) => {
-                assert_eq!(l, Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(1.0, 0.0, 0.0)));
-            },
-            _ => panic!("Expected line intersection")
+                assert_eq!(
+                    l,
+                    Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(1.0, 0.0, 0.0))
+                );
+            }
+            _ => panic!("Expected line intersection"),
         }
 
         let l4 = Line::new(Point::new(0.0, -1.0, 4.0), Point::new(0.0, 1.0, 0.0));
         match line_line_intersection(&l1, &l4) {
             LineLineIntersection::Point(p) => {
                 assert_eq!(p, Point::new(0.0, 1.0, 4.0));
-            },
-            _ => panic!("Expected point intersection")
+            }
+            _ => panic!("Expected point intersection"),
         }
 
         let l5 = Line::new(Point::new(0.0, 1.0, 3.0), Point::new(0.0, 1.0, 0.0));
         match line_line_intersection(&l1, &l5) {
-            LineLineIntersection::None => {},
-            _ => panic!("Expected no intersection")
+            LineLineIntersection::None => {}
+            _ => panic!("Expected no intersection"),
         }
     }
 }

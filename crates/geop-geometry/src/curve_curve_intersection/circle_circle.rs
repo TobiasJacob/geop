@@ -5,7 +5,7 @@ pub enum CircleCircleIntersection {
     Circle(Circle),
     TwoPoint(Point, Point),
     OnePoint(Point),
-    None
+    None,
 }
 
 pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleIntersection {
@@ -19,7 +19,7 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
 
     let d = (p1 - p2).norm();
     let a = (r1.powi(2) - r2.powi(2) + d.powi(2)) / (2.0 * d);
-    
+
     // Check if both circles are on the same plane
     if n1.is_parallel(n2) && n1.is_perpendicular(p1 - p2) {
         // Check if both circles have the same centerpoint
@@ -39,7 +39,7 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
         else if d > r1 + r2 {
             return CircleCircleIntersection::None;
         }
-        // Check if two point intersection 
+        // Check if two point intersection
         else {
             let p = p1 + (p2 - p1).normalize() * a;
             let h = (r1.powi(2) - a.powi(2)).sqrt();
@@ -59,10 +59,26 @@ mod tests {
 
     #[test]
     fn test_circle_circle_intersection() {
-        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 3.0), Point::new(2.0, 0.0, 0.0));
-        let b = Circle::new(Point::new(1.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), Point::new(2.0, 0.0, 0.0));
-        let c: Circle = Circle::new(Point::new(4.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), Point::new(2.0, 0.0, 0.0));
-        let d = Circle::new(Point::new(6.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), Point::new(2.0, 0.0, 0.0));
+        let a = Circle::new(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 3.0),
+            Point::new(2.0, 0.0, 0.0),
+        );
+        let b = Circle::new(
+            Point::new(1.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 1.0),
+            Point::new(2.0, 0.0, 0.0),
+        );
+        let c: Circle = Circle::new(
+            Point::new(4.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 2.0),
+            Point::new(2.0, 0.0, 0.0),
+        );
+        let d = Circle::new(
+            Point::new(6.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 2.0),
+            Point::new(2.0, 0.0, 0.0),
+        );
 
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::TwoPoint(p1, p2) => {
@@ -70,29 +86,40 @@ mod tests {
                 let i2 = Point::new(0.5, f64::sqrt(3.75), 0.0);
                 assert_eq!(p1, i1);
                 assert_eq!(p2, i2);
-            },
-            _ => panic!("Should be two points but is {:?}", circle_circle_intersection(&a, &b)),
+            }
+            _ => panic!(
+                "Should be two points but is {:?}",
+                circle_circle_intersection(&a, &b)
+            ),
         }
 
         match circle_circle_intersection(&a, &c) {
             CircleCircleIntersection::OnePoint(p1) => {
                 let i1 = Point::new(2.0, 0.0, 0.0);
                 assert_eq!(p1, i1);
-            },
-            _ => panic!("Should be one point but is {:?}", circle_circle_intersection(&a, &c)),
+            }
+            _ => panic!(
+                "Should be one point but is {:?}",
+                circle_circle_intersection(&a, &c)
+            ),
         }
 
         match circle_circle_intersection(&a, &d) {
-            CircleCircleIntersection::None => {
-            },
-            _ => panic!("Should be none but is {:?}", circle_circle_intersection(&a, &d)),
+            CircleCircleIntersection::None => {}
+            _ => panic!(
+                "Should be none but is {:?}",
+                circle_circle_intersection(&a, &d)
+            ),
         }
 
         match circle_circle_intersection(&a, &a) {
             CircleCircleIntersection::Circle(c) => {
                 assert_eq!(c, a);
-            },
-            _ => panic!("Should be a circle but is {:?}", circle_circle_intersection(&a, &a)),
+            }
+            _ => panic!(
+                "Should be a circle but is {:?}",
+                circle_circle_intersection(&a, &a)
+            ),
         }
     }
 }

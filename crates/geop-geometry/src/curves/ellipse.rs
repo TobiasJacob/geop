@@ -6,16 +6,12 @@ use super::curve::Curve;
 pub struct Ellipse {
     pub basis: Point,
     pub dir0: Point,
-    pub dir1: Point
+    pub dir1: Point,
 }
 
 impl Ellipse {
     pub fn new(basis: Point, dir0: Point, dir1: Point) -> Ellipse {
-        Ellipse {
-            basis,
-            dir0,
-            dir1
-        }
+        Ellipse { basis, dir0, dir1 }
     }
 }
 
@@ -31,7 +27,10 @@ impl Curve for Ellipse {
         let v = v.dot(self.dir1) / self.dir1.norm();
         let v = v.atan2(u);
         let u = u.atan2(v);
-        (u / (2.0 * std::f64::consts::PI), v / (2.0 * std::f64::consts::PI))
+        (
+            u / (2.0 * std::f64::consts::PI),
+            v / (2.0 * std::f64::consts::PI),
+        )
     }
 
     fn derivative(&self, p: Point) -> Point {

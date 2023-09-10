@@ -11,9 +11,7 @@ pub struct Vertex {
 
 impl Vertex {
     pub fn new(point: Rc<Point>) -> Vertex {
-        Vertex {
-            point,
-        }
+        Vertex { point }
     }
 }
 

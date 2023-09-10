@@ -1,4 +1,3 @@
-
 // struct TopologicalSpace2d {
 //     min: (f64, f64),
 //     max: (f64, f64),
@@ -44,4 +43,3 @@
 //         todo!("Asdf")
 //     }
 // }
-

@@ -1,21 +1,52 @@
 use std::rc::Rc;
 
-use geop_geometry::{curves::{line::Line, circle::Circle}, points::point::Point, EQ_THRESHOLD, surfaces::plane::Plane};
-use geop_rasterize::{contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list}, vertex_buffer::{VertexBuffer, RenderVertex}, triangle_buffer::{TriangleBuffer, RenderTriangle}, face::rasterize_face_into_triangle_list};
-use geop_topology::topology::{contour::Contour, edge::{Edge, EdgeCurve, Direction}, vertex::Vertex, face::{Face, FaceSurface}};
+use geop_geometry::{
+    curves::{circle::Circle, line::Line},
+    points::point::Point,
+    surfaces::plane::Plane,
+    EQ_THRESHOLD,
+};
+use geop_rasterize::{
+    contour::{rasterize_contour_into_line_list, rasterize_contours_into_line_list},
+    face::rasterize_face_into_triangle_list,
+    triangle_buffer::{RenderTriangle, TriangleBuffer},
+    vertex_buffer::{RenderVertex, VertexBuffer},
+};
+use geop_topology::topology::{
+    contour::Contour,
+    edge::{Direction, Edge, EdgeCurve},
+    face::{Face, FaceSurface},
+    vertex::Vertex,
+};
 use geop_wgpu::window::GeopWindow;
-
 
 pub fn linear_edge(s: Vertex, e: Vertex) -> Rc<Edge> {
     let p1 = *s.point;
     let p2 = *e.point;
-    Rc::new(Edge::new(s, e, Rc::new(EdgeCurve::Line(Line::new(p1, p2 - p1))), Direction::Increasing))
+    Rc::new(Edge::new(
+        s,
+        e,
+        Rc::new(EdgeCurve::Line(Line::new(p1, p2 - p1))),
+        Direction::Increasing,
+    ))
 }
 
 pub fn circular_edge(s: Vertex, e: Vertex, center: Point) -> Rc<Edge> {
-    assert!((*s.point - center).norm_sq() - (*e.point - center).norm_sq() < EQ_THRESHOLD, "Circular edge must have same distance to center point");
+    assert!(
+        (*s.point - center).norm_sq() - (*e.point - center).norm_sq() < EQ_THRESHOLD,
+        "Circular edge must have same distance to center point"
+    );
     let point = *s.point;
-    Rc::new(Edge::new(s, e, Rc::new(EdgeCurve::Circle(Circle::new(center, Point::new(0.0, 0.0, 1.0), point - center))), Direction::Increasing))
+    Rc::new(Edge::new(
+        s,
+        e,
+        Rc::new(EdgeCurve::Circle(Circle::new(
+            center,
+            Point::new(0.0, 0.0, 1.0),
+            point - center,
+        ))),
+        Direction::Increasing,
+    ))
 }
 
 async fn run() {
@@ -42,25 +73,41 @@ async fn run() {
         linear_edge(v7.clone(), v5.clone()),
     ]);
 
-
-    let surface =Rc::new(FaceSurface::Plane(Plane::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0))));
-
+    let surface = Rc::new(FaceSurface::Plane(Plane::new(
+        Point::new(0.0, 0.0, 0.0),
+        Point::new(1.0, 0.0, 0.0),
+        Point::new(0.0, 1.0, 0.0),
+    )));
 
     // Loop shifted by 0.1 in x and y direction
     let shift = Point::new(-0.1, -0.1, 0.0);
     let contour_shifted = Contour::new(vec![
-        linear_edge(Vertex::new(Rc::new(*v1.point + shift)), Vertex::new(Rc::new(*v2.point + shift))),
-        linear_edge(Vertex::new(Rc::new(*v2.point + shift)), Vertex::new(Rc::new(*v3.point + shift))),
-        linear_edge(Vertex::new(Rc::new(*v3.point + shift)), Vertex::new(Rc::new(*v4.point + shift))),
+        linear_edge(
+            Vertex::new(Rc::new(*v1.point + shift)),
+            Vertex::new(Rc::new(*v2.point + shift)),
+        ),
+        linear_edge(
+            Vertex::new(Rc::new(*v2.point + shift)),
+            Vertex::new(Rc::new(*v3.point + shift)),
+        ),
+        linear_edge(
+            Vertex::new(Rc::new(*v3.point + shift)),
+            Vertex::new(Rc::new(*v4.point + shift)),
+        ),
         // circular_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v6.point + shift)), *v5.point + shift),
-        linear_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v1.point + shift))),
+        linear_edge(
+            Vertex::new(Rc::new(*v4.point + shift)),
+            Vertex::new(Rc::new(*v1.point + shift)),
+        ),
     ]);
 
-    let face1 = Face::new(vec![contour.clone(), inner_contour.clone()], surface.clone());
+    let face1 = Face::new(
+        vec![contour.clone(), inner_contour.clone()],
+        surface.clone(),
+    );
     let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
 
     let union_face = face2.surface_difference(&face1);
-
 
     // let vertex_buffer_line = rasterize_contours_into_line_list(
     //     &union_face.boundaries,
@@ -70,7 +117,7 @@ async fn run() {
         Point::new(0.0, 0.0, 0.0),
         Point::new(1.0, 0.0, 0.0),
         Point::new(0.0, 1.0, 0.0),
-        [1.0, 1.0, 0.0]
+        [1.0, 1.0, 0.0],
     )]);
     println!("Union face: {:?}", union_face);
     let mut vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);

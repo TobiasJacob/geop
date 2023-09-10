@@ -1,6 +1,10 @@
 use std::rc::Rc;
 
-use crate::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, EQ_THRESHOLD};
+use crate::{
+    curves::{circle::Circle, curve::Curve, ellipse::Ellipse, line::Line},
+    points::point::Point,
+    EQ_THRESHOLD,
+};
 
 pub enum SurfaceCurve {
     // Returns the geodesic between p and q.
@@ -27,7 +31,7 @@ pub trait Surface {
     fn on_surface(&self, p: Point) -> bool;
 
     // Returns the Riemannian metric between u and v
-    fn metric(&self, x:Point, u: TangentPoint, v: TangentPoint) -> f64;
+    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64;
     // Returns the Riemannian distance between x and y.
     fn distance(&self, x: Point, y: Point) -> f64;
     // Exponential of u at base x. u_z is ignored.

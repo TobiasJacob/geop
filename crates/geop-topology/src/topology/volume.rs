@@ -8,12 +8,16 @@ use std::rc::Rc;
 
 use geop_geometry::points::point::Point;
 
-use super::{face::{Face, FaceIntersection}, contour::Contour, vertex::Vertex, edge::Edge};
-
+use super::{
+    contour::Contour,
+    edge::Edge,
+    face::{Face, FaceIntersection},
+    vertex::Vertex,
+};
 
 // A watertight group of faces.
 pub struct Volume {
-    pub faces: Vec<Rc<Face>>
+    pub faces: Vec<Rc<Face>>,
 }
 
 impl Volume {

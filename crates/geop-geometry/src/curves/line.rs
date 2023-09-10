@@ -5,7 +5,7 @@ use super::curve::Curve;
 #[derive(Debug, Clone)]
 pub struct Line {
     pub basis: Point,
-    pub direction: Point
+    pub direction: Point,
 }
 
 impl Line {

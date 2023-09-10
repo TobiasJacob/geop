@@ -1,9 +1,25 @@
-use std::{f32::consts::E, collections::VecDeque};
+use std::{collections::VecDeque, f32::consts::E};
 
-use geop_geometry::{points::point::Point, surfaces::{surface::{Surface, TangentPoint}, sphere::Sphere, plane::Plane}, EQ_THRESHOLD};
-use geop_topology::topology::{face::{Face, FaceSurface}, edge};
+use geop_geometry::{
+    points::point::Point,
+    surfaces::{
+        plane::Plane,
+        sphere::Sphere,
+        surface::{Surface, TangentPoint},
+    },
+    EQ_THRESHOLD,
+};
+use geop_topology::topology::{
+    edge,
+    face::{Face, FaceSurface},
+};
 
-use crate::{vertex_buffer::{VertexBuffer, RenderVertex}, contour::rasterize_contour_into_line_list, triangle_buffer::{TriangleBuffer, RenderTriangle}, edge_buffer::{EdgeBuffer, RenderEdge}};
+use crate::{
+    contour::rasterize_contour_into_line_list,
+    edge_buffer::{EdgeBuffer, RenderEdge},
+    triangle_buffer::{RenderTriangle, TriangleBuffer},
+    vertex_buffer::{RenderVertex, VertexBuffer},
+};
 
 // struct VertexBuffer {
 //     vertices: Vec<RenderVertex>
@@ -32,15 +48,21 @@ impl DelaunaySurface {
 // To perform delaungy in 3d it is fine to project the points into their tangent plane and perform delaunay triangulation there.
 
 // This function checks if the point is inside the circumcircle of the triangle. The points have to be in counter clockwise order.
-pub fn inside_triangle_circumcircle(surface: &DelaunaySurface, traingle: &[RenderVertex; 3], point: RenderVertex) -> f64 {
+pub fn inside_triangle_circumcircle(
+    surface: &DelaunaySurface,
+    traingle: &[RenderVertex; 3],
+    point: RenderVertex,
+) -> f64 {
     // First project points into the tangent plane.
     let projected_triangles = match surface {
-        DelaunaySurface::Plane(plane) => {
-            traingle.iter().map(|p| plane.log(point.into(), (*p).into())).collect::<Vec<TangentPoint>>()
-        },
-        DelaunaySurface::Sphere(sphere) => {
-            traingle.iter().map(|p| sphere.log(point.into(), (*p).into())).collect::<Vec<TangentPoint>>()
-        }
+        DelaunaySurface::Plane(plane) => traingle
+            .iter()
+            .map(|p| plane.log(point.into(), (*p).into()))
+            .collect::<Vec<TangentPoint>>(),
+        DelaunaySurface::Sphere(sphere) => traingle
+            .iter()
+            .map(|p| sphere.log(point.into(), (*p).into()))
+            .collect::<Vec<TangentPoint>>(),
     };
     // Now use the classic delaunay algorithm in 2d.
 
@@ -53,7 +75,7 @@ pub fn inside_triangle_circumcircle(surface: &DelaunaySurface, traingle: &[Rende
     let y2 = projected_triangles[1].0.y as f64;
     let x3 = projected_triangles[2].0.x as f64;
     let y3 = projected_triangles[2].0.y as f64;
-    
+
     let mat = [
         [x1, y1, (x1).powi(2) + (y1).powi(2)],
         [x2, y2, (x2).powi(2) + (y2).powi(2)],
@@ -61,31 +83,39 @@ pub fn inside_triangle_circumcircle(surface: &DelaunaySurface, traingle: &[Rende
     ];
 
     // use rule of sarrus to calculate determinant
-    let determinant = mat[0][0] * mat[1][1] * mat[2][2] 
-        - mat[0][2] * mat[1][1] * mat[2][0] 
-        + mat[0][1] * mat[1][2] * mat[2][0] 
-        - mat[0][1] * mat[1][0] * mat[2][2] 
-        + mat[0][2] * mat[1][0] * mat[2][1] 
+    let determinant = mat[0][0] * mat[1][1] * mat[2][2] - mat[0][2] * mat[1][1] * mat[2][0]
+        + mat[0][1] * mat[1][2] * mat[2][0]
+        - mat[0][1] * mat[1][0] * mat[2][2]
+        + mat[0][2] * mat[1][0] * mat[2][1]
         - mat[0][0] * mat[1][2] * mat[2][1];
 
     -determinant // Check this is < -0.0001, which means it is inside the circumcircle
 }
 
-pub fn check_triangle_counter_clockwise(surface: &DelaunaySurface, traingle: &[RenderVertex; 3]) -> bool {
+pub fn check_triangle_counter_clockwise(
+    surface: &DelaunaySurface,
+    traingle: &[RenderVertex; 3],
+) -> bool {
     let (v1, v2) = match surface {
-        DelaunaySurface::Plane(plane) => {
-            (plane.log(traingle[0].into(), traingle[1].into()), plane.log(traingle[0].into(), traingle[2].into()))
-        },
-        DelaunaySurface::Sphere(sphere) => {
-            (sphere.log(traingle[0].into(), traingle[1].into()), sphere.log(traingle[0].into(), traingle[2].into()))
-        }
+        DelaunaySurface::Plane(plane) => (
+            plane.log(traingle[0].into(), traingle[1].into()),
+            plane.log(traingle[0].into(), traingle[2].into()),
+        ),
+        DelaunaySurface::Sphere(sphere) => (
+            sphere.log(traingle[0].into(), traingle[1].into()),
+            sphere.log(traingle[0].into(), traingle[2].into()),
+        ),
     };
     let det = v1.0.x * v2.0.y - v1.0.y * v2.0.x;
     return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
 }
 
 fn edge_overlaps_edge(surface: &DelaunaySurface, edge: RenderEdge, other: RenderEdge) -> bool {
-    if edge.start.point() == other.start.point() || edge.start.point() == other.end.point() || edge.end.point() == other.start.point() || edge.end.point() == other.end.point() {
+    if edge.start.point() == other.start.point()
+        || edge.start.point() == other.end.point()
+        || edge.end.point() == other.start.point()
+        || edge.end.point() == other.end.point()
+    {
         let dir1 = edge.end.point() - edge.start.point();
         let dir2 = other.end.point() - other.start.point();
         if dir1.is_parallel(dir2) {
@@ -97,7 +127,11 @@ fn edge_overlaps_edge(surface: &DelaunaySurface, edge: RenderEdge, other: Render
     false
 }
 
-pub fn edge_intersects_contour(surface: &DelaunaySurface, edge: &RenderEdge, contour: &EdgeBuffer) -> bool {
+pub fn edge_intersects_contour(
+    surface: &DelaunaySurface,
+    edge: &RenderEdge,
+    contour: &EdgeBuffer,
+) -> bool {
     for other in contour.edges.iter() {
         if edge_overlaps_edge(surface, *edge, *other) {
             return true;
@@ -106,7 +140,11 @@ pub fn edge_intersects_contour(surface: &DelaunaySurface, edge: &RenderEdge, con
     return false;
 }
 
-pub fn edge_intersects_contours(surface: &DelaunaySurface, edge: &RenderEdge, contours: &[EdgeBuffer]) -> bool {
+pub fn edge_intersects_contours(
+    surface: &DelaunaySurface,
+    edge: &RenderEdge,
+    contours: &[EdgeBuffer],
+) -> bool {
     for contour in contours.iter() {
         if edge_intersects_contour(surface, edge, contour) {
             return true;
@@ -147,7 +185,7 @@ pub fn edge_intersects_contours(surface: &DelaunaySurface, edge: &RenderEdge, co
 //         let mut max_1 = f64::NEG_INFINITY;
 //         let mut min_2 = f64::INFINITY;
 //         let mut max_2 = f64::NEG_INFINITY;
-        
+
 //         for &point in [a1, b1, c1].iter() {
 //             let projected = normal.dot(point);
 //             min_1 = min_1.min(projected);
@@ -178,9 +216,13 @@ pub fn edge_intersects_contours(surface: &DelaunaySurface, edge: &RenderEdge, co
 //     return false;
 // }
 
-pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &RenderTriangle, other_triangle: &RenderTriangle) -> bool {
+pub fn triangle_intersects_triangle(
+    surface: &DelaunaySurface,
+    triangle: &RenderTriangle,
+    other_triangle: &RenderTriangle,
+) -> bool {
     let reference_point = triangle.a;
-    
+
     let project_fn = |p: RenderVertex| match surface {
         DelaunaySurface::Plane(plane) => plane.log(reference_point.into(), p.into()).0,
         DelaunaySurface::Sphere(sphere) => sphere.log(reference_point.into(), p.into()).0,
@@ -208,7 +250,6 @@ pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &Render
         }
         let normal = normal / norm;
 
-
         let mut min_1 = f64::INFINITY;
         let mut max_1 = f64::NEG_INFINITY;
         let mut min_2 = f64::INFINITY;
@@ -234,7 +275,11 @@ pub fn triangle_intersects_triangle(surface: &DelaunaySurface, triangle: &Render
     true
 }
 
-pub fn triangle_intersects_triangle_list(surface: &DelaunaySurface, triangle: &RenderTriangle, triangle_list: &[RenderTriangle]) -> bool {
+pub fn triangle_intersects_triangle_list(
+    surface: &DelaunaySurface,
+    triangle: &RenderTriangle,
+    triangle_list: &[RenderTriangle],
+) -> bool {
     for other_triangle in triangle_list {
         if triangle_intersects_triangle(surface, triangle, other_triangle) {
             return true;
@@ -253,7 +298,11 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         contours.push(points);
     }
 
-    let all_edges: Vec<RenderEdge> = contours.iter().flat_map(|contour| contour.edges.iter()).cloned().collect();
+    let all_edges: Vec<RenderEdge> = contours
+        .iter()
+        .flat_map(|contour| contour.edges.iter())
+        .cloned()
+        .collect();
     let mut open_edges = VecDeque::from(all_edges.clone());
     let mut triangles = Vec::<RenderTriangle>::new();
 
@@ -271,7 +320,11 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
             if !check_triangle_counter_clockwise(&surface, &[edge.start, edge.end, point]) {
                 continue;
             }
-            if triangle_intersects_triangle_list(&surface, &RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color), &triangles) {
+            if triangle_intersects_triangle_list(
+                &surface,
+                &RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color),
+                &triangles,
+            ) {
                 continue;
             }
             i = j;
@@ -292,11 +345,24 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
                 if !check_triangle_counter_clockwise(&surface, &[edge.start, edge.end, new_point]) {
                     continue;
                 }
-                let new_det = inside_triangle_circumcircle(&surface, &[edge.start, edge.end, current_point], new_point);
+                let new_det = inside_triangle_circumcircle(
+                    &surface,
+                    &[edge.start, edge.end, current_point],
+                    new_point,
+                );
                 if new_det >= min_det {
                     continue;
                 }
-                if triangle_intersects_triangle_list(&surface, &RenderTriangle::new(edge.start.into(), edge.end.into(), new_point.into(), color), &triangles) {
+                if triangle_intersects_triangle_list(
+                    &surface,
+                    &RenderTriangle::new(
+                        edge.start.into(),
+                        edge.end.into(),
+                        new_point.into(),
+                        color,
+                    ),
+                    &triangles,
+                ) {
                     continue;
                 }
                 i = j;
@@ -310,7 +376,12 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
         }
         let point = all_edges[i].start;
         // triangles.push(RenderTriangle::new(edge.start.into(), point.into(), edge.end.into(), color));
-        triangles.push(RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color));
+        triangles.push(RenderTriangle::new(
+            edge.start.into(),
+            edge.end.into(),
+            point.into(),
+            color,
+        ));
         let inner_edge_1 = RenderEdge::new(point.into(), edge.end.into(), color);
         if !edge_intersects_contours(&surface, &inner_edge_1, &contours) {
             open_edges.push_back(inner_edge_1);

@@ -1,18 +1,22 @@
 use std::{rc::Rc, vec};
 
-use geop_geometry::{points::point::Point};
+use geop_geometry::points::point::Point;
 
 use crate::topology::vertex::Vertex;
 
-use super::{edge::{Edge, EdgeIntersection, EdgeContains}};
+use super::edge::{Edge, EdgeContains, EdgeIntersection};
 
 #[derive(Debug, Clone)]
 pub struct Contour {
     pub edges: Vec<Rc<Edge>>,
 }
 
-
-fn pop_next_segment(edges_self: &mut Vec<Rc<Edge>>, edges_other: &mut Vec<Rc<Edge>>, next_segment_is_self: bool, start: &Vertex) -> Option<Rc<Edge>> {
+fn pop_next_segment(
+    edges_self: &mut Vec<Rc<Edge>>,
+    edges_other: &mut Vec<Rc<Edge>>,
+    next_segment_is_self: bool,
+    start: &Vertex,
+) -> Option<Rc<Edge>> {
     let relevant_segments: &mut Vec<Rc<Edge>> = if next_segment_is_self {
         edges_self
     } else {
@@ -53,7 +57,12 @@ impl Contour {
     }
 
     pub fn neg(&self) -> Contour {
-        let edges = self.edges.iter().rev().map(|e| Rc::new(e.neg())).collect::<Vec<Rc<Edge>>>();
+        let edges = self
+            .edges
+            .iter()
+            .rev()
+            .map(|e| Rc::new(e.neg()))
+            .collect::<Vec<Rc<Edge>>>();
         Contour::new(edges)
     }
 
@@ -63,10 +72,10 @@ impl Contour {
             match contains {
                 EdgeContains::OnVertex => {
                     return EdgeContains::OnVertex;
-                },
+                }
                 EdgeContains::Inside => {
                     return EdgeContains::Inside;
-                },
+                }
                 EdgeContains::Outside => {}
             }
         }
@@ -96,7 +105,7 @@ impl Contour {
         if self.contains(*other.point) != EdgeContains::Inside {
             return self.clone();
         }
-        
+
         let edge_index = self.get_edge_index(*other.point).unwrap();
         let edge = self.edges[edge_index].split_if_necessary(other);
         assert!(edge.len() == 2);
@@ -122,13 +131,23 @@ impl Contour {
             .expect("End point has to be on edge");
 
         if start_i == end_i {
-            let edge = Rc::new(Edge::new(start.clone(), end.clone(), self.edges[start_i].curve.clone(), self.edges[start_i].direction));
+            let edge = Rc::new(Edge::new(
+                start.clone(),
+                end.clone(),
+                self.edges[start_i].curve.clone(),
+                self.edges[start_i].direction,
+            ));
             result.push(edge);
         }
 
         let mut edge = &self.edges[start_i];
         if start != edge.end {
-            result.push(Rc::new(Edge::new(start.clone(), edge.end.clone(), edge.curve.clone(), edge.direction)));
+            result.push(Rc::new(Edge::new(
+                start.clone(),
+                edge.end.clone(),
+                edge.curve.clone(),
+                edge.direction,
+            )));
         }
         for i in start_i + 1..end_i {
             edge = &self.edges[i % self.edges.len()];
@@ -136,7 +155,12 @@ impl Contour {
         }
         edge = &self.edges[end_i % self.edges.len()];
         if edge.start != end {
-            result.push(Rc::new(Edge::new(edge.start.clone(), end.clone(), edge.curve.clone(), edge.direction)));
+            result.push(Rc::new(Edge::new(
+                edge.start.clone(),
+                end.clone(),
+                edge.curve.clone(),
+                edge.direction,
+            )));
         }
         result
     }
@@ -172,7 +196,6 @@ impl Contour {
         }
         intersections
     }
-
 
     // Takes 2 Contours and connects them at intersecting points with new vertices if there are some.
     // If there are overlapping edges, there will be a vertex for the beginning and the end of the overlapping edges, and a connecting edge for each loop.
@@ -253,10 +276,10 @@ impl Contour {
     // It is important that the Contours in other do not overlap. This makes sure, that remeshing them with themselfs will not change anything.
     // pub fn remesh_multiple(&self, other: &[Contour]) -> Vec<Contour> {
     //     let mut result = vec![self.clone()];
-        
+
     //     // Since all contours in other do not overlap, we can safely remesh them with each other.
     //     // It is guaranteed, that whenever we apply a remesh iteration, result will only intersect with other in places where self already intersected with other.
-    //     // Hence, remeshing it again will keep the result untouched. 
+    //     // Hence, remeshing it again will keep the result untouched.
     //     for other_contour in other {
     //         let mut new_result = Vec::<Contour>::new();
     //         for contour in result {
@@ -323,7 +346,7 @@ impl Contour {
             match u {
                 Some(u) => {
                     return Some((i as f64 + u) / self.edges.len() as f64);
-                },
+                }
                 None => {}
             }
         }
@@ -334,7 +357,7 @@ impl Contour {
 // It is required that the contours within contours_self and within contours_other do not overlap.
 // pub fn remesh_multiple_multiple(contours_self: &[Contour], contours_other: &[Contour]) -> Vec<Contour> {
 //     let mut result = Vec::from(contours_self);
-    
+
 //     for other_contour in contours_other {
 //         let mut new_result = Vec::<Contour>::new();
 //         let mut new_contours = other_contour.remesh_multiple(&result);

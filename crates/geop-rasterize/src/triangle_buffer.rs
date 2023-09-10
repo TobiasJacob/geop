@@ -1,6 +1,9 @@
 use geop_geometry::points::point::Point;
 
-use crate::{vertex_buffer::RenderVertex, edge_buffer::{RenderEdge, EdgeBuffer}};
+use crate::{
+    edge_buffer::{EdgeBuffer, RenderEdge},
+    vertex_buffer::RenderVertex,
+};
 
 // This is a triangle that can be rendered on-screen. The vertices are in counter clockwise order.
 #[repr(C)]
@@ -49,4 +52,3 @@ impl TriangleBuffer {
         EdgeBuffer::new(edges)
     }
 }
-

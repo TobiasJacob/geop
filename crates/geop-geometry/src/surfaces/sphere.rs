@@ -1,4 +1,4 @@
-use crate::{points::point::Point, EQ_THRESHOLD, curves::circle::Circle};
+use crate::{curves::circle::Circle, points::point::Point, EQ_THRESHOLD};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -10,10 +10,7 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(basis: Point, radius: f64) -> Sphere {
-        Sphere {
-            basis,
-            radius,
-        }
+        Sphere { basis, radius }
     }
 
     pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
@@ -69,7 +66,7 @@ impl Surface for Sphere {
     // fn is_normalized(&self) -> bool {
     //     self.radius >= 0.0
     // }
-    fn metric(&self, x:Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         u.0.dot(v.0)
@@ -87,7 +84,9 @@ impl Surface for Sphere {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         let u_norm = u.0.norm();
         let u_normalized = u.0 / u_norm;
-        x * u_norm.cos() * self.radius + u_normalized.cross(x) * u_norm.sin() * self.radius + self.basis
+        x * u_norm.cos() * self.radius
+            + u_normalized.cross(x) * u_norm.sin() * self.radius
+            + self.basis
     }
 
     fn log(&self, x: Point, y: Point) -> TangentPoint {
@@ -109,7 +108,10 @@ impl Surface for Sphere {
         let u = self.log(x, y);
         let u_norm = u.0.norm();
         let u_normalized = u.0 / u_norm;
-        -x * u_norm.sin() * u_normalized.dot(v.0) + u_normalized * u_norm.cos() * u_normalized.dot(v.0) + v.0 + u_normalized * u_normalized.dot(v.0)
+        -x * u_norm.sin() * u_normalized.dot(v.0)
+            + u_normalized * u_norm.cos() * u_normalized.dot(v.0)
+            + v.0
+            + u_normalized * u_normalized.dot(v.0)
     }
 
     fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {

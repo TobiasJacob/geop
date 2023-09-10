@@ -1,11 +1,17 @@
 use std::rc::Rc;
 
-use geop_geometry::{surfaces::{plane::Plane, sphere::Sphere, surface::Surface}, points::point::Point};
+use geop_geometry::{
+    points::point::Point,
+    surfaces::{plane::Plane, sphere::Sphere, surface::Surface},
+};
 
 use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection};
 
-use super::{{contour::Contour, edge::Edge}, vertex::Vertex, edge::EdgeContains};
-
+use super::{
+    edge::EdgeContains,
+    vertex::Vertex,
+    {contour::Contour, edge::Edge},
+};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum FaceSurface {
@@ -27,7 +33,6 @@ pub enum ContourDirection {
     CounterClockwise,
 }
 
-
 #[derive(Clone, Debug)]
 pub struct Face {
     pub boundaries: Vec<Contour>, // Coutner-clockwise
@@ -38,7 +43,7 @@ pub enum FaceIntersection {
     Face(Face),
     Contour(Contour),
     Edge(Edge),
-    Vertex(Vertex)
+    Vertex(Vertex),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -106,12 +111,22 @@ impl Face {
         match &*self.surface {
             FaceSurface::Plane(p) => {
                 let curve = p.curve_from_to(*from.point, *to.point);
-                return Rc::new(Edge::new(from.clone(), to.clone(), Rc::new(EdgeCurve::Line(curve)), Direction::Increasing));
-            },
+                return Rc::new(Edge::new(
+                    from.clone(),
+                    to.clone(),
+                    Rc::new(EdgeCurve::Line(curve)),
+                    Direction::Increasing,
+                ));
+            }
             FaceSurface::Sphere(s) => {
                 let curve = s.curve_from_to(*from.point, *to.point);
-                return Rc::new(Edge::new(from.clone(), to.clone(), Rc::new(EdgeCurve::Circle(curve)), Direction::Increasing));
-            },
+                return Rc::new(Edge::new(
+                    from.clone(),
+                    to.clone(),
+                    Rc::new(EdgeCurve::Circle(curve)),
+                    Direction::Increasing,
+                ));
+            }
         }
     }
 
@@ -130,14 +145,17 @@ impl Face {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
             match edge.contains(other) {
-                EdgeContains::Inside => return FaceContainsPoint::OnEdge, 
+                EdgeContains::Inside => return FaceContainsPoint::OnEdge,
                 EdgeContains::OnVertex => return FaceContainsPoint::OnVertex,
                 EdgeContains::Outside => continue,
             }
         }
         // Draw a line from the point to a random point on the border.
         // Use a midpoint to have a well defined tangent. At an Edge, the check is more complicated.
-        let q: Point = self.boundaries[0].edges[0].get_midpoint(*self.boundaries[0].edges[0].start.point, *self.boundaries[0].edges[0].end.point);
+        let q: Point = self.boundaries[0].edges[0].get_midpoint(
+            *self.boundaries[0].edges[0].start.point,
+            *self.boundaries[0].edges[0].end.point,
+        );
         let curve = self.edge_from_to(&Vertex::new(Rc::new(other)), &Vertex::new(Rc::new(q)));
 
         // Find the closest intersection point
@@ -153,11 +171,11 @@ impl Face {
                 match intersection {
                     EdgeIntersection::Vertex(vertex) => {
                         intersections.push(vertex);
-                    },
+                    }
                     EdgeIntersection::Edge(edge) => {
                         intersections.push(edge.start);
                         intersections.push(edge.end);
-                    },
+                    }
                 }
             }
             for vertex in intersections {
@@ -176,7 +194,7 @@ impl Face {
         // println!("Closest intersect from inside: {}", closest_intersect_from_inside);
         match closest_intersect_from_inside {
             true => FaceContainsPoint::Inside,
-            false => FaceContainsPoint::Outside
+            false => FaceContainsPoint::Outside,
         }
     }
 
@@ -192,16 +210,24 @@ impl Face {
                     EdgeIntersection::Edge(edge) => {
                         intersections.push(edge.start.clone());
                         intersections.push(edge.end.clone());
-                    },
+                    }
                 }
             }
         }
-        
+
         let mut part_inside = false;
         let mut part_outside = false;
         for i in -1..intersections.len() as isize {
-            let prev = if i == -1 { &other.start } else { &intersections[i as usize] };
-            let next = if i == intersections.len() as isize - 1 { &other.end } else { &intersections[(i + 1) as usize] };
+            let prev = if i == -1 {
+                &other.start
+            } else {
+                &intersections[i as usize]
+            };
+            let next = if i == intersections.len() as isize - 1 {
+                &other.end
+            } else {
+                &intersections[(i + 1) as usize]
+            };
             let p = other.get_midpoint(*prev.point, *next.point);
             match self.contains_point(p) {
                 FaceContainsPoint::Inside => part_inside = true,
@@ -255,8 +281,10 @@ impl Face {
     //     ))
     // }
 
-    
-    pub fn split_parts<F>(&self, other: &Face, filter: F) -> Face where F: Fn(&EdgeSplit) -> bool {
+    pub fn split_parts<F>(&self, other: &Face, filter: F) -> Face
+    where
+        F: Fn(&EdgeSplit) -> bool,
+    {
         assert!(self.surface == other.surface);
 
         let mut intersections = Vec::<Vertex>::new();
@@ -268,7 +296,7 @@ impl Face {
                         EdgeIntersection::Edge(edge) => {
                             intersections.push(edge.start.clone());
                             intersections.push(edge.end.clone());
-                        },
+                        }
                     }
                 }
             }
@@ -281,33 +309,51 @@ impl Face {
         let mut contours_other = other.boundaries.clone();
 
         for vert in intersections {
-            contours_self = contours_self.into_iter().map(|contour| contour.split_if_necessary(&vert)).collect();
-            contours_other = contours_other.into_iter().map(|contour| contour.split_if_necessary(&vert)).collect();
+            contours_self = contours_self
+                .into_iter()
+                .map(|contour| contour.split_if_necessary(&vert))
+                .collect();
+            contours_other = contours_other
+                .into_iter()
+                .map(|contour| contour.split_if_necessary(&vert))
+                .collect();
         }
 
-        let mut edges = contours_self.into_iter().map(|contour| {
-            return contour.edges.into_iter().map(|edge| {
-                match other.contains_edge(&edge) {
-                    FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
-                    FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
-                    FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
-                    FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
-                    FaceContainsEdge::Wiggeling => panic!("Should not happen because contours were split at all intersections"),
-                }
-            }).collect::<Vec<EdgeSplit>>()
-        }).chain(
-            contours_other.into_iter().map(|contour| {
-                contour.edges.into_iter().map(|edge| {
-                    match self.contains_edge(&edge) {
+        let mut edges = contours_self
+            .into_iter()
+            .map(|contour| {
+                return contour
+                    .edges
+                    .into_iter()
+                    .map(|edge| match other.contains_edge(&edge) {
+                        FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
+                        FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
+                        FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
+                        FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
+                        FaceContainsEdge::Wiggeling => panic!(
+                            "Should not happen because contours were split at all intersections"
+                        ),
+                    })
+                    .collect::<Vec<EdgeSplit>>();
+            })
+            .chain(contours_other.into_iter().map(|contour| {
+                contour
+                    .edges
+                    .into_iter()
+                    .map(|edge| match self.contains_edge(&edge) {
                         FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
-                        FaceContainsEdge::Wiggeling => panic!("Should not happen because contours were split at all intersections"),
-                    }
-                }).collect::<Vec<EdgeSplit>>()
-        })).flatten().filter(filter).map(|e| {
-            match e {
+                        FaceContainsEdge::Wiggeling => panic!(
+                            "Should not happen because contours were split at all intersections"
+                        ),
+                    })
+                    .collect::<Vec<EdgeSplit>>()
+            }))
+            .flatten()
+            .filter(filter)
+            .map(|e| match e {
                 EdgeSplit::AinB(edge) => edge,
                 EdgeSplit::AonBSameSide(edge) => edge,
                 EdgeSplit::AonBOpSide(edge) => edge,
@@ -316,8 +362,8 @@ impl Face {
                 EdgeSplit::BonASameSide(edge) => edge,
                 EdgeSplit::BonAOpSide(edge) => edge,
                 EdgeSplit::BoutA(edge) => edge,
-            }
-        }).collect::<Vec<Rc<Edge>>>();
+            })
+            .collect::<Vec<Rc<Edge>>>();
 
         for edge in edges.iter() {
             println!("Edge: {:?}", edge);
@@ -328,7 +374,10 @@ impl Face {
         while let Some(current_edge) = edges.pop() {
             let mut new_contour = vec![current_edge];
             loop {
-                let next_i = edges.iter().position(|edge| edge.start == new_contour[new_contour.len() - 1].end || edge.end == new_contour[new_contour.len() - 1].end);
+                let next_i = edges.iter().position(|edge| {
+                    edge.start == new_contour[new_contour.len() - 1].end
+                        || edge.end == new_contour[new_contour.len() - 1].end
+                });
                 match next_i {
                     Some(i) => {
                         if edges[i].start == new_contour[new_contour.len() - 1].end {
@@ -336,28 +385,28 @@ impl Face {
                         } else {
                             new_contour.push(Rc::new(edges.remove(i).neg()));
                         }
-                    },
+                    }
                     None => {
                         assert!(new_contour[0].start == new_contour[new_contour.len() - 1].end);
                         contours.push(Contour::new(new_contour));
                         break;
-                    },
+                    }
                 }
             }
         }
-        
+
         return Face::new(contours, self.surface.clone());
     }
 
     // pub fn split_parts(&self, other: &Face) -> Option<(Face, Vec<Face>)> {
     //     assert!(self.surface == other.surface);
-        
+
     //     let mut contours_self = self.boundaries.clone();
     //     contours_self.push(self.outer_loop.clone());
 
     //     let mut contours_other = other.boundaries.clone();
     //     contours_other.push(other.outer_loop.clone());
-        
+
     //     let remeshed = remesh_multiple_multiple(contours_self.as_slice(), contours_other.as_slice());
     //     let (mut ccw_conts, mut cw_conts): (Vec<Contour>, Vec<Contour>) = remeshed.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
 
@@ -416,32 +465,28 @@ impl Face {
     }
 
     pub fn surface_union(&self, other: &Face) -> Face {
-        self.split_parts(other, |mode| {
-            match mode {
-                EdgeSplit::AinB(_) => false,
-                EdgeSplit::AonBSameSide(_) => true,
-                EdgeSplit::AonBOpSide(_) => false,
-                EdgeSplit::AoutB(_) => true,
-                EdgeSplit::BinA(_) => false,
-                EdgeSplit::BonASameSide(_) => false,
-                EdgeSplit::BonAOpSide(_) => false,
-                EdgeSplit::BoutA(_) => true,
-            }
+        self.split_parts(other, |mode| match mode {
+            EdgeSplit::AinB(_) => false,
+            EdgeSplit::AonBSameSide(_) => true,
+            EdgeSplit::AonBOpSide(_) => false,
+            EdgeSplit::AoutB(_) => true,
+            EdgeSplit::BinA(_) => false,
+            EdgeSplit::BonASameSide(_) => false,
+            EdgeSplit::BonAOpSide(_) => false,
+            EdgeSplit::BoutA(_) => true,
         })
     }
 
     pub fn surface_intersection(&self, other: &Face) -> Face {
-        self.split_parts(other, |mode| {
-            match mode {
-                EdgeSplit::AinB(_) => true,
-                EdgeSplit::AonBSameSide(_) => true,
-                EdgeSplit::AonBOpSide(_) => false,
-                EdgeSplit::AoutB(_) => false,
-                EdgeSplit::BinA(_) => true,
-                EdgeSplit::BonASameSide(_) => false,
-                EdgeSplit::BonAOpSide(_) => false,
-                EdgeSplit::BoutA(_) => false,
-            }
+        self.split_parts(other, |mode| match mode {
+            EdgeSplit::AinB(_) => true,
+            EdgeSplit::AonBSameSide(_) => true,
+            EdgeSplit::AonBOpSide(_) => false,
+            EdgeSplit::AoutB(_) => false,
+            EdgeSplit::BinA(_) => true,
+            EdgeSplit::BonASameSide(_) => false,
+            EdgeSplit::BonAOpSide(_) => false,
+            EdgeSplit::BoutA(_) => false,
         })
     }
 
@@ -461,7 +506,6 @@ impl Face {
             }
         })
     }
-
 }
 
 //     pub fn intersect(&self, other: &Face) {

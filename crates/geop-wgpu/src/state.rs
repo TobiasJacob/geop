@@ -1,10 +1,7 @@
 use std::iter;
 
 use wgpu::{util::DeviceExt, BufferSlice};
-use winit::{
-    event::*,
-    window::Window,
-};
+use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
@@ -32,17 +29,25 @@ impl Vertex {
                     offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
                     shader_location: 1,
                     format: wgpu::VertexFormat::Float32x3,
-                }
-            ]
+                },
+            ],
         }
     }
 }
- 
 
 const VERTICES: &[Vertex] = &[
-    Vertex { position: [0.0, 0.5, 0.0], color: [1.0, 0.0, 0.0] },
-    Vertex { position: [-0.5, -0.5, 0.0], color: [0.0, 1.0, 0.0] },
-    Vertex { position: [0.5, -0.5, 0.0], color: [0.0, 0.0, 1.0] },
+    Vertex {
+        position: [0.0, 0.5, 0.0],
+        color: [1.0, 0.0, 0.0],
+    },
+    Vertex {
+        position: [-0.5, -0.5, 0.0],
+        color: [0.0, 1.0, 0.0],
+    },
+    Vertex {
+        position: [0.5, -0.5, 0.0],
+        color: [0.0, 0.0, 1.0],
+    },
 ];
 pub struct State {
     surface: wgpu::Surface,
@@ -123,29 +128,25 @@ impl State {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         });
-        
+
         let render_pipeline_line_layout =
-        device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[],
+                push_constant_ranges: &[],
+            });
+
+        let vertex_buffer_line = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: vertices_line,
+            usage: wgpu::BufferUsages::VERTEX,
         });
 
-        let vertex_buffer_line = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex Buffer"),
-                contents: vertices_line,
-                usage: wgpu::BufferUsages::VERTEX,
-            }
-        );
-
-        let vertex_buffer_triangle = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex Buffer"),
-                contents: vertices_triangle,
-                usage: wgpu::BufferUsages::VERTEX,
-            }
-        );
+        let vertex_buffer_triangle = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: vertices_triangle,
+            usage: wgpu::BufferUsages::VERTEX,
+        });
 
         let render_pipeline_line = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
@@ -153,14 +154,14 @@ impl State {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main", // 1.
-                buffers: &[
-                    Vertex::desc(),
-                ],
+                buffers: &[Vertex::desc()],
             },
-            fragment: Some(wgpu::FragmentState { // 3.
+            fragment: Some(wgpu::FragmentState {
+                // 3.
                 module: &shader,
                 entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState { // 4.
+                targets: &[Some(wgpu::ColorTargetState {
+                    // 4.
                     format: config.format,
                     blend: Some(wgpu::BlendState::REPLACE),
                     write_mask: wgpu::ColorWrites::ALL,
@@ -180,53 +181,54 @@ impl State {
             },
             depth_stencil: None, // 1.
             multisample: wgpu::MultisampleState {
-                count: 1, // 2.
-                mask: !0, // 3.
+                count: 1,                         // 2.
+                mask: !0,                         // 3.
                 alpha_to_coverage_enabled: false, // 4.
             },
             multiview: None, // 5.
         });
-         
-        let render_pipeline_triangle = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Render Pipeline"),
-            layout: Some(&render_pipeline_line_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: "vs_main", // 1.
-                buffers: &[
-                    Vertex::desc(),
-                ],
-            },
-            fragment: Some(wgpu::FragmentState { // 3.
-                module: &shader,
-                entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState { // 4.
-                    format: config.format,
-                    blend: Some(wgpu::BlendState::REPLACE),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: wgpu::PrimitiveState {
-                topology: wgpu::PrimitiveTopology::TriangleList, // 1.
-                strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: Some(wgpu::Face::Back),
-                // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
-                polygon_mode: wgpu::PolygonMode::Fill,
-                // Requires Features::DEPTH_CLIP_CONTROL
-                unclipped_depth: false,
-                // Requires Features::CONSERVATIVE_RASTERIZATION
-                conservative: false,
-            },
-            depth_stencil: None, // 1.
-            multisample: wgpu::MultisampleState {
-                count: 1, // 2.
-                mask: !0, // 3.
-                alpha_to_coverage_enabled: false, // 4.
-            },
-            multiview: None, // 5.
-        });
-         
+
+        let render_pipeline_triangle =
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("Render Pipeline"),
+                layout: Some(&render_pipeline_line_layout),
+                vertex: wgpu::VertexState {
+                    module: &shader,
+                    entry_point: "vs_main", // 1.
+                    buffers: &[Vertex::desc()],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    // 3.
+                    module: &shader,
+                    entry_point: "fs_main",
+                    targets: &[Some(wgpu::ColorTargetState {
+                        // 4.
+                        format: config.format,
+                        blend: Some(wgpu::BlendState::REPLACE),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                }),
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleList, // 1.
+                    strip_index_format: None,
+                    front_face: wgpu::FrontFace::Ccw, // 2.
+                    cull_mode: Some(wgpu::Face::Back),
+                    // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
+                    polygon_mode: wgpu::PolygonMode::Fill,
+                    // Requires Features::DEPTH_CLIP_CONTROL
+                    unclipped_depth: false,
+                    // Requires Features::CONSERVATIVE_RASTERIZATION
+                    conservative: false,
+                },
+                depth_stencil: None, // 1.
+                multisample: wgpu::MultisampleState {
+                    count: 1,                         // 2.
+                    mask: !0,                         // 3.
+                    alpha_to_coverage_enabled: false, // 4.
+                },
+                multiview: None, // 5.
+            });
+
         let num_vertices_line = vertices_line.len() as u32 / 24;
         let num_vertices_triangle = vertices_triangle.len() as u32 / 24;
         Self {

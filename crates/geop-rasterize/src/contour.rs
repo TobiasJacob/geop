@@ -1,6 +1,9 @@
-use geop_topology::topology::{contour::Contour};
+use geop_topology::topology::contour::Contour;
 
-use crate::{vertex_buffer::{RenderVertex, VertexBuffer}, edge_buffer::{EdgeBuffer, RenderEdge}};
+use crate::{
+    edge_buffer::{EdgeBuffer, RenderEdge},
+    vertex_buffer::{RenderVertex, VertexBuffer},
+};
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> EdgeBuffer {
@@ -11,7 +14,11 @@ pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> E
         for j in 0..n {
             let v1 = (j as f64) / n as f64;
             let v2 = ((j + 1) as f64) / n as f64;
-            edges.push(RenderEdge::new(contour.edges[i].point_at(v1), contour.edges[i].point_at(v2), color));
+            edges.push(RenderEdge::new(
+                contour.edges[i].point_at(v1),
+                contour.edges[i].point_at(v2),
+                color,
+            ));
         }
     }
     EdgeBuffer::new(edges)
@@ -19,10 +26,12 @@ pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 3]) -> E
 
 // Rasterizes multiple edge loop into triangle list.
 pub fn rasterize_contours_into_line_list(contour: &[Contour], color: [f32; 3]) -> EdgeBuffer {
-    contour.iter().fold(EdgeBuffer::new(Vec::new()), |mut acc, contour| {
-        acc.join(&rasterize_contour_into_line_list(contour, color));
-        acc
-    })
+    contour
+        .iter()
+        .fold(EdgeBuffer::new(Vec::new()), |mut acc, contour| {
+            acc.join(&rasterize_contour_into_line_list(contour, color));
+            acc
+        })
 }
 
 // // Rasterizes an edge loop into triangle list.

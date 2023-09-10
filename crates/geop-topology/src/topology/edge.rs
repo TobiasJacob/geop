@@ -1,6 +1,18 @@
-use std::{rc::Rc, vec, fmt::{Display, Formatter}};
+use std::{
+    fmt::{Display, Formatter},
+    rc::Rc,
+    vec,
+};
 
-use geop_geometry::{points::point::Point, curves::{line::Line, circle::Circle, ellipse::Ellipse, curve::Curve}, curve_curve_intersection::{circle_circle::{circle_circle_intersection, CircleCircleIntersection}, line_line::{line_line_intersection, LineLineIntersection}}, EQ_THRESHOLD};
+use geop_geometry::{
+    curve_curve_intersection::{
+        circle_circle::{circle_circle_intersection, CircleCircleIntersection},
+        line_line::{line_line_intersection, LineLineIntersection},
+    },
+    curves::{circle::Circle, curve::Curve, ellipse::Ellipse, line::Line},
+    points::point::Point,
+    EQ_THRESHOLD,
+};
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
 
@@ -50,7 +62,6 @@ pub enum EdgeContains {
     OnVertex,
 }
 
-
 // Represents an Edge, defined by a curve, and a start and end vertex.
 // It is important to know that the start and end vertex are not considered a part of the edge.
 // E.g. "intersection" between two edges at end points are not considered intersections.
@@ -59,8 +70,14 @@ impl Edge {
         assert!(start != end); // Prevent zero length edges
         let start_u = curve.curve().project(*start.point);
         let end_u_p = curve.curve().project(*end.point);
-        assert!(start_u.1 < PROJECTION_THRESHOLD, "Start point is {start:?} not on curve {curve:?}, projection returned {start_u:?}");
-        assert!(end_u_p.1 < PROJECTION_THRESHOLD, "End point is {end:?} not on curve {curve:?}, projection returned {end_u_p:?}");
+        assert!(
+            start_u.1 < PROJECTION_THRESHOLD,
+            "Start point is {start:?} not on curve {curve:?}, projection returned {start_u:?}"
+        );
+        assert!(
+            end_u_p.1 < PROJECTION_THRESHOLD,
+            "End point is {end:?} not on curve {curve:?}, projection returned {end_u_p:?}"
+        );
         // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
         // The reason is that for edges it is possible to find parameter spaces relativly easy.
         // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an Contour.
@@ -77,7 +94,7 @@ impl Edge {
                     true => end_u_p.0 - 2.0 * std::f64::consts::PI,
                     false => end_u_p.0,
                 },
-            }
+            },
             EdgeCurve::Ellipse(_) => match direction {
                 Direction::Increasing => match end_u_p < start_u {
                     true => end_u_p.0 + 2.0 * std::f64::consts::PI,
@@ -87,7 +104,7 @@ impl Edge {
                     true => end_u_p.0 - 2.0 * std::f64::consts::PI,
                     false => end_u_p.0,
                 },
-            }
+            },
         };
 
         let start_u = start_u.0;
@@ -103,10 +120,15 @@ impl Edge {
     }
 
     pub fn neg(&self) -> Edge {
-        Edge::new(self.end.clone(), self.start.clone(), self.curve.clone(), match self.direction {
-            Direction::Increasing => Direction::Decreasing,
-            Direction::Decreasing => Direction::Increasing,
-        })
+        Edge::new(
+            self.end.clone(),
+            self.start.clone(),
+            self.curve.clone(),
+            match self.direction {
+                Direction::Increasing => Direction::Decreasing,
+                Direction::Decreasing => Direction::Increasing,
+            },
+        )
     }
 
     // Checks if the edge contains the point, and if so, splits the edge into two edges.
@@ -115,7 +137,20 @@ impl Edge {
         if self.contains(*other.point) != EdgeContains::Inside {
             return vec![Rc::new(self.clone())];
         }
-        return vec![Rc::new(Edge::new(self.start.clone(), other.clone(), self.curve.clone(), self.direction)), Rc::new(Edge::new(other.clone(), self.end.clone(), self.curve.clone(), self.direction))];
+        return vec![
+            Rc::new(Edge::new(
+                self.start.clone(),
+                other.clone(),
+                self.curve.clone(),
+                self.direction,
+            )),
+            Rc::new(Edge::new(
+                other.clone(),
+                self.end.clone(),
+                self.curve.clone(),
+                self.direction,
+            )),
+        ];
     }
 
     pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
@@ -134,26 +169,22 @@ impl Edge {
         let u = self.start_u + u * (self.end_u - self.start_u);
         self.curve.curve().point_at(u)
     }
-    
+
     pub fn tangent(&self, p: Point) -> Point {
         // println!("Point: {:?}", p);
         // println!("Start: {:?}", self.start.point);
         // println!("End: {:?}", self.end.point);
         assert!(self.contains(p) != EdgeContains::Outside);
         match self.direction {
-            Direction::Increasing => {
-                match &*self.curve {
-                    EdgeCurve::Circle(c) => c.derivative(p).normalize(),
-                    EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),
-                    EdgeCurve::Line(l) => l.derivative(p).normalize(),
-                }
+            Direction::Increasing => match &*self.curve {
+                EdgeCurve::Circle(c) => c.derivative(p).normalize(),
+                EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),
+                EdgeCurve::Line(l) => l.derivative(p).normalize(),
             },
-            Direction::Decreasing => {
-                match &*self.curve {
-                    EdgeCurve::Circle(c) => (-c.derivative(p)).normalize(),
-                    EdgeCurve::Ellipse(e) => (-e.derivative(p)).normalize(),
-                    EdgeCurve::Line(l) => (-l.derivative(p)).normalize(),
-                }
+            Direction::Decreasing => match &*self.curve {
+                EdgeCurve::Circle(c) => (-c.derivative(p)).normalize(),
+                EdgeCurve::Ellipse(e) => (-e.derivative(p)).normalize(),
+                EdgeCurve::Line(l) => (-l.derivative(p)).normalize(),
             },
         }
     }
@@ -169,12 +200,12 @@ impl Edge {
                 if u < self.start_u - EQ_THRESHOLD || u > self.end_u + EQ_THRESHOLD {
                     return None;
                 }
-            },
+            }
             Direction::Decreasing => {
                 if u > self.start_u + EQ_THRESHOLD || u < self.end_u - EQ_THRESHOLD {
                     return None;
                 }
-            },
+            }
         }
         Some((u - self.start_u) / (self.end_u - self.start_u))
     }
@@ -188,7 +219,7 @@ impl Edge {
                 } else {
                     EdgeContains::Inside
                 }
-            },
+            }
             None => EdgeContains::Outside,
         }
     }
@@ -206,116 +237,156 @@ impl Edge {
     // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
     pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
         match *self.curve {
-            EdgeCurve::Circle(ref circle) => {
-                match *other.curve {
-                    EdgeCurve::Circle(ref other_circle) => {
-                        match circle_circle_intersection(circle, other_circle) {
-                            CircleCircleIntersection::TwoPoint(a, b) => {
-                                let mut intersections = Vec::new();
-                                let u_a = circle.project(a).0;
-                                let u_b = circle.project(b).0;
-                                if self.direction == Direction::Increasing {
-                                    if u_a < u_b {
-                                        intersections.push(Vertex::new(Rc::new(a)));
-                                        intersections.push(Vertex::new(Rc::new(b)));
-                                    } else {
-                                        intersections.push(Vertex::new(Rc::new(b)));
-                                        intersections.push(Vertex::new(Rc::new(a)));
-                                    }
+            EdgeCurve::Circle(ref circle) => match *other.curve {
+                EdgeCurve::Circle(ref other_circle) => {
+                    match circle_circle_intersection(circle, other_circle) {
+                        CircleCircleIntersection::TwoPoint(a, b) => {
+                            let mut intersections = Vec::new();
+                            let u_a = circle.project(a).0;
+                            let u_b = circle.project(b).0;
+                            if self.direction == Direction::Increasing {
+                                if u_a < u_b {
+                                    intersections.push(Vertex::new(Rc::new(a)));
+                                    intersections.push(Vertex::new(Rc::new(b)));
                                 } else {
-                                    if u_a < u_b {
-                                        intersections.push(Vertex::new(Rc::new(b)));
-                                        intersections.push(Vertex::new(Rc::new(a)));
-                                    } else {
-                                        intersections.push(Vertex::new(Rc::new(a)));
-                                        intersections.push(Vertex::new(Rc::new(b)));
-                                    }
+                                    intersections.push(Vertex::new(Rc::new(b)));
+                                    intersections.push(Vertex::new(Rc::new(a)));
                                 }
-                                 intersections.into_iter().filter(|intersection| {
-                                    self.contains(*intersection.point) == EdgeContains::Inside && other.contains(*intersection.point) == EdgeContains::Inside
-                                }).map(|i| EdgeIntersection::Vertex(i)).collect()
-                            },
-                            CircleCircleIntersection::OnePoint(a) => {
-                                if self.contains(a) == EdgeContains::Inside && other.contains(a) == EdgeContains::Inside {
-                                    vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
+                            } else {
+                                if u_a < u_b {
+                                    intersections.push(Vertex::new(Rc::new(b)));
+                                    intersections.push(Vertex::new(Rc::new(a)));
                                 } else {
-                                    vec![]
+                                    intersections.push(Vertex::new(Rc::new(a)));
+                                    intersections.push(Vertex::new(Rc::new(b)));
                                 }
-                            },
-                            CircleCircleIntersection::None => {
+                            }
+                            intersections
+                                .into_iter()
+                                .filter(|intersection| {
+                                    self.contains(*intersection.point) == EdgeContains::Inside
+                                        && other.contains(*intersection.point)
+                                            == EdgeContains::Inside
+                                })
+                                .map(|i| EdgeIntersection::Vertex(i))
+                                .collect()
+                        }
+                        CircleCircleIntersection::OnePoint(a) => {
+                            if self.contains(a) == EdgeContains::Inside
+                                && other.contains(a) == EdgeContains::Inside
+                            {
+                                vec![EdgeIntersection::Vertex(Vertex::new(Rc::new(a)))]
+                            } else {
                                 vec![]
                             }
-                            CircleCircleIntersection::Circle(_) => {
-                                let mut self_start_u = circle.project(*self.start.point).0;
-                                let mut self_end_u = circle.project(*self.end.point).0;
-                                let mut other_start_u = other_circle.project(*other.start.point).0;
-                                let mut other_end_u = other_circle.project(*other.end.point).0;
+                        }
+                        CircleCircleIntersection::None => {
+                            vec![]
+                        }
+                        CircleCircleIntersection::Circle(_) => {
+                            let mut self_start_u = circle.project(*self.start.point).0;
+                            let mut self_end_u = circle.project(*self.end.point).0;
+                            let mut other_start_u = other_circle.project(*other.start.point).0;
+                            let mut other_end_u = other_circle.project(*other.end.point).0;
 
-                                if self_end_u < self_start_u.max(other_start_u) {
-                                    self_start_u += 2.0 * std::f64::consts::PI;
-                                    self_end_u += 2.0 * std::f64::consts::PI;
-                                }
-                                
-                                if other_end_u < self_start_u.max(other_start_u) {
-                                    other_start_u += 2.0 * std::f64::consts::PI;
-                                    other_end_u += 2.0 * std::f64::consts::PI;
-                                }
+                            if self_end_u < self_start_u.max(other_start_u) {
+                                self_start_u += 2.0 * std::f64::consts::PI;
+                                self_end_u += 2.0 * std::f64::consts::PI;
+                            }
 
-                                let start_u = self_start_u.max(other_start_u);
-                                let end_u = self_end_u.min(other_end_u);
+                            if other_end_u < self_start_u.max(other_start_u) {
+                                other_start_u += 2.0 * std::f64::consts::PI;
+                                other_end_u += 2.0 * std::f64::consts::PI;
+                            }
 
-                                if self.start == other.start && self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else if end_u < start_u {
-                                    vec![]
-                                } else if self.start == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
-                                } else if self.start == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(self.start.clone(), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
-                                } else if self.end == other.start {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else if self.end == other.end {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), self.end.clone(), self.curve.clone(), self.direction.clone()))]
-                                } else {
-                                    vec![EdgeIntersection::Edge(Edge::new(Vertex::new(Rc::new(circle.point_at(start_u))), Vertex::new(Rc::new(circle.point_at(end_u))), self.curve.clone(), self.direction.clone()))]
-                                }
+                            let start_u = self_start_u.max(other_start_u);
+                            let end_u = self_end_u.min(other_end_u);
+
+                            if self.start == other.start && self.end == other.end {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    self.start.clone(),
+                                    self.end.clone(),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
+                            } else if end_u < start_u {
+                                vec![]
+                            } else if self.start == other.start {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    self.start.clone(),
+                                    Vertex::new(Rc::new(circle.point_at(end_u))),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
+                            } else if self.start == other.end {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    self.start.clone(),
+                                    Vertex::new(Rc::new(circle.point_at(end_u))),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
+                            } else if self.end == other.start {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    Vertex::new(Rc::new(circle.point_at(start_u))),
+                                    self.end.clone(),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
+                            } else if self.end == other.end {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    Vertex::new(Rc::new(circle.point_at(start_u))),
+                                    self.end.clone(),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
+                            } else {
+                                vec![EdgeIntersection::Edge(Edge::new(
+                                    Vertex::new(Rc::new(circle.point_at(start_u))),
+                                    Vertex::new(Rc::new(circle.point_at(end_u))),
+                                    self.curve.clone(),
+                                    self.direction.clone(),
+                                ))]
                             }
                         }
-                    },
-                    EdgeCurve::Ellipse(ref ellipse) => {
-                        todo!("Implement circle-ellipse intersection")
-                    },
-                    EdgeCurve::Line(ref line) => {
-                        todo!("Implement circle-line intersection")
-                    },
+                    }
+                }
+                EdgeCurve::Ellipse(ref ellipse) => {
+                    todo!("Implement circle-ellipse intersection")
+                }
+                EdgeCurve::Line(ref line) => {
+                    todo!("Implement circle-line intersection")
                 }
             },
             EdgeCurve::Ellipse(ref ellipse) => {
                 todo!("Implement ellipse intersection")
-            },
+            }
             EdgeCurve::Line(ref line) => {
                 match *other.curve {
                     EdgeCurve::Circle(ref circle) => {
                         todo!("Implement line-circle intersection")
-                    },
+                    }
                     EdgeCurve::Ellipse(ref ellipse) => {
                         todo!("Implement line-ellipse intersection")
-                    },
+                    }
                     EdgeCurve::Line(ref other_line) => {
                         match line_line_intersection(line, other_line) {
                             LineLineIntersection::Point(a) => {
                                 let mut intersections = Vec::new();
                                 // Check if it is contained
-                                if self.contains(a) == EdgeContains::Inside && other.contains(a) == EdgeContains::Inside {
-                                    intersections.push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
+                                if self.contains(a) == EdgeContains::Inside
+                                    && other.contains(a) == EdgeContains::Inside
+                                {
+                                    intersections
+                                        .push(EdgeIntersection::Vertex(Vertex::new(Rc::new(a))));
                                 }
                                 intersections
-                            },
+                            }
                             LineLineIntersection::None => {
                                 vec![]
-                            },
+                            }
                             LineLineIntersection::Line(_) => {
-                                let start_u_other = self.curve.curve().project(*other.start.point).0;
+                                let start_u_other =
+                                    self.curve.curve().project(*other.start.point).0;
                                 let end_u_other = self.curve.curve().project(*other.end.point).0;
 
                                 let (other_start, other_end) = match self.direction {
@@ -328,9 +399,10 @@ impl Edge {
                                         false => (&other.start, &other.end),
                                     },
                                 };
-                                
+
                                 // Now that we have the right order
-                                let start_u_other = self.curve.curve().project(*other_start.point).0;
+                                let start_u_other =
+                                    self.curve.curve().project(*other_start.point).0;
                                 let end_u_other = self.curve.curve().project(*other_end.point).0;
 
                                 if start_u_other > self.end_u || end_u_other < self.start_u {
@@ -348,7 +420,11 @@ impl Edge {
                                 };
 
                                 if start == end {
-                                    assert!(self.contains(*start.point) != EdgeContains::Outside && other.contains(*start.point) != EdgeContains::Outside);
+                                    assert!(
+                                        self.contains(*start.point) != EdgeContains::Outside
+                                            && other.contains(*start.point)
+                                                != EdgeContains::Outside
+                                    );
                                     return vec![EdgeIntersection::Vertex(start)];
                                 }
 
@@ -368,15 +444,19 @@ impl Edge {
                                 assert!(other.contains(*start.point) != EdgeContains::Outside);
                                 assert!(self.contains(*end.point) != EdgeContains::Outside);
                                 assert!(other.contains(*end.point) != EdgeContains::Outside);
-                                return vec![EdgeIntersection::Edge(Edge::new(start, end, self.curve.clone(), self.direction))];
-                            },
+                                return vec![EdgeIntersection::Edge(Edge::new(
+                                    start,
+                                    end,
+                                    self.curve.clone(),
+                                    self.direction,
+                                ))];
+                            }
                         }
-                    },
+                    }
                 }
-            },
+            }
         }
     }
-
 
     // pub fn remesh(&self, other: &Edge) -> (Vec<Edge>, Vec<Edge>) {
     //     let (intersections_a, intersections_b) = self.intersections(other);
@@ -400,7 +480,9 @@ impl Edge {
 
 impl PartialEq for Edge {
     fn eq(&self, other: &Edge) -> bool {
-        (Rc::ptr_eq(&self.curve, &other.curve) || self.curve == other.curve) && self.start == other.start && self.end == other.end
+        (Rc::ptr_eq(&self.curve, &other.curve) || self.curve == other.curve)
+            && self.start == other.start
+            && self.end == other.end
     }
 }
 

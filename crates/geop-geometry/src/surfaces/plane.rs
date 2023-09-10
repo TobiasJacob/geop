@@ -1,4 +1,4 @@
-use crate::{points::point::Point, curves::line::Line, EQ_THRESHOLD};
+use crate::{curves::line::Line, points::point::Point, EQ_THRESHOLD};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -6,7 +6,7 @@ use super::surface::{Surface, SurfaceCurve, TangentPoint};
 pub struct Plane {
     pub basis: Point,
     pub u_slope: Point,
-    pub v_slope: Point
+    pub v_slope: Point,
 }
 
 impl Plane {
@@ -14,7 +14,7 @@ impl Plane {
         Plane {
             basis,
             u_slope: u_slope.normalize(),
-            v_slope: v_slope.normalize()
+            v_slope: v_slope.normalize(),
         }
     }
 
@@ -86,7 +86,7 @@ impl Surface for Plane {
         TangentPoint(Point::new(
             diff.dot(self.u_slope),
             diff.dot(self.v_slope),
-            0.0
+            0.0,
         ))
     }
 
@@ -100,11 +100,12 @@ impl Surface for Plane {
     fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
         SurfaceCurve::Line(Line::new(p, q - p))
     }
-    
 }
 
 impl PartialEq for Plane {
     fn eq(&self, other: &Plane) -> bool {
-        self.basis == other.basis && self.u_slope.normalize() == other.u_slope.normalize() && self.v_slope.normalize() == other.v_slope.normalize()
+        self.basis == other.basis
+            && self.u_slope.normalize() == other.u_slope.normalize()
+            && self.v_slope.normalize() == other.v_slope.normalize()
     }
 }

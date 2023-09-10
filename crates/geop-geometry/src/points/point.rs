@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::EQ_THRESHOLD;
 
@@ -6,7 +6,7 @@ use crate::EQ_THRESHOLD;
 pub struct Point {
     pub x: f64,
     pub y: f64,
-    pub z: f64
+    pub z: f64,
 }
 
 impl Point {
@@ -23,7 +23,7 @@ impl Point {
     }
 
     pub fn is_normalized(self) -> bool {
-        return (self.norm_sq() - 1.0).abs() < EQ_THRESHOLD
+        return (self.norm_sq() - 1.0).abs() < EQ_THRESHOLD;
     }
 
     pub fn is_zero(self) -> bool {
@@ -38,7 +38,7 @@ impl Point {
         Point::new(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
-            self.x * other.y - self.y * other.x
+            self.x * other.y - self.y * other.x,
         )
     }
 
@@ -87,7 +87,7 @@ impl Add<f64> for Point {
     fn add(self, other: f64) -> Point {
         Point::new(self.x + other, self.y + other, self.z + other)
     }
-    }
+}
 
 impl Sub<f64> for Point {
     type Output = Self;
@@ -131,6 +131,8 @@ impl Neg for Point {
 
 impl PartialEq for Point {
     fn eq(&self, other: &Point) -> bool {
-        (self.x - other.x).abs() < EQ_THRESHOLD && (self.y - other.y).abs() < EQ_THRESHOLD && (self.z - other.z).abs() < EQ_THRESHOLD
+        (self.x - other.x).abs() < EQ_THRESHOLD
+            && (self.y - other.y).abs() < EQ_THRESHOLD
+            && (self.z - other.z).abs() < EQ_THRESHOLD
     }
 }

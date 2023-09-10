@@ -1,4 +1,4 @@
-use crate::{points::point::Point, curves::ellipse::Ellipse};
+use crate::{curves::ellipse::Ellipse, points::point::Point};
 
 #[derive(Debug)]
 pub enum EllipseEllipseIntersection {
@@ -6,7 +6,7 @@ pub enum EllipseEllipseIntersection {
     FourPoint(Point, Point, Point, Point),
     TwoPoint(Point, Point),
     OnePoint(Point),
-    None
+    None,
 }
 
 pub fn ellipse_ellipse_intersection(_: &Ellipse, _: &Ellipse) -> EllipseEllipseIntersection {
