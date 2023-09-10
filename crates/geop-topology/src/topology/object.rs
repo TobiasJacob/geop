@@ -3,7 +3,7 @@ use std::rc::Rc;
 use super::{contour::Contour, face::Face, vertex::Vertex};
 
 pub struct Object {
-    faces: Vec<Face>,
+    faces: Vec<Rc<Face>>,
 }
 
 pub enum ObjectIntersection {
@@ -13,7 +13,7 @@ pub enum ObjectIntersection {
 }
 
 impl Object {
-    pub fn new(faces: Vec<Face>) -> Object {
+    pub fn new(faces: Vec<Rc<Face>>) -> Object {
         Object { faces }
     }
 
