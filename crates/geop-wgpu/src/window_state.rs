@@ -140,14 +140,17 @@ impl WindowState {
     pub fn update(&mut self) {}
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-        let time_in_seconds = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs_f32();
+        let time_in_seconds = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis();
+        println!("camera_uniform: {:?}", time_in_seconds );
+        let pi = std::f32::consts::PI;
+        let time_in_seconds = (time_in_seconds % 4000) as f32 / 1000.0;
+        let rotations_per_second = 0.25;
+        let omega = time_in_seconds * 2.0 * pi * rotations_per_second;
 
-        self.camera_pipeline.camera.eye.x = time_in_seconds.sin() * 2.0;
-        self.camera_pipeline.camera.eye.z = time_in_seconds.cos() * 2.0;
+        self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;
+        self.camera_pipeline.camera.eye.z = omega.cos() * 2.0;
         self.camera_pipeline.camera_uniform.update_view_proj(&self.camera_pipeline.camera);
+        self.queue.write_buffer(&self.camera_pipeline.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]));
 
         let output = self.surface.get_current_texture()?;
         let view = output
