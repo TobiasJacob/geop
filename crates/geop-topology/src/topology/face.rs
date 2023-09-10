@@ -492,19 +492,6 @@ impl Face {
 
     pub fn surface_difference(&self, other: &Face) -> Face {
         return self.surface_intersection(&other.neg());
-        self.split_parts(other, |mode| {
-            println!("EdgeSplit: {:?}", mode);
-            match mode {
-                EdgeSplit::AinB(_) => false,
-                EdgeSplit::AonBSameSide(_) => false,
-                EdgeSplit::AonBOpSide(_) => true,
-                EdgeSplit::AoutB(_) => true, // Maybe...
-                EdgeSplit::BinA(_) => true,
-                EdgeSplit::BonASameSide(_) => false,
-                EdgeSplit::BonAOpSide(_) => false,
-                EdgeSplit::BoutA(_) => false,
-            }
-        })
     }
 }
 

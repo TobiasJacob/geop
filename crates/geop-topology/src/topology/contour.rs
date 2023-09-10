@@ -11,26 +11,6 @@ pub struct Contour {
     pub edges: Vec<Rc<Edge>>,
 }
 
-fn pop_next_segment(
-    edges_self: &mut Vec<Rc<Edge>>,
-    edges_other: &mut Vec<Rc<Edge>>,
-    next_segment_is_self: bool,
-    start: &Vertex,
-) -> Option<Rc<Edge>> {
-    let relevant_segments: &mut Vec<Rc<Edge>> = if next_segment_is_self {
-        edges_self
-    } else {
-        edges_other
-    };
-    for (i, edge) in relevant_segments.iter().enumerate() {
-        if edge.start == *start {
-            let edge = relevant_segments.remove(i);
-            return Some(edge);
-        }
-    }
-    None
-}
-
 // An Contour is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
 // It has a defined inside and outside, which is determined by the direction of the edges.
 // The vertices of edges are not part of the contour, e.g. the intersection of two contours at the same vertex is empty.
