@@ -1,11 +1,12 @@
 use std::iter;
 
+use wgpu::util::DeviceExt;
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-use crate::render_pipeline::RenderPipeline;
+use crate::{render_pipeline::RenderPipeline, camera_pipeline::CameraPipeline};
 
 pub struct WindowState {
     surface: wgpu::Surface,
@@ -14,6 +15,7 @@ pub struct WindowState {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
+    camera_pipeline: CameraPipeline,
 
     traingle_pipeline: RenderPipeline,
     line_pipeline: RenderPipeline,
@@ -79,12 +81,16 @@ impl WindowState {
         };
         surface.configure(&device, &config);
 
+        let camera_pipeline = CameraPipeline::new(&device, &config);
+
+
         let traingle_pipeline = RenderPipeline::new(
             &device,
             &config,
             vertices_triangle,
             "Triangle",
             wgpu::PrimitiveTopology::TriangleList,
+            &camera_pipeline.render_pipeline_layout,
         );
 
         let line_pipeline = RenderPipeline::new(
@@ -93,6 +99,7 @@ impl WindowState {
             vertices_line,
             "Line",
             wgpu::PrimitiveTopology::LineList,
+            &camera_pipeline.render_pipeline_layout,
         );
 
         Self {
@@ -104,6 +111,7 @@ impl WindowState {
             window,
             traingle_pipeline,
             line_pipeline,
+            camera_pipeline,
         }
     }
 
@@ -132,6 +140,15 @@ impl WindowState {
     pub fn update(&mut self) {}
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+        let time_in_seconds = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs_f32();
+
+        self.camera_pipeline.camera.eye.x = time_in_seconds.sin() * 2.0;
+        self.camera_pipeline.camera.eye.z = time_in_seconds.cos() * 2.0;
+        self.camera_pipeline.camera_uniform.update_view_proj(&self.camera_pipeline.camera);
+
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
@@ -162,6 +179,7 @@ impl WindowState {
                 depth_stencil_attachment: None,
             });
             
+            render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
             self.line_pipeline.render(&mut render_pass);
             self.traingle_pipeline.render(&mut render_pass);
         }
