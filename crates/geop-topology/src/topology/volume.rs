@@ -6,13 +6,10 @@
 
 use std::rc::Rc;
 
-use geop_geometry::points::point::Point;
+
 
 use super::{
-    contour::Contour,
-    edge::Edge,
-    face::{Face, FaceIntersection},
-    vertex::Vertex,
+    face::{Face},
 };
 
 // A watertight group of faces.

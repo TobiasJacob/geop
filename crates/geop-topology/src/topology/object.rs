@@ -17,14 +17,14 @@ impl Object {
         Object { faces }
     }
 
-    pub fn intersect(&self, other: &Object) -> Vec<Rc<ObjectIntersection>> {
+    pub fn intersect(&self, _other: &Object) -> Vec<Rc<ObjectIntersection>> {
         todo!("Implement intersect");
     }
 
     // Remeshes this object with another object, dividing it into disjoint non-intersecting faces in 6 categories.
     pub fn remesh(
         &self,
-        other: &Object,
+        _other: &Object,
     ) -> (
         Vec<Rc<Face>>,
         Vec<Rc<Face>>,

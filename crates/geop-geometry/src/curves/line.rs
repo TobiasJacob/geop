@@ -30,7 +30,7 @@ impl Curve for Line {
         self.basis + self.direction * u
     }
 
-    fn derivative(&self, p: Point) -> Point {
+    fn derivative(&self, _p: Point) -> Point {
         self.direction.clone()
     }
 

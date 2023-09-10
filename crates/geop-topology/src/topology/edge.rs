@@ -350,22 +350,22 @@ impl Edge {
                         }
                     }
                 }
-                EdgeCurve::Ellipse(ref ellipse) => {
+                EdgeCurve::Ellipse(ref _ellipse) => {
                     todo!("Implement circle-ellipse intersection")
                 }
-                EdgeCurve::Line(ref line) => {
+                EdgeCurve::Line(ref _line) => {
                     todo!("Implement circle-line intersection")
                 }
             },
-            EdgeCurve::Ellipse(ref ellipse) => {
+            EdgeCurve::Ellipse(ref _ellipse) => {
                 todo!("Implement ellipse intersection")
             }
             EdgeCurve::Line(ref line) => {
                 match *other.curve {
-                    EdgeCurve::Circle(ref circle) => {
+                    EdgeCurve::Circle(ref _circle) => {
                         todo!("Implement line-circle intersection")
                     }
-                    EdgeCurve::Ellipse(ref ellipse) => {
+                    EdgeCurve::Ellipse(ref _ellipse) => {
                         todo!("Implement line-ellipse intersection")
                     }
                     EdgeCurve::Line(ref other_line) => {
@@ -489,9 +489,9 @@ impl PartialEq for Edge {
 impl Display for Edge {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self.curve.as_ref() {
-            EdgeCurve::Line(line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Circle(circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Ellipse(ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
         }
     }
 }

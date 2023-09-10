@@ -1,4 +1,4 @@
-use std::{rc::Rc, vec};
+use std::{rc::Rc};
 
 use geop_geometry::points::point::Point;
 
@@ -67,7 +67,7 @@ impl Contour {
     }
 
     pub fn contains(&self, point: Point) -> EdgeContains {
-        for (i, edge) in self.edges.iter().enumerate() {
+        for (_i, edge) in self.edges.iter().enumerate() {
             let contains = edge.contains(point);
             match contains {
                 EdgeContains::OnVertex => {

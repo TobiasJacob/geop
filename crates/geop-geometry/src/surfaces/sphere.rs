@@ -66,7 +66,7 @@ impl Surface for Sphere {
     // fn is_normalized(&self) -> bool {
     //     self.radius >= 0.0
     // }
-    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         u.0.dot(v.0)

@@ -1,9 +1,7 @@
-use std::rc::Rc;
 
 use crate::{
-    curves::{circle::Circle, curve::Curve, ellipse::Ellipse, line::Line},
+    curves::{circle::Circle, ellipse::Ellipse, line::Line},
     points::point::Point,
-    EQ_THRESHOLD,
 };
 
 pub enum SurfaceCurve {

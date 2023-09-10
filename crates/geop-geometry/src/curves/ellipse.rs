@@ -38,7 +38,7 @@ impl Curve for Ellipse {
         -self.dir0 * u.sin() + self.dir1 * u.cos()
     }
 
-    fn distance(&self, p1: Point, p2: Point) -> f64 {
+    fn distance(&self, _p1: Point, _p2: Point) -> f64 {
         todo!("Todo");
     }
 }
