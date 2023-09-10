@@ -1,4 +1,6 @@
-use crate::points::point::Point;
+use std::rc::Rc;
+
+use crate::{points::point::Point, transforms::Transform};
 
 use super::curve::Curve;
 
@@ -15,9 +17,19 @@ impl Line {
             direction: direction.normalize(),
         }
     }
+
+    pub fn transform(&self, transform: Transform) -> Self {
+        let basis = transform * self.basis;
+        let direction = transform * (self.direction + self.basis) - basis;
+        Line::new(basis, direction.normalize())
+    }
 }
 
 impl Curve for Line {
+    fn transform(&self, transform: Transform) -> Rc<dyn Curve> {
+        Rc::new(self.transform(transform))
+    }
+
     fn project(&self, p: Point) -> (f64, f64) {
         let v = p - self.basis;
         let u = self.direction.dot(v);

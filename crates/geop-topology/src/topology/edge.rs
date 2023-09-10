@@ -9,9 +9,9 @@ use geop_geometry::{
         circle_circle::{circle_circle_intersection, CircleCircleIntersection},
         line_line::{line_line_intersection, LineLineIntersection},
     },
-    curves::{circle::Circle, curve::Curve, ellipse::Ellipse, line::Line},
+    curves::{circle::{Circle, CircleTransform}, curve::Curve, ellipse::Ellipse, line::Line},
     points::point::Point,
-    EQ_THRESHOLD,
+    EQ_THRESHOLD, transforms::Transform,
 };
 
 use crate::{topology::vertex::Vertex, PROJECTION_THRESHOLD};
@@ -28,6 +28,19 @@ impl EdgeCurve {
             EdgeCurve::Line(line) => line,
             EdgeCurve::Circle(circle) => circle,
             EdgeCurve::Ellipse(ellipse) => ellipse,
+        }
+    }
+
+    pub fn transform(&self, transform: Transform) -> EdgeCurve {
+        match self {
+            EdgeCurve::Line(line) => EdgeCurve::Line(line.transform(transform)),
+            EdgeCurve::Circle(circle) => match circle.transform(transform) {
+                CircleTransform::Circle(circle) => EdgeCurve::Circle(circle),
+                CircleTransform::Ellipse(ellipse) => EdgeCurve::Ellipse(ellipse),
+            },
+            EdgeCurve::Ellipse(ellipse) => {
+                EdgeCurve::Ellipse(ellipse.transform(transform))
+            }
         }
     }
 }
@@ -128,6 +141,15 @@ impl Edge {
                 Direction::Increasing => Direction::Decreasing,
                 Direction::Decreasing => Direction::Increasing,
             },
+        )
+    }
+
+    pub fn transform(&self, transform: Transform) -> Edge {
+        Edge::new(
+            self.start.transform(transform),
+            self.end.transform(transform),
+            Rc::new(self.curve.transform(transform)),
+            self.direction,
         )
     }
 

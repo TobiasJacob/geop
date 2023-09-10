@@ -1,4 +1,6 @@
-use crate::{curves::line::Line, points::point::Point, EQ_THRESHOLD};
+use std::rc::Rc;
+
+use crate::{curves::line::Line, points::point::Point, EQ_THRESHOLD, transforms::Transform};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -21,9 +23,20 @@ impl Plane {
     pub fn curve_from_to(&self, p: Point, q: Point) -> Line {
         return Line::new(p, q - p);
     }
+
+    pub fn transform(&self, transform: Transform) -> Self {
+        let basis = transform * self.basis;
+        let u_slope = transform * (self.u_slope + self.basis) - basis;
+        let v_slope = transform * (self.v_slope + self.basis) - basis;
+        Plane::new(basis, u_slope.normalize(), v_slope.normalize())
+    }
 }
 
 impl Surface for Plane {
+    fn transform(&self, transform: Transform) -> Rc<dyn Surface> {
+        Rc::new(self.transform(transform))
+    }
+
     fn on_surface(&self, p: Point) -> bool {
         let diff = p - self.basis;
         let u = diff.dot(self.normal(p));
@@ -104,8 +117,8 @@ impl Surface for Plane {
 
 impl PartialEq for Plane {
     fn eq(&self, other: &Plane) -> bool {
-        self.basis == other.basis
-            && self.u_slope.normalize() == other.u_slope.normalize()
-            && self.v_slope.normalize() == other.v_slope.normalize()
+            self.u_slope.is_parallel(other.u_slope)
+            && self.v_slope.is_parallel(other.v_slope)
+            && (self.basis - other.basis).dot(self.u_slope.cross(other.u_slope)).abs() < EQ_THRESHOLD
     }
 }

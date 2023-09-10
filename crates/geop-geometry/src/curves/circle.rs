@@ -1,6 +1,8 @@
-use crate::points::point::Point;
+use std::rc::Rc;
 
-use super::curve::Curve;
+use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
+
+use super::{curve::Curve, ellipse::Ellipse};
 
 #[derive(Debug, Clone)]
 pub struct Circle {
@@ -8,6 +10,11 @@ pub struct Circle {
     pub normal: Point,
     pub radius: Point,
     dir_cross: Point,
+}
+
+pub enum CircleTransform {
+    Circle(Circle),
+    Ellipse(Ellipse),
 }
 
 impl Circle {
@@ -20,9 +27,25 @@ impl Circle {
             dir_cross: normal.cross(radius),
         }
     }
+
+    pub fn transform(&self, transform: Transform) -> CircleTransform {
+        let basis = transform * self.basis;
+        let normal = transform * (self.normal + self.basis) - basis;
+        let radius = transform * (self.radius + self.basis) - basis;
+        let scale_factor = radius.norm() / self.radius.norm();
+        assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipses.");
+        CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius))
+    }
 }
 
 impl Curve for Circle {
+    fn transform(&self, transform: Transform) -> Rc<dyn Curve> {
+        match self.transform(transform) {
+            CircleTransform::Circle(c) => Rc::new(c),
+            CircleTransform::Ellipse(e) => Rc::new(e),
+        }
+    }
+
     fn point_at(&self, u: f64) -> Point {
         self.radius * u.cos() + self.dir_cross * u.sin() + self.basis
     }

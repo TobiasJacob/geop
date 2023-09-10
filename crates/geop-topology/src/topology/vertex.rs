@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::points::point::Point;
+use geop_geometry::{points::point::Point, transforms::Transform};
 
 
 
@@ -12,6 +12,10 @@ pub struct Vertex {
 impl Vertex {
     pub fn new(point: Rc<Point>) -> Vertex {
         Vertex { point }
+    }
+
+    pub fn transform(&self, transform: Transform) -> Vertex {
+        Vertex { point: Rc::new(transform * *self.point) }
     }
 }
 

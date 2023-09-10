@@ -1,4 +1,6 @@
-use crate::{curves::circle::Circle, points::point::Point, EQ_THRESHOLD};
+use std::rc::Rc;
+
+use crate::{curves::circle::Circle, points::point::Point, EQ_THRESHOLD, transforms::Transform};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -6,6 +8,11 @@ use super::surface::{Surface, SurfaceCurve, TangentPoint};
 pub struct Sphere {
     pub basis: Point,
     pub radius: f64,
+}
+
+pub enum SphereTransform {
+    Sphere(Sphere),
+    Ellipsoid(), // TODO: Implement this
 }
 
 impl Sphere {
@@ -17,9 +24,19 @@ impl Sphere {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
         return Circle::new(self.basis, normal, (q - self.basis).normalize());
     }
+
+    pub fn transform(&self, transform: Transform) -> SphereTransform {
+        let basis = transform * self.basis;
+        let radius = self.radius * transform.uniform_scale_factor();
+        SphereTransform::Sphere(Sphere::new(basis, radius))
+    }
 }
 
 impl Surface for Sphere {
+    fn transform(&self, transform: Transform) -> Rc<dyn Surface> {
+        todo!("Implement transform")
+    }
+
     fn on_surface(&self, p: Point) -> bool {
         let diff = p - self.basis;
         let dist = diff.norm_sq();

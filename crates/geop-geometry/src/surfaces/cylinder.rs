@@ -77,6 +77,6 @@ impl Surface for Cylinder {
 
 impl PartialEq for Cylinder {
     fn eq(&self, other: &Cylinder) -> bool {
-        self.basis == other.basis && self.extend == other.extend && self.direction.normalize() == other.direction.normalize()
+        todo!("Do the cylinder but make sure that rotating the cylinder doesn't change the cylinder")
     }
 }

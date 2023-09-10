@@ -1,7 +1,9 @@
 
+use std::rc::Rc;
+
 use crate::{
     curves::{circle::Circle, ellipse::Ellipse, line::Line},
-    points::point::Point,
+    points::point::Point, transforms::Transform,
 };
 
 pub enum SurfaceCurve {
@@ -17,6 +19,8 @@ pub enum SurfaceCurve {
 pub struct TangentPoint(pub Point);
 
 pub trait Surface {
+    // Transform
+    fn transform(&self, transform: Transform) -> Rc<dyn Surface>;
     // fn point_at(&self, u: f64, v: f64) -> Point;
     // fn project(&self, p: &Point) -> (f64, f64);
     // fn derivative_u(&self, u: f64, v: f64) -> Point;

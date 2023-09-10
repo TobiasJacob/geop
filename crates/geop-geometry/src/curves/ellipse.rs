@@ -1,4 +1,6 @@
-use crate::points::point::Point;
+use std::rc::Rc;
+
+use crate::{points::point::Point, transforms::Transform};
 
 use super::curve::Curve;
 
@@ -13,9 +15,20 @@ impl Ellipse {
     pub fn new(basis: Point, dir0: Point, dir1: Point) -> Ellipse {
         Ellipse { basis, dir0, dir1 }
     }
+    
+    pub fn transform(&self, transform: Transform) -> Self {
+        let basis = transform * self.basis;
+        let dir0 = transform * (self.dir0 + self.basis) - basis;
+        let dir1 = transform * (self.dir1 + self.basis) - basis;
+        Ellipse::new(basis, dir0, dir1)
+    }
 }
 
 impl Curve for Ellipse {
+    fn transform(&self, transform: Transform) -> Rc<dyn Curve> {
+        todo!("Implement transform")
+    }
+
     fn point_at(&self, u: f64) -> Point {
         self.basis + self.dir0 * u.cos() + self.dir1 * u.sin()
     }

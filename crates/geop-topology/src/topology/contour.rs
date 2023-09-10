@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::points::point::Point;
+use geop_geometry::{points::point::Point, transforms::Transform};
 
 use crate::topology::vertex::Vertex;
 
@@ -42,6 +42,15 @@ impl Contour {
             .iter()
             .rev()
             .map(|e| Rc::new(e.neg()))
+            .collect::<Vec<Rc<Edge>>>();
+        Contour::new(edges)
+    }
+
+    pub fn transform(&self, transform: Transform) -> Contour {
+        let edges = self
+            .edges
+            .iter()
+            .map(|e| Rc::new(e.transform(transform)))
             .collect::<Vec<Rc<Edge>>>();
         Contour::new(edges)
     }

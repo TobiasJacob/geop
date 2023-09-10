@@ -4,7 +4,7 @@ use geop_geometry::{
     curves::{circle::Circle, line::Line},
     points::point::Point,
     surfaces::plane::Plane,
-    EQ_THRESHOLD,
+    EQ_THRESHOLD, transforms::Transform,
 };
 use geop_rasterize::{
     contour::rasterize_contours_into_line_list,
@@ -79,32 +79,14 @@ async fn run() {
     )));
 
     // Loop shifted by 0.1 in x and y direction
-    let shift = Point::new(-0.1, -0.1, 0.0);
-    let contour_shifted = Contour::new(vec![
-        linear_edge(
-            Vertex::new(Rc::new(*v1.point + shift)),
-            Vertex::new(Rc::new(*v2.point + shift)),
-        ),
-        linear_edge(
-            Vertex::new(Rc::new(*v2.point + shift)),
-            Vertex::new(Rc::new(*v3.point + shift)),
-        ),
-        linear_edge(
-            Vertex::new(Rc::new(*v3.point + shift)),
-            Vertex::new(Rc::new(*v4.point + shift)),
-        ),
-        // circular_edge(Vertex::new(Rc::new(*v4.point + shift)), Vertex::new(Rc::new(*v6.point + shift)), *v5.point + shift),
-        linear_edge(
-            Vertex::new(Rc::new(*v4.point + shift)),
-            Vertex::new(Rc::new(*v1.point + shift)),
-        ),
-    ]);
 
     let face1 = Face::new(
         vec![contour.clone(), inner_contour.clone()],
         surface.clone(),
     );
-    let face2 = Face::new(vec![contour_shifted.clone()], surface.clone());
+    let face2 = face1.transform(
+        Transform::from_translation(Point::new(0.2, 0.2, 0.0))
+    );
 
     let union_face = face2.surface_difference(&face1);
 

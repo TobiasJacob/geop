@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     points::point::Point,
-    surfaces::{plane::Plane, sphere::Sphere, surface::Surface},
+    surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform,
 };
 
 use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection};
@@ -23,6 +23,16 @@ impl FaceSurface {
         match self {
             FaceSurface::Plane(plane) => plane,
             FaceSurface::Sphere(sphere) => sphere,
+        }
+    }
+
+    pub fn transform(&self, transform: Transform) -> Self {
+        match self {
+            FaceSurface::Plane(plane) => FaceSurface::Plane(plane.transform(transform)),
+            FaceSurface::Sphere(sphere) => FaceSurface::Sphere(match sphere.transform(transform) {
+                SphereTransform::Ellipsoid() => panic!("Ellipsoid not implemented"),
+                SphereTransform::Sphere(sphere) => sphere,
+            }),
         }
     }
 }
@@ -84,6 +94,17 @@ impl Face {
         Face {
             boundaries,
             surface,
+        }
+    }
+
+    pub fn transform(&self, transform: Transform) -> Face {
+        Face {
+            boundaries: self
+                .boundaries
+                .iter()
+                .map(|contour| contour.transform(transform))
+                .collect(),
+            surface: Rc::new(self.surface.transform(transform)),
         }
     }
 
