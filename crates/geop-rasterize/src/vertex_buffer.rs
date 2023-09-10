@@ -42,6 +42,12 @@ impl VertexBuffer {
         VertexBuffer { vertices }
     }
 
+    pub fn empty() -> Self {
+        VertexBuffer {
+            vertices: Vec::new(),
+        }
+    }
+
     pub fn to_u8_slice(&self) -> &[u8] {
         bytemuck::cast_slice(&self.vertices)
     }

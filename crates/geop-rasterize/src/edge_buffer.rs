@@ -29,6 +29,12 @@ impl EdgeBuffer {
         EdgeBuffer { edges }
     }
 
+    pub fn empty() -> Self {
+        EdgeBuffer {
+            edges: Vec::new(),
+        }
+    }
+
     pub fn to_u8_slice(&self) -> &[u8] {
         bytemuck::cast_slice(&self.edges)
     }

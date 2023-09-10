@@ -147,7 +147,7 @@ impl WindowState {
         let omega = time_in_seconds * 2.0 * pi * rotations_per_second;
 
         self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;
-        self.camera_pipeline.camera.eye.z = omega.cos() * 2.0;
+        self.camera_pipeline.camera.eye.y = omega.cos() * 2.0;
         self.camera_pipeline.camera_uniform.update_view_proj(&self.camera_pipeline.camera);
         self.queue.write_buffer(&self.camera_pipeline.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]));
 

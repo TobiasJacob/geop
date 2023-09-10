@@ -9,14 +9,14 @@ use geop_geometry::{
 use geop_rasterize::{
     contour::rasterize_contours_into_line_list,
     face::rasterize_face_into_triangle_list,
-    triangle_buffer::{RenderTriangle, TriangleBuffer},
+    triangle_buffer::{RenderTriangle, TriangleBuffer}, edge_buffer::EdgeBuffer, object::{rasterize_object_into_face_list, rasterize_object_into_line_list},
 };
-use geop_topology::topology::{
+use geop_topology::{topology::{
     contour::Contour,
     edge::{Direction, Edge, EdgeCurve},
     face::{Face, FaceSurface},
     vertex::Vertex,
-};
+}, operations::extrude::extrude};
 use geop_wgpu::window::GeopWindow;
 
 pub fn linear_edge(s: Vertex, e: Vertex) -> Rc<Edge> {
@@ -90,6 +90,8 @@ async fn run() {
 
     let union_face = face2.surface_difference(&face1);
 
+    let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.33));
+
     // let vertex_buffer_line = rasterize_contours_into_line_list(
     //     &union_face.boundaries,
     //     [1.0, 1.0, 1.0]
@@ -101,12 +103,16 @@ async fn run() {
         [1.0, 1.0, 0.0],
     )]);
     println!("Union face: {:?}", union_face);
-    let vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
-    let _vertex_buffer_triange2 = rasterize_face_into_triangle_list(&face2, [0.0, 0.0, 1.0]);
+    // let vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
+    // let _vertex_buffer_triange2 = rasterize_face_into_triangle_list(&face2, [0.0, 0.0, 1.0]);
     // let vertex_buffer_triange_line = vertex_buffer_triange.to_line_list([1.0, 1.0, 1.0]);
     // vertex_buffer_triange.join(&vertex_buffer_triange2);
-    let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
-    let window = GeopWindow::new(lines, vertex_buffer_triange).await;
+    // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
+    let triangles = TriangleBuffer::empty();
+    triangles.join(&rasterize_object_into_face_list(&object, [1.0, 1.0, 1.0])); 
+    let lines = EdgeBuffer::empty();
+    lines.join(rasterize_object_into_line_list(&object, [1.0, 1.0, 1.0]));
+    let window = GeopWindow::new(lines, triangles).await;
     window.show();
 }
 

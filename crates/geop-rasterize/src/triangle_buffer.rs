@@ -34,6 +34,12 @@ impl TriangleBuffer {
         TriangleBuffer { triangles }
     }
 
+    pub fn empty() -> Self {
+        TriangleBuffer {
+            triangles: Vec::new(),
+        }
+    }
+
     pub fn to_u8_slice(&self) -> &[u8] {
         bytemuck::cast_slice(&self.triangles)
     }

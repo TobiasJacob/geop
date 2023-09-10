@@ -67,7 +67,7 @@ impl CameraPipeline {
             // have it look at the origin
             target: (0.0, 0.0, 0.0).into(),
             // which way is "up"
-            up: cgmath::Vector3::unit_y(),
+            up: cgmath::Vector3::unit_z(),
             aspect: config.width as f32 / config.height as f32,
             fovy: 45.0,
             znear: 0.1,
