@@ -7,11 +7,11 @@ use winit::{
     window::WindowBuilder,
 };
 
-use crate::state::State;
+use crate::window_state::WindowState;
 
 pub struct GeopWindow {
     event_loop: EventLoop<()>,
-    state: State,
+    state: WindowState,
 }
 
 impl GeopWindow {
@@ -56,7 +56,7 @@ impl GeopWindow {
         //     0.01,
         //     [1.0, 1.0, 1.0]
         // );
-        let state = State::new(
+        let state = WindowState::new(
             window,
             vertex_buffer_line.to_u8_slice(),
             vertex_buffer_triange.to_u8_slice(),
