@@ -16,8 +16,8 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Object {
             EdgeCurve::Circle(_) => panic!("Cannot extrude circular edges"),
             EdgeCurve::Ellipse(_) => todo!(),
         }
-        let bottom = all_edges[i].clone();
-        let top = end_face.all_edges()[n - i - 1].clone();
+        let top = Rc::new(all_edges[i].neg());
+        let bottom = Rc::new(end_face.all_edges()[n - i - 1].neg());
 
         let right = Rc::new(Edge::new(
             bottom.end.clone(), 
@@ -33,7 +33,7 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Object {
         let plane = FaceSurface::Plane(Plane::new(
                 *bottom.start.point,
                 *bottom.end.point - *bottom.start.point,
-                *top.end.point - *top.start.point,
+                *top.end.point - *bottom.start.point,
             ));
         let contour = Contour::new(vec![right, top, left, bottom]);
 

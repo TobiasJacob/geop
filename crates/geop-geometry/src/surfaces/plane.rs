@@ -13,6 +13,7 @@ pub struct Plane {
 
 impl Plane {
     pub fn new(basis: Point, u_slope: Point, v_slope: Point) -> Plane {
+        assert!(!u_slope.cross(v_slope).is_zero());
         Plane {
             basis,
             u_slope: u_slope.normalize(),
