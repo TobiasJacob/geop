@@ -15,7 +15,7 @@ pub struct RenderTriangle {
 }
 
 impl RenderTriangle {
-    pub fn new(a: Point, b: Point, c: Point, color: [f32; 3]) -> Self {
+    pub fn new(a: Point, b: Point, c: Point, color: [f32; 4]) -> Self {
         RenderTriangle {
             a: RenderVertex::new(a, color),
             b: RenderVertex::new(b, color),
@@ -48,7 +48,7 @@ impl TriangleBuffer {
         self.triangles.extend_from_slice(&other.triangles);
     }
 
-    pub fn to_line_list(&self, color: [f32; 3]) -> EdgeBuffer {
+    pub fn to_line_list(&self, color: [f32; 4]) -> EdgeBuffer {
         let mut edges = Vec::<RenderEdge>::with_capacity(3 * self.triangles.len());
         for triangle in &self.triangles {
             edges.push(RenderEdge::new(triangle.a.into(), triangle.b.into(), color));

@@ -8,6 +8,7 @@ use super::surface::{Surface, SurfaceCurve, TangentPoint};
 pub struct Sphere {
     pub basis: Point,
     pub radius: f64,
+    pub normal_outwards: bool,
 }
 
 pub enum SphereTransform {
@@ -16,8 +17,8 @@ pub enum SphereTransform {
 }
 
 impl Sphere {
-    pub fn new(basis: Point, radius: f64) -> Sphere {
-        Sphere { basis, radius }
+    pub fn new(basis: Point, radius: f64, normal_outwards: bool) -> Sphere {
+        Sphere { basis, radius, normal_outwards }
     }
 
     pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
@@ -28,13 +29,30 @@ impl Sphere {
     pub fn transform(&self, transform: Transform) -> SphereTransform {
         let basis = transform * self.basis;
         let radius = self.radius * transform.uniform_scale_factor();
-        SphereTransform::Sphere(Sphere::new(basis, radius))
+        SphereTransform::Sphere(Sphere::new(basis, radius, self.normal_outwards))
+    }
+
+    pub fn normal(&self, p: Point) -> Point {
+        assert!(self.on_surface(p));
+        if self.normal_outwards {
+            (self.basis - p).normalize()
+        } else {
+            (p - self.basis).normalize()
+        }
+    }
+
+    pub fn neg(&self) -> Sphere {
+        Sphere::new(self.basis, self.radius, !self.normal_outwards)
     }
 }
 
 impl Surface for Sphere {
     fn transform(&self, transform: Transform) -> Rc<dyn Surface> {
         todo!("Implement transform")
+    }
+
+    fn neg(&self) -> Rc<dyn Surface> {
+        Rc::new(self.neg())
     }
 
     fn on_surface(&self, p: Point) -> bool {

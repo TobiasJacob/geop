@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     points::point::Point,
-    surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform,
+    surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
 use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection};
@@ -33,6 +33,38 @@ impl FaceSurface {
                 SphereTransform::Ellipsoid() => panic!("Ellipsoid not implemented"),
                 SphereTransform::Sphere(sphere) => sphere,
             }),
+        }
+    }
+
+    pub fn contains_edge(&self, edge: &Edge) -> bool {
+        if !self.surface().on_surface(*edge.start.point) {
+            return false;
+        }
+        if !self.surface().on_surface(*edge.end.point) {
+            return false;
+        }
+        match self {
+            FaceSurface::Plane(plane) => {
+                match &*edge.curve {
+                    EdgeCurve::Line(line) => {
+                        return plane.normal().dot(line.direction).abs() < EQ_THRESHOLD && plane.on_surface(line.basis);
+                    }
+                    EdgeCurve::Circle(circle) => {
+                        return circle.normal.dot(plane.normal()) < EQ_THRESHOLD && plane.on_surface(circle.basis)
+                    },
+                    EdgeCurve::Ellipse(_) => todo!("Not implemented"),
+                }
+            }
+            FaceSurface::Sphere(sphere) => {
+                todo!("Not implemented");
+            }
+        }
+    }
+
+    pub fn neg(&self) -> FaceSurface {
+        match self {
+            FaceSurface::Plane(plane) => FaceSurface::Plane(plane.neg()),
+            FaceSurface::Sphere(sphere) => FaceSurface::Sphere(sphere.neg()),
         }
     }
 }
@@ -91,6 +123,11 @@ pub enum EdgeSplit {
 impl Face {
     pub fn new(boundaries: Vec<Contour>, surface: Rc<FaceSurface>) -> Face {
         assert!(boundaries.len() > 0, "Face must have at least one boundary");
+        for contour in boundaries.iter() {
+            for edge in contour.edges.iter() {
+                assert!(surface.contains_edge(edge));
+            }
+        }
         Face {
             boundaries,
             surface,
@@ -98,14 +135,13 @@ impl Face {
     }
 
     pub fn transform(&self, transform: Transform) -> Face {
-        Face {
-            boundaries: self
-                .boundaries
+        Face::new(
+            self.boundaries
                 .iter()
                 .map(|contour| contour.transform(transform))
                 .collect(),
-            surface: Rc::new(self.surface.transform(transform)),
-        }
+            Rc::new(self.surface.transform(transform)),
+        )
     }
 
     pub fn all_vertices(&self) -> Vec<Vertex> {
@@ -480,8 +516,15 @@ impl Face {
 
     pub fn neg(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().map(|l| l.neg()).collect(),
+            boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),
             surface: self.surface.clone(),
+        }
+    }
+
+    pub fn flip(&self) -> Face {
+        Face {
+            boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),
+            surface: Rc::new(self.surface.neg()),
         }
     }
 
@@ -554,3 +597,24 @@ impl Face {
 //         assert!(self.surface.equals(&other.surface));
 //     }
 // }
+
+// pretty print
+impl std::fmt::Display for Face {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match &*self.surface {
+            FaceSurface::Plane(p) => {
+                writeln!(f, "Plane at basis = {:?} with normal = {:?}", p.basis, p.u_slope.cross(p.v_slope))?;
+                for contour in self.boundaries.iter() {
+                    writeln!(f, "Contour:")?;
+                    for edge in contour.edges.iter() {
+                        writeln!(f, "  {}", edge)?;
+                    }
+                }
+            }
+            FaceSurface::Sphere(s) => {
+                writeln!(f, "sphere is still todo")?;
+            }
+        };
+        writeln!(f, "Boundaries:")
+    }
+}

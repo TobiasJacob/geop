@@ -90,7 +90,7 @@ async fn run() {
 
     let union_face = face2.surface_difference(&face1);
 
-    let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.33));
+    let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.5));
 
     // let vertex_buffer_line = rasterize_contours_into_line_list(
     //     &union_face.boundaries,
@@ -100,7 +100,7 @@ async fn run() {
         Point::new(0.0, 0.0, 0.0),
         Point::new(1.0, 0.0, 0.0),
         Point::new(0.0, 1.0, 0.0),
-        [1.0, 1.0, 0.0],
+        [1.0, 1.0, 0.0, 1.0],
     )]);
     println!("Union face: {:?}", union_face);
     // let vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
@@ -108,10 +108,10 @@ async fn run() {
     // let vertex_buffer_triange_line = vertex_buffer_triange.to_line_list([1.0, 1.0, 1.0]);
     // vertex_buffer_triange.join(&vertex_buffer_triange2);
     // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
-    let triangles = TriangleBuffer::empty();
-    triangles.join(&rasterize_object_into_face_list(&object, [1.0, 1.0, 1.0])); 
-    let lines = EdgeBuffer::empty();
-    lines.join(rasterize_object_into_line_list(&object, [1.0, 1.0, 1.0]));
+    let mut triangles = TriangleBuffer::empty();
+    triangles.join(&rasterize_object_into_face_list(&object, [1.0, 1.0, 1.0, 1.0])); 
+    let mut lines = EdgeBuffer::empty();
+    lines.join(&rasterize_object_into_line_list(&object, [1.0, 1.0, 1.0, 1.0]));
     let window = GeopWindow::new(lines, triangles).await;
     window.show();
 }

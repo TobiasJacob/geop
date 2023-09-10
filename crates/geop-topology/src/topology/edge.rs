@@ -511,9 +511,9 @@ impl PartialEq for Edge {
 impl Display for Edge {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self.curve.as_ref() {
-            EdgeCurve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
+            EdgeCurve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start.point, self.end.point),
+            EdgeCurve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start.point, self.end.point),
+            EdgeCurve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start.point, self.end.point),
         }
     }
 }

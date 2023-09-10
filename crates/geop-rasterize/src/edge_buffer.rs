@@ -11,7 +11,7 @@ pub struct RenderEdge {
 }
 
 impl RenderEdge {
-    pub fn new(start: Point, end: Point, color: [f32; 3]) -> Self {
+    pub fn new(start: Point, end: Point, color: [f32; 4]) -> Self {
         RenderEdge {
             start: RenderVertex::new(start, color),
             end: RenderVertex::new(end, color),

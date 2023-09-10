@@ -1,12 +1,13 @@
 use geop_topology::topology::object::Object;
 
-use crate::{triangle_buffer::TriangleBuffer, face};
+use crate::{triangle_buffer::TriangleBuffer, face::{rasterize_face_into_triangle_list, rasterize_face_into_line_list}, edge_buffer::EdgeBuffer};
 
 
-pub fn rasterize_object_into_face_list(object: &Object, color: [f64; 3]) -> TriangleBuffer {
-    let buffer = TriangleBuffer::empty();
+pub fn rasterize_object_into_face_list(object: &Object, color: [f32; 4]) -> TriangleBuffer {
+    let mut buffer = TriangleBuffer::empty();
 
-    for face in object.all_faces() {
+    for face in object.faces.iter() {
+        println!("Rasterizing face: {}", face);
         let face_buffer = rasterize_face_into_triangle_list(face, color);
         buffer.join(&face_buffer);
     }
@@ -14,11 +15,11 @@ pub fn rasterize_object_into_face_list(object: &Object, color: [f64; 3]) -> Tria
     buffer
 }
 
-pub fn rasterize_object_into_line_list(object: &Object, arg: [f64; 3]) -> EdgeBuffer {
-    let buffer = EdgeBuffer::empty();
+pub fn rasterize_object_into_line_list(object: &Object, color: [f32; 4]) -> EdgeBuffer {
+    let mut buffer = EdgeBuffer::empty();
 
-    for face in object.all_faces() {
-        let face_buffer = rasterize_face_into_line_list(face, arg);
+    for face in object.faces.iter() {
+        let face_buffer = rasterize_face_into_line_list(face, color);
         buffer.join(&face_buffer);
     }
 

@@ -30,6 +30,14 @@ impl Plane {
         let v_slope = transform * (self.v_slope + self.basis) - basis;
         Plane::new(basis, u_slope.normalize(), v_slope.normalize())
     }
+    
+    pub fn normal(&self) -> Point {
+        self.u_slope.cross(self.v_slope)
+    }
+
+    pub fn neg(&self) -> Self {
+        Plane::new(self.basis, self.u_slope, -self.v_slope)
+    }
 }
 
 impl Surface for Plane {
@@ -37,10 +45,15 @@ impl Surface for Plane {
         Rc::new(self.transform(transform))
     }
 
+    fn neg(&self) -> Rc<dyn Surface> {
+        Rc::new(self.neg())
+    }
+
     fn on_surface(&self, p: Point) -> bool {
-        let diff = p - self.basis;
-        let u = diff.dot(self.normal(p));
-        u.abs() < EQ_THRESHOLD
+        let normal = self.normal();
+        let p_project = p.dot(normal);
+        let b_project = self.basis.dot(normal);
+        (p_project - b_project).abs() < EQ_THRESHOLD
     }
 
     // fn point_at(&self, u: f64, v: f64) -> Point {

@@ -5,13 +5,19 @@ use geop_geometry::{points::point::Point, transforms::Transform, curves::line::L
 use crate::topology::{face::{Face, FaceSurface}, object::Object, edge::{Edge, Direction, EdgeCurve}, contour::Contour};
 
 pub fn extrude(start_face: Rc<Face>, direction: Point) -> Object {
-    let end_face = Rc::new(start_face.transform(Transform::from_translation(direction)).neg());
+    let end_face = Rc::new(start_face.transform(Transform::from_translation(direction)).flip());
 
     let mut faces = Vec::<Rc<Face>>::new();
-    let n = start_face.all_edges().len();
+    let all_edges = &start_face.all_edges();
+    let n = all_edges.len();
     for i in 0..n {
-        let bottom = start_face.all_edges()[i].clone();
-        let top = end_face.all_edges()[n - i].clone();
+        match &*all_edges[i].curve {
+            EdgeCurve::Line(_) => {},
+            EdgeCurve::Circle(_) => panic!("Cannot extrude circular edges"),
+            EdgeCurve::Ellipse(_) => todo!(),
+        }
+        let bottom = all_edges[i].clone();
+        let top = end_face.all_edges()[n - i - 1].clone();
 
         let right = Rc::new(Edge::new(
             bottom.end.clone(), 

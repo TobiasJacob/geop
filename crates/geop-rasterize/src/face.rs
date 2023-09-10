@@ -27,6 +27,7 @@ use crate::{
 //     color: [f32; 3]
 // }
 
+#[derive(Debug, Clone)]
 pub enum DelaunaySurface {
     Sphere(Sphere),
     Plane(Plane),
@@ -37,6 +38,13 @@ impl DelaunaySurface {
         match &*face.surface {
             FaceSurface::Sphere(sphere) => DelaunaySurface::Sphere(sphere.clone()),
             FaceSurface::Plane(plane) => DelaunaySurface::Plane(plane.clone()),
+        }
+    }
+
+    pub fn surface(&self) -> &dyn Surface {
+        match self {
+            DelaunaySurface::Sphere(sphere) => sphere,
+            DelaunaySurface::Plane(plane) => plane,
         }
     }
 }
@@ -93,6 +101,10 @@ pub fn check_triangle_counter_clockwise(
     surface: &DelaunaySurface,
     traingle: &[RenderVertex; 3],
 ) -> bool {
+    assert!(surface.surface().on_surface(traingle[0].point()));
+    assert!(surface.surface().on_surface(traingle[1].point()));
+    assert!(surface.surface().on_surface(traingle[2].point()));
+    
     let (v1, v2) = match surface {
         DelaunaySurface::Plane(plane) => (
             plane.log(traingle[0].into(), traingle[1].into()),
@@ -149,69 +161,6 @@ pub fn edge_intersects_contours(
     }
     return false;
 }
-
-// fn triangle_intersects_edge(surface: &DelaunaySurface, triangle: &RenderTriangle, edge: &RenderEdge) -> bool {
-//     let reference_point = triangle.a;
-
-//     let project_fn = |p: RenderVertex| match surface {
-//         DelaunaySurface::Plane(plane) => plane.log(reference_point.into(), p.into()).0,
-//         DelaunaySurface::Sphere(sphere) => sphere.log(reference_point.into(), p.into()).0,
-//     };
-
-//     // five points with x and y coordinates
-//     let a1 = project_fn(triangle.a);
-//     let b1 = project_fn(triangle.b);
-//     let c1 = project_fn(triangle.c);
-
-//     let a2 = project_fn(edge.start);
-//     let b2 = project_fn(edge.end);
-
-//     // list of edges for possible separating axis
-//     let edges_1 = [(a1, b1), (b1, c1), (c1, a1)];
-//     let edges_2 = [(a2, b2)];
-
-//     for edge in edges_1.iter().chain(edges_2.iter()) {
-//         let normal = Point::new(edge.1.y - edge.0.y, edge.0.x - edge.1.x, 0.0);
-//         let norm = normal.norm();
-//         if norm < EQ_THRESHOLD {
-//             continue;
-//         }
-//         let normal = normal / norm;
-
-//         let mut min_1 = f64::INFINITY;
-//         let mut max_1 = f64::NEG_INFINITY;
-//         let mut min_2 = f64::INFINITY;
-//         let mut max_2 = f64::NEG_INFINITY;
-
-//         for &point in [a1, b1, c1].iter() {
-//             let projected = normal.dot(point);
-//             min_1 = min_1.min(projected);
-//             max_1 = max_1.max(projected);
-//         }
-//         for &point in [a2, b2].iter() {
-//             let projected = normal.dot(point);
-//             min_2 = min_2.min(projected);
-//             max_2 = max_2.max(projected);
-//         }
-//         // println!("Min 1: {}, Max 1: {}, Min 2: {}, Max 2: {}", min_1, max_1, min_2, max_2);
-//         // Proof that the triangles do not intersect
-//         if max_1 <= min_2 + EQ_THRESHOLD || max_2 <= min_1 + EQ_THRESHOLD {
-//             return false;
-//         }
-//     }
-
-//     true
-
-// }
-
-// fn triangle_intersects_boundary(surface: &DelaunaySurface, triangle: &RenderTriangle, contours: &[EdgeBuffer]) -> bool {
-//     for edge in contours.iter().flat_map(|contour| contour.edges.iter()) {
-//         if triangle_intersects_edge(surface, triangle, edge) {
-//             return true;
-//         }
-//     }
-//     return false;
-// }
 
 pub fn triangle_intersects_triangle(
     surface: &DelaunaySurface,
@@ -285,13 +234,21 @@ pub fn triangle_intersects_triangle_list(
     return false;
 }
 
-pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> TriangleBuffer {
+pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 4]) -> TriangleBuffer {
     println!("/////////////////////////////////////////////////////////");
     let surface = DelaunaySurface::new(face);
     // Now we have to divide the face into triangles. First rasterize the boundaries.
     let mut contours = Vec::<EdgeBuffer>::new();
     for contour in face.boundaries.iter() {
         let points = rasterize_contour_into_line_list(contour, color);
+        for edge in points.edges.iter() {
+            println!("Surface: {:?}", surface);
+            println!("Edge: {:?}", edge);
+            println!("Start: {:?}", edge.start);
+            println!("End: {:?}", edge.end);
+            assert!(surface.surface().on_surface(edge.start.point()));
+            assert!(surface.surface().on_surface(edge.end.point()));
+        }
         contours.push(points);
     }
 
@@ -390,4 +347,13 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 3]) -> Triang
     }
 
     return TriangleBuffer::new(triangles);
+}
+
+pub fn rasterize_face_into_line_list(face: &Face, color: [f32; 4]) -> EdgeBuffer {
+    let mut buffer = EdgeBuffer::empty();
+    for contour in face.boundaries.iter() {
+        let edges = rasterize_contour_into_line_list(contour, color);
+        buffer.join(&edges);
+    }
+    buffer
 }

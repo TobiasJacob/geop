@@ -1,15 +1,15 @@
 use geop_geometry::points::point::Point;
 
 // This is called RenderVertex to distinguish it from Vertex from topology package.
-#[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
+#[repr(C)]
 pub struct RenderVertex {
     pub position: [f32; 3],
-    pub color: [f32; 3],
+    pub color: [f32; 4],
 }
 
 impl RenderVertex {
-    pub fn new(p: Point, color: [f32; 3]) -> Self {
+    pub fn new(p: Point, color: [f32; 4]) -> Self {
         RenderVertex {
             position: [p.x as f32, p.y as f32, p.z as f32],
             color,

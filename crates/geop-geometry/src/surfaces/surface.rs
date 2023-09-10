@@ -21,6 +21,7 @@ pub struct TangentPoint(pub Point);
 pub trait Surface {
     // Transform
     fn transform(&self, transform: Transform) -> Rc<dyn Surface>;
+    fn neg(&self) -> Rc<dyn Surface>;
     // fn point_at(&self, u: f64, v: f64) -> Point;
     // fn project(&self, p: &Point) -> (f64, f64);
     // fn derivative_u(&self, u: f64, v: f64) -> Point;

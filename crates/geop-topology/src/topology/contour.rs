@@ -17,12 +17,12 @@ pub struct Contour {
 // Keep in mind that the contour is still closed, but the vertices are "next to" the edges, not "part of" the edges, because otherwise two neighbouring edges would overlap at the vertex, making things a lot more complicated.
 impl Contour {
     pub fn new(edges: Vec<Rc<Edge>>) -> Contour {
+        assert!(edges.len() > 0);
         for i in 0..edges.len() {
             let edge = edges[i].clone();
             let next_edge = edges[(i + 1) % edges.len()].clone();
             assert!(edge.end == next_edge.start);
         }
-        assert!(edges.len() > 0);
         assert!(edges[0].start == edges[edges.len() - 1].end);
         Contour { edges }
     }
