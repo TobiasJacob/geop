@@ -4,6 +4,32 @@ use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::edge::{Edge, EdgeContains, EdgeIntersection};
 
+pub enum ContourCorner<T> {
+    OnEdge(T),
+    OnCorner(T, T)
+}
+
+impl<T> ContourCorner<T> {
+    pub fn expect_on_edge(&self) -> &T {
+        match self {
+            ContourCorner::OnEdge(t) => t,
+            ContourCorner::OnCorner(_, _) => panic!("Expected on edge"),
+        }
+    }
+}
+
+impl ContourCorner<Point> {
+    pub fn is_inside(&self, normal: Point, curve_dir: Point) -> bool {
+        match self {
+            ContourCorner::OnEdge(tangent) => { tangent.cross(normal).dot(curve_dir) > 0.0 }
+            ContourCorner::OnCorner(tangent1, tangent2) => { 
+                tangent1.cross(normal).dot(curve_dir) > 0.0 &&
+                tangent2.cross(normal).dot(curve_dir) > 0.0
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Contour {
     pub edges: Vec<Rc<Edge>>,
@@ -71,19 +97,34 @@ impl Contour {
 
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
-    fn get_edge_index(&self, point: Point) -> Option<usize> {
+    fn get_edge_index(&self, point: Point) -> ContourCorner<usize> {
         for (i, edge) in self.edges.iter().enumerate() {
-            if edge.contains(point) != EdgeContains::Outside {
-                return Some(i);
+            match edge.contains(point) {
+                EdgeContains::Inside => { return ContourCorner::<usize>::OnEdge(i);}
+                EdgeContains::OnPoint(p) => {
+                    match p == edge.end {
+                        true => { return ContourCorner::<usize>::OnCorner(i, (i + 1) % self.edges.len()) }
+                        false => { panic!("Checks are in order, so this case should have been detected in the previous iteration.")}
+                    }
+                },
+                EdgeContains::Outside => {}
             }
         }
-        None
+        panic!("Not on contour")
     }
 
-    pub fn tangent(&self, p: Point) -> Point {
-        assert!(self.contains(p) != EdgeContains::Outside);
-        let i = self.get_edge_index(p).unwrap();
-        return self.edges[i].tangent(p);
+    pub fn tangent(&self, p: Point) -> ContourCorner<Point> {
+        match self.get_edge_index(p) {
+            ContourCorner::OnCorner(i1, i2) => {
+                ContourCorner::<Point>::OnCorner(
+                    self.edges[i1].tangent(p),
+                    self.edges[i2].tangent(p)
+                )
+            },
+            ContourCorner::OnEdge(i) => {
+                ContourCorner::<Point>::OnEdge(self.edges[i].tangent(p))
+            },
+        }
     }
 
     // Checks if the contour contains the point, and if so, splits the edge into two edges.
@@ -93,7 +134,10 @@ impl Contour {
             return self.clone();
         }
 
-        let edge_index = self.get_edge_index(*other).unwrap();
+        let edge_index = match self.get_edge_index(*other) {
+            ContourCorner::OnEdge(i) => { i }
+            ContourCorner::OnCorner(i1, i2) => { return self.clone(); }
+        };
         let edge = self.edges[edge_index].split_if_necessary(other);
         assert!(edge.len() == 2);
 
@@ -105,17 +149,23 @@ impl Contour {
         return Contour::new(edges);
     }
 
+    pub fn split_edges_if_necessary(&self, other: Vec<Rc<Edge>>) -> Vec<Rc<Edge>> {
+        todo!();
+    }
+
     // Gets the subcurve between these two points. It is guaranteed that there will be no zero length edges.
     pub fn get_subcurve(&self, start: Rc<Point>, end: Rc<Point>) -> Vec<Rc<Edge>> {
         assert!(start != end);
 
         let mut result = Vec::<Rc<Edge>>::new();
-        let start_i = self
-            .get_edge_index(*start)
-            .expect("Start point has to be on edge");
-        let end_i = self
-            .get_edge_index(*end)
-            .expect("End point has to be on edge");
+        let start_i = match self.get_edge_index(*start) {
+            ContourCorner::OnEdge(i) => { i }
+            ContourCorner::OnCorner(i1, i2) => { i1 }
+        };
+        let end_i = match self.get_edge_index(*end) {
+            ContourCorner::OnEdge(i) => { i }
+            ContourCorner::OnCorner(i1, i2) => { i1 }
+        };
 
         if start_i == end_i {
             let edge = Edge::new(

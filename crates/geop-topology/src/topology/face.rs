@@ -5,11 +5,11 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection};
+use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection, self};
 
 use super::{
     edge::EdgeContains,
-    {contour::Contour, edge::Edge},
+    {contour::Contour, edge::Edge}, contour::ContourCorner,
 };
 
 #[derive(PartialEq, Clone, Debug)]
@@ -60,6 +60,20 @@ impl FaceSurface {
         }
     }
 
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
+        match self {
+            FaceSurface::Plane(plane) => {
+                match &*other.curve {
+                    EdgeCurve::Line(line) => {
+                        let p = todo!("asdf");
+                    },
+                    _ => todo!("Not implemented"),
+                }
+            },
+            _ => todo!("Not implemented"),
+        }
+    }
+
     pub fn neg(&self) -> FaceSurface {
         match self {
             FaceSurface::Plane(plane) => FaceSurface::Plane(plane.neg()),
@@ -100,7 +114,6 @@ pub enum FaceContainsEdge {
     OnBorderSameDir,
     OnBorderOppositeDir,
     Outside,
-    Wiggeling,
 }
 
 #[derive(Debug)]
@@ -163,7 +176,7 @@ impl Face {
         return edges;
     }
 
-    pub fn inner_point(&self) {
+    pub fn inner_point(&self) -> Point {
         todo!("Returns an inner point with where normal vector is well defined.");
     }
 
@@ -190,11 +203,11 @@ impl Face {
         }
     }
 
-    fn boundary_tangent(&self, p: Point) -> Point {
+    fn boundary_tangent(&self, p: Point) -> ContourCorner<Point> {
         for contour in self.boundaries.iter() {
             match contour.contains(p) {
                 EdgeContains::Inside => return contour.tangent(p),
-                EdgeContains::OnPoint(_) => panic!("Tangent undefined on point"),
+                EdgeContains::OnPoint(_) => return contour.tangent(p),
                 EdgeContains::Outside => continue,
             }
         }
@@ -223,7 +236,7 @@ impl Face {
         let curve_dir = curve.tangent(q);
         let normal = self.surface.surface().normal(q);
         let contour_dir = self.boundaries[0].tangent(q);
-        let mut closest_intersect_from_inside = contour_dir.cross(normal).dot(curve_dir) > 0.0;
+        let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
         for contour in self.boundaries.iter() {
             let edge_intersections = contour.intersect_edge(&*curve);
             let mut intersections = Vec::<Point>::new();
@@ -245,7 +258,7 @@ impl Face {
                     let normal = self.surface.surface().normal(point);
                     let contour_dir = contour.tangent(point);
                     closest_distance = distance;
-                    closest_intersect_from_inside = contour_dir.cross(normal).dot(curve_dir) > 0.0;
+                    closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
                 }
             }
         }
@@ -258,6 +271,7 @@ impl Face {
 
     // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
     pub fn contains_edge(&self, other: &Edge) -> FaceContainsEdge {
+        assert!(self.surface.contains_edge(other));
         let mut intersections = Vec::<Point>::new();
         for contour in self.boundaries.iter() {
             let intersection = contour.intersect_edge(other);
@@ -297,14 +311,47 @@ impl Face {
         let p = other.get_midpoint(*other.start, *other.end);
 
         match (part_inside, part_outside) {
-            (true, true) => FaceContainsEdge::Wiggeling,
+            (true, true) => panic!("Edge is wiggleing on border"),
             (true, false) => FaceContainsEdge::Inside,
             (false, true) => FaceContainsEdge::Outside,
-            (false, false) => match self.boundary_tangent(p).dot(other.tangent(p)) > 0.0 {
+            (false, false) => match self.boundary_tangent(p).expect_on_edge().dot(other.tangent(p)) > 0.0 {
                 true => FaceContainsEdge::OnBorderSameDir,
                 false => FaceContainsEdge::OnBorderOppositeDir,
             },
         }
+    }
+
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
+        let mut intersections = self.surface.intersect_edge(other);
+
+        let mut new_interesections = Vec::<EdgeIntersection>::new();
+        for int in intersections.drain(..) {
+            match &int {
+                EdgeIntersection::Point(p) => {
+                    match self.contains_point(**p) {
+                        FaceContainsPoint::Inside => { new_interesections.push(int) },
+                        _ => {}
+                    }
+                },
+                EdgeIntersection::Edge(e) => {
+                    let mut edges = vec![Rc::new(e.clone())];
+                    for b in self.boundaries.iter() {
+                        edges = b.split_edges_if_necessary(edges);
+                    }
+
+                    for e in edges.drain(..) {
+                        match self.contains_edge(&e) {
+                            FaceContainsEdge::Inside => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
+                            _ => {}
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+        intersections
     }
 
 
@@ -357,9 +404,6 @@ impl Face {
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
-                        FaceContainsEdge::Wiggeling => panic!(
-                            "Should not happen because contours were split at all intersections"
-                        ),
                     })
                     .collect::<Vec<EdgeSplit>>();
             })
@@ -372,9 +416,6 @@ impl Face {
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
-                        FaceContainsEdge::Wiggeling => panic!(
-                            "Should not happen because contours were split at all intersections"
-                        ),
                     })
                     .collect::<Vec<EdgeSplit>>()
             }))
