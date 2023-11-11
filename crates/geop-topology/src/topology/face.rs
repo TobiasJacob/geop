@@ -214,6 +214,14 @@ impl Face {
         panic!("Point is not on boundary");
     }
 
+    pub fn normal(&self, p: Point) -> Point {
+        match self.contains_point(p) {
+            FaceContainsPoint::Inside => (),
+            _ => panic!("Point is not on face"),
+        }
+        self.surface.surface().normal(p)
+    }
+
     pub fn contains_point(&self, other: Point) -> FaceContainsPoint {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
