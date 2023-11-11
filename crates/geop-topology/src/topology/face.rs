@@ -342,7 +342,9 @@ impl Face {
                     for e in edges.drain(..) {
                         match self.contains_edge(&e) {
                             FaceContainsEdge::Inside => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
-                            _ => {}
+                            FaceContainsEdge::OnBorderOppositeDir => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
+                            FaceContainsEdge::OnBorderSameDir => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
+                            FaceContainsEdge::Outside => {}
                         }
                     }
                 }
