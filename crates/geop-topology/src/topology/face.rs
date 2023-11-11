@@ -215,7 +215,7 @@ impl Face {
         );
         let curve = self.edge_from_to(&Vertex::new(Rc::new(other)), &Vertex::new(Rc::new(q)));
 
-        // Find the closest intersection point
+        // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
         let mut closest_distance = self.surface.surface().distance(other, q);
         let curve_dir = curve.tangent(q);
         let normal = self.surface.surface().normal(q);
@@ -247,8 +247,6 @@ impl Face {
             }
         }
 
-        // println!("Distance: {}", closest_distance);
-        // println!("Closest intersect from inside: {}", closest_intersect_from_inside);
         match closest_intersect_from_inside {
             true => FaceContainsPoint::Inside,
             false => FaceContainsPoint::Outside,
@@ -257,7 +255,6 @@ impl Face {
 
     // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
     pub fn contains_edge(&self, other: &Edge) -> FaceContainsEdge {
-        // println!("Other: {:?}", other);
         let mut intersections = Vec::<Vertex>::new();
         for contour in self.boundaries.iter() {
             let intersection = contour.intersect_edge(other);
@@ -307,36 +304,6 @@ impl Face {
         }
     }
 
-    // pub fn intersect(&self, other: &Face) -> Vec<FaceIntersection> {
-    //     todo!("Implement intersect");
-    // }
-
-    // pub fn subsurface(&self, cutting_contour: Contour) -> Rc<Face> {
-    //     let mut contours_self = self.inner_loops.clone();
-    //     contours_self.push(self.outer_loop.clone());
-
-    //     let new_contours = cutting_contour.remesh_multiple(contours_self.as_slice());
-
-    //     let (ccw_conts, cw_conts): (Vec<Contour>, Vec<Contour>) = new_contours.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
-    //     assert!(ccw_conts.len() == 2, "Expected 2 counter clockwise edge loops, found {}", ccw_conts.len());
-    //     let (outer_loops, invalid_loops): (Vec<Contour>, Vec<Contour>) = ccw_conts.into_iter().partition(|l| {
-    //         for edge in &l.edges {
-    //             if !self.contains_edge(edge) {
-    //                 return false;
-    //             }
-    //         }
-    //         true
-    //     });
-    //     assert!(outer_loops.len() == 1, "Expected 1 counter clockwise edge loop, found {}", outer_loops.len());
-    //     let outer_loop = outer_loops[0].clone();
-    //     let inner_loops = cw_conts;
-
-    //     Rc::new(Face::new(
-    //         outer_loop,
-    //         inner_loops,
-    //         self.surface.clone(),
-    //     ))
-    // }
 
     pub fn split_parts<F>(&self, other: &Face, filter: F) -> Face
     where
@@ -455,65 +422,6 @@ impl Face {
         return Face::new(contours, self.surface.clone());
     }
 
-    // pub fn split_parts(&self, other: &Face) -> Option<(Face, Vec<Face>)> {
-    //     assert!(self.surface == other.surface);
-
-    //     let mut contours_self = self.boundaries.clone();
-    //     contours_self.push(self.outer_loop.clone());
-
-    //     let mut contours_other = other.boundaries.clone();
-    //     contours_other.push(other.outer_loop.clone());
-
-    //     let remeshed = remesh_multiple_multiple(contours_self.as_slice(), contours_other.as_slice());
-    //     let (mut ccw_conts, mut cw_conts): (Vec<Contour>, Vec<Contour>) = remeshed.into_iter().partition(|l| self.contour_direction(l) == ContourDirection::CounterClockwise);
-
-    //     // Now its simple.
-    //     // All clockwise edge loops are caveties in the union.
-    //     // The largest counter clockwise edge loop is the outer loop of the union.
-    //     // All remaining counter clockwise edge loops are intersections.
-    //     let mut i_max = 0;
-    //     let mut result_valid = false;
-    //     for (i, ccw_cont) in ccw_conts.iter().enumerate() {
-    //         let temp_face = Face::new(
-    //             ccw_cont.clone(),
-    //             vec![],
-    //             self.surface.clone(),
-    //         );
-    //         if temp_face.contains_contour(&ccw_conts[i_max]) {
-    //             i_max = i;
-    //             result_valid = true;
-    //         }
-    //     }
-
-    //     // This means the Faces did not intersect
-    //     if !result_valid {
-    //         return None;
-    //     }
-
-    //     let union_contour = ccw_conts.remove(i_max);
-
-    //     let mut intersecions = Vec::<Face>::new();
-    //     for ccw_cont in ccw_conts {
-    //         let mut face = Face::new(
-    //             ccw_cont.clone(),
-    //             vec![],
-    //             self.surface.clone(),
-    //         );
-    //         let (inner_loops, cw_conts_new): (Vec<Contour>, Vec<Contour>) = cw_conts.into_iter().partition(|l| face.contains_contour(l));
-    //         cw_conts = cw_conts_new;
-    //         face.boundaries = inner_loops;
-    //         intersecions.push(face);
-    //     }
-
-    //     let union_face = Face::new(
-    //         union_contour,
-    //         cw_conts,
-    //         self.surface.clone(),
-    //     );
-
-    //     Some((union_face, intersecions))
-    // }
-
     pub fn neg(&self) -> Face {
         Face {
             boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),
@@ -558,45 +466,6 @@ impl Face {
         return self.surface_intersection(&other.neg());
     }
 }
-
-//     pub fn intersect(&self, other: &Face) {
-//         if (self.surface.equals(&other.surface)) { // Results in a Face
-//             // let outer_bounds = self.outer_loop.edges[0].split(other.outer_loop.edges[0]);
-//             // for (edge1, edge2) in outer_bounds {
-//             //     let inner_dir = cross_product(self.surface.normal(edge1.vertices[0]), edge1.tangent(edge1.vertices[1]));
-//             //     let edge1_prod = dot_product(inner_dir, edge1.tangent(edge1.vertices[0]));
-//             //     let edge2_prod = dot_product(inner_dir, edge2.tangent(edge2.vertices[0]));
-//             //     if edge1_prod < edge2_prod {
-//             //         // Keep edge1
-//             //     } else {
-//             //         // Keep edge2
-//             //     }
-//             // }
-//         }
-//         // Results in a line
-//         let intersection_curve = self.surface.intersect(&other.surface);
-
-//         let outer_bounds = intersection_curve.intersections(self.outer_loop);
-
-//         let inner_bounds = self.inner_loops[0].edges[0].intersections(intersection_curve);
-//     }
-
-//     pub fn split(&self, other: &Face) {
-//         let intersection_curve = self.surface.intersect(&other.surface);
-//         let outer_bounds = intersection_curve.intersections(self.outer_loop);
-//         let inner_bounds = self.inner_loops[0].edges[0].intersections(intersection_curve);
-//     }
-
-//     pub fn union(&self, other: &Face) {
-//         assert!(self.surface.equals(&other.surface));
-//     }
-//     pub fn difference(&self, other: &Face) {
-//         assert!(self.surface.equals(&other.surface));
-//     }
-//     pub fn intersection(&self, other: &Face) {
-//         assert!(self.surface.equals(&other.surface));
-//     }
-// }
 
 // pretty print
 impl std::fmt::Display for Face {

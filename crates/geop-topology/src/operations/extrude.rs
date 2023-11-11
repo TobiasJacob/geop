@@ -2,9 +2,9 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform, curves::line::Line, surfaces::plane::Plane};
 
-use crate::topology::{face::{Face, FaceSurface}, object::Object, edge::{Edge, Direction, EdgeCurve}, contour::Contour};
+use crate::topology::{face::{Face, FaceSurface}, volume::Volume, edge::{Edge, Direction, EdgeCurve}, contour::Contour};
 
-pub fn extrude(start_face: Rc<Face>, direction: Point) -> Object {
+pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
     let end_face = Rc::new(start_face.transform(Transform::from_translation(direction)).flip());
 
     let mut faces = Vec::<Rc<Face>>::new();
@@ -46,5 +46,5 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Object {
     faces.push(start_face);
     faces.push(end_face);
 
-    Object::new(faces)
+    Volume::new(faces)
 }

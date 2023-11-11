@@ -9,7 +9,7 @@ use geop_geometry::{
 use geop_rasterize::{
     contour::rasterize_contours_into_line_list,
     face::rasterize_face_into_triangle_list,
-    triangle_buffer::{RenderTriangle, TriangleBuffer}, edge_buffer::EdgeBuffer, object::{rasterize_object_into_face_list, rasterize_object_into_line_list},
+    triangle_buffer::{RenderTriangle, TriangleBuffer}, edge_buffer::EdgeBuffer, volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list},
 };
 use geop_topology::{topology::{
     contour::Contour,
@@ -109,9 +109,9 @@ async fn run() {
     // vertex_buffer_triange.join(&vertex_buffer_triange2);
     // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
     let mut triangles = TriangleBuffer::empty();
-    triangles.join(&rasterize_object_into_face_list(&object, [1.0, 1.0, 1.0, 1.0])); 
+    triangles.join(&rasterize_volume_into_face_list(&object, [1.0, 1.0, 1.0, 1.0])); 
     let mut lines = EdgeBuffer::empty();
-    lines.join(&rasterize_object_into_line_list(&object, [1.0, 1.0, 1.0, 1.0]));
+    lines.join(&rasterize_volume_into_line_list(&object, [1.0, 1.0, 1.0, 1.0]));
     let window = GeopWindow::new(lines, triangles).await;
     window.show();
 }

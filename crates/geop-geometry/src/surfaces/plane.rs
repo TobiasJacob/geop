@@ -57,38 +57,9 @@ impl Surface for Plane {
         (p_project - b_project).abs() < EQ_THRESHOLD
     }
 
-    // fn point_at(&self, u: f64, v: f64) -> Point {
-    //     self.basis + self.u_slope * u + self.v_slope * v
-    // }
-
-    // fn project(&self, p: &Point) -> (f64, f64) {
-    //     let v = *p - self.basis;
-    //     let u = v.dot(self.u_slope) / self.u_slope.norm();
-    //     let v = v - self.u_slope * u;
-    //     let v = v.dot(self.v_slope) / self.v_slope.norm();
-    //     (u, v)
-    // }
-
-    // fn derivative_u(&self, _u: f64, _v: f64) -> Point {
-    //     self.u_slope
-    // }
-
-    // fn derivative_v(&self, _u: f64, _v: f64) -> Point {
-    //     self.v_slope
-    // }
-
     fn normal(&self, _p: Point) -> Point {
         self.u_slope.cross(self.v_slope)
     }
-
-    // fn normalize(&mut self) {
-    //     self.u_slope = self.u_slope / self.u_slope.norm();
-    //     self.v_slope = self.v_slope / self.v_slope.norm();
-    // }
-
-    // fn is_normalized(&self) -> bool {
-    //     self.u_slope.is_normalized() && self.v_slope.is_normalized()
-    // }
 
     fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
