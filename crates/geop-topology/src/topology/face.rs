@@ -1,3 +1,4 @@
+use core::panic;
 use std::rc::Rc;
 
 use geop_geometry::{
@@ -5,10 +6,10 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection};
+use crate::topology::edge::{Direction, EdgeCurve, EdgeEdgeIntersection};
 
 use super::{
-    edge::EdgeContains,
+    edge::{EdgeContains, PointOrEdge},
     {contour::Contour, edge::Edge},
 };
 
@@ -60,6 +61,42 @@ impl FaceSurface {
         }
     }
 
+    pub fn intersect_edge_different_surface(&self, edge: &Edge) -> Vec<Point> {
+        assert!(!self.contains_edge(edge));
+        match self {
+            FaceSurface::Plane(plane) => {
+                match &*edge.curve {
+                    EdgeCurve::Line(line) => {
+                        if plane.normal().dot(line.direction).abs() < EQ_THRESHOLD {
+                            return Vec::new();
+                        }
+                        let t = (plane.normal().dot(plane.basis) - plane.normal().dot(line.basis)) / plane.normal().dot(line.direction);
+                        let p = line.basis + line.direction * t;
+                        if !self.surface().on_surface(p) {
+                            return Vec::new();
+                        }
+                        return vec![p];
+                    }
+                    EdgeCurve::Circle(circle) => {
+                        if circle.normal.dot(plane.normal()) < EQ_THRESHOLD {
+                            return Vec::new();
+                        }
+                        let t = (plane.normal().dot(plane.basis) - plane.normal().dot(circle.basis)) / plane.normal().dot(circle.normal);
+                        let p = circle.basis + circle.normal * t;
+                        if !self.surface().on_surface(p) {
+                            return Vec::new();
+                        }
+                        return vec![p];
+                    },
+                    EdgeCurve::Ellipse(_) => todo!("Not implemented"),
+                }
+            }
+            FaceSurface::Sphere(sphere) => {
+                todo!("Not implemented");
+            }
+        }
+    }
+
     pub fn neg(&self) -> FaceSurface {
         match self {
             FaceSurface::Plane(plane) => FaceSurface::Plane(plane.neg()),
@@ -100,7 +137,13 @@ pub enum FaceContainsEdge {
     OnBorderSameDir,
     OnBorderOppositeDir,
     Outside,
-    Wiggeling,
+}
+
+pub enum FaceEdgeIntersection {
+    PointInside(Point),
+    PointOnEdge(Point, Rc<Edge>),
+    PointOnPoint(Rc<Point>),
+    Edge(Edge)
 }
 
 #[derive(Debug)]
@@ -163,7 +206,7 @@ impl Face {
         return edges;
     }
 
-    pub fn inner_point(&self) {
+    pub fn inner_point(&self) -> Point {
         todo!("Returns an inner point with where normal vector is well defined.");
     }
 
@@ -225,19 +268,7 @@ impl Face {
         let contour_dir = self.boundaries[0].tangent(q);
         let mut closest_intersect_from_inside = contour_dir.cross(normal).dot(curve_dir) > 0.0;
         for contour in self.boundaries.iter() {
-            let edge_intersections = contour.intersect_edge(&*curve);
-            let mut intersections = Vec::<Point>::new();
-            for intersection in edge_intersections {
-                match intersection {
-                    EdgeIntersection::Point(point) => {
-                        intersections.push(*point);
-                    }
-                    EdgeIntersection::Edge(edge) => {
-                        intersections.push(*edge.start);
-                        intersections.push(*edge.end);
-                    }
-                }
-            }
+            let intersections = contour.intersect_edge_different_curve(&*curve);
             for point in intersections {
                 let distance = self.surface.surface().distance(other, point);
                 if distance < closest_distance {
@@ -256,57 +287,45 @@ impl Face {
         }
     }
 
-    // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
-    pub fn contains_edge(&self, other: &Edge) -> FaceContainsEdge {
-        let mut intersections = Vec::<Point>::new();
+    // Checks if an edge is inside the face. The edge has to lie within the surface.
+    // It is not allowed to intersect any boundary other than in start and end point.
+    // The edge either has to be fully inside or fully outside or has to be completely on the border.
+    pub fn contains_edge_same_surface(&self, other: &Edge) -> FaceContainsEdge {
+        assert!(self.surface.contains_edge(other));
         for contour in self.boundaries.iter() {
-            let intersection = contour.intersect_edge(other);
-            for int in intersection {
-                match int {
-                    EdgeIntersection::Point(point) => intersections.push(*point),
-                    EdgeIntersection::Edge(edge) => {
-                        intersections.push(*edge.start);
-                        intersections.push(*edge.end);
-                    }
+            let mut edge_valid = false;
+            for edge in contour.edges.iter() {
+                if **edge == *other {
+                    edge_valid = true;
+                }
+                if edge.neg() == *other {
+                    edge_valid = true;
                 }
             }
-        }
-
-        let mut part_inside = false;
-        let mut part_outside = false;
-        for i in -1..intersections.len() as isize {
-            let prev = if i == -1 {
-                &other.start
-            } else {
-                &intersections[i as usize]
-            };
-            let next = if i == intersections.len() as isize - 1 {
-                &other.end
-            } else {
-                &intersections[(i + 1) as usize]
-            };
-            let p = other.get_midpoint(*prev, *next);
-            match self.contains_point(p) {
-                FaceContainsPoint::Inside => part_inside = true,
-                FaceContainsPoint::Outside => part_outside = true,
-                FaceContainsPoint::OnEdge(_) => (),
-                FaceContainsPoint::OnPoint(_) => (),
+            if !edge_valid {
+                assert!(!contour.intersect_edge_different_curve(other).is_empty());
             }
         }
-
-        let p = other.get_midpoint(*other.start, *other.end);
-
-        match (part_inside, part_outside) {
-            (true, true) => FaceContainsEdge::Wiggeling,
-            (true, false) => FaceContainsEdge::Inside,
-            (false, true) => FaceContainsEdge::Outside,
-            (false, false) => match self.boundary_tangent(p).dot(other.tangent(p)) > 0.0 {
-                true => FaceContainsEdge::OnBorderSameDir,
-                false => FaceContainsEdge::OnBorderOppositeDir,
+        let q = other.get_midpoint(*other.start, *other.end);
+        match self.contains_point(q) {
+            FaceContainsPoint::Inside => FaceContainsEdge::Inside,
+            FaceContainsPoint::OnEdge(edge) => {
+                panic!("Edge is on border, but not on any contour: {:?}", edge);
+            },
+            FaceContainsPoint::OnPoint(point) => {
+                panic!("Edge is on point, but not on any contour: {:?}", point);
+            },
+            FaceContainsPoint::Outside => {
+                FaceContainsEdge::Outside
             },
         }
     }
 
+    pub fn intersect_edge_different_surface(&self, other: &Edge) -> Vec<Point> {
+        assert!(!self.surface.contains_edge(other));
+        let mut intersections = self.surface.intersect_edge_different_surface(other);
+        intersections.drain(..).filter(|p| self.contains_point(*p) == FaceContainsPoint::Inside).collect()
+    }
 
     pub fn split_parts<F>(&self, other: &Face, filter: F) -> Face
     where
@@ -314,18 +333,11 @@ impl Face {
     {
         assert!(self.surface == other.surface);
 
-        let mut intersections = Vec::<Rc<Point>>::new();
+        // First split contours such that each edge either fully overlaps or does not intersect another one at all.
+        let mut intersections = Vec::<Point>::new();
         for edge in self.boundaries.iter() {
             for other_edge in other.boundaries.iter() {
-                for intersection in edge.intersect_contour(&other_edge) {
-                    match intersection {
-                        EdgeIntersection::Point(point) => intersections.push(point),
-                        EdgeIntersection::Edge(edge) => {
-                            intersections.push(edge.start.clone());
-                            intersections.push(edge.end.clone());
-                        }
-                    }
-                }
+                intersections.extend(edge.find_split_points(other_edge));
             }
         }
         for int in intersections.iter() {
@@ -352,14 +364,11 @@ impl Face {
                 return contour
                     .edges
                     .into_iter()
-                    .map(|edge| match other.contains_edge(&edge) {
+                    .map(|edge| match other.contains_edge_same_surface(&edge) {
                         FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
-                        FaceContainsEdge::Wiggeling => panic!(
-                            "Should not happen because contours were split at all intersections"
-                        ),
                     })
                     .collect::<Vec<EdgeSplit>>();
             })
@@ -367,14 +376,11 @@ impl Face {
                 contour
                     .edges
                     .into_iter()
-                    .map(|edge| match self.contains_edge(&edge) {
+                    .map(|edge| match self.contains_edge_same_surface(&edge) {
                         FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),
                         FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
-                        FaceContainsEdge::Wiggeling => panic!(
-                            "Should not happen because contours were split at all intersections"
-                        ),
                     })
                     .collect::<Vec<EdgeSplit>>()
             }))

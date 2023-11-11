@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
-use super::edge::{Edge, EdgeContains, EdgeIntersection};
+use super::edge::{Edge, EdgeContains, EdgeEdgeIntersection, self};
 
 #[derive(Debug, Clone)]
 pub struct Contour {
@@ -152,10 +152,10 @@ impl Contour {
         result
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
-        let mut intersections = Vec::<EdgeIntersection>::new();
+    pub fn intersect_edge_different_curve(&self, other: &Edge) -> Vec<Point> {
+        let mut intersections = Vec::<Point>::new();
         for edge in self.edges.iter() {
-            let edge_intersections = edge.intersections(other);
+            let edge_intersections = edge.intersect_different_curve(other);
             intersections.extend(edge_intersections.into_iter());
         }
 
@@ -164,10 +164,16 @@ impl Contour {
 
     // Gets all intersections between this contour and another contour.
     // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same point is empty.
-    pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeIntersection> {
-        let mut intersections = Vec::<EdgeIntersection>::new();
+    pub fn find_split_points(&self, other: &Contour) -> Vec<Point> {
+        let mut intersections = Vec::<Point>::new();
         for edge_other in other.edges.iter() {
-            intersections.extend(self.intersect_edge(edge_other).into_iter());
+            for edge in self.edges.iter() {
+                if edge.curve == edge_other.curve {
+                    continue;
+                }
+                let edge_intersections = edge.intersect_different_curve(edge_other);
+                intersections.extend(edge_intersections.into_iter());
+            }
         }
         intersections
     }

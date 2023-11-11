@@ -53,6 +53,7 @@ impl Curve for Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.basis == other.basis && self.direction == other.direction
+        self.direction.is_parallel(other.direction) &&
+            (other.basis - self.basis).is_parallel(self.direction)
     }
 }
