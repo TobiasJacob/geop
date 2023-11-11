@@ -22,18 +22,18 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
         let right = Rc::new(Edge::new(
             bottom.end.clone(), 
             top.start.clone(), 
-            Rc::new(EdgeCurve::Line(Line::new(*bottom.end.point, *top.start.point - *bottom.end.point))), 
+            Rc::new(EdgeCurve::Line(Line::new(*bottom.end, *top.start - *bottom.end))), 
             Direction::Increasing));
         let left = Rc::new(Edge::new(
             top.end.clone(), 
             bottom.start.clone(), 
-            Rc::new(EdgeCurve::Line(Line::new(*top.end.point, *bottom.start.point - *top.end.point))), 
+            Rc::new(EdgeCurve::Line(Line::new(*top.end, *bottom.start - *top.end))), 
             Direction::Increasing));
 
         let plane = FaceSurface::Plane(Plane::new(
-                *bottom.start.point,
-                *bottom.end.point - *bottom.start.point,
-                *top.end.point - *bottom.start.point,
+                *bottom.start,
+                *bottom.end - *bottom.start,
+                *top.end - *bottom.start,
             ));
         let contour = Contour::new(vec![right, top, left, bottom]);
 

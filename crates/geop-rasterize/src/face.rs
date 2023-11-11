@@ -18,7 +18,7 @@ use crate::{
     vertex_buffer::RenderVertex,
 };
 
-// struct VertexBuffer {
+// struct PointBuffer {
 //     vertices: Vec<RenderVertex>
 // }
 
