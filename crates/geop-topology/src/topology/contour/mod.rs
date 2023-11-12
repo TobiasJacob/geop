@@ -173,25 +173,25 @@ impl Contour {
         result
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
-        let mut intersections = Vec::<EdgeEdgeIntersection>::new();
-        for edge in self.edges.iter() {
-            let edge_intersections = edge.intersections(other);
-            intersections.extend(edge_intersections.into_iter());
-        }
+    // pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
+    //     let mut intersections = Vec::<EdgeEdgeIntersection>::new();
+    //     for edge in self.edges.iter() {
+    //         let edge_intersections = edge.intersections(other);
+    //         intersections.extend(edge_intersections.into_iter());
+    //     }
 
-        intersections
-    }
+    //     intersections
+    // }
 
-    // Gets all intersections between this contour and another contour.
-    // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same point is empty.
-    pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeEdgeIntersection> {
-        let mut intersections = Vec::<EdgeEdgeIntersection>::new();
-        for edge_other in other.edges.iter() {
-            intersections.extend(self.intersect_edge(edge_other).into_iter());
-        }
-        intersections
-    }
+    // // Gets all intersections between this contour and another contour.
+    // // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same point is empty.
+    // pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeEdgeIntersection> {
+    //     let mut intersections = Vec::<EdgeEdgeIntersection>::new();
+    //     for edge_other in other.edges.iter() {
+    //         intersections.extend(self.intersect_edge(edge_other).into_iter());
+    //     }
+    //     intersections
+    // }
 
     // Avoid using these functions
     pub fn point_at(&self, u: f64) -> Point {

@@ -4,8 +4,7 @@ use crate::topology::{edge::Edge, contains::{face_point::{face_contains_point, F
 
 use super::edge_edge::EdgeEdgeIntersection;
 
-
-pub fn intersect_edge(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
+pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
     let mut intersections = face.surface.intersect_edge(edge);
 
     let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
@@ -20,7 +19,7 @@ pub fn intersect_edge(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
             EdgeEdgeIntersection::Edge(e) => {
                 let mut edges = vec![Rc::new(e.clone())];
                 for b in face.boundaries.iter() {
-                    let ints = b.intersect_edge(&e);
+                    // let ints = b.intersect_edge(&e);
                     edges = todo!("Split edges by intersections")
                     // edges = b.split_edges_if_necessary(edges);
                 }

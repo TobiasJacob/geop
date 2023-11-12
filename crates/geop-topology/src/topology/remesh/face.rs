@@ -7,7 +7,7 @@ use crate::topology::{
     contour::Contour,
     edge::Edge,
     face::{face_surface::FaceSurface, Face},
-    intersections::edge_edge::EdgeEdgeIntersection, split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+    intersections::{edge_edge::EdgeEdgeIntersection, contour_contour::countour_contour_intersection_points}, split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
 };
 
 #[derive(Debug)]
@@ -25,20 +25,7 @@ pub enum FaceSplit {
 pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     assert!(face_self.surface == face_other.surface);
 
-    let mut intersections = Vec::<Rc<Point>>::new();
-    for edge in face_self.boundaries.iter() {
-        for other_edge in face_other.boundaries.iter() {
-            for intersection in edge.intersect_contour(&other_edge) {
-                match intersection {
-                    EdgeEdgeIntersection::Point(point) => intersections.push(point),
-                    EdgeEdgeIntersection::Edge(edge) => {
-                        intersections.push(edge.start.clone());
-                        intersections.push(edge.end.clone());
-                    }
-                }
-            }
-        }
-    }
+    let intersections = countour_contour_intersection_points(face_self, face_other);
 
     let mut edges_self = face_self.all_edges();
     let mut edges_other = face_other.all_edges();

@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::points::point::Point;
 
-use crate::topology::{edge::Edge, face::Face, intersections::edge_edge::EdgeEdgeIntersection};
+use crate::topology::{edge::Edge, face::Face, intersections::{edge_edge::EdgeEdgeIntersection, contour_edge::countour_edge_intersection_points}};
 
 use super::edge_point::{EdgeContains, edge_contains_point};
 
@@ -39,29 +39,14 @@ pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
     let normal = face.surface.surface().normal(q);
     let contour_dir = face.boundaries[0].tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
-    for contour in face.boundaries.iter() {
-        let edge_intersections = contour.intersect_edge(&*curve);
-        let mut intersections = Vec::<Point>::new();
-        for intersection in edge_intersections {
-            match intersection {
-                EdgeEdgeIntersection::Point(point) => {
-                    intersections.push(*point);
-                }
-                EdgeEdgeIntersection::Edge(edge) => {
-                    intersections.push(*edge.start);
-                    intersections.push(*edge.end);
-                }
-            }
-        }
-        for int in intersections {
-            let distance = face.surface.surface().distance(point, int);
-            if distance < closest_distance {
-                let curve_dir = curve.tangent(int);
-                let normal = face.surface.surface().normal(int);
-                let contour_dir = contour.tangent(int);
-                closest_distance = distance;
-                closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
-            }
+    for int in countour_edge_intersection_points(face, &*curve) {
+        let distance = face.surface.surface().distance(point, *int);
+        if distance < closest_distance {
+            let curve_dir = curve.tangent(*int);
+            let normal = face.surface.surface().normal(*int);
+            let contour_dir = face.boundary_tangent(*int);
+            closest_distance = distance;
+            closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
         }
     }
 

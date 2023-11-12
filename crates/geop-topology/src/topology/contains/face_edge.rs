@@ -4,7 +4,7 @@ use crate::topology::{
     contains::face_point::{face_contains_point, FaceContainsPoint},
     edge::Edge,
     face::Face,
-    intersections::{self, edge_edge::EdgeEdgeIntersection},
+    intersections::{self, edge_edge::EdgeEdgeIntersection, contour_edge::{countour_edge_intersection_points}},
 };
 
 pub enum FaceContainsEdge {
@@ -18,19 +18,8 @@ pub enum FaceContainsEdge {
 pub fn face_contains_edge(face: &Face, edge: &Edge) -> FaceContainsEdge {
     assert!(face.surface.contains_edge(edge));
     // TODO: Make an assertian that there are no intersections with the face boundaries
-    for contour in face.boundaries.iter() {
-        let intersection = contour.intersect_edge(edge);
-        for int in intersection {
-            match int {
-                EdgeEdgeIntersection::Point(point) => {
-                    assert!(edge.start == point || edge.end == point);
-                }
-                EdgeEdgeIntersection::Edge(edge) => {
-                    assert!(edge.start == edge.start || edge.end == edge.start);
-                    assert!(edge.start == edge.end || edge.end == edge.end);
-                }
-            }
-        }
+    for int in countour_edge_intersection_points(face, edge) {
+        assert!(*edge.start == *int || *edge.end == *int);
     }
 
     let p = edge.get_midpoint(*edge.start, *edge.end);
