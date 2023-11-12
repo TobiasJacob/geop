@@ -4,16 +4,16 @@ use std::rc::Rc;
 
 use geop_geometry::{
     points::point::Point,
-    surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
+    transforms::Transform,
 };
 
-use crate::topology::{contains::edge_point::EdgeContains, face};
+use crate::topology::contains::edge_point::EdgeContains;
 
 use self::face_surface::FaceSurface;
 
 use super::{
-    edge::{edge_curve::EdgeCurve},
-    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::{edge_point::edge_contains_point, face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
+    edge::edge_curve::EdgeCurve,
+    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
 };
 
 #[derive(Clone, Debug)]
@@ -90,7 +90,7 @@ impl Face {
     }
 
     pub fn inner_point(&self) -> Point {
-        todo!("Returns an inner point with where normal vector is well defined.");
+        todo!("Returns an inner point where normal vector is well defined.");
     }
 
     pub fn edge_from_to(&self, from: Rc<Point>, to: Rc<Point>) -> Rc<Edge> {
@@ -186,9 +186,6 @@ impl Face {
                 }
             }
         }
-        for int in intersections.iter() {
-            println!("Intersection: {:?}", int);
-        }
 
         let mut contours_self = self.boundaries.clone();
         let mut contours_other = other.boundaries.clone();
@@ -204,7 +201,7 @@ impl Face {
                 .collect();
         }
 
-        let mut edges = contours_self
+        let mut edges_intermediate = contours_self
             .into_iter()
             .map(|contour| {
                 return contour
@@ -229,8 +226,9 @@ impl Face {
                         FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
                     })
                     .collect::<Vec<EdgeSplit>>()
-            }))
-            .flatten()
+            })).flatten().collect::<Vec<EdgeSplit>>();
+        
+        let mut edges = edges_intermediate.drain(..)
             .filter(filter)
             .map(|e| match e {
                 EdgeSplit::AinB(edge) => edge,

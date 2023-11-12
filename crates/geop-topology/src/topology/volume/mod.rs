@@ -91,62 +91,6 @@ impl Volume {
         }
     }
 
-    pub fn contains_point(&self, other: Point) -> VolumeContainsPoint {
-        // first check if point is on any other face
-        for face in self.faces.iter() {
-            match face_contains_point(face, other) {
-                FaceContainsPoint::Inside => return VolumeContainsPoint::OnFace(face.clone()),
-                FaceContainsPoint::OnEdge(edge) => return VolumeContainsPoint::OnEdge(edge),
-                FaceContainsPoint::OnPoint(point) => return VolumeContainsPoint::OnPoint(point),
-                FaceContainsPoint::Outside => {}
-            }
-        }
-
-        // choose a random point on a face
-        let q = self.faces[0].inner_point();
-        let curve = Edge::new(
-            Rc::new(other.clone()), 
-            Rc::new(q.clone()),
-            Rc::new(EdgeCurve::Line(Line::new(other, q - other))));
-
-        // Find the closest intersection point with any other face and use the normal to determine if the point is inside or outside
-        for face in self.faces.iter() {
-            let intersections = face.intersect_edge(&curve);
-        }
-        let mut closest_distance = (other - q).norm();
-        let curve_dir = q - other;
-        let normal = self.normal(q);
-        let mut closest_intersect_from_inside = normal.is_from_inside(curve_dir);
-        for face in self.faces.iter() {
-            let edge_intersections = face.intersect_edge(&curve);
-            let mut intersections = Vec::<Point>::new();
-            for intersection in edge_intersections {
-                match intersection {
-                    EdgeEdgeIntersection::Point(point) => {
-                        intersections.push(*point);
-                    },
-                    EdgeEdgeIntersection::Edge(edge) => {
-                        intersections.push(*edge.start);
-                        intersections.push(*edge.end);
-                    }
-                }
-            }
-            for point in intersections {
-                let distance = (other - point).norm();
-                if distance < closest_distance {
-                    let curve_dir = curve.tangent(point);
-                    let normal = self.normal(point);
-                    closest_distance = distance;
-                    closest_intersect_from_inside = normal.is_from_inside(curve_dir);
-                }
-            }
-        }
-
-        match closest_intersect_from_inside {
-            true => VolumeContainsPoint::Inside,
-            false => VolumeContainsPoint::Outside,
-        }
-    }
 
     pub fn shell_intersect(&self, other: &Volume) -> Vec<VolumeShellIntersection> {
         let intersections = Vec::<EdgeEdgeIntersection>::new();

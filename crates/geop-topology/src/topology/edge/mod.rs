@@ -5,17 +5,11 @@ pub mod split_if_necessary;
 use std::{
     fmt::{Display, Formatter},
     rc::Rc,
-    vec,
 };
 
 use geop_geometry::{
-    curve_curve_intersection::{
-        circle_circle::{circle_circle_intersection, CircleCircleIntersection},
-        line_line::{line_line_intersection, LineLineIntersection},
-    },
-    curves::{circle::{Circle, CircleTransform}, curve::Curve, ellipse::Ellipse, line::Line},
     points::point::Point,
-    EQ_THRESHOLD, transforms::Transform,
+    EQ_THRESHOLD, transforms::Transform, curves::curve::Curve,
 };
 
 use crate::{PROJECTION_THRESHOLD, topology::contains::edge_point::{EdgeContains, edge_contains_point}};
