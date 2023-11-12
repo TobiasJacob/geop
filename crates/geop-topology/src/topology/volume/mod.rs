@@ -2,9 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{transforms::Transform, points::point::Point, curves::line::Line};
 
-use crate::topology::{face::FaceContainsPoint};
-
-use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection};
+use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection, contains::face_point::{face_contains_point, FaceContainsPoint}};
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,
@@ -74,7 +72,7 @@ impl Volume {
     pub fn normal(&self, point: Point) -> VolumeNormal {
         let mut relevant_normals = Vec::<Point>::new();
         for face in self.faces.iter() {
-            match face.contains_point(point) {
+            match face_contains_point(face, point) {
                 FaceContainsPoint::Inside | FaceContainsPoint::OnEdge(_) | FaceContainsPoint::OnPoint(_) => {
                     relevant_normals.push(face.normal(point));
                 },
@@ -96,7 +94,7 @@ impl Volume {
     pub fn contains_point(&self, other: Point) -> VolumeContainsPoint {
         // first check if point is on any other face
         for face in self.faces.iter() {
-            match face.contains_point(other) {
+            match face_contains_point(face, other) {
                 FaceContainsPoint::Inside => return VolumeContainsPoint::OnFace(face.clone()),
                 FaceContainsPoint::OnEdge(edge) => return VolumeContainsPoint::OnEdge(edge),
                 FaceContainsPoint::OnPoint(point) => return VolumeContainsPoint::OnPoint(point),

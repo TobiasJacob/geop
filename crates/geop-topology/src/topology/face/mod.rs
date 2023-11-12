@@ -1,3 +1,5 @@
+pub mod face_surface;
+
 use std::rc::Rc;
 
 use geop_geometry::{
@@ -5,88 +7,14 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::contains::edge_point::EdgeContains;
+use crate::topology::{contains::edge_point::EdgeContains, face};
+
+use self::face_surface::FaceSurface;
 
 use super::{
     edge::{edge_curve::EdgeCurve},
-    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::edge_point::edge_contains_point, intersections::edge_edge::EdgeEdgeIntersection,
+    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::{edge_point::edge_contains_point, face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
 };
-
-#[derive(PartialEq, Clone, Debug)]
-pub enum FaceSurface {
-    Plane(Plane),
-    Sphere(Sphere),
-}
-impl FaceSurface {
-    pub fn surface(&self) -> &dyn Surface {
-        match self {
-            FaceSurface::Plane(plane) => plane,
-            FaceSurface::Sphere(sphere) => sphere,
-        }
-    }
-
-    pub fn transform(&self, transform: Transform) -> Self {
-        match self {
-            FaceSurface::Plane(plane) => FaceSurface::Plane(plane.transform(transform)),
-            FaceSurface::Sphere(sphere) => FaceSurface::Sphere(match sphere.transform(transform) {
-                SphereTransform::Ellipsoid() => panic!("Ellipsoid not implemented"),
-                SphereTransform::Sphere(sphere) => sphere,
-            }),
-        }
-    }
-
-    pub fn contains_edge(&self, edge: &Edge) -> bool {
-        if !self.surface().on_surface(*edge.start) {
-            return false;
-        }
-        if !self.surface().on_surface(*edge.end) {
-            return false;
-        }
-        match self {
-            FaceSurface::Plane(plane) => {
-                match &*edge.curve {
-                    EdgeCurve::Line(line) => {
-                        return plane.normal().dot(line.direction).abs() < EQ_THRESHOLD && plane.on_surface(line.basis);
-                    }
-                    EdgeCurve::Circle(circle) => {
-                        return circle.normal.dot(plane.normal()) < EQ_THRESHOLD && plane.on_surface(circle.basis)
-                    },
-                    EdgeCurve::Ellipse(_) => todo!("Not implemented"),
-                }
-            }
-            FaceSurface::Sphere(sphere) => {
-                todo!("Not implemented");
-            }
-        }
-    }
-
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
-        match self {
-            FaceSurface::Plane(plane) => {
-                match &*other.curve {
-                    EdgeCurve::Line(line) => {
-                        let p = todo!("asdf");
-                    },
-                    _ => todo!("Not implemented"),
-                }
-            },
-            _ => todo!("Not implemented"),
-        }
-    }
-
-    pub fn neg(&self) -> FaceSurface {
-        match self {
-            FaceSurface::Plane(plane) => FaceSurface::Plane(plane.neg()),
-            FaceSurface::Sphere(sphere) => FaceSurface::Sphere(sphere.neg()),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum ContourDirection {
-    Clockwise,
-    CounterClockwise,
-}
 
 #[derive(Clone, Debug)]
 pub struct Face {
@@ -99,21 +27,6 @@ pub enum FaceIntersection {
     Contour(Contour),
     Edge(Edge),
     Point(Point),
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum FaceContainsPoint {
-    Inside,
-    OnEdge(Rc<Edge>),
-    OnPoint(Rc<Point>),
-    Outside,
-}
-
-pub enum FaceContainsEdge {
-    Inside,
-    OnBorderSameDir,
-    OnBorderOppositeDir,
-    Outside,
 }
 
 #[derive(Debug)]
@@ -201,7 +114,7 @@ impl Face {
         }
     }
 
-    fn boundary_tangent(&self, p: Point) -> ContourCorner<Point> {
+    pub fn boundary_tangent(&self, p: Point) -> ContourCorner<Point> {
         for contour in self.boundaries.iter() {
             match contour.contains(p) {
                 EdgeContains::Inside => return contour.tangent(p),
@@ -213,118 +126,11 @@ impl Face {
     }
 
     pub fn normal(&self, p: Point) -> Point {
-        match self.contains_point(p) {
+        match face_contains_point(self, p) {
             FaceContainsPoint::Inside => (),
             _ => panic!("Point is not on face"),
         }
         self.surface.surface().normal(p)
-    }
-
-    pub fn contains_point(&self, other: Point) -> FaceContainsPoint {
-        // If the point is on the border, it is part of the set
-        for edge in self.all_edges() {
-            match edge_contains_point(&edge, other) {
-                EdgeContains::Inside => return FaceContainsPoint::OnEdge(edge.clone()),
-                EdgeContains::OnPoint(point) => return FaceContainsPoint::OnPoint(point),
-                EdgeContains::Outside => continue,
-            }
-        }
-        // Draw a line from the point to a random point on the border.
-        // Use a midpoint to have a well defined tangent. At an Edge, the check is more complicated.
-        let q: Point = self.boundaries[0].edges[0].get_midpoint(
-            *self.boundaries[0].edges[0].start,
-            *self.boundaries[0].edges[0].end,
-        );
-        let curve = self.edge_from_to(Rc::new(other), Rc::new(q));
-
-        // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
-        let mut closest_distance = self.surface.surface().distance(other, q);
-        let curve_dir = curve.tangent(q);
-        let normal = self.surface.surface().normal(q);
-        let contour_dir = self.boundaries[0].tangent(q);
-        let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
-        for contour in self.boundaries.iter() {
-            let edge_intersections = contour.intersect_edge(&*curve);
-            let mut intersections = Vec::<Point>::new();
-            for intersection in edge_intersections {
-                match intersection {
-                    EdgeEdgeIntersection::Point(point) => {
-                        intersections.push(*point);
-                    }
-                    EdgeEdgeIntersection::Edge(edge) => {
-                        intersections.push(*edge.start);
-                        intersections.push(*edge.end);
-                    }
-                }
-            }
-            for point in intersections {
-                let distance = self.surface.surface().distance(other, point);
-                if distance < closest_distance {
-                    let curve_dir = curve.tangent(point);
-                    let normal = self.surface.surface().normal(point);
-                    let contour_dir = contour.tangent(point);
-                    closest_distance = distance;
-                    closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
-                }
-            }
-        }
-
-        match closest_intersect_from_inside {
-            true => FaceContainsPoint::Inside,
-            false => FaceContainsPoint::Outside,
-        }
-    }
-
-    // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
-    pub fn contains_edge(&self, other: &Edge) -> FaceContainsEdge {
-        assert!(self.surface.contains_edge(other));
-        let mut intersections = Vec::<Point>::new();
-        for contour in self.boundaries.iter() {
-            let intersection = contour.intersect_edge(other);
-            for int in intersection {
-                match int {
-                    EdgeEdgeIntersection::Point(point) => intersections.push(*point),
-                    EdgeEdgeIntersection::Edge(edge) => {
-                        intersections.push(*edge.start);
-                        intersections.push(*edge.end);
-                    }
-                }
-            }
-        }
-
-        let mut part_inside = false;
-        let mut part_outside = false;
-        for i in -1..intersections.len() as isize {
-            let prev = if i == -1 {
-                &other.start
-            } else {
-                &intersections[i as usize]
-            };
-            let next = if i == intersections.len() as isize - 1 {
-                &other.end
-            } else {
-                &intersections[(i + 1) as usize]
-            };
-            let p = other.get_midpoint(*prev, *next);
-            match self.contains_point(p) {
-                FaceContainsPoint::Inside => part_inside = true,
-                FaceContainsPoint::Outside => part_outside = true,
-                FaceContainsPoint::OnEdge(_) => (),
-                FaceContainsPoint::OnPoint(_) => (),
-            }
-        }
-
-        let p = other.get_midpoint(*other.start, *other.end);
-
-        match (part_inside, part_outside) {
-            (true, true) => panic!("Edge is wiggleing on border"),
-            (true, false) => FaceContainsEdge::Inside,
-            (false, true) => FaceContainsEdge::Outside,
-            (false, false) => match self.boundary_tangent(p).expect_on_edge().dot(other.tangent(p)) > 0.0 {
-                true => FaceContainsEdge::OnBorderSameDir,
-                false => FaceContainsEdge::OnBorderOppositeDir,
-            },
-        }
     }
 
     pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
@@ -334,7 +140,7 @@ impl Face {
         for int in intersections.drain(..) {
             match &int {
                 EdgeEdgeIntersection::Point(p) => {
-                    match self.contains_point(**p) {
+                    match face_contains_point(self, **p) {
                         FaceContainsPoint::Inside => { new_interesections.push(int) },
                         _ => {}
                     }
@@ -346,7 +152,7 @@ impl Face {
                     }
 
                     for e in edges.drain(..) {
-                        match self.contains_edge(&e) {
+                        match face_contains_edge(self, &e) {
                             FaceContainsEdge::Inside => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
                             FaceContainsEdge::OnBorderOppositeDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
                             FaceContainsEdge::OnBorderSameDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
@@ -404,7 +210,7 @@ impl Face {
                 return contour
                     .edges
                     .into_iter()
-                    .map(|edge| match other.contains_edge(&edge) {
+                    .map(|edge| match face_contains_edge(other, &edge) {
                         FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
@@ -416,7 +222,7 @@ impl Face {
                 contour
                     .edges
                     .into_iter()
-                    .map(|edge| match self.contains_edge(&edge) {
+                    .map(|edge| match face_contains_edge(self, &edge) {
                         FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
                         FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
                         FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),

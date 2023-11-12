@@ -9,7 +9,7 @@ use geop_geometry::{
     },
     EQ_THRESHOLD,
 };
-use geop_topology::topology::face::{Face, FaceSurface};
+use geop_topology::topology::face::{Face, face_surface::FaceSurface};
 
 use crate::{
     contour::rasterize_contour_into_line_list,
