@@ -5,11 +5,11 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::edge::{EdgeIntersection};
+use crate::topology::contains::edge_point::EdgeContains;
 
 use super::{
-    edge::{EdgeContains, edge_curve::EdgeCurve},
-    {contour::Contour, edge::Edge}, contour::ContourCorner,
+    edge::{edge_curve::EdgeCurve},
+    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::edge_point::edge_contains_point, intersections::edge_edge::EdgeIntersection,
 };
 
 #[derive(PartialEq, Clone, Debug)]
@@ -223,7 +223,7 @@ impl Face {
     pub fn contains_point(&self, other: Point) -> FaceContainsPoint {
         // If the point is on the border, it is part of the set
         for edge in self.all_edges() {
-            match edge.contains(other) {
+            match edge_contains_point(&edge, other) {
                 EdgeContains::Inside => return FaceContainsPoint::OnEdge(edge.clone()),
                 EdgeContains::OnPoint(point) => return FaceContainsPoint::OnPoint(point),
                 EdgeContains::Outside => continue,
@@ -390,11 +390,11 @@ impl Face {
         for vert in intersections {
             contours_self = contours_self
                 .into_iter()
-                .map(|contour| contour.split_if_necessary(&vert))
+                .map(|contour| contour.split_if_necessary(*vert))
                 .collect();
             contours_other = contours_other
                 .into_iter()
-                .map(|contour| contour.split_if_necessary(&vert))
+                .map(|contour| contour.split_if_necessary(*vert))
                 .collect();
         }
 

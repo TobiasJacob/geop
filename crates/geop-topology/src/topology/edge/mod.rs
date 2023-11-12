@@ -1,7 +1,5 @@
 pub mod edge_curve;
 pub mod split_if_necessary;
-pub mod intersect_edge;
-pub mod contains_point;
 
 
 use std::{
@@ -20,7 +18,7 @@ use geop_geometry::{
     EQ_THRESHOLD, transforms::Transform,
 };
 
-use crate::PROJECTION_THRESHOLD;
+use crate::{PROJECTION_THRESHOLD, topology::contains::edge_point::{EdgeContains, edge_contains_point}};
 
 use self::edge_curve::EdgeCurve;
 
@@ -30,23 +28,9 @@ pub struct Edge {
     pub end: Rc<Point>,
     pub curve: Rc<EdgeCurve>,
 
-    start_u: f64,
-    end_u: f64,
+    pub start_u: f64,
+    pub end_u: f64,
 }
-
-#[derive(Clone, Debug)]
-pub enum EdgeIntersection {
-    Point(Rc<Point>),
-    Edge(Edge),
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum EdgeContains {
-    Inside,
-    Outside,
-    OnPoint(Rc<Point>),
-}
-
 // Represents an Edge, defined by a curve, and a start and end point.
 // It is important to know that the start and end point are not considered a part of the edge.
 // E.g. "intersection" between two edges at end points are not considered intersections.
@@ -125,7 +109,7 @@ impl Edge {
     }
 
     pub fn tangent(&self, p: Point) -> Point {
-        assert!(self.contains(p) != EdgeContains::Outside);
+        assert!(edge_contains_point(self, p) != EdgeContains::Outside);
         match &*self.curve {
             EdgeCurve::Circle(c) => c.derivative(p).normalize(),
             EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),

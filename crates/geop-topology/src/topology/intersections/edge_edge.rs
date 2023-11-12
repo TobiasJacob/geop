@@ -5,10 +5,17 @@ use geop_geometry::{
         circle_circle::{circle_circle_intersection, CircleCircleIntersection},
         line_line::{line_line_intersection, LineLineIntersection},
     },
-    curves::curve::Curve,
+    curves::curve::Curve, points::point::Point,
 };
 
-use super::{edge_curve::EdgeCurve, Edge, EdgeContains, EdgeIntersection};
+use crate::topology::{edge::{Edge, edge_curve::EdgeCurve}, contains::edge_point::{EdgeContains, edge_contains_point}};
+
+
+#[derive(Clone, Debug)]
+pub enum EdgeIntersection {
+    Point(Rc<Point>),
+    Edge(Edge),
+}
 
 impl Edge {
     // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
@@ -31,15 +38,15 @@ impl Edge {
                             intersections
                                 .into_iter()
                                 .filter(|intersection| {
-                                    self.contains(**intersection) == EdgeContains::Inside
-                                        && other.contains(**intersection) == EdgeContains::Inside
+                                    edge_contains_point(self, **intersection) == EdgeContains::Inside
+                                        && edge_contains_point(other, **intersection) == EdgeContains::Inside
                                 })
                                 .map(|i| EdgeIntersection::Point(i))
                                 .collect()
                         }
                         CircleCircleIntersection::OnePoint(a) => {
-                            if self.contains(a) == EdgeContains::Inside
-                                && other.contains(a) == EdgeContains::Inside
+                            if edge_contains_point(self, a) == EdgeContains::Inside
+                                && edge_contains_point(other, a) == EdgeContains::Inside
                             {
                                 vec![EdgeIntersection::Point(Rc::new(a))]
                             } else {
@@ -133,8 +140,8 @@ impl Edge {
                             LineLineIntersection::Point(a) => {
                                 let mut intersections = Vec::new();
                                 // Check if it is contained
-                                if self.contains(a) == EdgeContains::Inside
-                                    && other.contains(a) == EdgeContains::Inside
+                                if edge_contains_point(self, a) == EdgeContains::Inside
+                                    && edge_contains_point(other, a) == EdgeContains::Inside
                                 {
                                     intersections.push(EdgeIntersection::Point(Rc::new(a)));
                                 }
@@ -172,8 +179,8 @@ impl Edge {
 
                                 if start == end {
                                     assert!(
-                                        self.contains(*start) != EdgeContains::Outside
-                                            && other.contains(*start) != EdgeContains::Outside
+                                        edge_contains_point(self, *start) != EdgeContains::Outside
+                                            && edge_contains_point(other, *start) != EdgeContains::Outside
                                     );
                                     return vec![EdgeIntersection::Point(start)];
                                 }
@@ -190,10 +197,10 @@ impl Edge {
                                 // println!("Self: {:?}", self);
                                 // println!("Other: {:?}", other);
 
-                                assert!(self.contains(*start) != EdgeContains::Outside);
-                                assert!(other.contains(*start) != EdgeContains::Outside);
-                                assert!(self.contains(*end) != EdgeContains::Outside);
-                                assert!(other.contains(*end) != EdgeContains::Outside);
+                                assert!(edge_contains_point(self, *start) != EdgeContains::Outside);
+                                assert!(edge_contains_point(other, *start) != EdgeContains::Outside);
+                                assert!(edge_contains_point(self, *end) != EdgeContains::Outside);
+                                assert!(edge_contains_point(other, *end) != EdgeContains::Outside);
                                 return vec![EdgeIntersection::Edge(Edge::new(
                                     start,
                                     end,

@@ -4,7 +4,7 @@ use geop_geometry::{transforms::Transform, points::point::Point, curves::line::L
 
 use crate::topology::{face::FaceContainsPoint};
 
-use super::{contour::Contour, face::Face, edge::{Edge, EdgeIntersection, edge_curve::EdgeCurve}};
+use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeIntersection};
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,

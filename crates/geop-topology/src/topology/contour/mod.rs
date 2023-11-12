@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
-use super::edge::{Edge, EdgeContains, EdgeIntersection};
+use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeIntersection};
 
 pub enum ContourCorner<T> {
     OnEdge(T),
@@ -81,7 +81,7 @@ impl Contour {
 
     pub fn contains(&self, point: Point) -> EdgeContains {
         for (_i, edge) in self.edges.iter().enumerate() {
-            let contains = edge.contains(point);
+            let contains: EdgeContains = edge_contains_point(edge, point);
             match contains {
                 EdgeContains::OnPoint(point) => {
                     return EdgeContains::OnPoint(point);
@@ -99,7 +99,7 @@ impl Contour {
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: Point) -> ContourCorner<usize> {
         for (i, edge) in self.edges.iter().enumerate() {
-            match edge.contains(point) {
+            match edge_contains_point(edge, point) {
                 EdgeContains::Inside => { return ContourCorner::<usize>::OnEdge(i);}
                 EdgeContains::OnPoint(p) => {
                     match p == edge.end {
@@ -129,12 +129,12 @@ impl Contour {
 
     // Checks if the contour contains the point, and if so, splits the edge into two edges.
     // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
-    pub fn split_if_necessary(&self, other: &Point) -> Contour {
-        if self.contains(*other) != EdgeContains::Inside {
+    pub fn split_if_necessary(&self, other: Point) -> Contour {
+        if self.contains(other) != EdgeContains::Inside {
             return self.clone();
         }
 
-        let edge_index = match self.get_edge_index(*other) {
+        let edge_index = match self.get_edge_index(other) {
             ContourCorner::OnEdge(i) => { i }
             ContourCorner::OnCorner(i1, i2) => { return self.clone(); }
         };
