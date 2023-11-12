@@ -121,39 +121,6 @@ impl Face {
         self.surface.surface().normal(p)
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
-        let mut intersections = self.surface.intersect_edge(other);
-
-        let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
-        for int in intersections.drain(..) {
-            match &int {
-                EdgeEdgeIntersection::Point(p) => {
-                    match face_contains_point(self, **p) {
-                        FaceContainsPoint::Inside => { new_interesections.push(int) },
-                        _ => {}
-                    }
-                },
-                EdgeEdgeIntersection::Edge(e) => {
-                    let mut edges = vec![Rc::new(e.clone())];
-                    for b in self.boundaries.iter() {
-                        edges = b.split_edges_if_necessary(edges);
-                    }
-
-                    for e in edges.drain(..) {
-                        match face_contains_edge(self, &e) {
-                            FaceContainsEdge::Inside => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
-                            FaceContainsEdge::OnBorderOppositeDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
-                            FaceContainsEdge::OnBorderSameDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
-                            FaceContainsEdge::Outside => {}
-                        }
-                    }
-                }
-            }
-        }
-
-        intersections
-    }
-
     pub fn neg(&self) -> Face {
         Face {
             boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),

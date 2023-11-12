@@ -127,32 +127,6 @@ impl Contour {
         }
     }
 
-    // Checks if the contour contains the point, and if so, splits the edge into two edges.
-    // It is guaranteed that this happens in order, meaning that the first edge returned will contain the start point of the original edge, and the second edge will contain the end point of the original edge.
-    pub fn split_if_necessary(&self, other: Point) -> Contour {
-        if self.contains(other) != EdgeContains::Inside {
-            return self.clone();
-        }
-
-        let edge_index = match self.get_edge_index(other) {
-            ContourCorner::OnEdge(i) => { i }
-            ContourCorner::OnCorner(i1, i2) => { return self.clone(); }
-        };
-        let edge = self.edges[edge_index].split_if_necessary(other);
-        assert!(edge.len() == 2);
-
-        let mut edges = self.edges.clone();
-        edges.remove(edge_index);
-        edges.insert(edge_index, edge[1].clone());
-        edges.insert(edge_index, edge[0].clone());
-
-        return Contour::new(edges);
-    }
-
-    pub fn split_edges_if_necessary(&self, other: Vec<Rc<Edge>>) -> Vec<Rc<Edge>> {
-        todo!();
-    }
-
     // Gets the subcurve between these two points. It is guaranteed that there will be no zero length edges.
     pub fn get_subcurve(&self, start: Rc<Point>, end: Rc<Point>) -> Vec<Rc<Edge>> {
         assert!(start != end);

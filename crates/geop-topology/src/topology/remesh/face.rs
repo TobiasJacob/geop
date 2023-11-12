@@ -2,7 +2,13 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, surfaces::surface};
 
-use crate::topology::{face::{Face, face_surface::FaceSurface}, intersections::edge_edge::EdgeEdgeIntersection, edge::Edge, contains::face_edge::{FaceContainsEdge, face_contains_edge}, contour::Contour};
+use crate::topology::{
+    contains::face_edge::{face_contains_edge, FaceContainsEdge},
+    contour::Contour,
+    edge::Edge,
+    face::{face_surface::FaceSurface, Face},
+    intersections::edge_edge::EdgeEdgeIntersection, split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+};
 
 #[derive(Debug)]
 pub enum FaceSplit {
@@ -15,7 +21,6 @@ pub enum FaceSplit {
     BonAOpSide(Rc<Edge>),
     BoutA(Rc<Edge>),
 }
-
 
 pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     assert!(face_self.surface == face_other.surface);
@@ -35,50 +40,38 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
         }
     }
 
-    let mut contours_face = face_self.boundaries.clone();
-    let mut contours_other = face_other.boundaries.clone();
+    let mut edges_self = face_self.all_edges();
+    let mut edges_other = face_other.all_edges();
 
-    for vert in intersections {
-        contours_face = contours_face
-            .into_iter()
-            .map(|contour| contour.split_if_necessary(*vert))
-            .collect();
-        contours_other = contours_other
-            .into_iter()
-            .map(|contour| contour.split_if_necessary(*vert))
-            .collect();
+    for point in intersections {
+        edges_self = split_edges_by_point_if_necessary(edges_self, point.clone());
+        edges_other = split_edges_by_point_if_necessary(edges_other, point.clone());
     }
 
-    contours_face
+    edges_self
         .into_iter()
-        .map(|contour| {
-            return contour
-                .edges
-                .into_iter()
-                .map(|edge| match face_contains_edge(face_other, &edge) {
-                    FaceContainsEdge::Inside => FaceSplit::AinB(edge),
-                    FaceContainsEdge::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
-                    FaceContainsEdge::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
-                    FaceContainsEdge::Outside => FaceSplit::AoutB(edge),
-                })
-                .collect::<Vec<FaceSplit>>();
+        .map(|edge| match face_contains_edge(face_other, &edge) {
+            FaceContainsEdge::Inside => FaceSplit::AinB(edge),
+            FaceContainsEdge::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
+            FaceContainsEdge::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
+            FaceContainsEdge::Outside => FaceSplit::AoutB(edge),
         })
-        .chain(contours_other.into_iter().map(|contour| {
-            contour
-                .edges
+        .chain(
+            edges_other
                 .into_iter()
                 .map(|edge| match face_contains_edge(face_self, &edge) {
                     FaceContainsEdge::Inside => FaceSplit::BinA(edge),
                     FaceContainsEdge::OnBorderSameDir => FaceSplit::BonASameSide(edge),
                     FaceContainsEdge::OnBorderOppositeDir => FaceSplit::BonAOpSide(edge),
                     FaceContainsEdge::Outside => FaceSplit::BoutA(edge),
-                })
-                .collect::<Vec<FaceSplit>>()
-        })).flatten().collect()
+                }),
+        )
+        .collect()
 }
 
 pub fn face_remesh(surface: Rc<FaceSurface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
-    let mut edges = edges_intermediate.drain(..)
+    let mut edges = edges_intermediate
+        .drain(..)
         .map(|e| match e {
             FaceSplit::AinB(edge) => edge,
             FaceSplit::AonBSameSide(edge) => edge,

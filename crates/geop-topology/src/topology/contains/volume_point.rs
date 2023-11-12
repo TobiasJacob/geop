@@ -27,14 +27,14 @@ pub fn volume_contains_point(volume: &Volume, other: Point) -> VolumeContainsPoi
 
     // Find the closest intersection point with any other face and use the normal to determine if the point is inside or outside
     for face in volume.faces.iter() {
-        let intersections = face.intersect_edge(&curve);
+        let intersections = todo!("Find intersections with face boundaries"); //face.intersect_edge(&curve);
     }
     let mut closest_distance = (other - q).norm();
     let curve_dir = q - other;
     let normal = volume.normal(q);
     let mut closest_intersect_from_inside = normal.is_from_inside(curve_dir);
     for face in volume.faces.iter() {
-        let edge_intersections = face.intersect_edge(&curve);
+        let edge_intersections: Vec<EdgeEdgeIntersection> = todo!("Find intersections with face boundaries"); //face.intersect_edge(&curve);
         let mut intersections = Vec::<Point>::new();
         for intersection in edge_intersections {
             match intersection {

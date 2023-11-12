@@ -7,3 +7,4 @@ pub mod intersections;
 pub mod remesh;
 pub mod union;
 pub mod difference;
+pub mod split_if_necessary;

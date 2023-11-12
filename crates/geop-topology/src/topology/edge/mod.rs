@@ -1,6 +1,4 @@
 pub mod edge_curve;
-pub mod split_if_necessary;
-
 
 use std::{
     fmt::{Display, Formatter},
