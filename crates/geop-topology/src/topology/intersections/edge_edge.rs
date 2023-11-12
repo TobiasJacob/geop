@@ -17,6 +17,15 @@ pub enum EdgeEdgeIntersection {
     Edge(Edge),
 }
 
+pub fn edge_edge_same_curve_intersection(edge_self: &Edge, other: &Edge) -> Edge {
+    assert!(edge_self.curve == other.curve);
+    todo!("Split edge_edge_intersections into two functions")
+}
+
+pub fn edge_edge_different_curve_intersection(edge_self: &Edge, other: &Edge) -> Vec<Point> {
+    assert!(edge_self.curve != other.curve);
+    todo!("Split edge_edge_intersections into two functions")
+}
 
 // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
 pub fn edge_edge_intersections(edge_self: &Edge, other: &Edge) -> Vec<EdgeEdgeIntersection> {

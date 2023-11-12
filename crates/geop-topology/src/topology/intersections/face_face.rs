@@ -1,7 +1,12 @@
 use crate::topology::{
     face::Face,
-    remesh::face::{face_split, FaceSplit, face_remesh},
+    remesh::face::{face_split, FaceSplit, face_remesh}, edge::Edge,
 };
+
+pub enum FaceFaceIntersection {
+    Face(Face),
+    Edge(Edge),
+}
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
     assert!(

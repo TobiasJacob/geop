@@ -103,9 +103,9 @@ impl Edge {
     pub fn tangent(&self, p: Point) -> Point {
         assert!(edge_contains_point(self, p) != EdgeContains::Outside);
         match &*self.curve {
-            EdgeCurve::Circle(c) => c.derivative(p).normalize(),
-            EdgeCurve::Ellipse(e) => e.derivative(p).normalize(),
-            EdgeCurve::Line(l) => l.derivative(p).normalize(),
+            EdgeCurve::Circle(c) => c.tangent(p).normalize(),
+            EdgeCurve::Ellipse(e) => e.tangent(p).normalize(),
+            EdgeCurve::Line(l) => l.tangent(p).normalize(),
         }
     }
 

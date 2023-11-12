@@ -64,7 +64,7 @@ impl Curve for Circle {
         return (angle, dist);
     }
 
-    fn derivative(&self, _p: Point) -> Point {
+    fn tangent(&self, _p: Point) -> Point {
         todo!("Implement derivative for Circle")
     }
 

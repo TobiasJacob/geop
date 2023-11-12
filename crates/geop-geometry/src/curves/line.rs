@@ -46,7 +46,7 @@ impl Curve for Line {
         self.basis + self.direction * u
     }
 
-    fn derivative(&self, _p: Point) -> Point {
+    fn tangent(&self, _p: Point) -> Point {
         self.direction.clone()
     }
 

@@ -50,7 +50,7 @@ impl Curve for Ellipse {
         )
     }
 
-    fn derivative(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> Point {
         let u = self.project(p).0;
         -self.dir0 * u.sin() + self.dir1 * u.cos()
     }
