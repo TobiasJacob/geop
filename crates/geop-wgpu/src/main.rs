@@ -14,7 +14,7 @@ use geop_rasterize::{
 use geop_topology::{topology::{
     contour::Contour,
     edge::{Edge, edge_curve::EdgeCurve},
-    face::{Face, face_surface::FaceSurface},
+    face::{Face, face_surface::FaceSurface}, difference::face_face::face_difference,
 }, operations::extrude::extrude};
 use geop_wgpu::window::GeopWindow;
 
@@ -85,7 +85,7 @@ async fn run() {
         Transform::from_translation(Point::new(0.2, 0.2, 0.0))
     );
 
-    let union_face = face2.surface_difference(&face1);
+    let union_face = face_difference(&face2, &face1);
 
     let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.5));
 
