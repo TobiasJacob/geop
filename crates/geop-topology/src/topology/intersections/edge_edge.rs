@@ -182,7 +182,7 @@ impl Edge {
                                         edge_contains_point(self, *start) != EdgeContains::Outside
                                             && edge_contains_point(other, *start) != EdgeContains::Outside
                                     );
-                                    return vec![EdgeEdgeIntersection::Point(start)];
+                                    return vec![];
                                 }
 
                                 // println!("Direction: {:?}", self.direction);

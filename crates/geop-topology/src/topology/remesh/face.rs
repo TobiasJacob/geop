@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::{points::point::Point, surfaces::surface};
+use geop_geometry::points::point::Point;
 
 use crate::topology::{
     contains::face_edge::{face_contains_edge, FaceContainsEdge},
