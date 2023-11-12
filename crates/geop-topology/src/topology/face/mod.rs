@@ -5,10 +5,10 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::edge::{Direction, EdgeCurve, EdgeIntersection, self};
+use crate::topology::edge::{Direction, EdgeIntersection, self};
 
 use super::{
-    edge::EdgeContains,
+    edge::{EdgeContains, edge_curve::EdgeCurve},
     {contour::Contour, edge::Edge}, contour::ContourCorner,
 };
 

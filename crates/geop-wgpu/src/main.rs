@@ -13,7 +13,7 @@ use geop_rasterize::{
 };
 use geop_topology::{topology::{
     contour::Contour,
-    edge::{Direction, Edge, EdgeCurve},
+    edge::{Direction, Edge, edge_curve::EdgeCurve},
     face::{Face, FaceSurface},
 }, operations::extrude::extrude};
 use geop_wgpu::window::GeopWindow;

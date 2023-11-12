@@ -1,3 +1,6 @@
+pub mod edge;
+pub mod edge_curve;
+
 use std::{
     fmt::{Display, Formatter},
     rc::Rc,
@@ -16,37 +19,10 @@ use geop_geometry::{
 
 use crate::PROJECTION_THRESHOLD;
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum EdgeCurve {
-    Line(Line),
-    Circle(Circle),
-    Ellipse(Ellipse),
-}
-impl EdgeCurve {
-    pub fn curve(&self) -> &dyn Curve {
-        match self {
-            EdgeCurve::Line(line) => line,
-            EdgeCurve::Circle(circle) => circle,
-            EdgeCurve::Ellipse(ellipse) => ellipse,
-        }
-    }
-
-    pub fn transform(&self, transform: Transform) -> EdgeCurve {
-        match self {
-            EdgeCurve::Line(line) => EdgeCurve::Line(line.transform(transform)),
-            EdgeCurve::Circle(circle) => match circle.transform(transform) {
-                CircleTransform::Circle(circle) => EdgeCurve::Circle(circle),
-                CircleTransform::Ellipse(ellipse) => EdgeCurve::Ellipse(ellipse),
-            },
-            EdgeCurve::Ellipse(ellipse) => {
-                EdgeCurve::Ellipse(ellipse.transform(transform))
-            }
-        }
-    }
-}
+use self::edge_curve::EdgeCurve;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Direction {
+pub enum Direction { // Direction is used for circles for example, where there are two ways to connect round about
     Increasing,
     Decreasing,
 }

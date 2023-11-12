@@ -2,9 +2,9 @@ use std::rc::Rc;
 
 use geop_geometry::{transforms::Transform, points::point::Point, curves::line::Line};
 
-use crate::topology::{face::FaceContainsPoint, edge::{EdgeCurve, Direction}};
+use crate::topology::{face::FaceContainsPoint, edge::{Direction}};
 
-use super::{contour::Contour, face::Face, edge::{Edge, EdgeIntersection}};
+use super::{contour::Contour, face::Face, edge::{Edge, EdgeIntersection, edge_curve::EdgeCurve}};
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,
