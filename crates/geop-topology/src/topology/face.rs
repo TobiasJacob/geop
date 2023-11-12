@@ -357,13 +357,10 @@ impl Face {
                     }
                 }
             }
-
-
         }
 
         intersections
     }
-
 
     pub fn split_parts<F>(&self, other: &Face, filter: F) -> Face
     where
