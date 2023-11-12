@@ -1,4 +1,4 @@
-use crate::topology::{face::Face, remesh::face::{EdgeSplit, face_split, face_remesh}};
+use crate::topology::{face::Face, remesh::face::{FaceSplit, face_split, face_remesh}};
 
 
 pub fn face_union(face_self: &Face, face_other: &Face) -> Face {
@@ -10,15 +10,15 @@ pub fn face_union(face_self: &Face, face_other: &Face) -> Face {
     let edges = face_split(face_self, face_other)
         .drain(..)
         .filter(|mode| match mode {
-            EdgeSplit::AinB(_) => false,
-            EdgeSplit::AonBSameSide(_) => true,
-            EdgeSplit::AonBOpSide(_) => false,
-            EdgeSplit::AoutB(_) => true,
-            EdgeSplit::BinA(_) => false,
-            EdgeSplit::BonASameSide(_) => false,
-            EdgeSplit::BonAOpSide(_) => false,
-            EdgeSplit::BoutA(_) => true,
-        }).collect::<Vec<EdgeSplit>>();
+            FaceSplit::AinB(_) => false,
+            FaceSplit::AonBSameSide(_) => true,
+            FaceSplit::AonBOpSide(_) => false,
+            FaceSplit::AoutB(_) => true,
+            FaceSplit::BinA(_) => false,
+            FaceSplit::BonASameSide(_) => false,
+            FaceSplit::BonAOpSide(_) => false,
+            FaceSplit::BoutA(_) => true,
+        }).collect::<Vec<FaceSplit>>();
 
     return face_remesh(face_self.surface.clone(), edges);
 }

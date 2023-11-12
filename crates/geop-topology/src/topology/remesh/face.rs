@@ -5,7 +5,7 @@ use geop_geometry::{points::point::Point, surfaces::surface};
 use crate::topology::{face::{Face, face_surface::FaceSurface}, intersections::edge_edge::EdgeEdgeIntersection, edge::Edge, contains::face_edge::{FaceContainsEdge, face_contains_edge}, contour::Contour};
 
 #[derive(Debug)]
-pub enum EdgeSplit {
+pub enum FaceSplit {
     AinB(Rc<Edge>),
     AonBSameSide(Rc<Edge>),
     AonBOpSide(Rc<Edge>),
@@ -17,7 +17,7 @@ pub enum EdgeSplit {
 }
 
 
-pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<EdgeSplit> {
+pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     assert!(face_self.surface == face_other.surface);
 
     let mut intersections = Vec::<Rc<Point>>::new();
@@ -56,38 +56,38 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<EdgeSplit> {
                 .edges
                 .into_iter()
                 .map(|edge| match face_contains_edge(face_other, &edge) {
-                    FaceContainsEdge::Inside => EdgeSplit::AinB(edge),
-                    FaceContainsEdge::OnBorderSameDir => EdgeSplit::AonBSameSide(edge),
-                    FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::AonBOpSide(edge),
-                    FaceContainsEdge::Outside => EdgeSplit::AoutB(edge),
+                    FaceContainsEdge::Inside => FaceSplit::AinB(edge),
+                    FaceContainsEdge::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
+                    FaceContainsEdge::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
+                    FaceContainsEdge::Outside => FaceSplit::AoutB(edge),
                 })
-                .collect::<Vec<EdgeSplit>>();
+                .collect::<Vec<FaceSplit>>();
         })
         .chain(contours_other.into_iter().map(|contour| {
             contour
                 .edges
                 .into_iter()
                 .map(|edge| match face_contains_edge(face_self, &edge) {
-                    FaceContainsEdge::Inside => EdgeSplit::BinA(edge),
-                    FaceContainsEdge::OnBorderSameDir => EdgeSplit::BonASameSide(edge),
-                    FaceContainsEdge::OnBorderOppositeDir => EdgeSplit::BonAOpSide(edge),
-                    FaceContainsEdge::Outside => EdgeSplit::BoutA(edge),
+                    FaceContainsEdge::Inside => FaceSplit::BinA(edge),
+                    FaceContainsEdge::OnBorderSameDir => FaceSplit::BonASameSide(edge),
+                    FaceContainsEdge::OnBorderOppositeDir => FaceSplit::BonAOpSide(edge),
+                    FaceContainsEdge::Outside => FaceSplit::BoutA(edge),
                 })
-                .collect::<Vec<EdgeSplit>>()
+                .collect::<Vec<FaceSplit>>()
         })).flatten().collect()
 }
 
-pub fn face_remesh(surface: Rc<FaceSurface>, mut edges_intermediate: Vec<EdgeSplit>) -> Face {
+pub fn face_remesh(surface: Rc<FaceSurface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
     let mut edges = edges_intermediate.drain(..)
         .map(|e| match e {
-            EdgeSplit::AinB(edge) => edge,
-            EdgeSplit::AonBSameSide(edge) => edge,
-            EdgeSplit::AonBOpSide(edge) => edge,
-            EdgeSplit::AoutB(edge) => edge,
-            EdgeSplit::BinA(edge) => edge,
-            EdgeSplit::BonASameSide(edge) => edge,
-            EdgeSplit::BonAOpSide(edge) => edge,
-            EdgeSplit::BoutA(edge) => edge,
+            FaceSplit::AinB(edge) => edge,
+            FaceSplit::AonBSameSide(edge) => edge,
+            FaceSplit::AonBOpSide(edge) => edge,
+            FaceSplit::AoutB(edge) => edge,
+            FaceSplit::BinA(edge) => edge,
+            FaceSplit::BonASameSide(edge) => edge,
+            FaceSplit::BonAOpSide(edge) => edge,
+            FaceSplit::BoutA(edge) => edge,
         })
         .collect::<Vec<Rc<Edge>>>();
 

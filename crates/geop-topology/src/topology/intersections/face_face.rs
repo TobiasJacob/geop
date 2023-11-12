@@ -1,6 +1,6 @@
 use crate::topology::{
     face::Face,
-    remesh::face::{face_split, EdgeSplit, face_remesh},
+    remesh::face::{face_split, FaceSplit, face_remesh},
 };
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
@@ -12,15 +12,15 @@ pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) 
     let edges = face_split(face_self, face_other)
         .drain(..)
         .filter(|mode| match mode {
-            EdgeSplit::AinB(_) => true,
-            EdgeSplit::AonBSameSide(_) => true,
-            EdgeSplit::AonBOpSide(_) => false,
-            EdgeSplit::AoutB(_) => false,
-            EdgeSplit::BinA(_) => true,
-            EdgeSplit::BonASameSide(_) => false,
-            EdgeSplit::BonAOpSide(_) => false,
-            EdgeSplit::BoutA(_) => false,
-        }).collect::<Vec<EdgeSplit>>();
+            FaceSplit::AinB(_) => true,
+            FaceSplit::AonBSameSide(_) => true,
+            FaceSplit::AonBOpSide(_) => false,
+            FaceSplit::AoutB(_) => false,
+            FaceSplit::BinA(_) => true,
+            FaceSplit::BonASameSide(_) => false,
+            FaceSplit::BonAOpSide(_) => false,
+            FaceSplit::BoutA(_) => false,
+        }).collect::<Vec<FaceSplit>>();
 
     return face_remesh(face_self.surface.clone(), edges);
 }
