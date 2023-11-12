@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
-use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeIntersection};
+use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeEdgeIntersection};
 
 pub enum ContourCorner<T> {
     OnEdge(T),
@@ -199,8 +199,8 @@ impl Contour {
         result
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
-        let mut intersections = Vec::<EdgeIntersection>::new();
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
+        let mut intersections = Vec::<EdgeEdgeIntersection>::new();
         for edge in self.edges.iter() {
             let edge_intersections = edge.intersections(other);
             intersections.extend(edge_intersections.into_iter());
@@ -211,8 +211,8 @@ impl Contour {
 
     // Gets all intersections between this contour and another contour.
     // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same point is empty.
-    pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeIntersection> {
-        let mut intersections = Vec::<EdgeIntersection>::new();
+    pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeEdgeIntersection> {
+        let mut intersections = Vec::<EdgeEdgeIntersection>::new();
         for edge_other in other.edges.iter() {
             intersections.extend(self.intersect_edge(edge_other).into_iter());
         }

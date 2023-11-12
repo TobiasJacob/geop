@@ -9,7 +9,7 @@ use crate::topology::contains::edge_point::EdgeContains;
 
 use super::{
     edge::{edge_curve::EdgeCurve},
-    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::edge_point::edge_contains_point, intersections::edge_edge::EdgeIntersection,
+    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::edge_point::edge_contains_point, intersections::edge_edge::EdgeEdgeIntersection,
 };
 
 #[derive(PartialEq, Clone, Debug)]
@@ -60,7 +60,7 @@ impl FaceSurface {
         }
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
         match self {
             FaceSurface::Plane(plane) => {
                 match &*other.curve {
@@ -248,10 +248,10 @@ impl Face {
             let mut intersections = Vec::<Point>::new();
             for intersection in edge_intersections {
                 match intersection {
-                    EdgeIntersection::Point(point) => {
+                    EdgeEdgeIntersection::Point(point) => {
                         intersections.push(*point);
                     }
-                    EdgeIntersection::Edge(edge) => {
+                    EdgeEdgeIntersection::Edge(edge) => {
                         intersections.push(*edge.start);
                         intersections.push(*edge.end);
                     }
@@ -283,8 +283,8 @@ impl Face {
             let intersection = contour.intersect_edge(other);
             for int in intersection {
                 match int {
-                    EdgeIntersection::Point(point) => intersections.push(*point),
-                    EdgeIntersection::Edge(edge) => {
+                    EdgeEdgeIntersection::Point(point) => intersections.push(*point),
+                    EdgeEdgeIntersection::Edge(edge) => {
                         intersections.push(*edge.start);
                         intersections.push(*edge.end);
                     }
@@ -327,19 +327,19 @@ impl Face {
         }
     }
 
-    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeIntersection> {
+    pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
         let mut intersections = self.surface.intersect_edge(other);
 
-        let mut new_interesections = Vec::<EdgeIntersection>::new();
+        let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
         for int in intersections.drain(..) {
             match &int {
-                EdgeIntersection::Point(p) => {
+                EdgeEdgeIntersection::Point(p) => {
                     match self.contains_point(**p) {
                         FaceContainsPoint::Inside => { new_interesections.push(int) },
                         _ => {}
                     }
                 },
-                EdgeIntersection::Edge(e) => {
+                EdgeEdgeIntersection::Edge(e) => {
                     let mut edges = vec![Rc::new(e.clone())];
                     for b in self.boundaries.iter() {
                         edges = b.split_edges_if_necessary(edges);
@@ -347,9 +347,9 @@ impl Face {
 
                     for e in edges.drain(..) {
                         match self.contains_edge(&e) {
-                            FaceContainsEdge::Inside => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
-                            FaceContainsEdge::OnBorderOppositeDir => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
-                            FaceContainsEdge::OnBorderSameDir => { new_interesections.push(EdgeIntersection::Edge((*e).clone())) },
+                            FaceContainsEdge::Inside => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
+                            FaceContainsEdge::OnBorderOppositeDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
+                            FaceContainsEdge::OnBorderSameDir => { new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone())) },
                             FaceContainsEdge::Outside => {}
                         }
                     }
@@ -371,8 +371,8 @@ impl Face {
             for other_edge in other.boundaries.iter() {
                 for intersection in edge.intersect_contour(&other_edge) {
                     match intersection {
-                        EdgeIntersection::Point(point) => intersections.push(point),
-                        EdgeIntersection::Edge(edge) => {
+                        EdgeEdgeIntersection::Point(point) => intersections.push(point),
+                        EdgeEdgeIntersection::Edge(edge) => {
                             intersections.push(edge.start.clone());
                             intersections.push(edge.end.clone());
                         }

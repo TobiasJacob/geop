@@ -4,7 +4,7 @@ use geop_geometry::{transforms::Transform, points::point::Point, curves::line::L
 
 use crate::topology::{face::FaceContainsPoint};
 
-use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeIntersection};
+use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection};
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,
@@ -124,10 +124,10 @@ impl Volume {
             let mut intersections = Vec::<Point>::new();
             for intersection in edge_intersections {
                 match intersection {
-                    EdgeIntersection::Point(point) => {
+                    EdgeEdgeIntersection::Point(point) => {
                         intersections.push(*point);
                     },
-                    EdgeIntersection::Edge(edge) => {
+                    EdgeEdgeIntersection::Edge(edge) => {
                         intersections.push(*edge.start);
                         intersections.push(*edge.end);
                     }
@@ -151,7 +151,7 @@ impl Volume {
     }
 
     pub fn shell_intersect(&self, other: &Volume) -> Vec<VolumeShellIntersection> {
-        let intersections = Vec::<EdgeIntersection>::new();
+        let intersections = Vec::<EdgeEdgeIntersection>::new();
         for face in self.faces.iter() {
             for other_face in other.faces.iter() {
                 // intersections.extend(face.intersect(&other_face));

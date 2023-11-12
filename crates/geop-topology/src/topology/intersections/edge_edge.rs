@@ -12,14 +12,14 @@ use crate::topology::{edge::{Edge, edge_curve::EdgeCurve}, contains::edge_point:
 
 
 #[derive(Clone, Debug)]
-pub enum EdgeIntersection {
+pub enum EdgeEdgeIntersection {
     Point(Rc<Point>),
     Edge(Edge),
 }
 
 impl Edge {
     // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
-    pub fn intersections(&self, other: &Edge) -> Vec<EdgeIntersection> {
+    pub fn intersections(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
         match *self.curve {
             EdgeCurve::Circle(ref circle) => match *other.curve {
                 EdgeCurve::Circle(ref other_circle) => {
@@ -41,14 +41,14 @@ impl Edge {
                                     edge_contains_point(self, **intersection) == EdgeContains::Inside
                                         && edge_contains_point(other, **intersection) == EdgeContains::Inside
                                 })
-                                .map(|i| EdgeIntersection::Point(i))
+                                .map(|i| EdgeEdgeIntersection::Point(i))
                                 .collect()
                         }
                         CircleCircleIntersection::OnePoint(a) => {
                             if edge_contains_point(self, a) == EdgeContains::Inside
                                 && edge_contains_point(other, a) == EdgeContains::Inside
                             {
-                                vec![EdgeIntersection::Point(Rc::new(a))]
+                                vec![EdgeEdgeIntersection::Point(Rc::new(a))]
                             } else {
                                 vec![]
                             }
@@ -76,7 +76,7 @@ impl Edge {
                             let end_u = self_end_u.min(other_end_u);
 
                             if self.start == other.start && self.end == other.end {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     self.start.clone(),
                                     self.end.clone(),
                                     self.curve.clone(),
@@ -84,31 +84,31 @@ impl Edge {
                             } else if end_u < start_u {
                                 vec![]
                             } else if self.start == other.start {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     self.start.clone(),
                                     Rc::new(circle.point_at(end_u)),
                                     self.curve.clone(),
                                 ))]
                             } else if self.start == other.end {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     self.start.clone(),
                                     Rc::new(circle.point_at(end_u)),
                                     self.curve.clone(),
                                 ))]
                             } else if self.end == other.start {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     Rc::new(circle.point_at(start_u)),
                                     self.end.clone(),
                                     self.curve.clone(),
                                 ))]
                             } else if self.end == other.end {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     Rc::new(circle.point_at(start_u)),
                                     self.end.clone(),
                                     self.curve.clone(),
                                 ))]
                             } else {
-                                vec![EdgeIntersection::Edge(Edge::new(
+                                vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     Rc::new(circle.point_at(start_u)),
                                     Rc::new(circle.point_at(end_u)),
                                     self.curve.clone(),
@@ -143,7 +143,7 @@ impl Edge {
                                 if edge_contains_point(self, a) == EdgeContains::Inside
                                     && edge_contains_point(other, a) == EdgeContains::Inside
                                 {
-                                    intersections.push(EdgeIntersection::Point(Rc::new(a)));
+                                    intersections.push(EdgeEdgeIntersection::Point(Rc::new(a)));
                                 }
                                 intersections
                             }
@@ -182,7 +182,7 @@ impl Edge {
                                         edge_contains_point(self, *start) != EdgeContains::Outside
                                             && edge_contains_point(other, *start) != EdgeContains::Outside
                                     );
-                                    return vec![EdgeIntersection::Point(start)];
+                                    return vec![EdgeEdgeIntersection::Point(start)];
                                 }
 
                                 // println!("Direction: {:?}", self.direction);
@@ -201,7 +201,7 @@ impl Edge {
                                 assert!(edge_contains_point(other, *start) != EdgeContains::Outside);
                                 assert!(edge_contains_point(self, *end) != EdgeContains::Outside);
                                 assert!(edge_contains_point(other, *end) != EdgeContains::Outside);
-                                return vec![EdgeIntersection::Edge(Edge::new(
+                                return vec![EdgeEdgeIntersection::Edge(Edge::new(
                                     start,
                                     end,
                                     self.curve.clone(),
