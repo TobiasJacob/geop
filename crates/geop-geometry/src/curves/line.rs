@@ -23,6 +23,10 @@ impl Line {
         let direction = transform * (self.direction + self.basis) - basis;
         Line::new(basis, direction.normalize())
     }
+
+    pub fn neg(&self) -> Line {
+        Line::new(self.basis, -self.direction)
+    }
 }
 
 impl Curve for Line {
@@ -48,6 +52,10 @@ impl Curve for Line {
 
     fn distance(&self, p1: Point, p2: Point) -> f64 {
         return (p2 - p1).norm();
+    }
+
+    fn neg(&self) -> Rc<dyn Curve> {
+        Rc::new(self.neg())
     }
 }
 

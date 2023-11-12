@@ -36,6 +36,10 @@ impl Circle {
         assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipses.");
         CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius))
     }
+
+    pub fn neg(&self) -> Circle {
+        Circle::new(self.basis, -self.normal, self.radius)
+    }
 }
 
 impl Curve for Circle {
@@ -67,6 +71,10 @@ impl Curve for Circle {
     fn distance(&self, p1: Point, p2: Point) -> f64 {
         let angle = self.project(p1).0 - self.project(p2).0;
         return angle.abs() * self.radius.norm();
+    }
+
+    fn neg(&self) -> Rc<dyn Curve> {
+        Rc::new(self.neg())
     }
 }
 

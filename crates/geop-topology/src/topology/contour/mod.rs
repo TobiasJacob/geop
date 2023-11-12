@@ -172,7 +172,6 @@ impl Contour {
                 start.clone(),
                 end.clone(),
                 self.edges[start_i].curve.clone(),
-                self.edges[start_i].direction,
             );
             result.push(Rc::new(edge));
         }
@@ -183,7 +182,6 @@ impl Contour {
                 start.clone(),
                 edge.end.clone(),
                 edge.curve.clone(),
-                edge.direction,
             )));
         }
         for i in start_i + 1..end_i {
@@ -196,7 +194,6 @@ impl Contour {
                 edge.start.clone(),
                 end.clone(),
                 edge.curve.clone(),
-                edge.direction,
             )));
         }
         result

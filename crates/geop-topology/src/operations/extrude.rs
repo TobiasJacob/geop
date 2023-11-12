@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform, curves::line::Line, surfaces::plane::Plane};
 
-use crate::topology::{face::{Face, FaceSurface}, volume::Volume, edge::{Edge, Direction, edge_curve::EdgeCurve}, contour::Contour};
+use crate::topology::{face::{Face, FaceSurface}, volume::Volume, edge::{Edge, edge_curve::EdgeCurve}, contour::Contour};
 
 pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
     let end_face = Rc::new(start_face.transform(Transform::from_translation(direction)).flip());
@@ -22,13 +22,11 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
         let right = Rc::new(Edge::new(
             bottom.end.clone(), 
             top.start.clone(), 
-            Rc::new(EdgeCurve::Line(Line::new(*bottom.end, *top.start - *bottom.end))), 
-            Direction::Increasing));
+            Rc::new(EdgeCurve::Line(Line::new(*bottom.end, *top.start - *bottom.end)))));
         let left = Rc::new(Edge::new(
             top.end.clone(), 
             bottom.start.clone(), 
-            Rc::new(EdgeCurve::Line(Line::new(*top.end, *bottom.start - *top.end))), 
-            Direction::Increasing));
+            Rc::new(EdgeCurve::Line(Line::new(*top.end, *bottom.start - *top.end)))));
 
         let plane = FaceSurface::Plane(Plane::new(
                 *bottom.start,

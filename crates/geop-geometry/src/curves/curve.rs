@@ -15,4 +15,6 @@ pub trait Curve {
     fn derivative(&self, p: Point) -> Point;
     // Measures distance between two points on the curve.
     fn distance(&self, p1: Point, p2: Point) -> f64;
+
+    fn neg(&self) -> Rc<dyn Curve>;
 }

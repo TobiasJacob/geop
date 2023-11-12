@@ -5,7 +5,7 @@ use geop_geometry::{
     surfaces::{plane::Plane, sphere::{Sphere, SphereTransform}, surface::Surface}, transforms::Transform, EQ_THRESHOLD,
 };
 
-use crate::topology::edge::{Direction, EdgeIntersection, self};
+use crate::topology::edge::{EdgeIntersection};
 
 use super::{
     edge::{EdgeContains, edge_curve::EdgeCurve},
@@ -188,7 +188,6 @@ impl Face {
                     from.clone(),
                     to.clone(),
                     Rc::new(EdgeCurve::Line(curve)),
-                    Direction::Increasing,
                 ));
             }
             FaceSurface::Sphere(s) => {
@@ -197,7 +196,6 @@ impl Face {
                     from.clone(),
                     to.clone(),
                     Rc::new(EdgeCurve::Circle(curve)),
-                    Direction::Increasing,
                 ));
             }
         }

@@ -28,6 +28,14 @@ impl EdgeCurve {
             }
         }
     }
+
+    pub fn neg(&self) -> EdgeCurve {
+        match self {
+            EdgeCurve::Line(line) => EdgeCurve::Line(line.neg()),
+            EdgeCurve::Circle(circle) => EdgeCurve::Circle(circle.neg()),
+            EdgeCurve::Ellipse(ellipse) => EdgeCurve::Ellipse(ellipse.neg()),
+        }
+    }
 }
 
 

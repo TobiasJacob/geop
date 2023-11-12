@@ -13,7 +13,7 @@ use geop_rasterize::{
 };
 use geop_topology::{topology::{
     contour::Contour,
-    edge::{Direction, Edge, edge_curve::EdgeCurve},
+    edge::{Edge, edge_curve::EdgeCurve},
     face::{Face, FaceSurface},
 }, operations::extrude::extrude};
 use geop_wgpu::window::GeopWindow;
@@ -25,7 +25,6 @@ pub fn linear_edge(s: Rc<Point>, e: Rc<Point>) -> Rc<Edge> {
         s,
         e,
         Rc::new(EdgeCurve::Line(Line::new(p1, p2 - p1))),
-        Direction::Increasing,
     ))
 }
 
@@ -43,7 +42,6 @@ pub fn circular_edge(s: Rc<Point>, e: Rc<Point>, center: Point) -> Rc<Edge> {
             Point::new(0.0, 0.0, 1.0),
             point - center,
         ))),
-        Direction::Increasing,
     ))
 }
 

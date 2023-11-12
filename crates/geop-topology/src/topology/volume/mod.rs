@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{transforms::Transform, points::point::Point, curves::line::Line};
 
-use crate::topology::{face::FaceContainsPoint, edge::{Direction}};
+use crate::topology::{face::FaceContainsPoint};
 
 use super::{contour::Contour, face::Face, edge::{Edge, EdgeIntersection, edge_curve::EdgeCurve}};
 
@@ -109,8 +109,7 @@ impl Volume {
         let curve = Edge::new(
             Rc::new(other.clone()), 
             Rc::new(q.clone()),
-            Rc::new(EdgeCurve::Line(Line::new(other, q - other))), 
-            Direction::Increasing);
+            Rc::new(EdgeCurve::Line(Line::new(other, q - other))));
 
         // Find the closest intersection point with any other face and use the normal to determine if the point is inside or outside
         for face in self.faces.iter() {

@@ -22,6 +22,10 @@ impl Ellipse {
         let dir1 = transform * (self.dir1 + self.basis) - basis;
         Ellipse::new(basis, dir0, dir1)
     }
+
+    pub fn neg(&self) -> Ellipse {
+        Ellipse::new(self.basis, -self.dir0, -self.dir1)
+    }
 }
 
 impl Curve for Ellipse {
@@ -53,6 +57,10 @@ impl Curve for Ellipse {
 
     fn distance(&self, _p1: Point, _p2: Point) -> f64 {
         todo!("Todo");
+    }
+
+    fn neg(&self) -> Rc<dyn Curve> {
+        Rc::new(self.neg())
     }
 }
 
