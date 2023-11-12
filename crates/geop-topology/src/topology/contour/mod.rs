@@ -172,47 +172,4 @@ impl Contour {
         }
         result
     }
-
-    // pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
-    //     let mut intersections = Vec::<EdgeEdgeIntersection>::new();
-    //     for edge in self.edges.iter() {
-    //         let edge_intersections = edge.intersections(other);
-    //         intersections.extend(edge_intersections.into_iter());
-    //     }
-
-    //     intersections
-    // }
-
-    // // Gets all intersections between this contour and another contour.
-    // // Vertices of Edges are not considered as part of the contour, hence, the intersection of two contours at the same point is empty.
-    // pub fn intersect_contour(&self, other: &Contour) -> Vec<EdgeEdgeIntersection> {
-    //     let mut intersections = Vec::<EdgeEdgeIntersection>::new();
-    //     for edge_other in other.edges.iter() {
-    //         intersections.extend(self.intersect_edge(edge_other).into_iter());
-    //     }
-    //     intersections
-    // }
-
-    // Avoid using these functions
-    pub fn point_at(&self, u: f64) -> Point {
-        let u = u * self.edges.len() as f64;
-        let i = u.floor() as usize;
-        let u = u - i as f64;
-        let i = i % self.edges.len();
-        return self.edges[i].point_at(u);
-    }
-
-    // Avoid using these functions
-    pub fn project(&self, point: Point) -> Option<f64> {
-        for (i, edge) in self.edges.iter().enumerate() {
-            let u = edge.project(point);
-            match u {
-                Some(u) => {
-                    return Some((i as f64 + u) / self.edges.len() as f64);
-                }
-                None => {}
-            }
-        }
-        None
-    }
 }

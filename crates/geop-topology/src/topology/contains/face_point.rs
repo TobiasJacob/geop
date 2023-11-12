@@ -39,6 +39,7 @@ pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
     let normal = face.surface.surface().normal(q);
     let contour_dir = face.boundaries[0].tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
+    
     for int in countour_edge_intersection_points(face, &*curve) {
         let distance = face.surface.surface().distance(point, *int);
         if distance < closest_distance {
