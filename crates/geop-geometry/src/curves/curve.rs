@@ -39,44 +39,11 @@ pub trait Curve {
         let end = self.log(m, end);
         start.0 <= 0.0 && end.0 >= 0.0
     }
-    // Returns max of x and y
-    fn max(&self, x: Point, y: Point) -> Point {
-        let v = self.log(x, y);
-        if v.0 > 0.0 {
-            x
-        } else {
-            y
-        }
-    }
-    // Returns min of x and y
-    fn min(&self, x: Point, y: Point) -> Point {
-        let v = self.log(x, y);
-        if v.0 < 0.0 {
-            x
-        } else {
-            y
-        }
-    }
-    // cmp returns an ordering
-    fn cmp(&self, x: Point, y: Point) -> Ordering {
-        let v = self.log(x, y);
-        if v.0 < EQ_THRESHOLD {
-            Ordering::Less
-        } else if v.0 > EQ_THRESHOLD {
-            Ordering::Greater
-        } else {
-            Ordering::Equal
-        }
-    }
     // Intersect between start1/2 and end1/2. Returns None if there is no intersection.
     // Keep in mind that all curves are treated as infinite lines, such that start after end means that the line starts, goes to +infinity, goes to -infinty and then ends.
     fn intersect(&self, start1: Point, end1: Point, start2: Point, end2: Point) -> CurveIntersection {
-        let start = self.max(start1, start2);
-        let end = self.min(end1, end2);
-        match self.cmp(start, end) {
-            Ordering::Less => CurveIntersection::Points(start, end),
-            Ordering::Equal => CurveIntersection::Point(start),
-            Ordering::Greater => CurveIntersection::None,
-        }
+        let start1_in = self.between(start1, start2, end2);
+        let end1_in = self.between(end1, start2, end2);
+        todo!("Implement intersect")
     }
 }

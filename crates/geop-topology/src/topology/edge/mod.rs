@@ -19,9 +19,6 @@ pub struct Edge {
     pub start: Rc<Point>,
     pub end: Rc<Point>,
     pub curve: Rc<EdgeCurve>,
-
-    pub start_u: f64,
-    pub end_u: f64,
 }
 // Represents an Edge, defined by a curve, and a start and end point.
 // It is important to know that the start and end point are not considered a part of the edge.
@@ -29,41 +26,12 @@ pub struct Edge {
 impl Edge {
     pub fn new(start: Rc<Point>, end: Rc<Point>, curve: Rc<EdgeCurve>) -> Edge {
         assert!(start != end); // Prevent zero length edges
-        let start_u = curve.curve().project(*start);
-        let end_u_p = curve.curve().project(*end);
-        assert!(
-            start_u.1 < PROJECTION_THRESHOLD,
-            "Start point is {start:?} not on curve {curve:?}, projection returned {start_u:?}"
-        );
-        assert!(
-            end_u_p.1 < PROJECTION_THRESHOLD,
-            "End point is {end:?} not on curve {curve:?}, projection returned {end_u_p:?}"
-        );
-        // It might seem weired to do this here and not simple add for example a curve.periodic() function if start < end.
-        // The reason is that for edges it is possible to find parameter spaces relativly easy.
-        // For surfaces, this is much more complicated, because we need a valid parameter space within a face that could span poles, which is bounded by an Contour.
-        // In both cases, the parameter space is defined by the start and end point of the curve or the outer edge loop.
-        // So the code that generates the parameter space (which depends on start and end) belongs here.
-        let end_u = match *curve {
-            EdgeCurve::Line(_) => end_u_p.0,
-            EdgeCurve::Circle(_) => match end_u_p < start_u {
-                true => end_u_p.0 + 2.0 * std::f64::consts::PI,
-                false => end_u_p.0,
-            },
-            EdgeCurve::Ellipse(_) => match end_u_p < start_u {
-                true => end_u_p.0 + 2.0 * std::f64::consts::PI,
-                false => end_u_p.0,
-            },
-        };
-
-        let start_u = start_u.0;
-
+        assert!(curve.curve().on_manifold(*start));
+        assert!(curve.curve().on_manifold(*end));
         Edge {
             start,
             end,
             curve,
-            start_u,
-            end_u,
         }
     }
 
@@ -84,20 +52,7 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
-        if a == b {
-            return a;
-        }
-        let a = self.project(a).expect("A is not on edge");
-        let b = self.project(b).expect("B is not on edge");
-        let mid = (a + b) / 2.0;
-        self.point_at(mid)
-    }
-
-    // Avoid using these functions as they are not well defined for periodic curves.
-    pub fn point_at(&self, u: f64) -> Point {
-        assert!(u >= -EQ_THRESHOLD && u < 1.0 + EQ_THRESHOLD);
-        let u = self.start_u + u * (self.end_u - self.start_u);
-        self.curve.curve().point_at(u)
+        
     }
 
     pub fn tangent(&self, p: Point) -> Point {
@@ -107,18 +62,6 @@ impl Edge {
             EdgeCurve::Ellipse(e) => e.tangent(p).normalize(),
             EdgeCurve::Line(l) => l.tangent(p).normalize(),
         }
-    }
-
-    pub fn project(&self, point: Point) -> Option<f64> {
-        let u_p = self.curve.curve().project(point);
-        if u_p.1 > PROJECTION_THRESHOLD {
-            return None;
-        }
-        let u = u_p.0;
-        if u < self.start_u - EQ_THRESHOLD || u > self.end_u + EQ_THRESHOLD {
-            return None;
-        }
-        Some((u - self.start_u) / (self.end_u - self.start_u))
     }
 }
 
