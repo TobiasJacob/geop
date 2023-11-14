@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{points::point::Point, transforms::Transform};
 
-use super::curve::Curve;
+use super::curve::{Curve, TangentParameter};
 
 #[derive(Debug, Clone)]
 pub struct Ellipse {
@@ -33,34 +33,38 @@ impl Curve for Ellipse {
         todo!("Implement transform")
     }
 
-    fn point_at(&self, u: f64) -> Point {
-        self.basis + self.dir0 * u.cos() + self.dir1 * u.sin()
-    }
-
-    fn project(&self, p: Point) -> (f64, f64) {
-        let v = p - self.basis;
-        let u = v.dot(self.dir0) / self.dir0.norm();
-        let v = v - self.dir0 * u;
-        let v = v.dot(self.dir1) / self.dir1.norm();
-        let v = v.atan2(u);
-        let u = u.atan2(v);
-        (
-            u / (2.0 * std::f64::consts::PI),
-            v / (2.0 * std::f64::consts::PI),
-        )
+    fn neg(&self) -> Rc<dyn Curve> {
+        Rc::new(self.neg())
     }
 
     fn tangent(&self, p: Point) -> Point {
-        let u = self.project(p).0;
-        -self.dir0 * u.sin() + self.dir1 * u.cos()
+        // let u = self.project(p).0;
+        // -self.dir0 * u.sin() + self.dir1 * u.cos()
+        todo!("Implement tangent")
     }
 
-    fn distance(&self, _p1: Point, _p2: Point) -> f64 {
-        todo!("Todo");
+    fn on_manifold(&self, p: Point) -> bool {
+        todo!("Implement on_manifold")
     }
 
-    fn neg(&self) -> Rc<dyn Curve> {
-        Rc::new(self.neg())
+    fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
+        todo!("Implement metric")
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        todo!("Implement distance")
+    }
+
+    fn exp(&self, x: Point, u: TangentParameter) -> Point {
+        todo!("Implement exp")
+    }
+
+    fn log(&self, x: Point, y: Point) -> TangentParameter {
+        todo!("Implement log")
+    }
+
+    fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
+        todo!("Implement parallel_transport")
     }
 }
 

@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::{curve::Curve, ellipse::Ellipse};
+use super::{curve::{Curve, TangentParameter}, ellipse::Ellipse};
 
 #[derive(Debug, Clone)]
 pub struct Circle {
@@ -20,6 +20,7 @@ pub enum CircleTransform {
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: Point) -> Circle {
         let normal = normal.normalize();
+        assert!(normal.dot(radius).abs() < EQ_THRESHOLD, "Radius and normal must be orthogonal");
         Circle {
             basis,
             normal,
@@ -50,31 +51,49 @@ impl Curve for Circle {
         }
     }
 
-    fn point_at(&self, u: f64) -> Point {
-        self.radius * u.cos() + self.dir_cross * u.sin() + self.basis
-    }
-
-    fn project(&self, p: Point) -> (f64, f64) {
-        let dir = p - self.basis;
-        let dir = dir - self.normal * dir.dot(self.normal);
-        let u = dir.dot(self.radius);
-        let v = dir.dot(self.dir_cross);
-        let angle = v.atan2(u);
-        let dist = (dir.norm() - self.radius.norm()).abs();
-        return (angle, dist);
-    }
-
-    fn tangent(&self, _p: Point) -> Point {
-        todo!("Implement derivative for Circle")
-    }
-
-    fn distance(&self, p1: Point, p2: Point) -> f64 {
-        let angle = self.project(p1).0 - self.project(p2).0;
-        return angle.abs() * self.radius.norm();
-    }
-
     fn neg(&self) -> Rc<dyn Curve> {
         Rc::new(self.neg())
+    }
+
+    fn tangent(&self, p: Point) -> Point {
+        assert!(self.on_manifold(p));
+        (p - self.basis).cross(self.dir_cross).normalize()
+    }
+
+    fn on_manifold(&self, p: Point) -> bool {
+        (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
+    }
+
+    fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
+        u.0 * v.0
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        assert!(self.on_manifold(x));
+        assert!(self.on_manifold(y));
+        let v1 = x - self.basis;
+        let v2 = y - self.basis;
+        let angle = v1.angle(v2);
+        angle * self.radius.norm()
+    }
+
+    fn exp(&self, x: Point, u: TangentParameter) -> Point {
+        assert!(self.on_manifold(x));
+        let x = x - self.basis;
+        x * u.0.cos() + self.normal.cross(x) * u.0.sin()
+    }
+    
+    fn log(&self, x: Point, y: Point) -> TangentParameter {
+        assert!(self.on_manifold(x));
+        assert!(self.on_manifold(y));
+        let x = x - self.basis;
+        let y = y - self.basis;
+        let angle = x.angle(y);
+        TangentParameter(angle)
+    }
+
+    fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
+        v
     }
 }
 
