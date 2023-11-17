@@ -66,6 +66,14 @@ impl Curve for Ellipse {
     fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
         todo!("Implement parallel_transport")
     }
+
+    fn between(&self, m: Point, start: Point, end: Point) -> bool {
+        todo!("Implement between")
+    }
+
+    fn get_midpoint(&self, start: Point, end: Point) -> Point {
+        todo!("Implement get_midpoint")
+    }
 }
 
 impl PartialEq for Ellipse {

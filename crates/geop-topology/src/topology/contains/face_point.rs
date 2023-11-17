@@ -26,11 +26,7 @@ pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
         }
     }
     // Draw a line from the point to a random point on the border.
-    // Use a midpoint to have a well defined tangent. At an Edge, the check is more complicated.
-    let q: Point = face.boundaries[0].edges[0].get_midpoint(
-        *face.boundaries[0].edges[0].start,
-        *face.boundaries[0].edges[0].end,
-    );
+    let q: Point = *face.boundaries[0].edges[0].start;
     let curve = face.edge_from_to(Rc::new(point), Rc::new(q));
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.

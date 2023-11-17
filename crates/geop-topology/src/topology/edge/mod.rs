@@ -52,16 +52,14 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
-        
+        assert!(self.curve.curve().on_manifold(a));
+        assert!(self.curve.curve().on_manifold(b));
+        self.curve.curve().get_midpoint(a, b)
     }
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(edge_contains_point(self, p) != EdgeContains::Outside);
-        match &*self.curve {
-            EdgeCurve::Circle(c) => c.tangent(p).normalize(),
-            EdgeCurve::Ellipse(e) => e.tangent(p).normalize(),
-            EdgeCurve::Line(l) => l.tangent(p).normalize(),
-        }
+        self.curve.curve().tangent(p).normalize()
     }
 }
 

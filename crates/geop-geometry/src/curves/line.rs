@@ -73,6 +73,18 @@ impl Curve for Line {
         assert!(self.on_manifold(y), "y is not on the manifold");
         v
     }
+
+    fn between(&self, m: Point, start: Point, end: Point) -> bool {
+        let v = m - self.basis;
+        let v = v - self.direction * (v.dot(self.direction));
+        v.norm() < EQ_THRESHOLD && (m - start).dot(self.direction) > 0.0 && (m - end).dot(self.direction) < 0.0
+    }
+
+    fn get_midpoint(&self, start: Point, end: Point) -> Point {
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        (start + end) / 2.0
+    }
 }
 
 impl PartialEq for Line {

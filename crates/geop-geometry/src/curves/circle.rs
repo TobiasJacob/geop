@@ -95,6 +95,37 @@ impl Curve for Circle {
     fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
         v
     }
+
+    fn between(&self, m: Point, start: Point, end: Point) -> bool {
+        assert!(self.on_manifold(m));
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        let mut angle_m = (m - self.basis).angle(self.radius);
+        let angle_start = (start - self.basis).angle(self.radius);
+        let mut angle_end = (end - self.basis).angle(self.radius);
+        if angle_start < angle_end {
+            angle_end += 2.0 * std::f64::consts::PI;
+        }
+        if angle_m < angle_start {
+            angle_m += 2.0 * std::f64::consts::PI;
+        }
+        angle_start <= angle_m && angle_m <= angle_end
+    }
+
+    fn get_midpoint(&self, start: Point, end: Point) -> Point {
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        let start = start - self.basis;
+        let end = end - self.basis;
+        let mid = (start + end) / 2.0;
+        let mid = mid.normalize() * self.radius.norm();
+        let p1 = mid + self.basis;
+        if self.between(p1, start, end) {
+            return p1;
+        } else {
+            return -mid + self.basis;
+        }
+    }
 }
 
 // Implement partial eqality for Circle

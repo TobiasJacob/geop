@@ -13,17 +13,14 @@ pub enum EdgeContains {
 
 
 pub fn edge_contains_point(edge: &Edge, point: Point) -> EdgeContains {
-    let u = edge.project(point);
-    match u {
-        Some(u) => {
-            if u < EQ_THRESHOLD {
-                EdgeContains::OnPoint(edge.start.clone())
-            } else if u > 1.0 - EQ_THRESHOLD {
-                EdgeContains::OnPoint(edge.end.clone())
-            } else {
-                EdgeContains::Inside
-            }
-        }
-        None => EdgeContains::Outside,
+    if !edge.curve.curve().on_manifold(point) {
+        return EdgeContains::Outside;
     }
+    if point == *edge.start || point == *edge.end {
+        return EdgeContains::OnPoint(Rc::new(point));
+    }
+    if edge.curve.curve().between(point, *edge.start, *edge.end) {
+        return EdgeContains::Inside;
+    }
+    EdgeContains::Outside
 }

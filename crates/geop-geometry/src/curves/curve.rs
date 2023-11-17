@@ -34,16 +34,30 @@ pub trait Curve {
     // Parallel transport of v from x to y.
     fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter;
     // Checks if m is between x and y.
-    fn between(&self, m: Point, start: Point, end: Point) -> bool {
-        let start = self.log(m, start);
-        let end = self.log(m, end);
-        start.0 <= 0.0 && end.0 >= 0.0
-    }
+    fn between(&self, m: Point, start: Point, end: Point) -> bool;
     // Intersect between start1/2 and end1/2. Returns None if there is no intersection.
     // Keep in mind that all curves are treated as infinite lines, such that start after end means that the line starts, goes to +infinity, goes to -infinty and then ends.
     fn intersect(&self, start1: Point, end1: Point, start2: Point, end2: Point) -> CurveIntersection {
-        let start1_in = self.between(start1, start2, end2);
-        let end1_in = self.between(end1, start2, end2);
-        todo!("Implement intersect")
+        for (s, e) in [(&start1, &end1), (&start2, &end2), (&start1, &end2), (&start2, &end1)] {
+            let s_o = match s == &start1 {
+                true => start2,
+                false => start1,
+            };
+            let e_o = match e == &end1 {
+                true => end2,
+                false => end1,
+            };
+
+            if self.between(*s, s_o, e_o) && self.between(*e, s_o, e_o) {
+                if s == e {
+                    return CurveIntersection::Point(s.clone());
+                } else {
+                    return CurveIntersection::Points(s.clone(), e.clone());
+                }
+            }
+        }
+        return CurveIntersection::None;
     }
+    // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
+    fn get_midpoint(&self, start: Point, end: Point) -> Point;
 }
