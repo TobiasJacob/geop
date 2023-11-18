@@ -61,6 +61,11 @@ impl Edge {
         assert!(edge_contains_point(self, p) != EdgeContains::Outside);
         self.curve.curve().tangent(p).normalize()
     }
+
+    pub fn point_at(&self, t: f64) -> Point {
+        assert!(t >= 0.0 && t <= 1.0);
+        self.curve.curve().point_at(self.start, self.end, t)
+    }
 }
 
 impl PartialEq for Edge {

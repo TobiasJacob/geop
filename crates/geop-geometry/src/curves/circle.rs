@@ -126,6 +126,21 @@ impl Curve for Circle {
             return -mid + self.basis;
         }
     }
+
+    fn point_at(&self, t: f64, start: Point, end: Point) -> Point {
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        let start = start - self.basis;
+        let end = end - self.basis;
+        let x_start = self.radius.dot(start);
+        let x_end = self.radius.dot(end);
+        let y_start = self.dir_cross.dot(start);
+        let y_end = self.dir_cross.dot(end);
+        let angle1 = x_start.atan2(y_start);
+        let angle2 = x_end.atan2(y_end);
+        let angle = angle1 + t * (angle2 - angle1);
+        angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+    }
 }
 
 // Implement partial eqality for Circle

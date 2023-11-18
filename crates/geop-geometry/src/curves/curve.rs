@@ -60,4 +60,6 @@ pub trait Curve {
     }
     // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
     fn get_midpoint(&self, start: Point, end: Point) -> Point;
+    // Get the point at t between start and end. t is between 0 and 1.
+    fn point_at(&self, t: f64, start: Point, end: Point) -> Point;
 }
