@@ -2,13 +2,12 @@ use std::{rc::Rc, f32::consts::E};
 
 use geop_geometry::{
     curve_curve_intersection::{
-        circle_circle::{circle_circle_intersection, CircleCircleIntersection},
-        line_line::{line_line_intersection, LineLineIntersection},
+        curve_curve::{curve_curve_intersection, CurveCurveIntersection}
     },
     points::point::Point, curves::curve::CurveIntersection,
 };
 
-use crate::topology::{edge::{Edge, edge_curve::{EdgeCurve, edge_curve_edge_curve_intersect, EdgeCurveIntersection}}, contains::edge_point::{EdgeContains, edge_contains_point}};
+use crate::topology::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}};
 
 
 #[derive(Clone, Debug)]
@@ -29,17 +28,17 @@ pub fn edge_edge_different_curve_intersection(edge_self: &Edge, other: &Edge) ->
 
 // All intersections where it crosses other edge. The end points are not included. The list is sorted from start to end.
 pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeEdgeIntersection> {
-    match edge_curve_edge_curve_intersect(&*edge_self.curve, &*edge_other.curve) {
-        EdgeCurveIntersection::Curve(_) => {
+    match curve_curve_intersection(&*edge_self.curve, &*edge_other.curve) {
+        CurveCurveIntersection::Curve(_) => {
             // Now that we project the start and end point of edge_other on edge_self, we have to take care of the case that the edges are facing in opposite directions.
-            let same_dir = edge_self.curve.curve().tangent(*edge_self.start).dot(edge_other.curve.curve().tangent(*edge_self.start)) > 0.0;
+            let same_dir = edge_self.curve.tangent(*edge_self.start).dot(edge_other.curve.tangent(*edge_self.start)) > 0.0;
             println!("edge_self.curve = {:?}, edge_other.curve = {:?}, same_dir = {:?}", edge_self.curve, edge_other.curve, same_dir);
             let intersection = match same_dir { 
                 true => {
-                    edge_self.curve.curve().intersect(*edge_self.start, *edge_self.end, *edge_other.start, *edge_other.end)
+                    edge_self.curve.intersect(*edge_self.start, *edge_self.end, *edge_other.start, *edge_other.end)
                 },
                 false => {
-                    edge_self.curve.curve().intersect(*edge_self.start, *edge_self.end, *edge_other.end, *edge_other.start)
+                    edge_self.curve.intersect(*edge_self.start, *edge_self.end, *edge_other.end, *edge_other.start)
                 }
             };
             match intersection {
@@ -92,10 +91,10 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                 }
             }
         },
-        EdgeCurveIntersection::Points(points) => {
+        CurveCurveIntersection::Points(points) => {
             points.iter().filter(|p| {edge_contains_point(edge_self, **p) != EdgeContains::Outside && edge_contains_point(edge_other, **p) != EdgeContains::Outside}).map(|p| EdgeEdgeIntersection::Point(Rc::new(*p))).collect()
         },
-        EdgeCurveIntersection::None => {
+        CurveCurveIntersection::None => {
             vec![]
         },
     }

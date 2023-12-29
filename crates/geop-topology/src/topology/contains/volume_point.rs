@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
-use geop_geometry::{points::point::Point, curves::line::Line};
+use geop_geometry::{points::point::Point, curves::{line::Line, curve::Curve}};
 
-use crate::topology::{volume::{Volume, VolumeContainsPoint}, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection};
+use crate::topology::{volume::{Volume, VolumeContainsPoint}, edge::{Edge}, intersections::edge_edge::EdgeEdgeIntersection};
 
 use super::face_point::{FaceContainsPoint, face_contains_point};
 
@@ -23,7 +23,7 @@ pub fn volume_contains_point(volume: &Volume, other: Point) -> VolumeContainsPoi
     let curve = Edge::new(
         Rc::new(other.clone()), 
         Rc::new(q.clone()),
-        Rc::new(EdgeCurve::Line(Line::new(other, q - other))));
+        Rc::new(Curve::Line(Line::new(other, q - other))));
 
     // Find the closest intersection point with any other face and use the normal to determine if the point is inside or outside
     for face in volume.faces.iter() {

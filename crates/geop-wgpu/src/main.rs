@@ -2,7 +2,7 @@ use std::rc::Rc;
 use std::panic;
 
 use geop_geometry::{
-    curves::{circle::Circle, line::Line},
+    curves::{circle::Circle, line::Line, curve::Curve},
     points::point::Point,
     surfaces::plane::Plane,
     EQ_THRESHOLD, transforms::Transform,
@@ -14,7 +14,7 @@ use geop_rasterize::{
 };
 use geop_topology::{topology::{
     contour::Contour,
-    edge::{Edge, edge_curve::EdgeCurve},
+    edge::{Edge},
     face::{Face, face_surface::FaceSurface}, difference::face_face::face_difference,
 }, operations::extrude::extrude, debug_data::get_debug_data};
 use geop_wgpu::window::GeopWindow;
@@ -25,7 +25,7 @@ pub fn linear_edge(s: Rc<Point>, e: Rc<Point>) -> Rc<Edge> {
     Rc::new(Edge::new(
         s,
         e,
-        Rc::new(EdgeCurve::Line(Line::new(p1, p2 - p1))),
+        Rc::new(Curve::Line(Line::new(p1, p2 - p1))),
     ))
 }
 
@@ -38,7 +38,7 @@ pub fn circular_edge(s: Rc<Point>, e: Rc<Point>, center: Point) -> Rc<Edge> {
     Rc::new(Edge::new(
         s,
         e,
-        Rc::new(EdgeCurve::Circle(Circle::new(
+        Rc::new(Curve::Circle(Circle::new(
             center,
             Point::new(0.0, 0.0, 1.0),
             point - center,

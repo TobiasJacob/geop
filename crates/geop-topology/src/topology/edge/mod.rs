@@ -1,5 +1,3 @@
-pub mod edge_curve;
-
 use std::{
     fmt::{Display, Formatter},
     rc::Rc,
@@ -7,27 +5,25 @@ use std::{
 
 use geop_geometry::{
     points::point::Point,
-    EQ_THRESHOLD, transforms::Transform, curves::{curve::Curve, line::Line},
+    transforms::Transform, curves::{line::Line, curve::Curve},
 };
 
-use crate::{PROJECTION_THRESHOLD, topology::contains::edge_point::{EdgeContains, edge_contains_point}};
-
-use self::edge_curve::EdgeCurve;
+use crate::{topology::contains::edge_point::{EdgeContains, edge_contains_point}};
 
 #[derive(Clone, Debug)]
 pub struct Edge {
     pub start: Rc<Point>,
     pub end: Rc<Point>,
-    pub curve: Rc<EdgeCurve>,
+    pub curve: Rc<Curve>,
 }
 // Represents an Edge, defined by a curve, and a start and end point.
 // It is important to know that the start and end point are not considered a part of the edge.
 // E.g. "intersection" between two edges at end points are not considered intersections.
 impl Edge {
-    pub fn new(start: Rc<Point>, end: Rc<Point>, curve: Rc<EdgeCurve>) -> Edge {
+    pub fn new(start: Rc<Point>, end: Rc<Point>, curve: Rc<Curve>) -> Edge {
         assert!(start != end); // Prevent zero length edges
-        assert!(curve.curve().on_manifold(*start));
-        assert!(curve.curve().on_manifold(*end));
+        assert!(curve.on_manifold(*start));
+        assert!(curve.on_manifold(*end));
         Edge {
             start,
             end,
@@ -37,7 +33,7 @@ impl Edge {
 
     pub fn new_line(start: Rc<Point>, end: Rc<Point>) -> Edge {
         let l = Line::new(*start, *end - *start);
-        Edge::new(start, end, Rc::new(EdgeCurve::Line(l)))
+        Edge::new(start, end, Rc::new(Curve::Line(l)))
     }
 
     pub fn neg(&self) -> Edge {
@@ -57,19 +53,19 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
-        assert!(self.curve.curve().on_manifold(a));
-        assert!(self.curve.curve().on_manifold(b));
-        self.curve.curve().get_midpoint(a, b)
+        assert!(self.curve.on_manifold(a));
+        assert!(self.curve.on_manifold(b));
+        self.curve.get_midpoint(a, b)
     }
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(edge_contains_point(self, p) != EdgeContains::Outside);
-        self.curve.curve().tangent(p).normalize()
+        self.curve.tangent(p).normalize()
     }
 
     pub fn interpolate(&self, t: f64) -> Point {
         assert!(t >= 0.0 && t <= 1.0);
-        self.curve.curve().interpolate(*self.start, *self.end, t)
+        self.curve.interpolate(*self.start, *self.end, t)
     }
 }
 
@@ -84,9 +80,9 @@ impl PartialEq for Edge {
 impl Display for Edge {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self.curve.as_ref() {
-            EdgeCurve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
-            EdgeCurve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
+            Curve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
+            Curve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
+            Curve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
         }
     }
 }

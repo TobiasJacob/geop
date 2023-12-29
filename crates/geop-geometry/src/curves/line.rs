@@ -2,8 +2,6 @@ use std::rc::Rc;
 
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::curve::{Curve, TangentParameter};
-
 #[derive(Debug, Clone)]
 pub struct Line {
     pub basis: Point,
@@ -27,28 +25,18 @@ impl Line {
     pub fn neg(&self) -> Line {
         Line::new(self.basis, -self.direction)
     }
-}
 
-impl Curve for Line {
-    fn transform(&self, transform: Transform) -> Rc<dyn Curve> {
-        Rc::new(self.transform(transform))
-    }
-
-    fn neg(&self) -> Rc<dyn Curve> {
-        Rc::new(self.neg())
-    }
-
-    fn tangent(&self, _p: Point) -> Point {
+    pub fn tangent(&self, _p: Point) -> Point {
         self.direction.clone()
     }
 
-    fn on_manifold(&self, p: Point) -> bool {
+    pub fn on_manifold(&self, p: Point) -> bool {
         let v = p - self.basis;
         let v = v - self.direction * (v.dot(self.direction));
         v.norm() < EQ_THRESHOLD
     }
 
-    fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+    pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
         assert!(self.on_manifold(start));
         assert!(self.on_manifold(end));
         start + (end - start) * t
@@ -81,14 +69,14 @@ impl Curve for Line {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Point, end: Point) -> bool {
+    pub fn between(&self, m: Point, start: Point, end: Point) -> bool {
         assert!(self.on_manifold(m));
         assert!(self.on_manifold(start));
         assert!(self.on_manifold(end));
         (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
     }
 
-    fn get_midpoint(&self, start: Point, end: Point) -> Point {
+    pub fn get_midpoint(&self, start: Point, end: Point) -> Point {
         assert!(self.on_manifold(start));
         assert!(self.on_manifold(end));
         (start + end) / 2.0

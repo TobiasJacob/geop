@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     points::point::Point,
-    transforms::Transform,
+    transforms::Transform, curves::curve::Curve,
 };
 
 use crate::topology::contains::edge_point::EdgeContains;
@@ -12,7 +12,6 @@ use crate::topology::contains::edge_point::EdgeContains;
 use self::face_surface::FaceSurface;
 
 use super::{
-    edge::edge_curve::EdgeCurve,
     {contour::Contour, edge::Edge}, contour::{EdgeIndex, ContourTangent}, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
 };
 
@@ -88,7 +87,7 @@ impl Face {
                 return Rc::new(Edge::new(
                     from.clone(),
                     to.clone(),
-                    Rc::new(EdgeCurve::Line(curve)),
+                    Rc::new(Curve::Line(curve)),
                 ));
             }
             FaceSurface::Sphere(s) => {
@@ -96,7 +95,7 @@ impl Face {
                 return Rc::new(Edge::new(
                     from.clone(),
                     to.clone(),
-                    Rc::new(EdgeCurve::Circle(curve)),
+                    Rc::new(Curve::Circle(curve)),
                 ));
             }
         }

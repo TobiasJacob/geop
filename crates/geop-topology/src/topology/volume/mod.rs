@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{transforms::Transform, points::point::Point, curves::line::Line};
 
-use super::{contour::Contour, face::Face, edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection, contains::face_point::{face_contains_point, FaceContainsPoint}};
+use super::{contour::Contour, face::Face, edge::{Edge}, intersections::edge_edge::EdgeEdgeIntersection, contains::face_point::{face_contains_point, FaceContainsPoint}};
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,

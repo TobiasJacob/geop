@@ -2,8 +2,6 @@ use std::rc::Rc;
 
 use crate::{points::point::Point, transforms::Transform};
 
-use super::curve::{Curve, TangentParameter};
-
 #[derive(Debug, Clone)]
 pub struct Ellipse {
     pub basis: Point,
@@ -26,28 +24,18 @@ impl Ellipse {
     pub fn neg(&self) -> Ellipse {
         Ellipse::new(self.basis, -self.dir0, -self.dir1)
     }
-}
 
-impl Curve for Ellipse {
-    fn transform(&self, transform: Transform) -> Rc<dyn Curve> {
-        todo!("Implement transform")
-    }
-
-    fn neg(&self) -> Rc<dyn Curve> {
-        Rc::new(self.neg())
-    }
-
-    fn tangent(&self, p: Point) -> Point {
+    pub fn tangent(&self, p: Point) -> Point {
         // let u = self.project(p).0;
         // -self.dir0 * u.sin() + self.dir1 * u.cos()
         todo!("Implement tangent")
     }
     
-    fn on_manifold(&self, p: Point) -> bool {
+    pub fn on_manifold(&self, p: Point) -> bool {
         todo!("Implement on_manifold")
     }
     
-    fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+    pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
         todo!("Implement interpolate")
     }
 
@@ -73,11 +61,11 @@ impl Curve for Ellipse {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Point, end: Point) -> bool {
+    pub fn between(&self, m: Point, start: Point, end: Point) -> bool {
         todo!("Implement between")
     }
 
-    fn get_midpoint(&self, start: Point, end: Point) -> Point {
+    pub fn get_midpoint(&self, start: Point, end: Point) -> Point {
         todo!("Implement get_midpoint")
     }
 }
