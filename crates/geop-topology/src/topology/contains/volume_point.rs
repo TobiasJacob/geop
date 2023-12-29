@@ -5,7 +5,9 @@ use geop_geometry::{
     points::point::Point,
 };
 
-use crate::topology::{edge::Edge, intersections::edge_edge::EdgeEdgeIntersection, volume::Volume, face::Face};
+use crate::topology::{
+    edge::Edge, face::Face, intersections::edge_edge::EdgeEdgeIntersection, volume::Volume,
+};
 
 use super::face_point::{face_point_contains, FacePointContains};
 

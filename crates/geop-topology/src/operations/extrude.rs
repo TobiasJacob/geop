@@ -7,11 +7,7 @@ use geop_geometry::{
     transforms::Transform,
 };
 
-use crate::topology::{
-    contour::Contour,
-    edge::Edge,
-    volume::Volume, face::Face,
-};
+use crate::topology::{contour::Contour, edge::Edge, face::Face, volume::Volume};
 
 pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
     let end_face = Rc::new(

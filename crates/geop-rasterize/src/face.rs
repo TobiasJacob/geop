@@ -2,14 +2,10 @@ use std::collections::VecDeque;
 
 use geop_geometry::{
     points::point::Point,
-    surfaces::{
-        plane::Plane,
-        sphere::Sphere,
-        surface::{SurfaceLike, TangentPoint, Surface},
-    },
+    surfaces::surface::{Surface, TangentPoint},
     EQ_THRESHOLD,
 };
-use geop_topology::topology::face::{ Face};
+use geop_topology::topology::face::Face;
 
 use crate::{
     contour::rasterize_contour_into_line_list,
@@ -38,9 +34,9 @@ pub fn inside_triangle_circumcircle(
 ) -> f64 {
     // First project points into the tangent plane.
     let projected_triangles = traingle
-            .iter()
-            .map(|p| surface.log(point.into(), (*p).into()))
-            .collect::<Vec<TangentPoint>>();
+        .iter()
+        .map(|p| surface.log(point.into(), (*p).into()))
+        .collect::<Vec<TangentPoint>>();
     // Now use the classic delaunay algorithm in 2d.
 
     // Matrix as in https://en.wikipedia.org/wiki/Delaunay_triangulation
@@ -69,10 +65,7 @@ pub fn inside_triangle_circumcircle(
     -determinant // Check this is < -0.0001, which means it is inside the circumcircle
 }
 
-pub fn check_triangle_counter_clockwise(
-    surface: &Surface,
-    traingle: &[RenderVertex; 3],
-) -> bool {
+pub fn check_triangle_counter_clockwise(surface: &Surface, traingle: &[RenderVertex; 3]) -> bool {
     assert!(surface.on_surface(traingle[0].point()));
     assert!(surface.on_surface(traingle[1].point()));
     assert!(surface.on_surface(traingle[2].point()));
@@ -102,11 +95,7 @@ fn edge_overlaps_edge(_surface: &Surface, edge: RenderEdge, other: RenderEdge) -
     false
 }
 
-pub fn edge_intersects_contour(
-    surface: &Surface,
-    edge: &RenderEdge,
-    contour: &EdgeBuffer,
-) -> bool {
+pub fn edge_intersects_contour(surface: &Surface, edge: &RenderEdge, contour: &EdgeBuffer) -> bool {
     for other in contour.edges.iter() {
         if edge_overlaps_edge(surface, *edge, *other) {
             return true;
@@ -261,7 +250,10 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 4]) -> Triang
                 if i == j || current_point.point() == new_point.point() {
                     continue;
                 }
-                if !check_triangle_counter_clockwise(&face.surface, &[edge.start, edge.end, new_point]) {
+                if !check_triangle_counter_clockwise(
+                    &face.surface,
+                    &[edge.start, edge.end, new_point],
+                ) {
                     continue;
                 }
                 let new_det = inside_triangle_circumcircle(

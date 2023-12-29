@@ -1,4 +1,4 @@
-use geop_geometry::{surfaces::surface::Surface, curves::curve::Curve, EQ_THRESHOLD};
+use geop_geometry::{curves::curve::Curve, surfaces::surface::Surface, EQ_THRESHOLD};
 
 use crate::topology::edge::Edge;
 

@@ -1,9 +1,8 @@
-use geop_geometry::{surfaces::surface::Surface, curves::curve::Curve};
+use geop_geometry::{curves::curve::Curve, surfaces::surface::Surface};
 
 use crate::topology::edge::Edge;
 
 use super::edge_edge::EdgeEdgeIntersection;
-
 
 pub fn surface_edge_intersection(surface: &Surface, other: &Edge) -> Vec<EdgeEdgeIntersection> {
     match surface {

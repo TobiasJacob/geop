@@ -4,7 +4,10 @@ use crate::{
     transforms::Transform,
 };
 
-use super::{plane::Plane, sphere::{Sphere, SphereTransform}};
+use super::{
+    plane::Plane,
+    sphere::{Sphere, SphereTransform},
+};
 
 pub enum SurfaceCurve {
     // Returns the geodesic between p and q.

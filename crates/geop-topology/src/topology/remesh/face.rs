@@ -9,10 +9,10 @@ use crate::{
         contour::Contour,
         edge::Edge,
         face::Face,
-        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary, intersections::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection},
+        intersections::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection},
+        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
     },
 };
-
 
 use geop_geometry::points::point::Point;
 
@@ -36,7 +36,6 @@ pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> 
 
     intersections
 }
-
 
 #[derive(Debug)]
 pub enum FaceSplit {

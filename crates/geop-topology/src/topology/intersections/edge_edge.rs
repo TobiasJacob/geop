@@ -2,7 +2,6 @@ use std::rc::Rc;
 
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
-    curves::curve::Curve,
     points::point::Point,
 };
 
@@ -20,18 +19,45 @@ pub enum EdgeEdgeIntersection {
 // Intersect between start1/2 and end1/2. Returns None if there is no intersection.
 // Keep in mind that all curves are treated as infinite lines, such that start after end means that the line starts, goes to +infinity, goes to -infinty and then ends.
 // Vec is used bc. e.g. two half circles might have to distinct intersections at both ends.
-pub fn edge_edge_same_curve_intersection(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeEdgeIntersection> {
+pub fn edge_edge_same_curve_intersection(
+    edge_self: &Edge,
+    edge_other: &Edge,
+) -> Vec<EdgeEdgeIntersection> {
     let same_dir = edge_self
-    .curve
-    .tangent(*edge_self.start)
-    .dot(edge_other.curve.tangent(*edge_self.start))
-    > 0.0;
+        .curve
+        .tangent(*edge_self.start)
+        .dot(edge_other.curve.tangent(*edge_self.start))
+        > 0.0;
     if same_dir {
-        assert!(edge_self.curve.tangent(*edge_self.start).dot(edge_other.curve.tangent(*edge_self.start)) > 0.0);
-        assert!(edge_self.curve.tangent(*edge_self.end).dot(edge_other.curve.tangent(*edge_self.end)) > 0.0);
+        assert!(
+            edge_self
+                .curve
+                .tangent(*edge_self.start)
+                .dot(edge_other.curve.tangent(*edge_self.start))
+                > 0.0
+        );
+        assert!(
+            edge_self
+                .curve
+                .tangent(*edge_self.end)
+                .dot(edge_other.curve.tangent(*edge_self.end))
+                > 0.0
+        );
     } else {
-        assert!(edge_self.curve.tangent(*edge_self.start).dot(edge_other.curve.tangent(*edge_self.start)) < 0.0);
-        assert!(edge_self.curve.tangent(*edge_self.end).dot(edge_other.curve.tangent(*edge_self.end)) < 0.0);
+        assert!(
+            edge_self
+                .curve
+                .tangent(*edge_self.start)
+                .dot(edge_other.curve.tangent(*edge_self.start))
+                < 0.0
+        );
+        assert!(
+            edge_self
+                .curve
+                .tangent(*edge_self.end)
+                .dot(edge_other.curve.tangent(*edge_self.end))
+                < 0.0
+        );
     }
 
     let start1 = edge_self.start.clone();
@@ -84,7 +110,11 @@ pub fn edge_edge_same_curve_intersection(edge_self: &Edge, edge_other: &Edge) ->
             if s == e {
                 return vec![EdgeEdgeIntersection::Point(s.clone())];
             } else {
-                return vec![EdgeEdgeIntersection::Edge(Edge::new(s.clone(), e.clone(), edge_self.curve.clone()))];
+                return vec![EdgeEdgeIntersection::Edge(Edge::new(
+                    s.clone(),
+                    e.clone(),
+                    edge_self.curve.clone(),
+                ))];
             }
         }
         2 => {
@@ -94,10 +124,24 @@ pub fn edge_edge_same_curve_intersection(edge_self: &Edge, edge_other: &Edge) ->
                 panic!("Should not happen");
             } else if s1 == e1 {
                 // return CurveIntersection::IntervalAndPoint(s2.clone(), e2.clone(), s1.clone());
-                return vec![EdgeEdgeIntersection::Point(s1.clone()), EdgeEdgeIntersection::Edge(Edge::new(s2.clone(), e2.clone(), edge_self.curve.clone()))];
+                return vec![
+                    EdgeEdgeIntersection::Point(s1.clone()),
+                    EdgeEdgeIntersection::Edge(Edge::new(
+                        s2.clone(),
+                        e2.clone(),
+                        edge_self.curve.clone(),
+                    )),
+                ];
             } else if s2 == e2 {
                 // return CurveIntersection::IntervalAndPoint(s1.clone(), e1.clone(), s2.clone());
-                return vec![EdgeEdgeIntersection::Point(s2.clone()), EdgeEdgeIntersection::Edge(Edge::new(s1.clone(), e1.clone(), edge_self.curve.clone()))];
+                return vec![
+                    EdgeEdgeIntersection::Point(s2.clone()),
+                    EdgeEdgeIntersection::Edge(Edge::new(
+                        s1.clone(),
+                        e1.clone(),
+                        edge_self.curve.clone(),
+                    )),
+                ];
             } else {
                 // return CurveIntersection::DualInterval(
                 //     s1.clone(),
@@ -105,7 +149,18 @@ pub fn edge_edge_same_curve_intersection(edge_self: &Edge, edge_other: &Edge) ->
                 //     s2.clone(),
                 //     e2.clone(),
                 // );
-                return vec![EdgeEdgeIntersection::Edge(Edge::new(s1.clone(), e1.clone(), edge_self.curve.clone())), EdgeEdgeIntersection::Edge(Edge::new(s2.clone(), e2.clone(), edge_self.curve.clone()))];
+                return vec![
+                    EdgeEdgeIntersection::Edge(Edge::new(
+                        s1.clone(),
+                        e1.clone(),
+                        edge_self.curve.clone(),
+                    )),
+                    EdgeEdgeIntersection::Edge(Edge::new(
+                        s2.clone(),
+                        e2.clone(),
+                        edge_self.curve.clone(),
+                    )),
+                ];
             }
         }
         _ => {

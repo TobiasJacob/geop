@@ -19,10 +19,7 @@ use geop_topology::{
     debug_data::get_debug_data,
     operations::extrude::extrude,
     topology::{
-        contour::Contour,
-        difference::face_face::face_face_difference,
-        edge::Edge,
-        face::{Face},
+        contour::Contour, difference::face_face::face_face_difference, edge::Edge, face::Face,
     },
 };
 use geop_wgpu::window::GeopWindow;

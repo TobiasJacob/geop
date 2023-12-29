@@ -1,5 +1,8 @@
 use crate::topology::{
-    contains::{face_point::{face_point_contains, FacePointContains}, surface_edge::surface_edge_contains},
+    contains::{
+        face_point::{face_point_contains, FacePointContains},
+        surface_edge::surface_edge_contains,
+    },
     edge::Edge,
     face::Face,
     intersections::contour_edge::countour_edge_intersection_points,
