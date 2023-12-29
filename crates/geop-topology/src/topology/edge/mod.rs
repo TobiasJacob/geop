@@ -4,11 +4,12 @@ use std::{
 };
 
 use geop_geometry::{
+    curves::{curve::Curve, line::Line},
     points::point::Point,
-    transforms::Transform, curves::{line::Line, curve::Curve},
+    transforms::Transform,
 };
 
-use crate::{topology::contains::edge_point::{EdgeContains, edge_contains_point}};
+use crate::topology::contains::edge_point::{edge_contains_point, EdgeContains};
 
 #[derive(Clone, Debug)]
 pub struct Edge {
@@ -24,11 +25,7 @@ impl Edge {
         assert!(start != end); // Prevent zero length edges
         assert!(curve.on_manifold(*start));
         assert!(curve.on_manifold(*end));
-        Edge {
-            start,
-            end,
-            curve,
-        }
+        Edge { start, end, curve }
     }
 
     pub fn new_line(start: Rc<Point>, end: Rc<Point>) -> Edge {

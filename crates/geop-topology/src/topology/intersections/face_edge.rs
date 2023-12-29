@@ -18,9 +18,9 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersect
             },
             EdgeEdgeIntersection::Edge(e) => {
                 let mut edges = vec![Rc::new(e.clone())];
-                for b in face.boundaries.iter() {
+                for _b in face.boundaries.iter() {
                     // let ints = b.intersect_edge(&e);
-                    edges = todo!("Split edges by intersections")
+                    let _edges = todo!("Split edges by intersections");
                     // edges = b.split_edges_if_necessary(edges);
                 }
 

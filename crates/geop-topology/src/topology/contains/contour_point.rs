@@ -1,10 +1,8 @@
-use std::rc::Rc;
+use geop_geometry::points::point::Point;
 
-use geop_geometry::{points::point::Point, EQ_THRESHOLD};
+use crate::topology::contour::Contour;
 
-use crate::topology::{edge::Edge, contour::Contour};
-
-use super::edge_point::{EdgeContains, edge_contains_point};
+use super::edge_point::{edge_contains_point, EdgeContains};
 
 pub fn contour_contains_point(contour: Contour, point: Point) -> EdgeContains {
     for edge in contour.edges.iter() {

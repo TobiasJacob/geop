@@ -17,10 +17,10 @@ pub enum VolumeSplit {
 }
 
 pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSplit> {
-    let mut intersections = shell_shell_intersect(volume_self, volume_other);
+    let mut _intersections = shell_shell_intersect(volume_self, volume_other);
 
-    let mut faces_self = volume_self.faces.clone();
-    let mut faces_other = volume_other.faces.clone();
+    let mut _faces_self = volume_self.faces.clone();
+    let mut _faces_other = volume_other.faces.clone();
     todo!("Volume::split")
     // for vert in intersections {
     //     faces_self = faces_self

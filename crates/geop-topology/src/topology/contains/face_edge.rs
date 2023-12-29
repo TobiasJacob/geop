@@ -1,10 +1,8 @@
-use geop_geometry::points::point::Point;
-
 use crate::topology::{
     contains::face_point::{face_contains_point, FaceContainsPoint},
     edge::Edge,
     face::Face,
-    intersections::{self, edge_edge::EdgeEdgeIntersection, contour_edge::{countour_edge_intersection_points}},
+    intersections::contour_edge::countour_edge_intersection_points,
 };
 
 pub enum FaceContainsEdge {

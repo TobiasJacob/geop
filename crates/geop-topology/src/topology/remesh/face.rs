@@ -1,14 +1,16 @@
 use std::rc::Rc;
 
-use geop_geometry::points::point::Point;
-
-use crate::{topology::{
-    contains::face_edge::{face_contains_edge, FaceContainsEdge},
-    contour::Contour,
-    edge::Edge,
-    face::{face_surface::FaceSurface, Face},
-    intersections::{edge_edge::EdgeEdgeIntersection, contour_contour::countour_contour_intersection_points}, split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
-}, debug_data::{self, DebugColor}};
+use crate::{
+    debug_data::{self, DebugColor},
+    topology::{
+        contains::face_edge::{face_contains_edge, FaceContainsEdge},
+        contour::Contour,
+        edge::Edge,
+        face::{face_surface::FaceSurface, Face},
+        intersections::contour_contour::countour_contour_intersection_points,
+        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+    },
+};
 
 #[derive(Debug)]
 pub enum FaceSplit {
@@ -42,7 +44,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
         edges_other = split_edges_by_point_if_necessary(edges_other, point.clone());
     }
 
-    let res: Vec<FaceSplit>  = edges_self
+    let res: Vec<FaceSplit> = edges_self
         .into_iter()
         .map(|edge| match face_contains_edge(face_other, &edge) {
             FaceContainsEdge::Inside => FaceSplit::AinB(edge),
@@ -66,13 +68,25 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
         println!("Edge: {:?}", edge);
         match edge {
             FaceSplit::AinB(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Black),
-            FaceSplit::AonBSameSide(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Red),
-            FaceSplit::AonBOpSide(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Transparent),
-            FaceSplit::AoutB(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Transparent),
+            FaceSplit::AonBSameSide(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Red)
+            }
+            FaceSplit::AonBOpSide(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+            }
+            FaceSplit::AoutB(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+            }
             FaceSplit::BinA(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Yellow),
-            FaceSplit::BonASameSide(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Transparent),
-            FaceSplit::BonAOpSide(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Transparent),
-            FaceSplit::BoutA(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Transparent),
+            FaceSplit::BonASameSide(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+            }
+            FaceSplit::BonAOpSide(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+            }
+            FaceSplit::BoutA(edge) => {
+                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+            }
         }
     }
 

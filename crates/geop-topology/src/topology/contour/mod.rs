@@ -2,18 +2,21 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
-use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeEdgeIntersection};
+use super::{
+    contains::edge_point::{edge_contains_point, EdgeContains},
+    edge::Edge,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EdgeIndex {
     OnEdge(usize),
-    OnCorner(usize, usize)
+    OnCorner(usize, usize),
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ContourTangent {
     OnEdge(Point),
-    OnCorner(Point, Point) // Ingoung and outgoing tangent
+    OnCorner(Point, Point), // Ingoung and outgoing tangent
 }
 
 impl ContourTangent {
@@ -31,16 +34,16 @@ impl ContourTangent {
     }
     pub fn is_inside(&self, normal: Point, curve_dir: Point) -> bool {
         let (tangent1, tangent2) = match self {
-            ContourTangent::OnEdge(tangent) => { (tangent, tangent) }
-            ContourTangent::OnCorner(tangent1, tangent2) => { 
-                (tangent1, tangent2)
-            }
+            ContourTangent::OnEdge(tangent) => (tangent, tangent),
+            ContourTangent::OnCorner(tangent1, tangent2) => (tangent1, tangent2),
         };
         // Check sign of det(tangent1 - curve_dir, tangent2 - curve_dir, normal - curve_dir)
         let curve_dir = -curve_dir.normalize();
         let tangent1 = -tangent1.normalize();
         let tangent2 = tangent2.normalize();
-        let det = (tangent1 - curve_dir).cross(tangent2 - curve_dir).dot(normal - curve_dir);
+        let det = (tangent1 - curve_dir)
+            .cross(tangent2 - curve_dir)
+            .dot(normal - curve_dir);
         det > 0.0
     }
 }
@@ -115,11 +118,16 @@ impl Contour {
     fn get_edge_index(&self, point: Point) -> EdgeIndex {
         for (i, edge) in self.edges.iter().enumerate() {
             match edge_contains_point(edge, point) {
-                EdgeContains::Inside => { return EdgeIndex::OnEdge(i);}
-                EdgeContains::OnPoint(p) => {
-                    match p == edge.end {
-                        true => { return EdgeIndex::OnCorner(i, (i + 1) % self.edges.len()) }
-                        false => { return EdgeIndex::OnCorner((i + self.edges.len() - 1) % self.edges.len(), i)}
+                EdgeContains::Inside => {
+                    return EdgeIndex::OnEdge(i);
+                }
+                EdgeContains::OnPoint(p) => match p == edge.end {
+                    true => return EdgeIndex::OnCorner(i, (i + 1) % self.edges.len()),
+                    false => {
+                        return EdgeIndex::OnCorner(
+                            (i + self.edges.len() - 1) % self.edges.len(),
+                            i,
+                        )
                     }
                 },
                 EdgeContains::Outside => {}
@@ -133,10 +141,8 @@ impl Contour {
         match self.get_edge_index(p) {
             EdgeIndex::OnCorner(i1, i2) => {
                 ContourTangent::OnCorner(self.edges[i1].tangent(p), self.edges[i2].tangent(p))
-            },
-            EdgeIndex::OnEdge(i) => {
-                ContourTangent::OnEdge(self.edges[i].tangent(p))
-            },
+            }
+            EdgeIndex::OnEdge(i) => ContourTangent::OnEdge(self.edges[i].tangent(p)),
         }
     }
 
@@ -146,12 +152,12 @@ impl Contour {
 
         let mut result = Vec::<Rc<Edge>>::new();
         let start_i = match self.get_edge_index(*start) {
-            EdgeIndex::OnEdge(i) => { i }
-            EdgeIndex::OnCorner(i1, i2) => { i2 }
+            EdgeIndex::OnEdge(i) => i,
+            EdgeIndex::OnCorner(_i1, i2) => i2,
         };
         let end_i = match self.get_edge_index(*end) {
-            EdgeIndex::OnEdge(i) => { i }
-            EdgeIndex::OnCorner(i1, i2) => { i1 }
+            EdgeIndex::OnEdge(i) => i,
+            EdgeIndex::OnCorner(i1, _i2) => i1,
         };
 
         if start_i == end_i {

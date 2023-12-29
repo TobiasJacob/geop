@@ -2,17 +2,16 @@ pub mod face_surface;
 
 use std::rc::Rc;
 
-use geop_geometry::{
-    points::point::Point,
-    transforms::Transform, curves::curve::Curve,
-};
+use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform};
 
 use crate::topology::contains::edge_point::EdgeContains;
 
 use self::face_surface::FaceSurface;
 
 use super::{
-    {contour::Contour, edge::Edge}, contour::{EdgeIndex, ContourTangent}, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
+    contains::face_point::{face_contains_point, FaceContainsPoint},
+    contour::ContourTangent,
+    {contour::Contour, edge::Edge},
 };
 
 #[derive(Clone, Debug)]
@@ -133,7 +132,6 @@ impl Face {
             surface: Rc::new(self.surface.neg()),
         }
     }
-
 }
 
 // pretty print
@@ -141,7 +139,12 @@ impl std::fmt::Display for Face {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self.surface {
             FaceSurface::Plane(p) => {
-                writeln!(f, "Plane at basis = {:?} with normal = {:?}", p.basis, p.u_slope.cross(p.v_slope))?;
+                writeln!(
+                    f,
+                    "Plane at basis = {:?} with normal = {:?}",
+                    p.basis,
+                    p.u_slope.cross(p.v_slope)
+                )?;
                 for contour in self.boundaries.iter() {
                     writeln!(f, "Contour:")?;
                     for edge in contour.edges.iter() {
@@ -149,7 +152,7 @@ impl std::fmt::Display for Face {
                     }
                 }
             }
-            FaceSurface::Sphere(s) => {
+            FaceSurface::Sphere(_s) => {
                 writeln!(f, "sphere is still todo")?;
             }
         };

@@ -1,12 +1,17 @@
-use std::{rc::Rc, f32::consts::E};
+use std::rc::Rc;
 
-use geop_geometry::{curves, points::point::Point};
+use geop_geometry::points::point::Point;
 
 use crate::topology::{
-    face::{Face, face_surface::{FaceSurfaceIntersection, face_surface_face_surface_intersect}},
-    remesh::face::{face_split, FaceSplit, face_remesh}, edge::Edge, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge}, intersections::{face_edge::face_edge_intersection, edge_edge::EdgeEdgeIntersection},
+    contains::face_point::{face_contains_point, FaceContainsPoint},
+    edge::Edge,
+    face::{
+        face_surface::{face_surface_face_surface_intersect, FaceSurfaceIntersection},
+        Face,
+    },
+    intersections::{edge_edge::EdgeEdgeIntersection, face_edge::face_edge_intersection},
+    remesh::face::{face_remesh, face_split, FaceSplit},
 };
-
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
     assert!(
@@ -25,7 +30,8 @@ pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) 
             FaceSplit::BonASameSide(_) => false,
             FaceSplit::BonAOpSide(_) => false,
             FaceSplit::BoutA(_) => false,
-        }).collect::<Vec<FaceSplit>>();
+        })
+        .collect::<Vec<FaceSplit>>();
 
     return face_remesh(face_self.surface.clone(), edges);
 }
@@ -70,7 +76,7 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
                             if face_contains_point(face, **p) != FaceContainsPoint::Outside {
                                 new_segments.push(seg.clone());
                             }
-                        },
+                        }
                         EdgeEdgeIntersection::Edge(e) => {
                             new_segments.extend(face_edge_intersection(face_self, e));
                         }
@@ -80,19 +86,18 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
                 segments = new_segments;
             }
 
-            segments.iter().map(|seg| {
-                match seg {
-                    EdgeEdgeIntersection::Point(p) => {
-                        FaceFaceIntersection::Point(p.clone())
-                    },
-                    EdgeEdgeIntersection::Edge(e) => {
-                        FaceFaceIntersection::Edge(e.clone())
-                    }
-                }
-            }).collect()
-        },
-        FaceSurfaceIntersection::Surface(surface) => {
-            vec![FaceFaceIntersection::Face(face_face_same_surface_intersection(face_self, face_other))]
-        },
+            segments
+                .iter()
+                .map(|seg| match seg {
+                    EdgeEdgeIntersection::Point(p) => FaceFaceIntersection::Point(p.clone()),
+                    EdgeEdgeIntersection::Edge(e) => FaceFaceIntersection::Edge(e.clone()),
+                })
+                .collect()
+        }
+        FaceSurfaceIntersection::Surface(_surface) => {
+            vec![FaceFaceIntersection::Face(
+                face_face_same_surface_intersection(face_self, face_other),
+            )]
+        }
     }
 }

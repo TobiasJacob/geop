@@ -1,7 +1,17 @@
-use geop_geometry::{surfaces::{sphere::{SphereTransform, Sphere}, surface::Surface, plane::Plane}, transforms::Transform, EQ_THRESHOLD, points::point::Point, surface_surface_intersection::plane_plane::{plane_plane_intersection, PlanePlaneIntersection}, curves::curve::Curve};
+use geop_geometry::{
+    curves::curve::Curve,
+    points::point::Point,
+    surface_surface_intersection::plane_plane::{plane_plane_intersection, PlanePlaneIntersection},
+    surfaces::{
+        plane::Plane,
+        sphere::{Sphere, SphereTransform},
+        surface::Surface,
+    },
+    transforms::Transform,
+    EQ_THRESHOLD,
+};
 
-use crate::topology::{edge::{Edge}, intersections::edge_edge::EdgeEdgeIntersection, contour::Contour};
-
+use crate::topology::{edge::Edge, intersections::edge_edge::EdgeEdgeIntersection};
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum FaceSurface {
@@ -34,18 +44,18 @@ impl FaceSurface {
             return false;
         }
         match self {
-            FaceSurface::Plane(plane) => {
-                match &*edge.curve {
-                    Curve::Line(line) => {
-                        return plane.normal().dot(line.direction).abs() < EQ_THRESHOLD && plane.on_surface(line.basis);
-                    }
-                    Curve::Circle(circle) => {
-                        return circle.normal.dot(plane.normal()) < EQ_THRESHOLD && plane.on_surface(circle.basis)
-                    },
-                    Curve::Ellipse(_) => todo!("Not implemented"),
+            FaceSurface::Plane(plane) => match &*edge.curve {
+                Curve::Line(line) => {
+                    return plane.normal().dot(line.direction).abs() < EQ_THRESHOLD
+                        && plane.on_surface(line.basis);
                 }
-            }
-            FaceSurface::Sphere(sphere) => {
+                Curve::Circle(circle) => {
+                    return circle.normal.dot(plane.normal()) < EQ_THRESHOLD
+                        && plane.on_surface(circle.basis)
+                }
+                Curve::Ellipse(_) => todo!("Not implemented"),
+            },
+            FaceSurface::Sphere(_sphere) => {
                 todo!("Not implemented");
             }
         }
@@ -53,13 +63,11 @@ impl FaceSurface {
 
     pub fn intersect_edge(&self, other: &Edge) -> Vec<EdgeEdgeIntersection> {
         match self {
-            FaceSurface::Plane(plane) => {
-                match &*other.curve {
-                    Curve::Line(line) => {
-                        let p = todo!("asdf");
-                    },
-                    _ => todo!("Not implemented"),
+            FaceSurface::Plane(_plane) => match &*other.curve {
+                Curve::Line(_line) => {
+                    let _p = todo!("asdf");
                 }
+                _ => todo!("Not implemented"),
             },
             _ => todo!("Not implemented"),
         }
@@ -79,27 +87,34 @@ pub enum FaceSurfaceIntersection {
     Surface(FaceSurface),
 }
 
-pub fn face_surface_face_surface_intersect(face_self: &FaceSurface, face_other: &FaceSurface) -> FaceSurfaceIntersection {
+pub fn face_surface_face_surface_intersect(
+    face_self: &FaceSurface,
+    face_other: &FaceSurface,
+) -> FaceSurfaceIntersection {
     match face_self {
         FaceSurface::Plane(plane_self) => match face_other {
             FaceSurface::Plane(plane_other) => {
                 match plane_plane_intersection(plane_self, plane_other) {
                     PlanePlaneIntersection::None => FaceSurfaceIntersection::None,
-                    PlanePlaneIntersection::Line(l) => FaceSurfaceIntersection::CurvesAndPoints(vec![Curve::Line(l)], vec![]),
-                    PlanePlaneIntersection::Plane(p) => FaceSurfaceIntersection::Surface(FaceSurface::Plane(p)),
+                    PlanePlaneIntersection::Line(l) => {
+                        FaceSurfaceIntersection::CurvesAndPoints(vec![Curve::Line(l)], vec![])
+                    }
+                    PlanePlaneIntersection::Plane(p) => {
+                        FaceSurfaceIntersection::Surface(FaceSurface::Plane(p))
+                    }
                 }
-            },
-            FaceSurface::Sphere(sphere_other) => {
+            }
+            FaceSurface::Sphere(_sphere_other) => {
                 todo!("Plane-Sphere intersection")
-            },
+            }
         },
-        FaceSurface::Sphere(sphere_self) => match face_other {
-            FaceSurface::Plane(plane_other) => {
+        FaceSurface::Sphere(_sphere_self) => match face_other {
+            FaceSurface::Plane(_plane_other) => {
                 todo!("Sphere-Plane intersection")
-            },
-            FaceSurface::Sphere(sphere_other) => {
+            }
+            FaceSurface::Sphere(_sphere_other) => {
                 todo!("Sphere-Sphere intersection")
-            },
+            }
         },
     }
 }

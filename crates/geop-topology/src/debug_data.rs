@@ -39,13 +39,12 @@ pub struct DebugData {
     pub faces: Vec<(Face, DebugColor)>,
 }
 
-static mut debug_data: Option<DebugData> = None;
-
+static mut DEBUG_DATA: Option<DebugData> = None;
 
 fn init() {
-    assert!(unsafe { debug_data.is_none() });
+    assert!(unsafe { DEBUG_DATA.is_none() });
     unsafe {
-        debug_data = Some(DebugData {
+        DEBUG_DATA = Some(DebugData {
             points: Vec::new(),
             edges: Vec::new(),
             faces: Vec::new(),
@@ -55,36 +54,31 @@ fn init() {
 
 pub fn add_point(point: Point, color: DebugColor) {
     unsafe {
-        if debug_data.is_none() {
+        if DEBUG_DATA.is_none() {
             init();
         }
-        debug_data.as_mut().unwrap().points.push((point, color));
+        DEBUG_DATA.as_mut().unwrap().points.push((point, color));
     }
 }
 
 pub fn add_edge(edge: Edge, color: DebugColor) {
     unsafe {
-        if debug_data.is_none() {
+        if DEBUG_DATA.is_none() {
             init();
         }
-        debug_data.as_mut().unwrap().edges.push((edge, color));
+        DEBUG_DATA.as_mut().unwrap().edges.push((edge, color));
     }
 }
 
 pub fn add_face(face: Face, color: DebugColor) {
     unsafe {
-        if debug_data.is_none() {
+        if DEBUG_DATA.is_none() {
             init();
         }
-        debug_data.as_mut().unwrap().faces.push((face, color));
+        DEBUG_DATA.as_mut().unwrap().faces.push((face, color));
     }
 }
 
 pub fn get_debug_data() -> Option<DebugData> {
-    unsafe {
-        debug_data.clone()
-    }
+    unsafe { DEBUG_DATA.clone() }
 }
-
-
-
