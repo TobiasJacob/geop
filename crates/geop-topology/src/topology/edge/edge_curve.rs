@@ -1,10 +1,5 @@
 use geop_geometry::{curves::{circle::{Circle, CircleTransform}, curve::Curve, ellipse::Ellipse, line::Line}, transforms::Transform, curve_curve_intersection::{line_line::{line_line_intersection, LineLineIntersection}, circle_circle::{circle_circle_intersection, CircleCircleIntersection}, circle_line::{circle_line_intersection, CircleLineIntersection}}, points::point::Point};
 
-pub enum EdgeCurveIntersection {
-    None,
-    Points(Vec<Point>),
-    EdgeCurve(EdgeCurve),
-}
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum EdgeCurve {
@@ -43,6 +38,11 @@ impl EdgeCurve {
     }
 }
 
+pub enum EdgeCurveIntersection {
+    None,
+    Points(Vec<Point>),
+    Curve(EdgeCurve),
+}
 
 pub fn edge_curve_edge_curve_intersect(edge_self: &EdgeCurve, edge_other: &EdgeCurve) -> EdgeCurveIntersection {
     match edge_self {
@@ -51,7 +51,7 @@ pub fn edge_curve_edge_curve_intersect(edge_self: &EdgeCurve, edge_other: &EdgeC
                 match line_line_intersection(line, other_line) {
                     LineLineIntersection::None => EdgeCurveIntersection::None,
                     LineLineIntersection::Point(p) => EdgeCurveIntersection::Points(vec![p]),
-                    LineLineIntersection::Line(l) => EdgeCurveIntersection::EdgeCurve(EdgeCurve::Line(l)),
+                    LineLineIntersection::Line(l) => EdgeCurveIntersection::Curve(EdgeCurve::Line(l)),
                 }
             }
             EdgeCurve::Circle(other_circle) => {
@@ -74,7 +74,7 @@ pub fn edge_curve_edge_curve_intersect(edge_self: &EdgeCurve, edge_other: &EdgeC
                     CircleCircleIntersection::None => EdgeCurveIntersection::None,
                     CircleCircleIntersection::OnePoint(p) => EdgeCurveIntersection::Points(vec![p]),
                     CircleCircleIntersection::TwoPoint(p1, p2) => EdgeCurveIntersection::Points(vec![p1, p2]),
-                    CircleCircleIntersection::Circle(c) => EdgeCurveIntersection::EdgeCurve(EdgeCurve::Circle(c)),
+                    CircleCircleIntersection::Circle(c) => EdgeCurveIntersection::Curve(EdgeCurve::Circle(c)),
                 }
             }
             EdgeCurve::Ellipse(other_ellipse) => {

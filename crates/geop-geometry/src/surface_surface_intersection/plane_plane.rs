@@ -1,4 +1,4 @@
-use crate::geometry::{surfaces::{plane::Plane, surface::Surface}, curves::line::Line, points::point::Point};
+use crate::{surfaces::plane::Plane, curves::line::Line, points::point::Point};
 
 pub enum PlanePlaneIntersection {
     Plane(Plane),
@@ -6,9 +6,9 @@ pub enum PlanePlaneIntersection {
     None
 }
 
-pub fn intersect_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection {
-    let n_a = a.normal(a.basis);
-    let n_b = b.normal(b.basis);
+pub fn plane_plane_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection {
+    let n_a = a.normal();
+    let n_b = b.normal();
     let b_a: Point = a.basis;
     let b_b: Point = b.basis;
 

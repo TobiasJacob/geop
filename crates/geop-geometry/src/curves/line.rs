@@ -80,11 +80,12 @@ impl Curve for Line {
     //     v
     // }
 
+    // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
         assert!(self.on_manifold(m));
         assert!(self.on_manifold(start));
         assert!(self.on_manifold(end));
-        (m - start).dot(self.direction) > 0.0 && (m - end).dot(self.direction) < 0.0
+        (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
     }
 
     fn get_midpoint(&self, start: Point, end: Point) -> Point {

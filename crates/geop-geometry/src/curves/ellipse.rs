@@ -72,6 +72,7 @@ impl Curve for Ellipse {
     //     todo!("Implement parallel_transport")
     // }
 
+    // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
         todo!("Implement between")
     }

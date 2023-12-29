@@ -1,6 +1,6 @@
-use geop_geometry::{surfaces::{sphere::{SphereTransform, Sphere}, surface::Surface, plane::Plane}, transforms::Transform, EQ_THRESHOLD};
+use geop_geometry::{surfaces::{sphere::{SphereTransform, Sphere}, surface::Surface, plane::Plane}, transforms::Transform, EQ_THRESHOLD, points::point::Point, surface_surface_intersection::plane_plane::{plane_plane_intersection, PlanePlaneIntersection}};
 
-use crate::topology::{edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection};
+use crate::topology::{edge::{Edge, edge_curve::EdgeCurve}, intersections::edge_edge::EdgeEdgeIntersection, contour::Contour};
 
 
 #[derive(PartialEq, Clone, Debug)]
@@ -70,5 +70,36 @@ impl FaceSurface {
             FaceSurface::Plane(plane) => FaceSurface::Plane(plane.neg()),
             FaceSurface::Sphere(sphere) => FaceSurface::Sphere(sphere.neg()),
         }
+    }
+}
+
+pub enum FaceSurfaceIntersection {
+    None,
+    CurvesAndPoints(Vec<EdgeCurve>, Vec<Point>),
+    Surface(FaceSurface),
+}
+
+pub fn face_surface_face_surface_intersect(face_self: &FaceSurface, face_other: &FaceSurface) -> FaceSurfaceIntersection {
+    match face_self {
+        FaceSurface::Plane(plane_self) => match face_other {
+            FaceSurface::Plane(plane_other) => {
+                match plane_plane_intersection(plane_self, plane_other) {
+                    PlanePlaneIntersection::None => FaceSurfaceIntersection::None,
+                    PlanePlaneIntersection::Line(l) => FaceSurfaceIntersection::CurvesAndPoints(vec![EdgeCurve::Line(l)], vec![]),
+                    PlanePlaneIntersection::Plane(p) => FaceSurfaceIntersection::Surface(FaceSurface::Plane(p)),
+                }
+            },
+            FaceSurface::Sphere(sphere_other) => {
+                todo!("Plane-Sphere intersection")
+            },
+        },
+        FaceSurface::Sphere(sphere_self) => match face_other {
+            FaceSurface::Plane(plane_other) => {
+                todo!("Sphere-Plane intersection")
+            },
+            FaceSurface::Sphere(sphere_other) => {
+                todo!("Sphere-Sphere intersection")
+            },
+        },
     }
 }

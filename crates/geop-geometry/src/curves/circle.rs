@@ -111,6 +111,7 @@ impl Curve for Circle {
     //     v
     // }
 
+    // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
         assert!(self.on_manifold(m));
         assert!(self.on_manifold(start));
