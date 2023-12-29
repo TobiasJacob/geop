@@ -8,7 +8,6 @@ use geop_geometry::{
     EQ_THRESHOLD, transforms::Transform,
 };
 use geop_rasterize::{
-    contour::rasterize_contours_into_line_list,
     face::rasterize_face_into_triangle_list,
     triangle_buffer::{RenderTriangle, TriangleBuffer}, edge_buffer::EdgeBuffer, volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list}, edge::rasterize_edge_into_line_list,
 };
