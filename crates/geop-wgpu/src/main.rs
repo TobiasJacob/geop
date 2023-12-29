@@ -20,7 +20,7 @@ use geop_topology::{
     operations::extrude::extrude,
     topology::{
         contour::Contour,
-        difference::face_face::face_difference,
+        difference::face_face::face_face_difference,
         edge::Edge,
         face::{Face},
     },
@@ -93,7 +93,7 @@ async fn run() {
         );
         let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.2, 0.0)));
 
-        let union_face = face_difference(&face2, &face1);
+        let union_face = face_face_difference(&face2, &face1);
 
         let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.5));
 

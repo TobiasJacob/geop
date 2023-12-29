@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::topology::{
-    face::Face, intersections::shell_shell::shell_shell_intersect, volume::Volume,
+    face::Face, intersections::shell_shell::shell_shell_intersection, volume::Volume,
 };
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ pub enum VolumeSplit {
 }
 
 pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSplit> {
-    let mut _intersections = shell_shell_intersect(volume_self, volume_other);
+    let mut _intersections = shell_shell_intersection(volume_self, volume_other);
 
     let mut _faces_self = volume_self.faces.clone();
     let mut _faces_other = volume_other.faces.clone();
