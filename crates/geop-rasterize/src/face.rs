@@ -9,7 +9,7 @@ use geop_geometry::{
     },
     EQ_THRESHOLD,
 };
-use geop_topology::topology::face::{Face, face_surface::FaceSurface};
+use geop_topology::topology::face::{face_surface::FaceSurface, Face};
 
 use crate::{
     contour::rasterize_contour_into_line_list,
@@ -104,7 +104,7 @@ pub fn check_triangle_counter_clockwise(
     assert!(surface.surface().on_surface(traingle[0].point()));
     assert!(surface.surface().on_surface(traingle[1].point()));
     assert!(surface.surface().on_surface(traingle[2].point()));
-    
+
     let (v1, v2) = match surface {
         DelaunaySurface::Plane(plane) => (
             plane.log(traingle[0].into(), traingle[1].into()),

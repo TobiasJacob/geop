@@ -1,5 +1,3 @@
-
-
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
 #[derive(Debug, Clone)]

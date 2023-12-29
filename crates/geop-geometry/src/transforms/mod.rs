@@ -87,8 +87,14 @@ impl Transform {
         let scale_x = self.matrix[0][0] + self.matrix[0][1] + self.matrix[0][2];
         let scale_y = self.matrix[1][0] + self.matrix[1][1] + self.matrix[1][2];
         let scale_z = self.matrix[2][0] + self.matrix[2][1] + self.matrix[2][2];
-        assert!((scale_x - scale_y).abs() < EQ_THRESHOLD, "Scale must be uniform");
-        assert!((scale_x - scale_z).abs() < EQ_THRESHOLD, "Scale must be uniform");
+        assert!(
+            (scale_x - scale_y).abs() < EQ_THRESHOLD,
+            "Scale must be uniform"
+        );
+        assert!(
+            (scale_x - scale_z).abs() < EQ_THRESHOLD,
+            "Scale must be uniform"
+        );
         return scale_x;
     }
 }
@@ -110,13 +116,7 @@ mod tests {
         let t1 = Transform::from_euler_angles(0.0, 0.0, std::f64::consts::PI / 2.0);
         let t2 = Transform::from_euler_angles(std::f64::consts::PI / 2.0, 0.0, 0.0);
         let t3 = t2 * t1.clone();
-        assert_eq!(
-            t1 * Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0)
-        );
-        assert_eq!(
-            t3 * Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 1.0)
-        );
+        assert_eq!(t1 * Point::new(1.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0));
+        assert_eq!(t3 * Point::new(1.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0));
     }
 }

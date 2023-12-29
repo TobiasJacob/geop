@@ -31,9 +31,7 @@ impl EdgeBuffer {
     }
 
     pub fn empty() -> Self {
-        EdgeBuffer {
-            edges: Vec::new(),
-        }
+        EdgeBuffer { edges: Vec::new() }
     }
 
     pub fn to_u8_slice(&self) -> &[u8] {

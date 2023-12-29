@@ -1,9 +1,9 @@
-
 use std::rc::Rc;
 
 use crate::{
     curves::{circle::Circle, ellipse::Ellipse, line::Line},
-    points::point::Point, transforms::Transform,
+    points::point::Point,
+    transforms::Transform,
 };
 
 pub enum SurfaceCurve {

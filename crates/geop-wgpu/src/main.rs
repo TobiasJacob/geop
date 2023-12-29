@@ -1,21 +1,30 @@
-use std::rc::Rc;
 use std::panic;
+use std::rc::Rc;
 
 use geop_geometry::{
-    curves::{circle::Circle, line::Line, curve::Curve},
+    curves::{circle::Circle, curve::Curve, line::Line},
     points::point::Point,
     surfaces::plane::Plane,
-    EQ_THRESHOLD, transforms::Transform,
+    transforms::Transform,
+    EQ_THRESHOLD,
 };
 use geop_rasterize::{
+    edge::rasterize_edge_into_line_list,
+    edge_buffer::EdgeBuffer,
     face::rasterize_face_into_triangle_list,
-    triangle_buffer::{RenderTriangle, TriangleBuffer}, edge_buffer::EdgeBuffer, volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list}, edge::rasterize_edge_into_line_list,
+    triangle_buffer::{RenderTriangle, TriangleBuffer},
+    volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list},
 };
-use geop_topology::{topology::{
-    contour::Contour,
-    edge::{Edge},
-    face::{Face, face_surface::FaceSurface}, difference::face_face::face_difference,
-}, operations::extrude::extrude, debug_data::get_debug_data};
+use geop_topology::{
+    debug_data::get_debug_data,
+    operations::extrude::extrude,
+    topology::{
+        contour::Contour,
+        difference::face_face::face_difference,
+        edge::Edge,
+        face::{face_surface::FaceSurface, Face},
+    },
+};
 use geop_wgpu::window::GeopWindow;
 
 pub fn linear_edge(s: Rc<Point>, e: Rc<Point>) -> Rc<Edge> {
@@ -51,7 +60,7 @@ async fn run() {
         let v2 = Rc::new(Point::new(0.8, 0.2, 0.0));
         let v3 = Rc::new(Point::new(0.8, 0.8, 0.0));
         let v4 = Rc::new(Point::new(0.2, 0.8, 0.0));
-    
+
         let contour = Contour::new(vec![
             linear_edge(v1.clone(), v2.clone()),
             linear_edge(v2.clone(), v3.clone()),
@@ -59,37 +68,35 @@ async fn run() {
             // circular_edge(v4.clone(), v6.clone(), *v5.point),
             linear_edge(v4.clone(), v1.clone()),
         ]);
-    
+
         let v5 = Rc::new(Point::new(0.5, 0.5, 0.0));
         let v6 = Rc::new(Point::new(0.5, 0.6, 0.0));
         let v7 = Rc::new(Point::new(0.6, 0.6, 0.0));
-    
+
         let inner_contour = Contour::new(vec![
             linear_edge(v5.clone(), v6.clone()),
             linear_edge(v6.clone(), v7.clone()),
             linear_edge(v7.clone(), v5.clone()),
         ]);
-    
+
         let surface = Rc::new(FaceSurface::Plane(Plane::new(
             Point::new(0.0, 0.0, 0.0),
             Point::new(1.0, 0.0, 0.0),
             Point::new(0.0, 1.0, 0.0),
         )));
-    
+
         // Loop shifted by 0.1 in x and y direction
-    
+
         let face1 = Face::new(
             vec![contour.clone(), inner_contour.clone()],
             surface.clone(),
         );
-        let face2 = face1.transform(
-            Transform::from_translation(Point::new(0.2, 0.2, 0.0))
-        );
-    
+        let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.2, 0.0)));
+
         let union_face = face_difference(&face2, &face1);
-    
+
         let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.5));
-    
+
         // let vertex_buffer_line = rasterize_contours_into_line_list(
         //     &union_face.boundaries,
         //     [1.0, 1.0, 1.0]
@@ -107,16 +114,22 @@ async fn run() {
         // vertex_buffer_triange.join(&vertex_buffer_triange2);
         // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
         let mut triangles = TriangleBuffer::empty();
-        triangles.join(&rasterize_volume_into_face_list(&object, [1.0, 1.0, 1.0, 1.0])); 
+        triangles.join(&rasterize_volume_into_face_list(
+            &object,
+            [1.0, 1.0, 1.0, 1.0],
+        ));
         let mut lines = EdgeBuffer::empty();
-        lines.join(&rasterize_volume_into_line_list(&object, [1.0, 1.0, 1.0, 1.0]));
+        lines.join(&rasterize_volume_into_line_list(
+            &object,
+            [1.0, 1.0, 1.0, 1.0],
+        ));
         return (lines, triangles);
     });
     match result {
         Ok((lines, triangles)) => {
             let window = GeopWindow::new(lines, triangles).await;
             window.show();
-        },
+        }
         Err(e) => {
             println!("Error: {:?}", e);
 
@@ -128,18 +141,19 @@ async fn run() {
             }
             println!("Lines: {:?}", lines);
 
-
             let mut triangles = TriangleBuffer::empty();
             for (face, debug_color) in debug_data.faces.iter() {
-                triangles.join(&rasterize_face_into_triangle_list(face, debug_color.to_color()));
+                triangles.join(&rasterize_face_into_triangle_list(
+                    face,
+                    debug_color.to_color(),
+                ));
             }
-            
+
             let window = GeopWindow::new(lines, triangles).await;
             println!("Error: {:?}", e);
             window.show();
         }
     }
-
 }
 
 fn main() {

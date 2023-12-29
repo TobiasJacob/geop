@@ -11,7 +11,6 @@ pub enum EdgeContains {
     OnPoint(Rc<Point>),
 }
 
-
 pub fn edge_contains_point(edge: &Edge, point: Point) -> EdgeContains {
     if !edge.curve.on_manifold(point) {
         return EdgeContains::Outside;

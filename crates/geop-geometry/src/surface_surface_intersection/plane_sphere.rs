@@ -1,9 +1,14 @@
-use crate::{surfaces::{sphere::Sphere, plane::Plane}, curves::circle::Circle, points::point::Point, EQ_THRESHOLD};
+use crate::{
+    curves::circle::Circle,
+    points::point::Point,
+    surfaces::{plane::Plane, sphere::Sphere},
+    EQ_THRESHOLD,
+};
 
 pub enum PlaneSphereIntersection {
     Circle(Circle),
     Point(Point),
-    None
+    None,
 }
 
 pub fn plane_sphere_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersection {

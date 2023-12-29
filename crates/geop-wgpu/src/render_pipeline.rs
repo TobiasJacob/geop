@@ -8,7 +8,14 @@ pub struct RenderPipeline {
 }
 
 impl RenderPipeline {
-    pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration, vertices: &[u8], label: &str, topology: wgpu::PrimitiveTopology, render_pipeline_layout: &wgpu::PipelineLayout) -> RenderPipeline {
+    pub fn new(
+        device: &wgpu::Device,
+        config: &wgpu::SurfaceConfiguration,
+        vertices: &[u8],
+        label: &str,
+        topology: wgpu::PrimitiveTopology,
+        render_pipeline_layout: &wgpu::PipelineLayout,
+    ) -> RenderPipeline {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
             contents: vertices,

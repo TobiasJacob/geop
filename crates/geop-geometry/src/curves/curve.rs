@@ -1,9 +1,12 @@
-use std::{fmt::Debug};
+use std::fmt::Debug;
 
 use crate::{points::point::Point, transforms::Transform};
 
-use super::{line::Line, circle::{Circle, CircleTransform}, ellipse::Ellipse};
-
+use super::{
+    circle::{Circle, CircleTransform},
+    ellipse::Ellipse,
+    line::Line,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Curve {
@@ -11,7 +14,6 @@ pub enum Curve {
     Circle(Circle),
     Ellipse(Ellipse),
 }
-
 
 // This represents an oriented curve. Curves with redundant representations (e.g. a line with the direction vector not being normalized) have to be normalized in the new function. Unnormalized curves are not allowed.
 impl Curve {
@@ -23,9 +25,7 @@ impl Curve {
                 CircleTransform::Circle(circle) => Curve::Circle(circle),
                 CircleTransform::Ellipse(ellipse) => Curve::Ellipse(ellipse),
             },
-            Curve::Ellipse(ellipse) => {
-                Curve::Ellipse(ellipse.transform(transform))
-            }
+            Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.transform(transform)),
         }
     }
 
@@ -91,5 +91,4 @@ impl Curve {
             Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
         }
     }
-
 }

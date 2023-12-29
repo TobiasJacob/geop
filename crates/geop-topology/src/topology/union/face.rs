@@ -1,5 +1,7 @@
-use crate::topology::{face::Face, remesh::face::{FaceSplit, face_split, face_remesh}};
-
+use crate::topology::{
+    face::Face,
+    remesh::face::{face_remesh, face_split, FaceSplit},
+};
 
 pub fn face_union(face_self: &Face, face_other: &Face) -> Face {
     assert!(
@@ -18,7 +20,8 @@ pub fn face_union(face_self: &Face, face_other: &Face) -> Face {
             FaceSplit::BonASameSide(_) => false,
             FaceSplit::BonAOpSide(_) => false,
             FaceSplit::BoutA(_) => true,
-        }).collect::<Vec<FaceSplit>>();
+        })
+        .collect::<Vec<FaceSplit>>();
 
     return face_remesh(face_self.surface.clone(), edges);
 }

@@ -1,8 +1,6 @@
-
-
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::{ellipse::Ellipse};
+use super::ellipse::Ellipse;
 
 #[derive(Debug, Clone)]
 pub struct Circle {
@@ -20,7 +18,10 @@ pub enum CircleTransform {
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: Point) -> Circle {
         let normal = normal.normalize();
-        assert!(normal.dot(radius).abs() < EQ_THRESHOLD, "Radius and normal must be orthogonal");
+        assert!(
+            normal.dot(radius).abs() < EQ_THRESHOLD,
+            "Radius and normal must be orthogonal"
+        );
         Circle {
             basis,
             normal,
@@ -48,7 +49,8 @@ impl Circle {
     }
 
     pub fn on_manifold(&self, p: Point) -> bool {
-        (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
+        (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD
+            && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
     }
 
     pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {

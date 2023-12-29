@@ -1,4 +1,4 @@
-use geop_topology::topology::{edge::Edge};
+use geop_topology::topology::edge::Edge;
 
 use crate::edge_buffer::{EdgeBuffer, RenderEdge};
 

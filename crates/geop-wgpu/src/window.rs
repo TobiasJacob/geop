@@ -1,6 +1,4 @@
-use geop_rasterize::{
-    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer,
-};
+use geop_rasterize::{edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer};
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},

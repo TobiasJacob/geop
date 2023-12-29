@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{curves::line::Line, points::point::Point, EQ_THRESHOLD, transforms::Transform};
+use crate::{curves::line::Line, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -31,7 +31,7 @@ impl Plane {
         let v_slope = transform * (self.v_slope + self.basis) - basis;
         Plane::new(basis, u_slope.normalize(), v_slope.normalize())
     }
-    
+
     pub fn normal(&self) -> Point {
         self.u_slope.cross(self.v_slope)
     }
@@ -102,8 +102,11 @@ impl Surface for Plane {
 
 impl PartialEq for Plane {
     fn eq(&self, other: &Plane) -> bool {
-            self.u_slope.is_parallel(other.u_slope)
+        self.u_slope.is_parallel(other.u_slope)
             && self.v_slope.is_parallel(other.v_slope)
-            && (self.basis - other.basis).dot(self.u_slope.cross(other.u_slope)).abs() < EQ_THRESHOLD
+            && (self.basis - other.basis)
+                .dot(self.u_slope.cross(other.u_slope))
+                .abs()
+                < EQ_THRESHOLD
     }
 }

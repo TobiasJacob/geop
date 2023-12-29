@@ -1,5 +1,3 @@
-
-
 use crate::{points::point::Point, transforms::Transform};
 
 #[derive(Debug, Clone)]
@@ -13,7 +11,7 @@ impl Ellipse {
     pub fn new(basis: Point, dir0: Point, dir1: Point) -> Ellipse {
         Ellipse { basis, dir0, dir1 }
     }
-    
+
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let dir0 = transform * (self.dir0 + self.basis) - basis;
@@ -30,15 +28,14 @@ impl Ellipse {
         // -self.dir0 * u.sin() + self.dir1 * u.cos()
         todo!("Implement tangent")
     }
-    
+
     pub fn on_manifold(&self, _p: Point) -> bool {
         todo!("Implement on_manifold")
     }
-    
+
     pub fn interpolate(&self, _start: Point, _end: Point, _t: f64) -> Point {
         todo!("Implement interpolate")
     }
-
 
     // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
     //     todo!("Implement metric")

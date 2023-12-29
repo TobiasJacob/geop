@@ -1,9 +1,9 @@
-use crate::{surfaces::plane::Plane, curves::line::Line, points::point::Point};
+use crate::{curves::line::Line, points::point::Point, surfaces::plane::Plane};
 
 pub enum PlanePlaneIntersection {
     Plane(Plane),
     Line(Line),
-    None
+    None,
 }
 
 pub fn plane_plane_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection {

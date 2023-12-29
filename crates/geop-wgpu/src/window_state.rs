@@ -1,12 +1,11 @@
 use std::iter;
 
-
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-use crate::{render_pipeline::RenderPipeline, camera_pipeline::CameraPipeline};
+use crate::{camera_pipeline::CameraPipeline, render_pipeline::RenderPipeline};
 
 pub struct WindowState {
     surface: wgpu::Surface,
@@ -83,7 +82,6 @@ impl WindowState {
 
         let camera_pipeline = CameraPipeline::new(&device, &config);
 
-
         let traingle_pipeline = RenderPipeline::new(
             &device,
             &config,
@@ -140,7 +138,10 @@ impl WindowState {
     pub fn update(&mut self) {}
 
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-        let time_in_seconds = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis();
+        let time_in_seconds = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
         let pi = std::f32::consts::PI;
         let time_in_seconds = (time_in_seconds % 1000000) as f32 / 1000.0;
         let rotations_per_second = 0.1;
@@ -148,8 +149,14 @@ impl WindowState {
 
         self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;
         self.camera_pipeline.camera.eye.y = omega.cos() * 2.0;
-        self.camera_pipeline.camera_uniform.update_view_proj(&self.camera_pipeline.camera);
-        self.queue.write_buffer(&self.camera_pipeline.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]));
+        self.camera_pipeline
+            .camera_uniform
+            .update_view_proj(&self.camera_pipeline.camera);
+        self.queue.write_buffer(
+            &self.camera_pipeline.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]),
+        );
 
         let output = self.surface.get_current_texture()?;
         let view = output
@@ -180,7 +187,7 @@ impl WindowState {
                 })],
                 depth_stencil_attachment: None,
             });
-            
+
             render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
             self.line_pipeline.render(&mut render_pass);
             self.traingle_pipeline.render(&mut render_pass);

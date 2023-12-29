@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{curves::circle::Circle, points::point::Point, EQ_THRESHOLD, transforms::Transform};
+use crate::{curves::circle::Circle, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
 use super::surface::{Surface, SurfaceCurve, TangentPoint};
 
@@ -18,7 +18,11 @@ pub enum SphereTransform {
 
 impl Sphere {
     pub fn new(basis: Point, radius: f64, normal_outwards: bool) -> Sphere {
-        Sphere { basis, radius, normal_outwards }
+        Sphere {
+            basis,
+            radius,
+            normal_outwards,
+        }
     }
 
     pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {

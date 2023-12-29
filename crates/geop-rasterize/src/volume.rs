@@ -1,7 +1,10 @@
 use geop_topology::topology::volume::Volume;
 
-use crate::{triangle_buffer::TriangleBuffer, face::{rasterize_face_into_triangle_list, rasterize_face_into_line_list}, edge_buffer::EdgeBuffer};
-
+use crate::{
+    edge_buffer::EdgeBuffer,
+    face::{rasterize_face_into_line_list, rasterize_face_into_triangle_list},
+    triangle_buffer::TriangleBuffer,
+};
 
 pub fn rasterize_volume_into_face_list(volume: &Volume, color: [f32; 4]) -> TriangleBuffer {
     let mut buffer = TriangleBuffer::empty();
