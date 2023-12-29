@@ -1,8 +1,6 @@
-use std::rc::Rc;
-
 use crate::{curves::line::Line, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::surface::{Surface, SurfaceCurve, TangentPoint};
+use super::surface::{SurfaceCurve, TangentPoint};
 
 #[derive(Clone, Debug)]
 pub struct Plane {
@@ -39,45 +37,31 @@ impl Plane {
     pub fn neg(&self) -> Self {
         Plane::new(self.basis, self.u_slope, -self.v_slope)
     }
-}
 
-impl Surface for Plane {
-    fn transform(&self, transform: Transform) -> Rc<dyn Surface> {
-        Rc::new(self.transform(transform))
-    }
-
-    fn neg(&self) -> Rc<dyn Surface> {
-        Rc::new(self.neg())
-    }
-
-    fn on_surface(&self, p: Point) -> bool {
+    pub fn on_surface(&self, p: Point) -> bool {
         let normal = self.normal();
         let p_project = p.dot(normal);
         let b_project = self.basis.dot(normal);
         (p_project - b_project).abs() < EQ_THRESHOLD
     }
 
-    fn normal(&self, _p: Point) -> Point {
-        self.u_slope.cross(self.v_slope)
-    }
-
-    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         u.0.dot(v.0)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    pub fn distance(&self, x: Point, y: Point) -> f64 {
         (x - y).norm()
     }
 
-    fn exp(&self, x: Point, u: TangentPoint) -> Point {
+    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         x + u.0.x * self.u_slope + u.0.y * self.v_slope
     }
 
-    fn log(&self, x: Point, y: Point) -> TangentPoint {
+    pub fn log(&self, x: Point, y: Point) -> TangentPoint {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let diff = y - x;
@@ -88,14 +72,14 @@ impl Surface for Plane {
         ))
     }
 
-    fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
+    pub fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         v.0
     }
 
-    fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
+    pub fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
         SurfaceCurve::Line(Line::new(p, q - p))
     }
 }

@@ -32,18 +32,18 @@ pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
     let curve = face.edge_from_to(Rc::new(point), Rc::new(q));
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
-    let mut closest_distance = face.surface.surface().distance(point, q);
+    let mut closest_distance = face.surface.distance(point, q);
     let curve_dir = curve.tangent(q);
-    let normal = face.surface.surface().normal(q);
+    let normal = face.surface.normal(q);
     let contour_dir = face.boundaries[0].tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
 
     for int in countour_edge_intersection_points(face, &*curve) {
         // println!("int: {:?}", int);
-        let distance = face.surface.surface().distance(point, *int);
+        let distance = face.surface.distance(point, *int);
         if distance < closest_distance {
             let curve_dir = curve.tangent(*int);
-            let normal = face.surface.surface().normal(*int);
+            let normal = face.surface.normal(*int);
             let contour_dir = face.boundary_tangent(*int);
             closest_distance = distance;
             closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);

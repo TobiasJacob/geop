@@ -1,5 +1,5 @@
 use crate::topology::{
-    contains::face_point::{face_contains_point, FaceContainsPoint},
+    contains::{face_point::{face_contains_point, FaceContainsPoint}, surface_edge::surface_contains_edge},
     edge::Edge,
     face::Face,
     intersections::contour_edge::countour_edge_intersection_points,
@@ -14,7 +14,7 @@ pub enum FaceContainsEdge {
 
 // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
 pub fn face_contains_edge(face: &Face, edge: &Edge) -> FaceContainsEdge {
-    assert!(face.surface.contains_edge(edge));
+    assert!(surface_contains_edge(&face.surface, edge));
     // TODO: Make an assertian that there are no intersections with the face boundaries
     for int in countour_edge_intersection_points(face, edge) {
         assert!(*edge.start == *int || *edge.end == *int);

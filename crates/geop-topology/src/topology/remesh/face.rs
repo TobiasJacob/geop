@@ -1,12 +1,14 @@
 use std::rc::Rc;
 
+use geop_geometry::surfaces::surface::Surface;
+
 use crate::{
     debug_data::{self, DebugColor},
     topology::{
         contains::face_edge::{face_contains_edge, FaceContainsEdge},
         contour::Contour,
         edge::Edge,
-        face::{face_surface::FaceSurface, Face},
+        face::Face,
         intersections::contour_contour::countour_contour_intersection_points,
         split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
     },
@@ -93,7 +95,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     res
 }
 
-pub fn face_remesh(surface: Rc<FaceSurface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
+pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
     println!("new_contour");
     for edge in edges_intermediate.iter() {
         println!("Edge: {:?}", edge);

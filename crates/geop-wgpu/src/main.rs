@@ -4,7 +4,7 @@ use std::rc::Rc;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
     points::point::Point,
-    surfaces::plane::Plane,
+    surfaces::{plane::Plane, surface::Surface},
     transforms::Transform,
     EQ_THRESHOLD,
 };
@@ -22,7 +22,7 @@ use geop_topology::{
         contour::Contour,
         difference::face_face::face_difference,
         edge::Edge,
-        face::{face_surface::FaceSurface, Face},
+        face::{Face},
     },
 };
 use geop_wgpu::window::GeopWindow;
@@ -79,7 +79,7 @@ async fn run() {
             linear_edge(v7.clone(), v5.clone()),
         ]);
 
-        let surface = Rc::new(FaceSurface::Plane(Plane::new(
+        let surface = Rc::new(Surface::Plane(Plane::new(
             Point::new(0.0, 0.0, 0.0),
             Point::new(1.0, 0.0, 0.0),
             Point::new(0.0, 1.0, 0.0),

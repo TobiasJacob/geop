@@ -3,15 +3,14 @@ use std::rc::Rc;
 use geop_geometry::{
     curves::{curve::Curve, line::Line},
     points::point::Point,
-    surfaces::plane::Plane,
+    surfaces::{plane::Plane, surface::Surface},
     transforms::Transform,
 };
 
 use crate::topology::{
     contour::Contour,
     edge::Edge,
-    face::{face_surface::FaceSurface, Face},
-    volume::Volume,
+    volume::Volume, face::Face,
 };
 
 pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
@@ -47,7 +46,7 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
             Rc::new(Curve::Line(Line::new(*top.end, *bottom.start - *top.end))),
         ));
 
-        let plane = FaceSurface::Plane(Plane::new(
+        let plane = Surface::Plane(Plane::new(
             *bottom.start,
             *bottom.end - *bottom.start,
             *top.end - *bottom.start,

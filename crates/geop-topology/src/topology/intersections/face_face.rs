@@ -1,14 +1,16 @@
 use std::rc::Rc;
 
-use geop_geometry::points::point::Point;
+use geop_geometry::{
+    points::point::Point,
+    surface_surface_intersection::surface_surface::{
+        surface_surface_intersection, FaceSurfaceIntersection,
+    },
+};
 
 use crate::topology::{
     contains::face_point::{face_contains_point, FaceContainsPoint},
     edge::Edge,
-    face::{
-        face_surface::{face_surface_face_surface_intersect, FaceSurfaceIntersection},
-        Face,
-    },
+    face::Face,
     intersections::{edge_edge::EdgeEdgeIntersection, face_edge::face_edge_intersection},
     remesh::face::{face_remesh, face_split, FaceSplit},
 };
@@ -49,7 +51,7 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
         "Faces must have different surfaces",
     );
 
-    match face_surface_face_surface_intersect(&face_self.surface, &face_other.surface) {
+    match surface_surface_intersection(&face_self.surface, &face_other.surface) {
         FaceSurfaceIntersection::None => vec![],
         FaceSurfaceIntersection::CurvesAndPoints(curves, points) => {
             let mut intersections = vec![];

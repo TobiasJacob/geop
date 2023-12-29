@@ -1,12 +1,8 @@
-pub mod face_surface;
-
 use std::rc::Rc;
 
-use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform};
+use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform, surfaces::surface::Surface};
 
-use crate::topology::contains::edge_point::EdgeContains;
-
-use self::face_surface::FaceSurface;
+use crate::topology::contains::{edge_point::EdgeContains, surface_edge::surface_contains_edge};
 
 use super::{
     contains::face_point::{face_contains_point, FaceContainsPoint},
@@ -17,7 +13,7 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct Face {
     pub boundaries: Vec<Contour>, // Coutner-clockwise
-    pub surface: Rc<FaceSurface>,
+    pub surface: Rc<Surface>,
 }
 
 pub enum FaceIntersection {
@@ -32,11 +28,11 @@ pub enum FaceIntersection {
 // inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
 // The contours are not allowed to intersect in any way. Keep in mind that a point is not considered an intersection, hence it is allowed that the contours touch each other at points.
 impl Face {
-    pub fn new(boundaries: Vec<Contour>, surface: Rc<FaceSurface>) -> Face {
+    pub fn new(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Face {
         assert!(boundaries.len() > 0, "Face must have at least one boundary");
         for contour in boundaries.iter() {
             for edge in contour.edges.iter() {
-                assert!(surface.contains_edge(edge));
+                assert!(surface_contains_edge(&surface, edge));
             }
         }
         Face {
@@ -81,7 +77,7 @@ impl Face {
 
     pub fn edge_from_to(&self, from: Rc<Point>, to: Rc<Point>) -> Rc<Edge> {
         match &*self.surface {
-            FaceSurface::Plane(p) => {
+            Surface::Plane(p) => {
                 let curve = p.curve_from_to(*from, *to);
                 return Rc::new(Edge::new(
                     from.clone(),
@@ -89,7 +85,7 @@ impl Face {
                     Rc::new(Curve::Line(curve)),
                 ));
             }
-            FaceSurface::Sphere(s) => {
+            Surface::Sphere(s) => {
                 let curve = s.curve_from_to(*from, *to);
                 return Rc::new(Edge::new(
                     from.clone(),
@@ -116,7 +112,7 @@ impl Face {
             FaceContainsPoint::Inside => (),
             _ => panic!("Point is not on face"),
         }
-        self.surface.surface().normal(p)
+        self.surface.normal(p)
     }
 
     pub fn neg(&self) -> Face {
@@ -138,7 +134,7 @@ impl Face {
 impl std::fmt::Display for Face {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self.surface {
-            FaceSurface::Plane(p) => {
+            Surface::Plane(p) => {
                 writeln!(
                     f,
                     "Plane at basis = {:?} with normal = {:?}",
@@ -152,7 +148,7 @@ impl std::fmt::Display for Face {
                     }
                 }
             }
-            FaceSurface::Sphere(_s) => {
+            Surface::Sphere(_s) => {
                 writeln!(f, "sphere is still todo")?;
             }
         };

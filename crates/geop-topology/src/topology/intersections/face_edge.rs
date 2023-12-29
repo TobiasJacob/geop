@@ -9,10 +9,10 @@ use crate::topology::{
     face::Face,
 };
 
-use super::edge_edge::EdgeEdgeIntersection;
+use super::{edge_edge::EdgeEdgeIntersection, surface_edge::surface_edge_intersection};
 
 pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
-    let mut intersections = face.surface.intersect_edge(edge);
+    let mut intersections = surface_edge_intersection(&face.surface, edge);
 
     let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
     for int in intersections.drain(..) {

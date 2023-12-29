@@ -1,8 +1,6 @@
-use std::rc::Rc;
-
 use crate::{curves::circle::Circle, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::surface::{Surface, SurfaceCurve, TangentPoint};
+use super::surface::{SurfaceCurve, TangentPoint};
 
 #[derive(Clone, Debug)]
 pub struct Sphere {
@@ -48,41 +46,27 @@ impl Sphere {
     pub fn neg(&self) -> Sphere {
         Sphere::new(self.basis, self.radius, !self.normal_outwards)
     }
-}
 
-impl Surface for Sphere {
-    fn transform(&self, _transform: Transform) -> Rc<dyn Surface> {
-        todo!("Implement transform")
-    }
-
-    fn neg(&self) -> Rc<dyn Surface> {
-        Rc::new(self.neg())
-    }
-
-    fn on_surface(&self, p: Point) -> bool {
+    pub fn on_surface(&self, p: Point) -> bool {
         let diff = p - self.basis;
         let dist = diff.norm_sq();
         (dist - self.radius * self.radius).abs() < EQ_THRESHOLD
     }
 
-    fn normal(&self, p: Point) -> Point {
-        (p - self.basis).normalize()
-    }
-
-    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         u.0.dot(v.0)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    pub fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let angle = (x - self.basis).angle(y - self.basis);
         self.radius * angle
     }
 
-    fn exp(&self, x: Point, u: TangentPoint) -> Point {
+    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
         assert!(u.0.z.abs() < EQ_THRESHOLD);
         let u_norm = u.0.norm();
@@ -92,7 +76,7 @@ impl Surface for Sphere {
             + self.basis
     }
 
-    fn log(&self, x: Point, y: Point) -> TangentPoint {
+    pub fn log(&self, x: Point, y: Point) -> TangentPoint {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let x = (x - self.basis) / self.radius;
@@ -102,7 +86,7 @@ impl Surface for Sphere {
         TangentPoint(self.distance(x, y) * dir / dir_norm)
     }
 
-    fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
+    pub fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
         assert!(v.0.z.abs() < EQ_THRESHOLD);
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
@@ -117,7 +101,7 @@ impl Surface for Sphere {
             + u_normalized * u_normalized.dot(v.0)
     }
 
-    fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
+    pub fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
         let circle = Circle::new(self.basis, normal, (q - self.basis).normalize());
         SurfaceCurve::Circle(circle)
