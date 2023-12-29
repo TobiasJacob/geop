@@ -2,8 +2,8 @@ use std::rc::Rc;
 
 use crate::topology::{
     contains::{
-        face_edge::{face_contains_edge, FaceContainsEdge},
-        face_point::{face_contains_point, FaceContainsPoint},
+        face_edge::{face_edge_contains, FaceEdgeContains},
+        face_point::{face_point_contains, FacePointContains},
     },
     edge::Edge,
     face::Face,
@@ -17,8 +17,8 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersect
     let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
     for int in intersections.drain(..) {
         match &int {
-            EdgeEdgeIntersection::Point(p) => match face_contains_point(face, **p) {
-                FaceContainsPoint::Inside => new_interesections.push(int),
+            EdgeEdgeIntersection::Point(p) => match face_point_contains(face, **p) {
+                FacePointContains::Inside => new_interesections.push(int),
                 _ => {}
             },
             EdgeEdgeIntersection::Edge(e) => {
@@ -30,17 +30,17 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersect
                 }
 
                 for e in edges.drain(..) {
-                    match face_contains_edge(face, &e) {
-                        FaceContainsEdge::Inside => {
+                    match face_edge_contains(face, &e) {
+                        FaceEdgeContains::Inside => {
                             new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
                         }
-                        FaceContainsEdge::OnBorderOppositeDir => {
+                        FaceEdgeContains::OnBorderOppositeDir => {
                             new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
                         }
-                        FaceContainsEdge::OnBorderSameDir => {
+                        FaceEdgeContains::OnBorderSameDir => {
                             new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
                         }
-                        FaceContainsEdge::Outside => {}
+                        FaceEdgeContains::Outside => {}
                     }
                 }
             }

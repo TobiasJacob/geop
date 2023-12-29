@@ -3,7 +3,7 @@ use std::rc::Rc;
 use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::{
-    contains::face_point::{face_contains_point, FaceContainsPoint},
+    contains::face_point::{face_point_contains, FacePointContains},
     contour::Contour,
     edge::Edge,
     face::Face,
@@ -11,14 +11,6 @@ use super::{
 
 pub struct Volume {
     pub faces: Vec<Rc<Face>>,
-}
-
-pub enum VolumeContainsPoint {
-    Inside,
-    OnFace(Rc<Face>),
-    OnEdge(Rc<Edge>),
-    OnPoint(Rc<Point>),
-    Outside,
 }
 
 pub enum VolumeNormal {
@@ -86,13 +78,13 @@ impl Volume {
     pub fn normal(&self, point: Point) -> VolumeNormal {
         let mut relevant_faces = Vec::<&Rc<Face>>::new();
         for face in self.faces.iter() {
-            match face_contains_point(face, point) {
-                FaceContainsPoint::Inside
-                | FaceContainsPoint::OnEdge(_)
-                | FaceContainsPoint::OnPoint(_) => {
+            match face_point_contains(face, point) {
+                FacePointContains::Inside
+                | FacePointContains::OnEdge(_)
+                | FacePointContains::OnPoint(_) => {
                     relevant_faces.push(face);
                 }
-                FaceContainsPoint::Outside => {}
+                FacePointContains::Outside => {}
             }
         }
         match relevant_faces.len() {

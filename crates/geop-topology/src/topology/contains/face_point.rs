@@ -6,25 +6,25 @@ use crate::topology::{
     edge::Edge, face::Face, intersections::contour_edge::countour_edge_intersection_points,
 };
 
-use super::edge_point::{edge_contains_point, EdgeContains};
+use super::edge_point::{edge_point_contains, EdgePointContains};
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FaceContainsPoint {
+pub enum FacePointContains {
     Inside,
     OnEdge(Rc<Edge>),
     OnPoint(Rc<Point>),
     Outside,
 }
 
-pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
+pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     // println!("face_contains_point: {:?}", point);
     // println!("face: {:}", face);
     // If the point is on the border, it is part of the set
     for edge in face.all_edges() {
-        match edge_contains_point(&edge, point) {
-            EdgeContains::Inside => return FaceContainsPoint::OnEdge(edge.clone()),
-            EdgeContains::OnPoint(point) => return FaceContainsPoint::OnPoint(point),
-            EdgeContains::Outside => continue,
+        match edge_point_contains(&edge, point) {
+            EdgePointContains::Inside => return FacePointContains::OnEdge(edge.clone()),
+            EdgePointContains::OnPoint(point) => return FacePointContains::OnPoint(point),
+            EdgePointContains::Outside => continue,
         }
     }
     // Draw a line from the point to a random point on the border.
@@ -51,7 +51,7 @@ pub fn face_contains_point(face: &Face, point: Point) -> FaceContainsPoint {
     }
 
     match closest_intersect_from_inside {
-        true => FaceContainsPoint::Inside,
-        false => FaceContainsPoint::Outside,
+        true => FacePointContains::Inside,
+        false => FacePointContains::Outside,
     }
 }

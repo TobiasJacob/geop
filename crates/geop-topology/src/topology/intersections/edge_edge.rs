@@ -7,7 +7,7 @@ use geop_geometry::{
 };
 
 use crate::topology::{
-    contains::edge_point::{edge_contains_point, EdgeContains},
+    contains::edge_point::{edge_point_contains, EdgePointContains},
     edge::Edge,
 };
 
@@ -146,14 +146,14 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                 }
                 CurveIntersection::Point(p) => {
                     assert!(
-                        edge_contains_point(edge_self, p.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, p.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         p
                     );
                     assert!(
-                        edge_contains_point(edge_other, p.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, p.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
@@ -161,34 +161,34 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                     );
                     vec![EdgeEdgeIntersection::Point(Rc::new(p))]
                     // .iter()
-                    // .filter(|p| {edge_contains_point(edge_self, **p) == EdgeContains::Inside && edge_contains_point(edge_other, **p) == EdgeContains::Inside})
+                    // .filter(|p| {edge_point_contains(edge_self, **p) == EdgeContains::Inside && edge_point_contains(edge_other, **p) == EdgeContains::Inside})
                     // .map(|p| {EdgeEdgeIntersection::Point(Rc::new(*p))})
                     // .collect()
                 }
                 CurveIntersection::Interval(p1, p2) => {
                     assert!(
-                        edge_contains_point(edge_self, p1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, p1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         p1
                     );
                     assert!(
-                        edge_contains_point(edge_self, p2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, p2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         p2
                     );
                     assert!(
-                        edge_contains_point(edge_other, p1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, p1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         p1
                     );
                     assert!(
-                        edge_contains_point(edge_other, p2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, p2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
@@ -200,20 +200,20 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                         edge_self.curve.clone(),
                     ))]
                     // .iter()
-                    // .filter(|p| {edge_contains_point(edge_self, **p) == EdgeContains::Inside && edge_contains_point(edge_other, **p) == EdgeContains::Inside})
+                    // .filter(|p| {edge_point_contains(edge_self, **p) == EdgeContains::Inside && edge_point_contains(edge_other, **p) == EdgeContains::Inside})
                     // .map(|p| {EdgeEdgeIntersection::Point(Rc::new(*p))})
                     // .collect()
                 }
                 CurveIntersection::IntervalAndPoint(s, e, p) => {
                     assert!(
-                        edge_contains_point(edge_self, p.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, p.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         p
                     );
                     assert!(
-                        edge_contains_point(edge_other, p.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, p.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
@@ -228,62 +228,62 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                         EdgeEdgeIntersection::Point(Rc::new(p)),
                     ]
                     // .iter()
-                    // .filter(|p| {edge_contains_point(edge_self, **p) == EdgeContains::Inside && edge_contains_point(edge_other, **p) == EdgeContains::Inside})
+                    // .filter(|p| {edge_point_contains(edge_self, **p) == EdgeContains::Inside && edge_point_contains(edge_other, **p) == EdgeContains::Inside})
                     // .map(|p| {EdgeEdgeIntersection::Point(Rc::new(*p))})
                     // .collect()
                 }
                 CurveIntersection::DualInterval(s1, e1, s2, e2) => {
                     assert!(
-                        edge_contains_point(edge_self, s1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, s1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         s1
                     );
                     assert!(
-                        edge_contains_point(edge_self, e1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, e1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         e1
                     );
                     assert!(
-                        edge_contains_point(edge_self, s2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, s2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         s2
                     );
                     assert!(
-                        edge_contains_point(edge_self, e2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_self, e2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         e2
                     );
                     assert!(
-                        edge_contains_point(edge_other, s1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, s1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         s1
                     );
                     assert!(
-                        edge_contains_point(edge_other, e1.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, e1.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         e1
                     );
                     assert!(
-                        edge_contains_point(edge_other, s2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, s2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
                         s2
                     );
                     assert!(
-                        edge_contains_point(edge_other, e2.clone()) != EdgeContains::Outside,
+                        edge_point_contains(edge_other, e2.clone()) != EdgePointContains::Outside,
                         "edge_self: {:}, edge_other: {:}, point: {:?}",
                         edge_self,
                         edge_other,
@@ -302,7 +302,7 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
                         )),
                     ]
                     // .iter()
-                    // .filter(|p| {edge_contains_point(edge_self, **p) == EdgeContains::Inside && edge_contains_point(edge_other, **p) == EdgeContains::Inside})
+                    // .filter(|p| {edge_point_contains(edge_self, **p) == EdgeContains::Inside && edge_point_contains(edge_other, **p) == EdgeContains::Inside})
                     // .map(|p| {EdgeEdgeIntersection::Point(Rc::new(*p))})
                     // .collect()
                 }
@@ -311,8 +311,8 @@ pub fn edge_edge_intersections(edge_self: &Edge, edge_other: &Edge) -> Vec<EdgeE
         CurveCurveIntersection::Points(points) => points
             .iter()
             .filter(|p| {
-                edge_contains_point(edge_self, **p) != EdgeContains::Outside
-                    && edge_contains_point(edge_other, **p) != EdgeContains::Outside
+                edge_point_contains(edge_self, **p) != EdgePointContains::Outside
+                    && edge_point_contains(edge_other, **p) != EdgePointContains::Outside
             })
             .map(|p| EdgeEdgeIntersection::Point(Rc::new(*p)))
             .collect(),

@@ -4,8 +4,8 @@ use geop_geometry::points::point::Point;
 
 use crate::topology::{
     contains::{
-        contour_point::contour_contains_point,
-        edge_point::{edge_contains_point, EdgeContains},
+        contour_point::contour_point_contains,
+        edge_point::{edge_point_contains, EdgePointContains},
     },
     edge::Edge,
     face::Face,
@@ -21,14 +21,14 @@ pub fn countour_edge_intersection_points(face: &Face, edge: &Edge) -> Vec<Rc<Poi
                 match int {
                     EdgeEdgeIntersection::Point(point) => {
                         assert!(
-                            edge_contains_point(edge, *point) != EdgeContains::Outside,
+                            edge_point_contains(edge, *point) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
                             point
                         );
                         assert!(
-                            edge_contains_point(edge_o, *point) != EdgeContains::Outside,
+                            edge_point_contains(edge_o, *point) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
@@ -38,28 +38,28 @@ pub fn countour_edge_intersection_points(face: &Face, edge: &Edge) -> Vec<Rc<Poi
                     }
                     EdgeEdgeIntersection::Edge(_edge) => {
                         assert!(
-                            edge_contains_point(edge_o, *_edge.start) != EdgeContains::Outside,
+                            edge_point_contains(edge_o, *_edge.start) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
                             _edge.start
                         );
                         assert!(
-                            edge_contains_point(edge_o, *_edge.end) != EdgeContains::Outside,
+                            edge_point_contains(edge_o, *_edge.end) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
                             _edge.end
                         );
                         assert!(
-                            edge_contains_point(edge, *_edge.start) != EdgeContains::Outside,
+                            edge_point_contains(edge, *_edge.start) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
                             _edge.start
                         );
                         assert!(
-                            edge_contains_point(edge, *_edge.end) != EdgeContains::Outside,
+                            edge_point_contains(edge, *_edge.end) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
                             edge,
                             edge_o,
@@ -76,7 +76,7 @@ pub fn countour_edge_intersection_points(face: &Face, edge: &Edge) -> Vec<Rc<Poi
     for int in intersections.iter() {
         let mut on_edge = false;
         for contour in face.boundaries.iter() {
-            on_edge |= contour_contains_point(contour.clone(), **int) != EdgeContains::Outside;
+            on_edge |= contour_point_contains(contour.clone(), **int) != EdgePointContains::Outside;
         }
         assert!(on_edge);
     }

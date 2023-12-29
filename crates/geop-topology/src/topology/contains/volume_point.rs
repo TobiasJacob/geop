@@ -5,22 +5,26 @@ use geop_geometry::{
     points::point::Point,
 };
 
-use crate::topology::{
-    edge::Edge,
-    intersections::edge_edge::EdgeEdgeIntersection,
-    volume::{Volume, VolumeContainsPoint},
-};
+use crate::topology::{edge::Edge, intersections::edge_edge::EdgeEdgeIntersection, volume::Volume, face::Face};
 
-use super::face_point::{face_contains_point, FaceContainsPoint};
+use super::face_point::{face_point_contains, FacePointContains};
 
-pub fn volume_contains_point(volume: &Volume, other: Point) -> VolumeContainsPoint {
+pub enum VolumePointContains {
+    Inside,
+    OnFace(Rc<Face>),
+    OnEdge(Rc<Edge>),
+    OnPoint(Rc<Point>),
+    Outside,
+}
+
+pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContains {
     // first check if point is on any other face
     for face in volume.faces.iter() {
-        match face_contains_point(face, other) {
-            FaceContainsPoint::Inside => return VolumeContainsPoint::OnFace(face.clone()),
-            FaceContainsPoint::OnEdge(edge) => return VolumeContainsPoint::OnEdge(edge),
-            FaceContainsPoint::OnPoint(point) => return VolumeContainsPoint::OnPoint(point),
-            FaceContainsPoint::Outside => {}
+        match face_point_contains(face, other) {
+            FacePointContains::Inside => return VolumePointContains::OnFace(face.clone()),
+            FacePointContains::OnEdge(edge) => return VolumePointContains::OnEdge(edge),
+            FacePointContains::OnPoint(point) => return VolumePointContains::OnPoint(point),
+            FacePointContains::Outside => {}
         }
     }
 
@@ -67,7 +71,7 @@ pub fn volume_contains_point(volume: &Volume, other: Point) -> VolumeContainsPoi
     }
 
     match closest_intersect_from_inside {
-        true => VolumeContainsPoint::Inside,
-        false => VolumeContainsPoint::Outside,
+        true => VolumePointContains::Inside,
+        false => VolumePointContains::Outside,
     }
 }

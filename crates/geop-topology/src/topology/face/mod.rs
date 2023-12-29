@@ -2,10 +2,10 @@ use std::rc::Rc;
 
 use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform, surfaces::surface::Surface};
 
-use crate::topology::contains::{edge_point::EdgeContains, surface_edge::surface_contains_edge};
+use crate::topology::contains::{edge_point::EdgePointContains, surface_edge::surface_edge_contains};
 
 use super::{
-    contains::face_point::{face_contains_point, FaceContainsPoint},
+    contains::face_point::{face_point_contains, FacePointContains},
     contour::ContourTangent,
     {contour::Contour, edge::Edge},
 };
@@ -32,7 +32,7 @@ impl Face {
         assert!(boundaries.len() > 0, "Face must have at least one boundary");
         for contour in boundaries.iter() {
             for edge in contour.edges.iter() {
-                assert!(surface_contains_edge(&surface, edge));
+                assert!(surface_edge_contains(&surface, edge));
             }
         }
         Face {
@@ -99,17 +99,17 @@ impl Face {
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
         for contour in self.boundaries.iter() {
             match contour.contains(p) {
-                EdgeContains::Inside => return contour.tangent(p),
-                EdgeContains::OnPoint(_) => return contour.tangent(p),
-                EdgeContains::Outside => continue,
+                EdgePointContains::Inside => return contour.tangent(p),
+                EdgePointContains::OnPoint(_) => return contour.tangent(p),
+                EdgePointContains::Outside => continue,
             }
         }
         panic!("Point is not on boundary");
     }
 
     pub fn normal(&self, p: Point) -> Point {
-        match face_contains_point(self, p) {
-            FaceContainsPoint::Inside => (),
+        match face_point_contains(self, p) {
+            FacePointContains::Inside => (),
             _ => panic!("Point is not on face"),
         }
         self.surface.normal(p)

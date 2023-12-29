@@ -2,15 +2,15 @@ use geop_geometry::points::point::Point;
 
 use crate::topology::contour::Contour;
 
-use super::edge_point::{edge_contains_point, EdgeContains};
+use super::edge_point::{edge_point_contains, EdgePointContains};
 
-pub fn contour_contains_point(contour: Contour, point: Point) -> EdgeContains {
+pub fn contour_point_contains(contour: Contour, point: Point) -> EdgePointContains {
     for edge in contour.edges.iter() {
-        match edge_contains_point(&edge, point) {
-            EdgeContains::Inside => return EdgeContains::Inside,
-            EdgeContains::OnPoint(point) => return EdgeContains::OnPoint(point),
-            EdgeContains::Outside => continue,
+        match edge_point_contains(&edge, point) {
+            EdgePointContains::Inside => return EdgePointContains::Inside,
+            EdgePointContains::OnPoint(point) => return EdgePointContains::OnPoint(point),
+            EdgePointContains::Outside => continue,
         }
     }
-    EdgeContains::Outside
+    EdgePointContains::Outside
 }

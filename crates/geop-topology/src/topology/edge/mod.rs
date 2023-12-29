@@ -9,7 +9,7 @@ use geop_geometry::{
     transforms::Transform,
 };
 
-use crate::topology::contains::edge_point::{edge_contains_point, EdgeContains};
+use crate::topology::contains::edge_point::{edge_point_contains, EdgePointContains};
 
 #[derive(Clone, Debug)]
 pub struct Edge {
@@ -56,7 +56,7 @@ impl Edge {
     }
 
     pub fn tangent(&self, p: Point) -> Point {
-        assert!(edge_contains_point(self, p) != EdgeContains::Outside);
+        assert!(edge_point_contains(self, p) != EdgePointContains::Outside);
         self.curve.tangent(p).normalize()
     }
 

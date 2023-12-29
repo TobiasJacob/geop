@@ -3,7 +3,7 @@ use std::rc::Rc;
 use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::{
-    contains::edge_point::{edge_contains_point, EdgeContains},
+    contains::edge_point::{edge_point_contains, EdgePointContains},
     edge::Edge,
 };
 
@@ -97,31 +97,31 @@ impl Contour {
         Contour::new(edges)
     }
 
-    pub fn contains(&self, point: Point) -> EdgeContains {
+    pub fn contains(&self, point: Point) -> EdgePointContains {
         for (_i, edge) in self.edges.iter().enumerate() {
-            let contains: EdgeContains = edge_contains_point(edge, point);
+            let contains: EdgePointContains = edge_point_contains(edge, point);
             match contains {
-                EdgeContains::OnPoint(point) => {
-                    return EdgeContains::OnPoint(point);
+                EdgePointContains::OnPoint(point) => {
+                    return EdgePointContains::OnPoint(point);
                 }
-                EdgeContains::Inside => {
-                    return EdgeContains::Inside;
+                EdgePointContains::Inside => {
+                    return EdgePointContains::Inside;
                 }
-                EdgeContains::Outside => {}
+                EdgePointContains::Outside => {}
             }
         }
-        return EdgeContains::Outside;
+        return EdgePointContains::Outside;
     }
 
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: Point) -> EdgeIndex {
         for (i, edge) in self.edges.iter().enumerate() {
-            match edge_contains_point(edge, point) {
-                EdgeContains::Inside => {
+            match edge_point_contains(edge, point) {
+                EdgePointContains::Inside => {
                     return EdgeIndex::OnEdge(i);
                 }
-                EdgeContains::OnPoint(p) => match p == edge.end {
+                EdgePointContains::OnPoint(p) => match p == edge.end {
                     true => return EdgeIndex::OnCorner(i, (i + 1) % self.edges.len()),
                     false => {
                         return EdgeIndex::OnCorner(
@@ -130,14 +130,14 @@ impl Contour {
                         )
                     }
                 },
-                EdgeContains::Outside => {}
+                EdgePointContains::Outside => {}
             }
         }
         panic!("Not on contour")
     }
 
     pub fn tangent(&self, p: Point) -> ContourTangent {
-        assert!(self.contains(p) != EdgeContains::Outside);
+        assert!(self.contains(p) != EdgePointContains::Outside);
         match self.get_edge_index(p) {
             EdgeIndex::OnCorner(i1, i2) => {
                 ContourTangent::OnCorner(self.edges[i1].tangent(p), self.edges[i2].tangent(p))

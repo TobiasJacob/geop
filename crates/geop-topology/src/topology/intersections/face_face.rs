@@ -8,7 +8,7 @@ use geop_geometry::{
 };
 
 use crate::topology::{
-    contains::face_point::{face_contains_point, FaceContainsPoint},
+    contains::face_point::{face_point_contains, FacePointContains},
     edge::Edge,
     face::Face,
     intersections::{edge_edge::EdgeEdgeIntersection, face_edge::face_edge_intersection},
@@ -56,8 +56,8 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
         FaceSurfaceIntersection::CurvesAndPoints(curves, points) => {
             let mut intersections = vec![];
             for point in points.iter() {
-                if face_contains_point(face_self, *point) != FaceContainsPoint::Outside {
-                    if face_contains_point(face_other, *point) != FaceContainsPoint::Outside {
+                if face_point_contains(face_self, *point) != FacePointContains::Outside {
+                    if face_point_contains(face_other, *point) != FacePointContains::Outside {
                         intersections.push(FaceFaceIntersection::Point(Rc::new(point.clone())));
                     }
                 }
@@ -75,7 +75,7 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
                 for seg in segments.iter() {
                     match seg {
                         EdgeEdgeIntersection::Point(p) => {
-                            if face_contains_point(face, **p) != FaceContainsPoint::Outside {
+                            if face_point_contains(face, **p) != FacePointContains::Outside {
                                 new_segments.push(seg.clone());
                             }
                         }

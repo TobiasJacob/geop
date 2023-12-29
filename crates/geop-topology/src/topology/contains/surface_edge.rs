@@ -2,7 +2,7 @@ use geop_geometry::{surfaces::surface::Surface, curves::curve::Curve, EQ_THRESHO
 
 use crate::topology::edge::Edge;
 
-pub fn surface_contains_edge(surface: &Surface, edge: &Edge) -> bool {
+pub fn surface_edge_contains(surface: &Surface, edge: &Edge) -> bool {
     if !surface.on_surface(*edge.start) {
         return false;
     }

@@ -5,7 +5,7 @@ use geop_geometry::surfaces::surface::Surface;
 use crate::{
     debug_data::{self, DebugColor},
     topology::{
-        contains::face_edge::{face_contains_edge, FaceContainsEdge},
+        contains::face_edge::{face_edge_contains, FaceEdgeContains},
         contour::Contour,
         edge::Edge,
         face::Face,
@@ -48,20 +48,20 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
 
     let res: Vec<FaceSplit> = edges_self
         .into_iter()
-        .map(|edge| match face_contains_edge(face_other, &edge) {
-            FaceContainsEdge::Inside => FaceSplit::AinB(edge),
-            FaceContainsEdge::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
-            FaceContainsEdge::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
-            FaceContainsEdge::Outside => FaceSplit::AoutB(edge),
+        .map(|edge| match face_edge_contains(face_other, &edge) {
+            FaceEdgeContains::Inside => FaceSplit::AinB(edge),
+            FaceEdgeContains::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
+            FaceEdgeContains::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
+            FaceEdgeContains::Outside => FaceSplit::AoutB(edge),
         })
         .chain(
             edges_other
                 .into_iter()
-                .map(|edge| match face_contains_edge(face_self, &edge) {
-                    FaceContainsEdge::Inside => FaceSplit::BinA(edge),
-                    FaceContainsEdge::OnBorderSameDir => FaceSplit::BonASameSide(edge),
-                    FaceContainsEdge::OnBorderOppositeDir => FaceSplit::BonAOpSide(edge),
-                    FaceContainsEdge::Outside => FaceSplit::BoutA(edge),
+                .map(|edge| match face_edge_contains(face_self, &edge) {
+                    FaceEdgeContains::Inside => FaceSplit::BinA(edge),
+                    FaceEdgeContains::OnBorderSameDir => FaceSplit::BonASameSide(edge),
+                    FaceEdgeContains::OnBorderOppositeDir => FaceSplit::BonAOpSide(edge),
+                    FaceEdgeContains::Outside => FaceSplit::BoutA(edge),
                 }),
         )
         .collect();

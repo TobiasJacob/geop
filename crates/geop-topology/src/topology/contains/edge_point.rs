@@ -5,21 +5,21 @@ use geop_geometry::points::point::Point;
 use crate::topology::edge::Edge;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum EdgeContains {
+pub enum EdgePointContains {
     Inside,
     Outside,
     OnPoint(Rc<Point>),
 }
 
-pub fn edge_contains_point(edge: &Edge, point: Point) -> EdgeContains {
+pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     if !edge.curve.on_manifold(point) {
-        return EdgeContains::Outside;
+        return EdgePointContains::Outside;
     }
     if point == *edge.start || point == *edge.end {
-        return EdgeContains::OnPoint(Rc::new(point));
+        return EdgePointContains::OnPoint(Rc::new(point));
     }
     if edge.curve.between(point, *edge.start, *edge.end) {
-        return EdgeContains::Inside;
+        return EdgePointContains::Inside;
     }
-    EdgeContains::Outside
+    EdgePointContains::Outside
 }

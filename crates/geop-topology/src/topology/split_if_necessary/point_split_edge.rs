@@ -3,12 +3,12 @@ use std::rc::Rc;
 use geop_geometry::points::point::Point;
 
 use crate::topology::{
-    contains::edge_point::{edge_contains_point, EdgeContains},
+    contains::edge_point::{edge_point_contains, EdgePointContains},
     edge::Edge,
 };
 
 pub fn split_edge_by_point_if_necessary(edge: Rc<Edge>, point: Rc<Point>) -> Vec<Rc<Edge>> {
-    if edge_contains_point(&*edge, *point) != EdgeContains::Inside {
+    if edge_point_contains(&*edge, *point) != EdgePointContains::Inside {
         return vec![edge];
     }
     vec![
