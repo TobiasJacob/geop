@@ -1,4 +1,4 @@
-use std::rc::Rc;
+
 
 use crate::{points::point::Point, transforms::Transform};
 
@@ -25,17 +25,17 @@ impl Ellipse {
         Ellipse::new(self.basis, -self.dir0, -self.dir1)
     }
 
-    pub fn tangent(&self, p: Point) -> Point {
+    pub fn tangent(&self, _p: Point) -> Point {
         // let u = self.project(p).0;
         // -self.dir0 * u.sin() + self.dir1 * u.cos()
         todo!("Implement tangent")
     }
     
-    pub fn on_manifold(&self, p: Point) -> bool {
+    pub fn on_manifold(&self, _p: Point) -> bool {
         todo!("Implement on_manifold")
     }
     
-    pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+    pub fn interpolate(&self, _start: Point, _end: Point, _t: f64) -> Point {
         todo!("Implement interpolate")
     }
 
@@ -61,11 +61,11 @@ impl Ellipse {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, m: Point, start: Point, end: Point) -> bool {
+    pub fn between(&self, _m: Point, _start: Point, _end: Point) -> bool {
         todo!("Implement between")
     }
 
-    pub fn get_midpoint(&self, start: Point, end: Point) -> Point {
+    pub fn get_midpoint(&self, _start: Point, _end: Point) -> Point {
         todo!("Implement get_midpoint")
     }
 }

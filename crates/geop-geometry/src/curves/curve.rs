@@ -1,6 +1,6 @@
-use std::{rc::Rc, cmp::Ordering, fmt::Debug};
+use std::{fmt::Debug};
 
-use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{points::point::Point, transforms::Transform};
 
 use super::{line::Line, circle::{Circle, CircleTransform}, ellipse::Ellipse};
 

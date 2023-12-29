@@ -26,12 +26,12 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                     CircleLineIntersection::TwoPoint(p1, p2) => CurveCurveIntersection::Points(vec![p1, p2]),
                 }
             }
-            Curve::Ellipse(other_ellipse) => {
+            Curve::Ellipse(_other_ellipse) => {
                 todo!("Line-Ellipse intersection")
             }
         },
         Curve::Circle(circle) => match edge_other {
-            Curve::Line(other_line) => {
+            Curve::Line(_other_line) => {
                 todo!("Circle-Line intersection")
             }
             Curve::Circle(other_circle) => {
@@ -42,18 +42,18 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                     CircleCircleIntersection::Circle(c) => CurveCurveIntersection::Curve(Curve::Circle(c)),
                 }
             }
-            Curve::Ellipse(other_ellipse) => {
+            Curve::Ellipse(_other_ellipse) => {
                 todo!("Circle-Ellipse intersection")
             }
         },
-        Curve::Ellipse(ellipse) => match edge_other {
-            Curve::Line(other_line) => {
+        Curve::Ellipse(_ellipse) => match edge_other {
+            Curve::Line(_other_line) => {
                 todo!("Ellipse-Line intersection")
             }
-            Curve::Circle(other_circle) => {
+            Curve::Circle(_other_circle) => {
                 todo!("Ellipse-Circle intersection")
             }
-            Curve::Ellipse(other_ellipse) => {
+            Curve::Ellipse(_other_ellipse) => {
                 todo!("Ellipse-Ellipse intersection")
             }
         },

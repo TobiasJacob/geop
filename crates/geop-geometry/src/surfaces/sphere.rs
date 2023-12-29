@@ -47,7 +47,7 @@ impl Sphere {
 }
 
 impl Surface for Sphere {
-    fn transform(&self, transform: Transform) -> Rc<dyn Surface> {
+    fn transform(&self, _transform: Transform) -> Rc<dyn Surface> {
         todo!("Implement transform")
     }
 

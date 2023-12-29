@@ -1,8 +1,8 @@
-use std::rc::Rc;
+
 
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::{ellipse::Ellipse, curve::Curve};
+use super::{ellipse::Ellipse};
 
 #[derive(Debug, Clone)]
 pub struct Circle {
