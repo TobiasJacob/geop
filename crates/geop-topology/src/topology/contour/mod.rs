@@ -5,25 +5,29 @@ use geop_geometry::{points::point::Point, transforms::Transform};
 use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeEdgeIntersection};
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum ContourCorner<T> {
-    OnEdge(T),
-    OnCorner(T, T)
+pub enum EdgeIndex {
+    OnEdge(usize),
+    OnCorner(usize, usize)
 }
 
-impl<T> ContourCorner<T> {
-    pub fn expect_on_edge(&self) -> &T {
+#[derive(Clone, Debug, PartialEq)]
+pub enum ContourTangent {
+    OnEdge(Point),
+    OnCorner(Point, Point)
+}
+
+impl ContourTangent {
+    pub fn expect_on_edge(&self) -> &Point {
         match self {
-            ContourCorner::OnEdge(t) => t,
-            ContourCorner::OnCorner(_, _) => panic!("Expected on edge"),
+            ContourTangent::OnEdge(t) => t,
+            ContourTangent::OnCorner(_, _) => panic!("Expected on edge"),
         }
     }
-}
 
-impl ContourCorner<Point> {
     pub fn is_inside(&self, normal: Point, curve_dir: Point) -> bool {
         match self {
-            ContourCorner::OnEdge(tangent) => { tangent.cross(normal).dot(curve_dir) > 0.0 }
-            ContourCorner::OnCorner(tangent1, tangent2) => { 
+            ContourTangent::OnEdge(tangent) => { tangent.cross(normal).dot(curve_dir) > 0.0 }
+            ContourTangent::OnCorner(tangent1, tangent2) => { 
                 // Determine if it's a sharp or dull corner
                 let is_sharp = tangent1.cross(*tangent2).dot(normal) >= 0.0;
 
@@ -106,14 +110,14 @@ impl Contour {
 
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
-    fn get_edge_index(&self, point: Point) -> ContourCorner<usize> {
+    fn get_edge_index(&self, point: Point) -> EdgeIndex {
         for (i, edge) in self.edges.iter().enumerate() {
             match edge_contains_point(edge, point) {
-                EdgeContains::Inside => { return ContourCorner::<usize>::OnEdge(i);}
+                EdgeContains::Inside => { return EdgeIndex::OnEdge(i);}
                 EdgeContains::OnPoint(p) => {
                     match p == edge.end {
-                        true => { return ContourCorner::<usize>::OnCorner(i, (i + 1) % self.edges.len()) }
-                        false => { return ContourCorner::<usize>::OnCorner((i + self.edges.len() - 1) % self.edges.len(), i)}
+                        true => { return EdgeIndex::OnCorner(i, (i + 1) % self.edges.len()) }
+                        false => { return EdgeIndex::OnCorner((i + self.edges.len() - 1) % self.edges.len(), i)}
                     }
                 },
                 EdgeContains::Outside => {}
@@ -122,16 +126,14 @@ impl Contour {
         panic!("Not on contour")
     }
 
-    pub fn tangent(&self, p: Point) -> ContourCorner<Point> {
+    pub fn tangent(&self, p: Point) -> ContourTangent {
+        assert!(self.contains(p) != EdgeContains::Outside);
         match self.get_edge_index(p) {
-            ContourCorner::OnCorner(i1, i2) => {
-                ContourCorner::<Point>::OnCorner(
-                    self.edges[i1].tangent(p),
-                    self.edges[i2].tangent(p)
-                )
+            EdgeIndex::OnCorner(i1, i2) => {
+                ContourTangent::OnCorner(self.edges[i1].tangent(p), self.edges[i2].tangent(p))
             },
-            ContourCorner::OnEdge(i) => {
-                ContourCorner::<Point>::OnEdge(self.edges[i].tangent(p))
+            EdgeIndex::OnEdge(i) => {
+                ContourTangent::OnEdge(self.edges[i].tangent(p))
             },
         }
     }
@@ -142,12 +144,12 @@ impl Contour {
 
         let mut result = Vec::<Rc<Edge>>::new();
         let start_i = match self.get_edge_index(*start) {
-            ContourCorner::OnEdge(i) => { i }
-            ContourCorner::OnCorner(i1, i2) => { i1 }
+            EdgeIndex::OnEdge(i) => { i }
+            EdgeIndex::OnCorner(i1, i2) => { i2 }
         };
         let end_i = match self.get_edge_index(*end) {
-            ContourCorner::OnEdge(i) => { i }
-            ContourCorner::OnCorner(i1, i2) => { i1 }
+            EdgeIndex::OnEdge(i) => { i }
+            EdgeIndex::OnCorner(i1, i2) => { i1 }
         };
 
         if start_i == end_i {

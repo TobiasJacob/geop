@@ -13,7 +13,7 @@ use self::face_surface::FaceSurface;
 
 use super::{
     edge::edge_curve::EdgeCurve,
-    {contour::Contour, edge::Edge}, contour::ContourCorner, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
+    {contour::Contour, edge::Edge}, contour::{EdgeIndex, ContourTangent}, contains::{face_point::{face_contains_point, FaceContainsPoint}, face_edge::{face_contains_edge, FaceContainsEdge}}, intersections::edge_edge::EdgeEdgeIntersection,
 };
 
 #[derive(Clone, Debug)]
@@ -102,7 +102,7 @@ impl Face {
         }
     }
 
-    pub fn boundary_tangent(&self, p: Point) -> ContourCorner<Point> {
+    pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
         for contour in self.boundaries.iter() {
             match contour.contains(p) {
                 EdgeContains::Inside => return contour.tangent(p),

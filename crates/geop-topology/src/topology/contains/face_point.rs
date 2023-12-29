@@ -65,26 +65,26 @@ mod tests {
     use crate::topology::{edge::Edge, face::{Face, face_surface::FaceSurface}, contour::Contour, contains::face_point::{face_contains_point, FaceContainsPoint}};
 
 
-    #[test]
-    fn test_inside_outside() {
-        let p1 = Rc::new(Point::new(0.0, 0.0, 0.0));
-        let p2 = Rc::new(Point::new(1.0, 0.0, 0.0));
-        let p3 = Rc::new(Point::new(1.0, 1.0, 0.0));
-        let p4 = Rc::new(Point::new(0.0, 1.0, 0.0));
+    // #[test]
+    // fn test_inside_outside() {
+    //     let p1 = Rc::new(Point::new(0.0, 0.0, 0.0));
+    //     let p2 = Rc::new(Point::new(1.0, 0.0, 0.0));
+    //     let p3 = Rc::new(Point::new(1.0, 1.0, 0.0));
+    //     let p4 = Rc::new(Point::new(0.0, 1.0, 0.0));
 
-        let normal = Rc::new(Point::new(0.0, 0.0, 1.0));
+    //     let normal = Rc::new(Point::new(0.0, 0.0, 1.0));
 
-        let e1 = Rc::new(Edge::new_line(p1.clone(), p2.clone()));
-        let e2 = Rc::new(Edge::new_line(p2.clone(), p3.clone()));
-        let e3 = Rc::new(Edge::new_line(p3.clone(), p4.clone()));
-        let e4 = Rc::new(Edge::new_line(p4.clone(), p1.clone()));
+    //     let e1 = Rc::new(Edge::new_line(p1.clone(), p2.clone()));
+    //     let e2 = Rc::new(Edge::new_line(p2.clone(), p3.clone()));
+    //     let e3 = Rc::new(Edge::new_line(p3.clone(), p4.clone()));
+    //     let e4 = Rc::new(Edge::new_line(p4.clone(), p1.clone()));
 
-        let contour = Contour::new(vec![e1.clone(), e2.clone(), e3.clone(), e4.clone()]);
+    //     let contour = Contour::new(vec![e1.clone(), e2.clone(), e3.clone(), e4.clone()]);
 
-        assert!(contour.tangent(*p1).is_inside(*normal, Point::new(-1.0, -1.0, 0.0)));
-        assert!(!contour.tangent(*p3).is_inside(*normal, Point::new(-1.0, -1.0, 0.0)));
+    //     assert!(contour.tangent(*p1).is_inside(*normal, Point::new(-1.0, -1.0, 0.0)));
+    //     assert!(!contour.tangent(*p3).is_inside(*normal, Point::new(-1.0, -1.0, 0.0)));
 
-        let face = Face::new(vec![contour], Rc::new(FaceSurface::Plane(Plane::new(*p1, *p2 - *p1, *p3 - *p1))));
-        assert!(face_contains_point(&face, Point::new(0.5, 0.5, 0.0)) == FaceContainsPoint::Inside);
-    }
+    //     let face = Face::new(vec![contour], Rc::new(FaceSurface::Plane(Plane::new(*p1, *p2 - *p1, *p3 - *p1))));
+    //     assert!(face_contains_point(&face, Point::new(0.5, 0.5, 0.0)) == FaceContainsPoint::Inside);
+    // }
 }

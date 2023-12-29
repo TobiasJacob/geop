@@ -19,7 +19,7 @@ pub enum VolumeContainsPoint {
 
 pub enum VolumeNormal {
     OnFace(Point),
-    OnEdge(Point, Point),
+    OnEdge(Point, Point), // Normal1, Normal2
     OnPoint(Vec<Point>),
 }
 
@@ -27,7 +27,9 @@ impl VolumeNormal {
     pub fn is_from_inside(&self, point: Point) -> bool {{
         match self {
             VolumeNormal::OnFace(normal) => normal.dot(point) > 0.0,
-            VolumeNormal::OnEdge(normal1, normal2) => normal1.dot(point) > 0.0 && normal2.dot(point) > 0.0,
+            VolumeNormal::OnEdge(normal1, normal2) => {
+                todo!("Todo");
+            },
             VolumeNormal::OnPoint(normals) => {
                 for normal in normals {
                     if normal.dot(point) < 0.0 {
