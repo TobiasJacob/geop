@@ -9,10 +9,34 @@ use crate::{
         contour::Contour,
         edge::Edge,
         face::Face,
-        intersections::contour_contour::countour_contour_intersection_points,
-        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary, intersections::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection},
     },
 };
+
+
+use geop_geometry::points::point::Point;
+
+pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> {
+    let mut intersections = Vec::<Rc<Point>>::new();
+    for es in face_self.all_edges().iter() {
+        for eo in face_other.all_edges().iter() {
+            for int in edge_edge_intersections(&es, &eo) {
+                match int {
+                    EdgeEdgeIntersection::Point(point) => {
+                        intersections.push(point);
+                    }
+                    EdgeEdgeIntersection::Edge(edge) => {
+                        intersections.push(edge.start);
+                        intersections.push(edge.end);
+                    }
+                }
+            }
+        }
+    }
+
+    intersections
+}
+
 
 #[derive(Debug)]
 pub enum FaceSplit {
@@ -34,7 +58,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     // debug_data::add_face(face_self.clone(), DebugColor::Red);
     // debug_data::add_face(face_other.clone(), DebugColor::Blue);
 
-    let intersections = countour_contour_intersection_points(face_self, face_other);
+    let intersections = face_split_points(face_self, face_other);
 
     let mut edges_self = face_self.all_edges();
     let mut edges_other = face_other.all_edges();

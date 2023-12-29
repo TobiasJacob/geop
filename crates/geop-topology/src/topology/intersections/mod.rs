@@ -1,4 +1,3 @@
-pub mod contour_contour;
 pub mod contour_edge;
 pub mod edge_edge;
 pub mod face_edge;
