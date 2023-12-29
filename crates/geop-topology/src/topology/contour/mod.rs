@@ -13,7 +13,7 @@ pub enum EdgeIndex {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ContourTangent {
     OnEdge(Point),
-    OnCorner(Point, Point)
+    OnCorner(Point, Point) // Ingoung and outgoing tangent
 }
 
 impl ContourTangent {
@@ -23,23 +23,25 @@ impl ContourTangent {
             ContourTangent::OnCorner(_, _) => panic!("Expected on edge"),
         }
     }
-
-    pub fn is_inside(&self, normal: Point, curve_dir: Point) -> bool {
+    pub fn expect_on_corner(&self) -> (&Point, &Point) {
         match self {
-            ContourTangent::OnEdge(tangent) => { tangent.cross(normal).dot(curve_dir) > 0.0 }
-            ContourTangent::OnCorner(tangent1, tangent2) => { 
-                // Determine if it's a sharp or dull corner
-                let is_sharp = tangent1.cross(*tangent2).dot(normal) >= 0.0;
-
-                if is_sharp {
-                    // Sharp Corner: Check if normal is between tangent1 and tangent2
-                    tangent1.cross(normal).dot(curve_dir) > 0.0 && tangent2.cross(normal).dot(curve_dir) > 0.0
-                } else {
-                    // Dull Corner: Check if normal is between tangent1 or tangent2
-                    tangent1.cross(normal).dot(curve_dir) > 0.0 || tangent2.cross(normal).dot(curve_dir) > 0.0
-                }
-            }
+            ContourTangent::OnEdge(_) => panic!("Expected on corner"),
+            ContourTangent::OnCorner(t1, t2) => (t1, t2),
         }
+    }
+    pub fn is_inside(&self, normal: Point, curve_dir: Point) -> bool {
+        let (tangent1, tangent2) = match self {
+            ContourTangent::OnEdge(tangent) => { (tangent, tangent) }
+            ContourTangent::OnCorner(tangent1, tangent2) => { 
+                (tangent1, tangent2)
+            }
+        };
+        // Check sign of det(tangent1 - curve_dir, tangent2 - curve_dir, normal - curve_dir)
+        let curve_dir = -curve_dir.normalize();
+        let tangent1 = -tangent1.normalize();
+        let tangent2 = tangent2.normalize();
+        let det = (tangent1 - curve_dir).cross(tangent2 - curve_dir).dot(normal - curve_dir);
+        det > 0.0
     }
 }
 
