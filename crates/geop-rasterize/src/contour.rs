@@ -12,8 +12,8 @@ pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 4]) -> E
             let v1 = (j as f64) / n as f64;
             let v2 = ((j + 1) as f64) / n as f64;
             edges.push(RenderEdge::new(
-                contour.edges[i].point_at(v1),
-                contour.edges[i].point_at(v2),
+                contour.edges[i].interpolate(v1),
+                contour.edges[i].interpolate(v2),
                 color,
             ));
         }

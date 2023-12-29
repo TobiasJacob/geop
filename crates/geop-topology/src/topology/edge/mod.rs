@@ -7,7 +7,7 @@ use std::{
 
 use geop_geometry::{
     points::point::Point,
-    EQ_THRESHOLD, transforms::Transform, curves::curve::Curve,
+    EQ_THRESHOLD, transforms::Transform, curves::{curve::Curve, line::Line},
 };
 
 use crate::{PROJECTION_THRESHOLD, topology::contains::edge_point::{EdgeContains, edge_contains_point}};
@@ -33,6 +33,11 @@ impl Edge {
             end,
             curve,
         }
+    }
+
+    pub fn new_line(start: Rc<Point>, end: Rc<Point>) -> Edge {
+        let l = Line::new(*start, *end - *start);
+        Edge::new(start, end, Rc::new(EdgeCurve::Line(l)))
     }
 
     pub fn neg(&self) -> Edge {
@@ -62,9 +67,9 @@ impl Edge {
         self.curve.curve().tangent(p).normalize()
     }
 
-    pub fn point_at(&self, t: f64) -> Point {
+    pub fn interpolate(&self, t: f64) -> Point {
         assert!(t >= 0.0 && t <= 1.0);
-        self.curve.curve().point_at(self.start, self.end, t)
+        self.curve.curve().interpolate(*self.start, *self.end, t)
     }
 }
 

@@ -4,6 +4,7 @@ use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::{edge::{Edge}, contains::edge_point::{EdgeContains, edge_contains_point}, intersections::edge_edge::EdgeEdgeIntersection};
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum ContourCorner<T> {
     OnEdge(T),
     OnCorner(T, T)
@@ -23,8 +24,16 @@ impl ContourCorner<Point> {
         match self {
             ContourCorner::OnEdge(tangent) => { tangent.cross(normal).dot(curve_dir) > 0.0 }
             ContourCorner::OnCorner(tangent1, tangent2) => { 
-                tangent1.cross(normal).dot(curve_dir) > 0.0 &&
-                tangent2.cross(normal).dot(curve_dir) > 0.0
+                // Determine if it's a sharp or dull corner
+                let is_sharp = tangent1.cross(*tangent2).dot(normal) >= 0.0;
+
+                if is_sharp {
+                    // Sharp Corner: Check if normal is between tangent1 and tangent2
+                    tangent1.cross(normal).dot(curve_dir) > 0.0 && tangent2.cross(normal).dot(curve_dir) > 0.0
+                } else {
+                    // Dull Corner: Check if normal is between tangent1 or tangent2
+                    tangent1.cross(normal).dot(curve_dir) > 0.0 || tangent2.cross(normal).dot(curve_dir) > 0.0
+                }
             }
         }
     }
@@ -104,7 +113,7 @@ impl Contour {
                 EdgeContains::OnPoint(p) => {
                     match p == edge.end {
                         true => { return ContourCorner::<usize>::OnCorner(i, (i + 1) % self.edges.len()) }
-                        false => { panic!("Checks are in order, so this case should have been detected in the previous iteration.")}
+                        false => { return ContourCorner::<usize>::OnCorner((i + self.edges.len() - 1) % self.edges.len(), i)}
                     }
                 },
                 EdgeContains::Outside => {}

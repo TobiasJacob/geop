@@ -142,8 +142,8 @@ impl WindowState {
     pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         let time_in_seconds = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis();
         let pi = std::f32::consts::PI;
-        let time_in_seconds = (time_in_seconds % 4000) as f32 / 1000.0;
-        let rotations_per_second = 0.25;
+        let time_in_seconds = (time_in_seconds % 1000000) as f32 / 1000.0;
+        let rotations_per_second = 0.1;
         let omega = time_in_seconds * 2.0 * pi * rotations_per_second;
 
         self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;

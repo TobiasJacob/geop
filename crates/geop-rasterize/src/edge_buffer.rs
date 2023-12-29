@@ -19,6 +19,7 @@ impl RenderEdge {
     }
 }
 
+#[derive(Debug)]
 pub struct EdgeBuffer {
     pub edges: Vec<RenderEdge>,
 }

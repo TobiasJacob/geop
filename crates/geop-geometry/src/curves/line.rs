@@ -48,36 +48,43 @@ impl Curve for Line {
         v.norm() < EQ_THRESHOLD
     }
 
-    fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
-        u.0 * v.0
+    fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        start + (end - start) * t
     }
 
-    fn distance(&self, p1: Point, p2: Point) -> f64 {
-        return (p2 - p1).norm();
-    }
+    // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
+    //     u.0 * v.0
+    // }
 
-    fn exp(&self, x: Point, u: TangentParameter) -> Point {
-        assert!(self.on_manifold(x), "x is not on the manifold");
-        x + self.direction * u.0
-    }
-    // Log of y at base x. Z coordinate is set to 0.
-    fn log(&self, x: Point, y: Point) -> TangentParameter {
-        assert!(self.on_manifold(x), "x is not on the manifold");
-        assert!(self.on_manifold(y), "y is not on the manifold");
-        let v = y - x;
-        TangentParameter(self.direction.dot(v))
-    }
-    // Parallel transport of v from x to y.
-    fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
-        assert!(self.on_manifold(x), "x is not on the manifold");
-        assert!(self.on_manifold(y), "y is not on the manifold");
-        v
-    }
+    // fn distance(&self, p1: Point, p2: Point) -> f64 {
+    //     return (p2 - p1).norm();
+    // }
+
+    // fn exp(&self, x: Point, u: TangentParameter) -> Point {
+    //     assert!(self.on_manifold(x), "x is not on the manifold");
+    //     x + self.direction * u.0
+    // }
+    // // Log of y at base x. Z coordinate is set to 0.
+    // fn log(&self, x: Point, y: Point) -> TangentParameter {
+    //     assert!(self.on_manifold(x), "x is not on the manifold");
+    //     assert!(self.on_manifold(y), "y is not on the manifold");
+    //     let v = y - x;
+    //     TangentParameter(self.direction.dot(v))
+    // }
+    // // Parallel transport of v from x to y.
+    // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
+    //     assert!(self.on_manifold(x), "x is not on the manifold");
+    //     assert!(self.on_manifold(y), "y is not on the manifold");
+    //     v
+    // }
 
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
-        let v = m - self.basis;
-        let v = v - self.direction * (v.dot(self.direction));
-        v.norm() < EQ_THRESHOLD && (m - start).dot(self.direction) > 0.0 && (m - end).dot(self.direction) < 0.0
+        assert!(self.on_manifold(m));
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        (m - start).dot(self.direction) > 0.0 && (m - end).dot(self.direction) < 0.0
     }
 
     fn get_midpoint(&self, start: Point, end: Point) -> Point {

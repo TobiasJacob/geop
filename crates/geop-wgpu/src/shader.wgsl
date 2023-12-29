@@ -28,10 +28,10 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
 
-    // out.normal = (uniforms.world * vec4<f32>(in.normal, 0.0)).xyz;
     out.position = uniforms.view_project * vec4<f32>(in.position, 1.0);
-    out.color = in.color; //vec4<f32>(in.color.rgb * in.color.a, in.color.a);
-
+    out.color = in.color;
+    //out.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    
     return out;
 }
 

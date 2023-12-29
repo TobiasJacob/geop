@@ -42,30 +42,35 @@ impl Curve for Ellipse {
         // -self.dir0 * u.sin() + self.dir1 * u.cos()
         todo!("Implement tangent")
     }
-
+    
     fn on_manifold(&self, p: Point) -> bool {
         todo!("Implement on_manifold")
     }
-
-    fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
-        todo!("Implement metric")
+    
+    fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+        todo!("Implement interpolate")
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
-        todo!("Implement distance")
-    }
 
-    fn exp(&self, x: Point, u: TangentParameter) -> Point {
-        todo!("Implement exp")
-    }
+    // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
+    //     todo!("Implement metric")
+    // }
 
-    fn log(&self, x: Point, y: Point) -> TangentParameter {
-        todo!("Implement log")
-    }
+    // fn distance(&self, x: Point, y: Point) -> f64 {
+    //     todo!("Implement distance")
+    // }
 
-    fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
-        todo!("Implement parallel_transport")
-    }
+    // fn exp(&self, x: Point, u: TangentParameter) -> Point {
+    //     todo!("Implement exp")
+    // }
+
+    // fn log(&self, x: Point, y: Point) -> TangentParameter {
+    //     todo!("Implement log")
+    // }
+
+    // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
+    //     todo!("Implement parallel_transport")
+    // }
 
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
         todo!("Implement between")

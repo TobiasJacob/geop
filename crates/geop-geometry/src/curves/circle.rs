@@ -64,37 +64,52 @@ impl Curve for Circle {
         (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
     }
 
-    fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
-        u.0 * v.0
+    fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+        assert!(self.on_manifold(start));
+        assert!(self.on_manifold(end));
+        let start = start - self.basis;
+        let end = end - self.basis;
+        let x_start = self.radius.dot(start);
+        let x_end = self.radius.dot(end);
+        let y_start = self.dir_cross.dot(start);
+        let y_end = self.dir_cross.dot(end);
+        let angle1 = x_start.atan2(y_start);
+        let angle2 = x_end.atan2(y_end);
+        let angle = angle1 + t * (angle2 - angle1);
+        angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
-        assert!(self.on_manifold(x));
-        assert!(self.on_manifold(y));
-        let v1 = x - self.basis;
-        let v2 = y - self.basis;
-        let angle = v1.angle(v2);
-        angle * self.radius.norm()
-    }
+    // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
+    //     u.0 * v.0
+    // }
 
-    fn exp(&self, x: Point, u: TangentParameter) -> Point {
-        assert!(self.on_manifold(x));
-        let x = x - self.basis;
-        x * u.0.cos() + self.normal.cross(x) * u.0.sin()
-    }
+    // fn distance(&self, x: Point, y: Point) -> f64 {
+    //     assert!(self.on_manifold(x));
+    //     assert!(self.on_manifold(y));
+    //     let v1 = x - self.basis;
+    //     let v2 = y - self.basis;
+    //     let angle = v1.angle(v2);
+    //     angle * self.radius.norm()
+    // }
+
+    // fn exp(&self, x: Point, u: TangentParameter) -> Point {
+    //     assert!(self.on_manifold(x));
+    //     let x = x - self.basis;
+    //     x * u.0.cos() + self.normal.cross(x) * u.0.sin()
+    // }
     
-    fn log(&self, x: Point, y: Point) -> TangentParameter {
-        assert!(self.on_manifold(x));
-        assert!(self.on_manifold(y));
-        let x = x - self.basis;
-        let y = y - self.basis;
-        let angle = x.angle(y);
-        TangentParameter(angle)
-    }
+    // fn log(&self, x: Point, y: Point) -> TangentParameter {
+    //     assert!(self.on_manifold(x));
+    //     assert!(self.on_manifold(y));
+    //     let x = x - self.basis;
+    //     let y = y - self.basis;
+    //     let angle = x.angle(y);
+    //     TangentParameter(angle)
+    // }
 
-    fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
-        v
-    }
+    // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
+    //     v
+    // }
 
     fn between(&self, m: Point, start: Point, end: Point) -> bool {
         assert!(self.on_manifold(m));
@@ -125,21 +140,6 @@ impl Curve for Circle {
         } else {
             return -mid + self.basis;
         }
-    }
-
-    fn point_at(&self, t: f64, start: Point, end: Point) -> Point {
-        assert!(self.on_manifold(start));
-        assert!(self.on_manifold(end));
-        let start = start - self.basis;
-        let end = end - self.basis;
-        let x_start = self.radius.dot(start);
-        let x_end = self.radius.dot(end);
-        let y_start = self.dir_cross.dot(start);
-        let y_end = self.dir_cross.dot(end);
-        let angle1 = x_start.atan2(y_start);
-        let angle2 = x_end.atan2(y_end);
-        let angle = angle1 + t * (angle2 - angle1);
-        angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
     }
 }
 
