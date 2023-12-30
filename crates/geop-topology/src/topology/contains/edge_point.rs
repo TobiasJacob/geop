@@ -6,20 +6,39 @@ use crate::topology::edge::Edge;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EdgePointContains {
-    Inside,
+    Inside(usize),
     Outside,
     OnPoint(Rc<Point>),
 }
 
-pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
-    if !edge.curve.on_manifold(point) {
+impl EdgePointContains {
+    pub fn is_inside(&self) -> bool {
+        match self {
+            EdgePointContains::Inside(_) => true,
+            EdgePointContains::Outside => false,
+            EdgePointContains::OnPoint(_) => false,
+        }
+    }
+}
+
+pub fn edge_point_contains(edge: &Edge, point: &Rc<Point>) -> EdgePointContains {
+    if !edge.curve.on_manifold(**point) {
         return EdgePointContains::Outside;
     }
-    if point == *edge.start || point == *edge.end {
-        return EdgePointContains::OnPoint(Rc::new(point));
+    for (s, e) in edge.boundaries.iter() {
+        if point == s {
+            return EdgePointContains::OnPoint(s.clone());
+        }
+        if point == e {
+            return EdgePointContains::OnPoint(e.clone());
+        }
     }
-    if edge.curve.between(point, *edge.start, *edge.end) {
-        return EdgePointContains::Inside;
+
+    for (i, (s, e)) in edge.boundaries.iter().enumerate() {
+        if edge.curve.between(**point, **s, **e) {
+            return EdgePointContains::Inside(i);
+        }
     }
+
     EdgePointContains::Outside
 }

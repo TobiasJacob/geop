@@ -4,9 +4,9 @@ use geop_geometry::{
     curves::curve::Curve, points::point::Point, surfaces::surface::Surface, transforms::Transform,
 };
 
-use crate::topology::contains::{
+use crate::topology::{contains::{
     edge_point::EdgePointContains, surface_edge::surface_edge_contains,
-};
+}, intersections::edge_edge::edge_edge_intersection};
 
 use super::{
     contains::face_point::{face_point_contains, FacePointContains},
@@ -16,7 +16,8 @@ use super::{
 
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub boundaries: Vec<Contour>, // Coutner-clockwise
+    pub boundary_edges: Vec<Edge>,
+    pub boundary_points: Vec<Point>,
     pub surface: Rc<Surface>,
 }
 
@@ -39,6 +40,18 @@ impl Face {
                 assert!(surface_edge_contains(&surface, edge));
             }
         }
+        // for (i, contour_a) in boundaries.iter().enumerate() {
+        //     for edge_a in contour_a.edges.iter() {
+        //         for contour_b in boundaries[..i].iter() {
+        //             for edge_b in contour_b.edges.iter() {
+        //                 assert!(
+        //                     edge_edge_intersections(edge_a, edge_b).len() == 0,
+        //                     "Contours are not allowed to intersect"
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
         Face {
             boundaries,
             surface,
@@ -109,14 +122,6 @@ impl Face {
             }
         }
         panic!("Point is not on boundary");
-    }
-
-    pub fn normal(&self, p: Point) -> Point {
-        match face_point_contains(self, p) {
-            FacePointContains::Inside => (),
-            _ => panic!("Point is not on face"),
-        }
-        self.surface.normal(p)
     }
 
     pub fn neg(&self) -> Face {

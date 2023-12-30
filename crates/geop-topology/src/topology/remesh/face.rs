@@ -9,8 +9,8 @@ use crate::{
         contour::Contour,
         edge::Edge,
         face::Face,
-        intersections::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection},
-        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersectionOld},
+        split_if_necessary::point_split_edge::{split_edge_by_point_if_necessary},
     },
 };
 
@@ -20,12 +20,12 @@ pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> 
     let mut intersections = Vec::<Rc<Point>>::new();
     for es in face_self.all_edges().iter() {
         for eo in face_other.all_edges().iter() {
-            for int in edge_edge_intersections(&es, &eo) {
+            for int in edge_edge_intersection(&es, &eo) {
                 match int {
-                    EdgeEdgeIntersection::Point(point) => {
+                    EdgeEdgeIntersectionOld::Point(point) => {
                         intersections.push(point);
                     }
-                    EdgeEdgeIntersection::Edge(edge) => {
+                    EdgeEdgeIntersectionOld::Edge(edge) => {
                         intersections.push(edge.start);
                         intersections.push(edge.end);
                     }
@@ -37,8 +37,21 @@ pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> 
     intersections
 }
 
+pub fn split_edges_by_points_and_into_len2(edges: Vec<Rc<Edge>>, points: Vec<Rc<Point>>) -> Vec<Rc<Edge>> {
+    let mut result = edges;
+    for point in points {
+        let mut new_result = Vec::<Rc<Edge>>::new();
+        for edge in edges {
+            new_result.push(split_edge_by_point_if_necessary(edge, point.clone()));
+        }
+        result = new_result;
+    }
+    result
+}
+
+
 #[derive(Debug)]
-pub enum FaceSplit {
+pub enum FaceSplit { // TODO: Name this FaceRemesh
     AinB(Rc<Edge>),
     AonBSameSide(Rc<Edge>),
     AonBOpSide(Rc<Edge>),
@@ -65,8 +78,8 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     println!("intersections: {:}", intersections.len());
     for point in intersections {
         println!("point: {:?}", point);
-        edges_self = split_edges_by_point_if_necessary(edges_self, point.clone());
-        edges_other = split_edges_by_point_if_necessary(edges_other, point.clone());
+        edges_self = split_edges_by_point_and_into_len2(edges_self, point.clone());
+        edges_other = split_edges_by_point_and_into_len2(edges_other, point.clone());
     }
 
     let res: Vec<FaceSplit> = edges_self

@@ -11,11 +11,12 @@ use crate::topology::{
     contains::face_point::{face_point_contains, FacePointContains},
     edge::Edge,
     face::Face,
-    intersections::{edge_edge::EdgeEdgeIntersection, face_edge::face_edge_intersection},
+    intersections::{edge_edge::EdgeEdgeIntersectionOld, face_edge::face_edge_intersection},
     remesh::face::{face_remesh, face_split, FaceSplit},
 };
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
+    // TODO: Handle the case where faces have opposite normals
     assert!(
         face_self.surface == face_other.surface,
         "Faces must have the same surface",
@@ -63,10 +64,10 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
                 }
             }
 
-            let mut segments: Vec<EdgeEdgeIntersection> = vec![];
+            let mut segments: Vec<EdgeEdgeIntersectionOld> = vec![];
             for curve in curves.iter() {
                 let edge = Edge::new(todo!("Start"), todo!("End"), Rc::new(curve.clone()));
-                segments.push(EdgeEdgeIntersection::Edge(edge));
+                segments.push(EdgeEdgeIntersectionOld::Edge(edge));
             }
 
             for face in &[face_self, face_other] {
@@ -74,12 +75,12 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
 
                 for seg in segments.iter() {
                     match seg {
-                        EdgeEdgeIntersection::Point(p) => {
+                        EdgeEdgeIntersectionOld::Point(p) => {
                             if face_point_contains(face, **p) != FacePointContains::Outside {
                                 new_segments.push(seg.clone());
                             }
                         }
-                        EdgeEdgeIntersection::Edge(e) => {
+                        EdgeEdgeIntersectionOld::Edge(e) => {
                             new_segments.extend(face_edge_intersection(face_self, e));
                         }
                     }
@@ -91,8 +92,8 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
             segments
                 .iter()
                 .map(|seg| match seg {
-                    EdgeEdgeIntersection::Point(p) => FaceFaceIntersection::Point(p.clone()),
-                    EdgeEdgeIntersection::Edge(e) => FaceFaceIntersection::Edge(e.clone()),
+                    EdgeEdgeIntersectionOld::Point(p) => FaceFaceIntersection::Point(p.clone()),
+                    EdgeEdgeIntersectionOld::Edge(e) => FaceFaceIntersection::Edge(e.clone()),
                 })
                 .collect()
         }
