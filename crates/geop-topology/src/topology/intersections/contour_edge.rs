@@ -11,15 +11,15 @@ use crate::topology::{
     face::Face,
 };
 
-use super::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection};
+use super::edge_edge::{edge_edge_intersection, EdgeEdgeIntersectionOld};
 
 pub fn countour_edge_intersection_points(face: &Face, edge: &Edge) -> Vec<Rc<Point>> {
     let mut intersections = Vec::<Rc<Point>>::new();
     for contour in face.boundaries.iter() {
         for edge_o in contour.edges.iter() {
-            for int in edge_edge_intersections(edge, &edge_o) {
+            for int in edge_edge_intersection(edge, &edge_o) {
                 match int {
-                    EdgeEdgeIntersection::Point(point) => {
+                    EdgeEdgeIntersectionOld::Point(point) => {
                         assert!(
                             edge_point_contains(edge, *point) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",
@@ -36,7 +36,7 @@ pub fn countour_edge_intersection_points(face: &Face, edge: &Edge) -> Vec<Rc<Poi
                         );
                         intersections.push(point);
                     }
-                    EdgeEdgeIntersection::Edge(_edge) => {
+                    EdgeEdgeIntersectionOld::Edge(_edge) => {
                         assert!(
                             edge_point_contains(edge_o, *_edge.start) != EdgePointContains::Outside,
                             "edge: {:}, edge_o: {:}, point: {:?}",

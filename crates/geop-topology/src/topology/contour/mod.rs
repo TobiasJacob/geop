@@ -4,7 +4,7 @@ use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::{
     contains::edge_point::{edge_point_contains, EdgePointContains},
-    edge::Edge,
+    edge::Edge, regularize::edge::RegularizedEdge,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -50,7 +50,7 @@ impl ContourTangent {
 
 #[derive(Debug, Clone)]
 pub struct Contour {
-    pub edges: Vec<Rc<Edge>>,
+    pub edges: Vec<Rc<RegularizedEdge>>,
 }
 
 // An Contour is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
@@ -58,7 +58,7 @@ pub struct Contour {
 // The points of edges are not part of the contour, e.g. the intersection of two contours at the same point is empty.
 // Keep in mind that the contour is still closed, but the points are "next to" the edges, not "part of" the edges, because otherwise two neighbouring edges would overlap at the point, making things a lot more complicated.
 impl Contour {
-    pub fn new(edges: Vec<Rc<Edge>>) -> Contour {
+    pub fn new(edges: Vec<Rc<RegularizedEdge>>) -> Contour {
         assert!(edges.len() > 0);
         for i in 0..edges.len() {
             let edge = edges[i].clone();

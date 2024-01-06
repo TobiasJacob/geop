@@ -89,10 +89,10 @@ impl Volume {
         }
         match relevant_faces.len() {
             0 => panic!("Point is not inside volume"),
-            1 => VolumeNormal::OnFace(relevant_faces[0].normal(point)),
+            1 => VolumeNormal::OnFace(relevant_faces[0].surface.normal(point)),
             2 => VolumeNormal::OnEdge(
-                relevant_faces[0].normal(point),
-                relevant_faces[1].normal(point),
+                relevant_faces[0].surface.normal(point),
+                relevant_faces[1].surface.normal(point),
                 *relevant_faces[0].boundary_tangent(point).expect_on_edge(),
             ),
             3 => {

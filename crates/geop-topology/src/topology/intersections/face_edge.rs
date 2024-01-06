@@ -9,19 +9,19 @@ use crate::topology::{
     face::Face,
 };
 
-use super::{edge_edge::EdgeEdgeIntersection, surface_edge::surface_edge_intersection};
+use super::{edge_edge::EdgeEdgeIntersectionOld, surface_edge::surface_edge_intersection};
 
-pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
+pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersectionOld> {
     let mut intersections = surface_edge_intersection(&face.surface, edge);
 
-    let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
+    let mut new_interesections = Vec::<EdgeEdgeIntersectionOld>::new();
     for int in intersections.drain(..) {
         match &int {
-            EdgeEdgeIntersection::Point(p) => match face_point_contains(face, **p) {
+            EdgeEdgeIntersectionOld::Point(p) => match face_point_contains(face, **p) {
                 FacePointContains::Inside => new_interesections.push(int),
                 _ => {}
             },
-            EdgeEdgeIntersection::Edge(e) => {
+            EdgeEdgeIntersectionOld::Edge(e) => {
                 let mut edges = vec![Rc::new(e.clone())];
                 for _b in face.boundaries.iter() {
                     // let ints = b.intersect_edge(&e);
@@ -32,13 +32,13 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersect
                 for e in edges.drain(..) {
                     match face_edge_contains(face, &e) {
                         FaceEdgeContains::Inside => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
+                            new_interesections.push(EdgeEdgeIntersectionOld::Edge((*e).clone()))
                         }
                         FaceEdgeContains::OnBorderOppositeDir => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
+                            new_interesections.push(EdgeEdgeIntersectionOld::Edge((*e).clone()))
                         }
                         FaceEdgeContains::OnBorderSameDir => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
+                            new_interesections.push(EdgeEdgeIntersectionOld::Edge((*e).clone()))
                         }
                         FaceEdgeContains::Outside => {}
                     }

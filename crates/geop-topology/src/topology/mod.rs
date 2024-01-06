@@ -8,3 +8,5 @@ pub mod remesh;
 pub mod split_if_necessary;
 pub mod union;
 pub mod volume;
+pub mod regularize;
+pub mod vertex;
