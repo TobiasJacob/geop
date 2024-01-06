@@ -30,10 +30,10 @@ pub fn edge_edge_same_curve_intersection(
     println!("Intersecting edge {:?} and {:?}", edge_self, edge_other);
     let intervals: Vec<EdgeRemesh> = edge_split(edge_self, &edge_other).drain(..).filter(|int| {
         match int {
-            EdgeRemesh::AinB(_, _) => true,
-            EdgeRemesh::AoutB(_, _) => false,
-            EdgeRemesh::BinA(_, _) => false,
-            EdgeRemesh::BoutA(_, _) => false,
+            EdgeRemesh::AinB(_) => true,
+            EdgeRemesh::AoutB(_) => false,
+            EdgeRemesh::BinA(_) => false,
+            EdgeRemesh::BoutA(_) => false,
         }
     }).collect();
     println!("Intervals: {:?}", intervals);

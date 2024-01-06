@@ -27,10 +27,10 @@ pub fn edge_split_points(a: &Edge, b: &Edge) -> Vec<Point> {
 
 #[derive(Debug)]
 pub enum EdgeRemesh {
-    AinB(Point, Point),
-    AoutB(Point, Point),
-    BinA(Point, Point),
-    BoutA(Point, Point),
+    AinB(Edge),
+    AoutB(Edge),
+    BinA(Edge),
+    BoutA(Edge),
 }
 
 pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
@@ -51,14 +51,12 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
         match edge_point_contains(edge_b, mid_point) {
             EdgePointContains::Inside => {
                 result.push(EdgeRemesh::AinB(
-                    a.start.clone(),
-                    a.end.clone(),
+                    a
                 ));
             }
             EdgePointContains::Outside => {
                 result.push(EdgeRemesh::AoutB(
-                    a.start.clone(),
-                    a.end.clone(),
+                    a
                 ));
             }
             EdgePointContains::OnPoint(_) => {
@@ -72,14 +70,12 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
         match edge_point_contains(edge_a, mid_point) {
             EdgePointContains::Inside => {
                 result.push(EdgeRemesh::BinA(
-                    b.start.clone(),
-                    b.end.clone(),
+                    b
                 ));
             }
             EdgePointContains::Outside => {
                 result.push(EdgeRemesh::BoutA(
-                    b.start.clone(),
-                    b.end.clone(),
+                    b
                 ));
             }
             EdgePointContains::OnPoint(_) => {
@@ -95,10 +91,10 @@ pub fn edge_remesh(curve: &Curve, mut intervals_intermediate: Vec<EdgeRemesh>) -
     intervals_intermediate
         .drain(..)
         .map(|interval| match interval {
-            EdgeRemesh::AinB(start, end) => Edge::new(start, end, curve.clone()),
-            EdgeRemesh::AoutB(start, end) => Edge::new(start, end, curve.clone()),
-            EdgeRemesh::BinA(start, end) => Edge::new(start, end, curve.clone()),
-            EdgeRemesh::BoutA(start, end) => Edge::new(start, end, curve.clone()),
+            EdgeRemesh::AinB(a) => a,
+            EdgeRemesh::AoutB(a) => a,
+            EdgeRemesh::BinA(b) => b,
+            EdgeRemesh::BoutA(b) => b,
         })
         .collect()
 }
