@@ -9,14 +9,14 @@ use geop_geometry::{
 
 use crate::topology::{contour::Contour, edge::Edge, face::Face, volume::Volume};
 
-pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
-    let end_face = Rc::new(
+pub fn extrude(start_face: Face, direction: Point) -> Volume {
+    let end_face = 
         start_face
             .transform(Transform::from_translation(direction))
-            .flip(),
-    );
+            .flip();
 
-    let mut faces = Vec::<Rc<Face>>::new();
+
+    let mut faces = Vec::<Face>::new();
     let all_edges = &start_face.all_edges();
     let n = all_edges.len();
     for i in 0..n {
@@ -50,7 +50,7 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
         let contour = Contour::new(vec![right, top, left, bottom]);
 
         let face = Face::new(vec![contour], Rc::new(plane));
-        faces.push(Rc::new(face));
+        faces.push(face);
     }
     faces.push(start_face);
     faces.push(end_face);

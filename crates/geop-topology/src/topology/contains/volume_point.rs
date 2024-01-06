@@ -13,7 +13,7 @@ use super::face_point::{face_point_contains, FacePointContains};
 
 pub enum VolumePointContains {
     Inside,
-    OnFace(Rc<Face>),
+    OnFace(Face),
     OnEdge(Edge),
     OnPoint(Point),
     Outside,

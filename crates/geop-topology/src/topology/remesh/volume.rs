@@ -6,14 +6,14 @@ use crate::topology::{
 
 #[derive(Debug)]
 pub enum VolumeSplit {
-    AinB(Rc<Face>),
-    AonBSameSide(Rc<Face>),
-    AonBOpSide(Rc<Face>),
-    AoutB(Rc<Face>),
-    BinA(Rc<Face>),
-    BonASameSide(Rc<Face>),
-    BonAOpSide(Rc<Face>),
-    BoutA(Rc<Face>),
+    AinB(Face),
+    AonBSameSide(Face),
+    AonBOpSide(Face),
+    AoutB(Face),
+    BinA(Face),
+    BonASameSide(Face),
+    BonAOpSide(Face),
+    BoutA(Face),
 }
 
 pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSplit> {

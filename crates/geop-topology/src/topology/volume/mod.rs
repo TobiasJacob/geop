@@ -10,7 +10,7 @@ use super::{
 };
 
 pub struct Volume {
-    pub faces: Vec<Rc<Face>>,
+    pub faces: Vec<Face>,
 }
 
 pub enum VolumeNormal {
@@ -60,7 +60,7 @@ pub enum VolumeShellIntersection {
 }
 
 impl Volume {
-    pub fn new(faces: Vec<Rc<Face>>) -> Volume {
+    pub fn new(faces: Vec<Face>) -> Volume {
         assert!(faces.len() > 0, "Volume must have at least one face");
         Volume { faces }
     }
@@ -70,13 +70,13 @@ impl Volume {
             faces: self
                 .faces
                 .iter()
-                .map(|f| Rc::new(f.transform(transform)))
+                .map(|f| f.transform(transform))
                 .collect(),
         }
     }
 
     pub fn normal(&self, point: Point) -> VolumeNormal {
-        let mut relevant_faces = Vec::<&Rc<Face>>::new();
+        let mut relevant_faces = Vec::<&Face>::new();
         for face in self.faces.iter() {
             match face_point_contains(face, point) {
                 FacePointContains::Inside

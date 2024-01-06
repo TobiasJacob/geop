@@ -92,7 +92,7 @@ async fn run() {
 
         let union_face = face_face_difference(&face2, &face1);
 
-        let object = extrude(Rc::new(union_face.clone()), Point::new(0.0, 0.0, -0.5));
+        let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
         // let vertex_buffer_line = rasterize_contours_into_line_list(
         //     &union_face.boundaries,
