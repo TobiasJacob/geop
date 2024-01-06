@@ -46,7 +46,7 @@ impl ContourTangent {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Contour {
     pub edges: Vec<Edge>,
 }

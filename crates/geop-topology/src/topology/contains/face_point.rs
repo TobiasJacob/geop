@@ -14,6 +14,15 @@ pub enum FacePointContains {
     Outside,
 }
 
+impl FacePointContains {
+    pub fn is_on_edge(&self) -> bool {
+        match self {
+            FacePointContains::OnEdge(edge) => true,
+            _ => false,
+        }
+    }
+}
+
 pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     // println!("face_contains_point: {:?}", point);
     // println!("face: {:}", face);
