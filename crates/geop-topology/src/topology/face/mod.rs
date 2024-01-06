@@ -1,44 +1,31 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curves::curve::Curve, points::point::Point, surfaces::surface::Surface, transforms::Transform,
+    curve_surface_intersection::curve_surface::curve_surface_intersection,
+    points::point::Point, surfaces::surface::Surface, transforms::Transform,
 };
 
-use crate::topology::{contains::{
-    edge_point::EdgePointContains, surface_edge::surface_edge_contains,
-}, intersections::edge_edge::edge_edge_intersection};
+use crate::topology::contains::edge_point::EdgePointContains;
 
-use super::{
-    contains::face_point::{face_point_contains, FacePointContains},
-    contour::ContourTangent,
-    {contour::Contour, edge::Edge},
-};
+use super::{edge::Edge, contour::ContourTangent};
 
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub boundary_edges: Vec<Edge>,
-    pub boundary_points: Vec<Point>,
+    pub boundaries: Vec<Edge>,
+    // pub boundary_points: Vec<Point>, // TODO
     pub surface: Rc<Surface>,
 }
 
-pub enum FaceIntersection {
-    Face(Face),
-    Contour(Contour),
-    Edge(Edge),
-    Point(Point),
-}
 
 // Implements a Face. A Face is bounded by the outer_loop and might have holes in inner_loops.
 // outer_loop has to be clockwise, if the face is looked at from normal direction (normal facing towards you).
 // inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
 // The contours are not allowed to intersect in any way. Keep in mind that a point is not considered an intersection, hence it is allowed that the contours touch each other at points.
 impl Face {
-    pub fn new(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Face {
+    pub fn new(boundaries: Vec<Edge>, surface: Rc<Surface>) -> Face {
         assert!(boundaries.len() > 0, "Face must have at least one boundary");
-        for contour in boundaries.iter() {
-            for edge in contour.edges.iter() {
-                assert!(surface_edge_contains(&surface, edge));
-            }
+        for edge in boundaries.iter() {
+            assert!(curve_surface_intersection(&*edge.curve, &surface).is_curve());
         }
         // for (i, contour_a) in boundaries.iter().enumerate() {
         //     for edge_a in contour_a.edges.iter() {
@@ -77,40 +64,11 @@ impl Face {
         return points;
     }
 
-    pub fn all_edges(&self) -> Vec<Rc<Edge>> {
-        let mut edges = Vec::<Rc<Edge>>::new();
-
-        for contour in self.boundaries.iter() {
-            for edge in contour.edges.iter() {
-                edges.push(edge.clone());
-            }
-        }
-        return edges;
-    }
-
-    pub fn inner_point(&self) -> Point {
-        todo!("Returns an inner point where normal vector is well defined.");
-    }
-
     pub fn edge_from_to(&self, from: Rc<Point>, to: Rc<Point>) -> Rc<Edge> {
-        match &*self.surface {
-            Surface::Plane(p) => {
-                let curve = p.curve_from_to(*from, *to);
-                return Rc::new(Edge::new(
-                    from.clone(),
-                    to.clone(),
-                    Rc::new(Curve::Line(curve)),
-                ));
-            }
-            Surface::Sphere(s) => {
-                let curve = s.curve_from_to(*from, *to);
-                return Rc::new(Edge::new(
-                    from.clone(),
-                    to.clone(),
-                    Rc::new(Curve::Circle(curve)),
-                ));
-            }
-        }
+        Rc::new(Edge::new(
+            vec![(from.clone(), to.clone())],
+            Rc::new(self.surface.geodesic(*from, *to)),
+        ))
     }
 
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {

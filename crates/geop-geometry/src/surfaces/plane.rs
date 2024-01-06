@@ -1,6 +1,11 @@
-use crate::{curves::line::Line, points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{
+    curves::{curve::Curve, line::Line},
+    points::point::Point,
+    transforms::Transform,
+    EQ_THRESHOLD,
+};
 
-use super::surface::{SurfaceCurve, TangentPoint};
+use super::surface::TangentPoint;
 
 #[derive(Clone, Debug)]
 pub struct Plane {
@@ -79,8 +84,8 @@ impl Plane {
         v.0
     }
 
-    pub fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
-        SurfaceCurve::Line(Line::new(p, q - p))
+    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+        Curve::Line(Line::new(p, q - p))
     }
 }
 
