@@ -18,13 +18,6 @@ pub struct Face {
     pub surface: Rc<Surface>,
 }
 
-pub enum FaceIntersection {
-    Face(Face),
-    Contour(Contour),
-    Edge(Edge),
-    Point(Point),
-}
-
 // Implements a Face. A Face is bounded by the outer_loop and might have holes in inner_loops.
 // outer_loop has to be clockwise, if the face is looked at from normal direction (normal facing towards you).
 // inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
