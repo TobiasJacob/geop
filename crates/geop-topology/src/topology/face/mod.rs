@@ -1,8 +1,6 @@
 use std::rc::Rc;
 
-use geop_geometry::{
-    curves::curve::Curve, points::point::Point, surfaces::surface::Surface, transforms::Transform,
-};
+use geop_geometry::{points::point::Point, surfaces::surface::Surface, transforms::Transform};
 
 use crate::topology::contains::{
     edge_point::EdgePointContains, surface_edge::surface_edge_contains,
@@ -55,8 +53,8 @@ impl Face {
         )
     }
 
-    pub fn all_points(&self) -> Vec<Rc<Point>> {
-        let mut points = Vec::<Rc<Point>>::new();
+    pub fn all_points(&self) -> Vec<Point> {
+        let mut points = Vec::<Point>::new();
 
         for contour in self.boundaries.iter() {
             points.extend(contour.all_points());
@@ -64,8 +62,8 @@ impl Face {
         return points;
     }
 
-    pub fn all_edges(&self) -> Vec<Rc<Edge>> {
-        let mut edges = Vec::<Rc<Edge>>::new();
+    pub fn all_edges(&self) -> Vec<Edge> {
+        let mut edges = Vec::<Edge>::new();
 
         for contour in self.boundaries.iter() {
             for edge in contour.edges.iter() {
@@ -79,25 +77,12 @@ impl Face {
         todo!("Returns an inner point where normal vector is well defined.");
     }
 
-    pub fn edge_from_to(&self, from: Rc<Point>, to: Rc<Point>) -> Rc<Edge> {
-        match &*self.surface {
-            Surface::Plane(p) => {
-                let curve = p.curve_from_to(*from, *to);
-                return Rc::new(Edge::new(
-                    from.clone(),
-                    to.clone(),
-                    Rc::new(Curve::Line(curve)),
-                ));
-            }
-            Surface::Sphere(s) => {
-                let curve = s.curve_from_to(*from, *to);
-                return Rc::new(Edge::new(
-                    from.clone(),
-                    to.clone(),
-                    Rc::new(Curve::Circle(curve)),
-                ));
-            }
-        }
+    pub fn edge_from_to(&self, from: Point, to: Point) -> Edge {
+        Edge::new(
+            from.clone(),
+            to.clone(),
+            self.surface.geodesic(from, to),
+        )
     }
 
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
@@ -121,14 +106,14 @@ impl Face {
 
     pub fn neg(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),
+            boundaries: self.boundaries.iter().rev().map(|l| l.flip()).collect(),
             surface: self.surface.clone(),
         }
     }
 
     pub fn flip(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().rev().map(|l| l.neg()).collect(),
+            boundaries: self.boundaries.iter().rev().map(|l| l.flip()).collect(),
             surface: Rc::new(self.surface.neg()),
         }
     }

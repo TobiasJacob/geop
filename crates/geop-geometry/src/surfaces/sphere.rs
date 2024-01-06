@@ -1,6 +1,6 @@
-use crate::{curves::circle::Circle, points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{curves::{circle::Circle, curve::Curve}, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::surface::{SurfaceCurve, TangentPoint};
+use super::surface::TangentPoint;
 
 #[derive(Clone, Debug)]
 pub struct Sphere {
@@ -101,10 +101,10 @@ impl Sphere {
             + u_normalized * u_normalized.dot(v.0)
     }
 
-    pub fn geodesic(&self, p: Point, q: Point) -> SurfaceCurve {
+    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
         let circle = Circle::new(self.basis, normal, (q - self.basis).normalize());
-        SurfaceCurve::Circle(circle)
+        Curve::Circle(circle)
     }
 }
 

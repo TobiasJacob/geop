@@ -24,39 +24,39 @@ use geop_topology::{
 };
 use geop_wgpu::window::GeopWindow;
 
-pub fn linear_edge(s: Rc<Point>, e: Rc<Point>) -> Rc<Edge> {
-    let p1 = *s;
-    let p2 = *e;
-    Rc::new(Edge::new(
+pub fn linear_edge(s: Point, e: Point) -> Edge {
+    let p1 = s;
+    let p2 = e;
+    Edge::new(
         s,
         e,
-        Rc::new(Curve::Line(Line::new(p1, p2 - p1))),
-    ))
+        Curve::Line(Line::new(p1, p2 - p1)),
+    )
 }
 
-pub fn circular_edge(s: Rc<Point>, e: Rc<Point>, center: Point) -> Rc<Edge> {
+pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
     assert!(
-        (*s - center).norm_sq() - (*e - center).norm_sq() < EQ_THRESHOLD,
+        (s - center).norm_sq() - (e - center).norm_sq() < EQ_THRESHOLD,
         "Circular edge must have same distance to center point"
     );
-    let point = *s;
-    Rc::new(Edge::new(
+    let point = s;
+    Edge::new(
         s,
         e,
-        Rc::new(Curve::Circle(Circle::new(
+        Curve::Circle(Circle::new(
             center,
             Point::new(0.0, 0.0, 1.0),
             point - center,
-        ))),
-    ))
+        )),
+    )
 }
 
 async fn run() {
     let result = panic::catch_unwind(|| {
-        let v1 = Rc::new(Point::new(0.2, 0.2, 0.0));
-        let v2 = Rc::new(Point::new(0.8, 0.2, 0.0));
-        let v3 = Rc::new(Point::new(0.8, 0.8, 0.0));
-        let v4 = Rc::new(Point::new(0.2, 0.8, 0.0));
+        let v1 = Point::new(0.2, 0.2, 0.0);
+        let v2 = Point::new(0.8, 0.2, 0.0);
+        let v3 = Point::new(0.8, 0.8, 0.0);
+        let v4 = Point::new(0.2, 0.8, 0.0);
 
         let contour = Contour::new(vec![
             linear_edge(v1.clone(), v2.clone()),
@@ -66,9 +66,9 @@ async fn run() {
             linear_edge(v4.clone(), v1.clone()),
         ]);
 
-        let v5 = Rc::new(Point::new(0.5, 0.5, 0.0));
-        let v6 = Rc::new(Point::new(0.5, 0.6, 0.0));
-        let v7 = Rc::new(Point::new(0.6, 0.6, 0.0));
+        let v5 = Point::new(0.5, 0.5, 0.0);
+        let v6 = Point::new(0.5, 0.6, 0.0);
+        let v7 = Point::new(0.6, 0.6, 0.0);
 
         let inner_contour = Contour::new(vec![
             linear_edge(v5.clone(), v6.clone()),

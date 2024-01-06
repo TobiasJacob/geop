@@ -20,32 +20,32 @@ pub fn extrude(start_face: Rc<Face>, direction: Point) -> Volume {
     let all_edges = &start_face.all_edges();
     let n = all_edges.len();
     for i in 0..n {
-        match &*all_edges[i].curve {
+        match all_edges[i].curve {
             Curve::Line(_) => {}
             Curve::Circle(_) => panic!("Cannot extrude circular edges"),
             Curve::Ellipse(_) => todo!(),
         }
-        let top = Rc::new(all_edges[i].neg());
-        let bottom = Rc::new(end_face.all_edges()[n - i - 1].neg());
+        let top = all_edges[i].flip();
+        let bottom = end_face.all_edges()[n - i - 1].flip();
 
-        let right = Rc::new(Edge::new(
+        let right = Edge::new(
             bottom.end.clone(),
             top.start.clone(),
-            Rc::new(Curve::Line(Line::new(
-                *bottom.end,
-                *top.start - *bottom.end,
-            ))),
-        ));
-        let left = Rc::new(Edge::new(
+            Curve::Line(Line::new(
+                bottom.end,
+                top.start - bottom.end,
+            )),
+        );
+        let left = Edge::new(
             top.end.clone(),
             bottom.start.clone(),
-            Rc::new(Curve::Line(Line::new(*top.end, *bottom.start - *top.end))),
-        ));
+            Curve::Line(Line::new(top.end, bottom.start - top.end)),
+        );
 
         let plane = Surface::Plane(Plane::new(
-            *bottom.start,
-            *bottom.end - *bottom.start,
-            *top.end - *bottom.start,
+            bottom.start,
+            bottom.end - bottom.start,
+            top.end - bottom.start,
         ));
         let contour = Contour::new(vec![right, top, left, bottom]);
 

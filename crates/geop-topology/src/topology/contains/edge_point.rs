@@ -8,17 +8,17 @@ use crate::topology::edge::Edge;
 pub enum EdgePointContains {
     Inside,
     Outside,
-    OnPoint(Rc<Point>),
+    OnPoint(Point),
 }
 
 pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     if !edge.curve.on_manifold(point) {
         return EdgePointContains::Outside;
     }
-    if point == *edge.start || point == *edge.end {
-        return EdgePointContains::OnPoint(Rc::new(point));
+    if point == edge.start || point == edge.end {
+        return EdgePointContains::OnPoint(point);
     }
-    if edge.curve.between(point, *edge.start, *edge.end) {
+    if edge.curve.between(point, edge.start, edge.end) {
         return EdgePointContains::Inside;
     }
     EdgePointContains::Outside

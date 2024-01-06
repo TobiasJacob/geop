@@ -9,27 +9,28 @@ use crate::{
         contour::Contour,
         edge::Edge,
         face::Face,
-        intersections::edge_edge::{edge_edge_intersections, EdgeEdgeIntersection},
-        split_if_necessary::point_split_edge::split_edges_by_point_if_necessary,
+        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
+        split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
     },
 };
 
 use geop_geometry::points::point::Point;
 
-pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> {
-    let mut intersections = Vec::<Rc<Point>>::new();
+pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Point> {
+    let mut intersections = Vec::<Point>::new();
     for es in face_self.all_edges().iter() {
         for eo in face_other.all_edges().iter() {
-            for int in edge_edge_intersections(&es, &eo) {
-                match int {
-                    EdgeEdgeIntersection::Point(point) => {
-                        intersections.push(point);
-                    }
-                    EdgeEdgeIntersection::Edge(edge) => {
-                        intersections.push(edge.start);
-                        intersections.push(edge.end);
+            match edge_edge_intersection(&es, &eo) {
+                EdgeEdgeIntersection::Points(points) => {
+                    intersections.extend(points);
+                }
+                EdgeEdgeIntersection::Edges(edges) => {
+                    for edge in edges {
+                        intersections.push(edge.start.clone());
+                        intersections.push(edge.end.clone());
                     }
                 }
+                EdgeEdgeIntersection::None => {}
             }
         }
     }
@@ -39,14 +40,14 @@ pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Rc<Point>> 
 
 #[derive(Debug)]
 pub enum FaceSplit {
-    AinB(Rc<Edge>),
-    AonBSameSide(Rc<Edge>),
-    AonBOpSide(Rc<Edge>),
-    AoutB(Rc<Edge>),
-    BinA(Rc<Edge>),
-    BonASameSide(Rc<Edge>),
-    BonAOpSide(Rc<Edge>),
-    BoutA(Rc<Edge>),
+    AinB(Edge),
+    AonBSameSide(Edge),
+    AonBOpSide(Edge),
+    AoutB(Edge),
+    BinA(Edge),
+    BonASameSide(Edge),
+    BonAOpSide(Edge),
+    BoutA(Edge),
 }
 
 pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
@@ -59,15 +60,13 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
 
     let intersections = face_split_points(face_self, face_other);
 
-    let mut edges_self = face_self.all_edges();
-    let mut edges_other = face_other.all_edges();
-
     println!("intersections: {:}", intersections.len());
-    for point in intersections {
-        println!("point: {:?}", point);
-        edges_self = split_edges_by_point_if_necessary(edges_self, point.clone());
-        edges_other = split_edges_by_point_if_necessary(edges_other, point.clone());
+    for point in intersections.iter() {
+        println!("Point: {:?}", point);
+        debug_data::add_point(point.clone(), DebugColor::Green);
     }
+    let edges_self = split_edges_by_points_if_necessary(face_self.all_edges(), &intersections);
+    let edges_other = split_edges_by_points_if_necessary(face_other.all_edges(), &intersections);
 
     let res: Vec<FaceSplit> = edges_self
         .into_iter()
@@ -92,25 +91,25 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     for edge in res.iter() {
         println!("Edge: {:?}", edge);
         match edge {
-            FaceSplit::AinB(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Black),
+            FaceSplit::AinB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Black),
             FaceSplit::AonBSameSide(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Red)
+                debug_data::add_edge((edge).clone(), DebugColor::Red)
             }
             FaceSplit::AonBOpSide(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
             }
             FaceSplit::AoutB(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
             }
-            FaceSplit::BinA(edge) => debug_data::add_edge((**edge).clone(), DebugColor::Yellow),
+            FaceSplit::BinA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Yellow),
             FaceSplit::BonASameSide(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
             }
             FaceSplit::BonAOpSide(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
             }
             FaceSplit::BoutA(edge) => {
-                debug_data::add_edge((**edge).clone(), DebugColor::Transparent)
+                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
             }
         }
     }
@@ -119,7 +118,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
 }
 
 pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
-    println!("new_contour");
+    println!("face_remesh");
     for edge in edges_intermediate.iter() {
         println!("Edge: {:?}", edge);
     }
@@ -135,20 +134,20 @@ pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>)
             FaceSplit::BonAOpSide(edge) => edge,
             FaceSplit::BoutA(edge) => edge,
         })
-        .collect::<Vec<Rc<Edge>>>();
+        .collect::<Vec<Edge>>();
     // Now find all the contours
     let mut contours = Vec::<Contour>::new();
     while let Some(current_edge) = edges.pop() {
         let mut new_contour = vec![current_edge];
         loop {
-            // println!("new_contour");
-            // for edge in new_contour.iter() {
-            //     println!("Edge: {:?}", edge);
-            // }
-            // println!("edges");
-            // for edge in edges.iter() {
-            //     println!("Edge: {:?}", edge);
-            // }
+            println!("new_contour");
+            for edge in new_contour.iter() {
+                println!("Edge: {:?}", edge);
+            }
+            println!("edges");
+            for edge in edges.iter() {
+                println!("Edge: {:?}", edge);
+            }
             let next_i = edges.iter().position(|edge| {
                 edge.start == new_contour[new_contour.len() - 1].end
                     || edge.end == new_contour[new_contour.len() - 1].end
@@ -158,7 +157,7 @@ pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>)
                     if edges[i].start == new_contour[new_contour.len() - 1].end {
                         new_contour.push(edges.remove(i));
                     } else {
-                        new_contour.push(Rc::new(edges.remove(i).neg()));
+                        new_contour.push(edges.remove(i).flip());
                     }
                 }
                 None => {

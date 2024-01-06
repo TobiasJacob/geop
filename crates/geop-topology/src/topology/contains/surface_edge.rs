@@ -3,14 +3,14 @@ use geop_geometry::{curves::curve::Curve, surfaces::surface::Surface, EQ_THRESHO
 use crate::topology::edge::Edge;
 
 pub fn surface_edge_contains(surface: &Surface, edge: &Edge) -> bool {
-    if !surface.on_surface(*edge.start) {
+    if !surface.on_surface(edge.start) {
         return false;
     }
-    if !surface.on_surface(*edge.end) {
+    if !surface.on_surface(edge.end) {
         return false;
     }
     match surface {
-        Surface::Plane(plane) => match &*edge.curve {
+        Surface::Plane(plane) => match &edge.curve {
             Curve::Line(line) => {
                 return plane.normal().dot(line.direction).abs() < EQ_THRESHOLD
                     && plane.on_surface(line.basis);

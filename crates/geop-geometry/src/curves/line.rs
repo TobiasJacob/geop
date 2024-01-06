@@ -83,6 +83,6 @@ impl Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.basis == other.basis && self.direction == other.direction
+        self.direction == other.direction && (self.basis - other.basis).is_parallel(self.direction)
     }
 }

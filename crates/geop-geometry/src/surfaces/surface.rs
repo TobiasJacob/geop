@@ -1,22 +1,9 @@
-use crate::{
-    curves::{circle::Circle, ellipse::Ellipse, line::Line},
-    points::point::Point,
-    transforms::Transform,
-};
+use crate::{curves::curve::Curve, points::point::Point, transforms::Transform};
 
 use super::{
     plane::Plane,
     sphere::{Sphere, SphereTransform},
 };
-
-pub enum SurfaceCurve {
-    // Returns the geodesic between p and q.
-    Line(Line),
-    // Returns the curve between p and q.
-    Circle(Circle),
-    // Returns the curve between p and q.
-    Ellipse(Ellipse),
-}
 
 #[derive(Clone, Debug)]
 pub struct TangentPoint(pub Point);
@@ -98,7 +85,7 @@ impl Surface {
         }
     }
     // Returns the geodesic between p and q.
-    pub fn geodesic(&self, x: Point, y: Point) -> SurfaceCurve {
+    pub fn geodesic(&self, x: Point, y: Point) -> Curve {
         match self {
             Surface::Plane(plane) => plane.geodesic(x, y),
             Surface::Sphere(sphere) => sphere.geodesic(x, y),

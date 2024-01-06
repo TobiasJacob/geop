@@ -1,51 +1,33 @@
-use std::rc::Rc;
+use geop_geometry::{
+    curve_surface_intersection::curve_surface::{
+        curve_surface_intersection, CurveSurfaceIntersection,
+    },
+    points::point::Point,
+};
 
 use crate::topology::{
-    contains::{
-        face_edge::{face_edge_contains, FaceEdgeContains},
-        face_point::{face_point_contains, FacePointContains},
-    },
+    contains::face_point::{face_point_contains, FacePointContains},
     edge::Edge,
     face::Face,
 };
 
-use super::{edge_edge::EdgeEdgeIntersection, surface_edge::surface_edge_intersection};
+pub enum FaceEdgeIntersection {
+    None,
+    Points(Vec<Point>),
+    Edges(Vec<Edge>),
+}
 
-pub fn face_edge_intersection(face: &Face, edge: &Edge) -> Vec<EdgeEdgeIntersection> {
-    let mut intersections = surface_edge_intersection(&face.surface, edge);
-
-    let mut new_interesections = Vec::<EdgeEdgeIntersection>::new();
-    for int in intersections.drain(..) {
-        match &int {
-            EdgeEdgeIntersection::Point(p) => match face_point_contains(face, **p) {
-                FacePointContains::Inside => new_interesections.push(int),
-                _ => {}
-            },
-            EdgeEdgeIntersection::Edge(e) => {
-                let mut edges = vec![Rc::new(e.clone())];
-                for _b in face.boundaries.iter() {
-                    // let ints = b.intersect_edge(&e);
-                    let _edges = todo!("Split edges by intersections");
-                    // edges = b.split_edges_if_necessary(edges);
-                }
-
-                for e in edges.drain(..) {
-                    match face_edge_contains(face, &e) {
-                        FaceEdgeContains::Inside => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
-                        }
-                        FaceEdgeContains::OnBorderOppositeDir => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
-                        }
-                        FaceEdgeContains::OnBorderSameDir => {
-                            new_interesections.push(EdgeEdgeIntersection::Edge((*e).clone()))
-                        }
-                        FaceEdgeContains::Outside => {}
-                    }
-                }
-            }
+pub fn face_edge_intersection(face: &Face, edge: &Edge) -> FaceEdgeIntersection {
+    match curve_surface_intersection(&edge.curve, &face.surface) {
+        CurveSurfaceIntersection::Points(mut points) => FaceEdgeIntersection::Points(
+            points
+                .drain(..)
+                .filter(|p| face_point_contains(face, *p) == FacePointContains::Inside)
+                .collect(),
+        ),
+        CurveSurfaceIntersection::Curve(e) => {
+            todo!("Split edges by intersections")
         }
+        CurveSurfaceIntersection::None => FaceEdgeIntersection::None,
     }
-
-    intersections
 }

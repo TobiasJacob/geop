@@ -3,7 +3,7 @@ use std::rc::Rc;
 use geop_geometry::points::point::Point;
 
 use crate::topology::{
-    edge::Edge, face::Face, intersections::contour_edge::countour_edge_intersection_points,
+    edge::Edge, face::Face, intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
 };
 
 use super::edge_point::{edge_point_contains, EdgePointContains};
@@ -11,8 +11,8 @@ use super::edge_point::{edge_point_contains, EdgePointContains};
 #[derive(Clone, Debug, PartialEq)]
 pub enum FacePointContains {
     Inside,
-    OnEdge(Rc<Edge>),
-    OnPoint(Rc<Point>),
+    OnEdge(Edge),
+    OnPoint(Point),
     Outside,
 }
 
@@ -28,8 +28,8 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
         }
     }
     // Draw a line from the point to a random point on the border.
-    let q: Point = *face.boundaries[0].edges[0].start;
-    let curve = face.edge_from_to(Rc::new(point), Rc::new(q));
+    let q = face.boundaries[0].edges[0].start.clone();
+    let curve = face.edge_from_to(point, q);
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
     let mut closest_distance = face.surface.distance(point, q);
@@ -38,13 +38,29 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     let contour_dir = face.boundaries[0].tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
 
-    for int in countour_edge_intersection_points(face, &*curve) {
+    let mut intersection_points = Vec::<Point>::new();
+    for edge in face.all_edges() {
+        match edge_edge_intersection(&edge, &curve) {
+            EdgeEdgeIntersection::Points(points) => {
+                intersection_points.extend(points);
+            }
+            EdgeEdgeIntersection::Edges(edges) => {
+                for edge in edges {
+                    intersection_points.push(edge.start.clone());
+                    intersection_points.push(edge.end.clone());
+                }
+            }
+            EdgeEdgeIntersection::None => {}
+        }
+    }
+
+    for int in intersection_points {
         // println!("int: {:?}", int);
-        let distance = face.surface.distance(point, *int);
+        let distance = face.surface.distance(point, int);
         if distance < closest_distance {
-            let curve_dir = curve.tangent(*int);
-            let normal = face.surface.normal(*int);
-            let contour_dir = face.boundary_tangent(*int);
+            let curve_dir = curve.tangent(int);
+            let normal = face.surface.normal(int);
+            let contour_dir = face.boundary_tangent(int);
             closest_distance = distance;
             closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
         }

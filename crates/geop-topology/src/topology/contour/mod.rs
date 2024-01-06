@@ -50,7 +50,7 @@ impl ContourTangent {
 
 #[derive(Debug, Clone)]
 pub struct Contour {
-    pub edges: Vec<Rc<Edge>>,
+    pub edges: Vec<Edge>,
 }
 
 // An Contour is a closed loop of edges which is not self intersecting (because otherwise project would not be defined for self intersection point).
@@ -58,7 +58,7 @@ pub struct Contour {
 // The points of edges are not part of the contour, e.g. the intersection of two contours at the same point is empty.
 // Keep in mind that the contour is still closed, but the points are "next to" the edges, not "part of" the edges, because otherwise two neighbouring edges would overlap at the point, making things a lot more complicated.
 impl Contour {
-    pub fn new(edges: Vec<Rc<Edge>>) -> Contour {
+    pub fn new(edges: Vec<Edge>) -> Contour {
         assert!(edges.len() > 0);
         for i in 0..edges.len() {
             let edge = edges[i].clone();
@@ -69,8 +69,8 @@ impl Contour {
         Contour { edges }
     }
 
-    pub fn all_points(&self) -> Vec<Rc<Point>> {
-        let mut points = Vec::<Rc<Point>>::new();
+    pub fn all_points(&self) -> Vec<Point> {
+        let mut points = Vec::<Point>::new();
         for edge in self.edges.iter() {
             points.push(edge.start.clone());
         }
@@ -78,13 +78,13 @@ impl Contour {
         return points;
     }
 
-    pub fn neg(&self) -> Contour {
+    pub fn flip(&self) -> Contour {
         let edges = self
             .edges
             .iter()
             .rev()
-            .map(|e| Rc::new(e.neg()))
-            .collect::<Vec<Rc<Edge>>>();
+            .map(|e| e.flip())
+            .collect::<Vec<Edge>>();
         Contour::new(edges)
     }
 
@@ -92,8 +92,8 @@ impl Contour {
         let edges = self
             .edges
             .iter()
-            .map(|e| Rc::new(e.transform(transform)))
-            .collect::<Vec<Rc<Edge>>>();
+            .map(|e| e.transform(transform))
+            .collect::<Vec<Edge>>();
         Contour::new(edges)
     }
 
@@ -147,15 +147,15 @@ impl Contour {
     }
 
     // Gets the subcurve between these two points. It is guaranteed that there will be no zero length edges.
-    pub fn get_subcurve(&self, start: Rc<Point>, end: Rc<Point>) -> Vec<Rc<Edge>> {
+    pub fn get_subcurve(&self, start: Point, end: Point) -> Vec<Edge> {
         assert!(start != end);
 
-        let mut result = Vec::<Rc<Edge>>::new();
-        let start_i = match self.get_edge_index(*start) {
+        let mut result = Vec::<Edge>::new();
+        let start_i = match self.get_edge_index(start) {
             EdgeIndex::OnEdge(i) => i,
             EdgeIndex::OnCorner(_i1, i2) => i2,
         };
-        let end_i = match self.get_edge_index(*end) {
+        let end_i = match self.get_edge_index(end) {
             EdgeIndex::OnEdge(i) => i,
             EdgeIndex::OnCorner(i1, _i2) => i1,
         };
@@ -166,16 +166,16 @@ impl Contour {
                 end.clone(),
                 self.edges[start_i].curve.clone(),
             );
-            result.push(Rc::new(edge));
+            result.push(edge);
         }
 
         let mut edge = &self.edges[start_i];
         if start != edge.end {
-            result.push(Rc::new(Edge::new(
+            result.push(Edge::new(
                 start.clone(),
                 edge.end.clone(),
                 edge.curve.clone(),
-            )));
+            ));
         }
         for i in start_i + 1..end_i {
             edge = &self.edges[i % self.edges.len()];
@@ -183,11 +183,11 @@ impl Contour {
         }
         edge = &self.edges[end_i % self.edges.len()];
         if edge.start != end {
-            result.push(Rc::new(Edge::new(
+            result.push(Edge::new(
                 edge.start.clone(),
                 end.clone(),
                 edge.curve.clone(),
-            )));
+            ));
         }
         result
     }

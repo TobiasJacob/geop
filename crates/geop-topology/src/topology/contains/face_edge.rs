@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::topology::{
     contains::{
         face_point::{face_point_contains, FacePointContains},
@@ -5,7 +7,6 @@ use crate::topology::{
     },
     edge::Edge,
     face::Face,
-    intersections::contour_edge::countour_edge_intersection_points,
 };
 
 pub enum FaceEdgeContains {
@@ -19,11 +20,11 @@ pub enum FaceEdgeContains {
 pub fn face_edge_contains(face: &Face, edge: &Edge) -> FaceEdgeContains {
     assert!(surface_edge_contains(&face.surface, edge));
     // TODO: Make an assertian that there are no intersections with the face boundaries
-    for int in countour_edge_intersection_points(face, edge) {
-        assert!(*edge.start == *int || *edge.end == *int);
-    }
+    // for int in countour_edge_intersection_points(face, edge) {
+    //     assert!(*edge.start == *int || *edge.end == *int);
+    // }
 
-    let p = edge.get_midpoint(*edge.start, *edge.end);
+    let p = edge.get_midpoint(edge.start, edge.end);
     match face_point_contains(face, p) {
         FacePointContains::Inside => FaceEdgeContains::Inside,
         FacePointContains::Outside => FaceEdgeContains::Outside,
