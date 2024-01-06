@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     points::point::Point,

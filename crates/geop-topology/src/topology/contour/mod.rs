@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use geop_geometry::{points::point::Point, transforms::Transform};
 
 use super::{

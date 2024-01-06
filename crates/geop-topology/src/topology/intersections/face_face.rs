@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use geop_geometry::{
     points::point::Point,
     surface_surface_intersection::surface_surface::{
@@ -50,7 +48,7 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
 
     match surface_surface_intersection(&face_self.surface, &face_other.surface) {
         FaceSurfaceIntersection::None => vec![],
-        FaceSurfaceIntersection::CurvesAndPoints(curves, points) => {
+        FaceSurfaceIntersection::CurvesAndPoints(_curves, _points) => {
             todo!("face")
             // let mut intersections = vec![];
             // for point in points.iter() {

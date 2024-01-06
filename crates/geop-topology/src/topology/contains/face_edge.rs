@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::topology::{
     contains::{
         face_point::{face_point_contains, FacePointContains},

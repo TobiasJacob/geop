@@ -1,7 +1,4 @@
-use std::{
-    fmt::{Display, Formatter},
-    rc::Rc,
-};
+use std::fmt::{Display, Formatter};
 
 use geop_geometry::{
     curves::{curve::Curve, line::Line},
@@ -34,19 +31,11 @@ impl Edge {
     }
 
     pub fn neg(&self) -> Edge {
-        Edge::new(
-            self.end.clone(),
-            self.start.clone(),
-            self.curve.clone(),
-        )
+        Edge::new(self.end.clone(), self.start.clone(), self.curve.clone())
     }
 
     pub fn flip(&self) -> Edge {
-        Edge::new(
-            self.end.clone(),
-            self.start.clone(),
-            self.curve.neg(),
-        )
+        Edge::new(self.end.clone(), self.start.clone(), self.curve.neg())
     }
 
     pub fn transform(&self, transform: Transform) -> Edge {

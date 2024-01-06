@@ -25,7 +25,7 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> FaceEdgeIntersection 
                 .filter(|p| face_point_contains(face, *p) == FacePointContains::Inside)
                 .collect(),
         ),
-        CurveSurfaceIntersection::Curve(e) => {
+        CurveSurfaceIntersection::Curve(_e) => {
             todo!("Split edges by intersections")
         }
         CurveSurfaceIntersection::None => FaceEdgeIntersection::None,
