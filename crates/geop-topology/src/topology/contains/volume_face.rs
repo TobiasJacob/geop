@@ -1,8 +1,4 @@
 use crate::topology::{
-    contains::{
-        face_point::{face_point_contains, FacePointContains},
-    },
-    edge::Edge,
     face::Face, volume::Volume,
 };
 
@@ -19,7 +15,7 @@ pub enum VolumeFaceContains {
 pub fn volume_face_contains(volume: &Volume, face: &Face) -> VolumeFaceContains {
     // TODO: Make an assertian that there are no intersections with the volume boundaries
 
-    let p = face.get_midpoint();
+    let p = todo!("Midpoint"); //face.get_midpoint();
     match volume_point_contains(volume, p) {
         VolumePointContains::Inside => VolumeFaceContains::Inside,
         VolumePointContains::Outside => VolumeFaceContains::Outside,

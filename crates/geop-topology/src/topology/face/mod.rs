@@ -15,7 +15,7 @@ use super::{
 // TODO: Implement PartialEq for Face properly, such that face = face.flip() is true
 #[derive(Clone, Debug, PartialEq)]
 pub struct Face {
-    pub boundaries: Vec<Contour>, // Coutner-clockwise
+    pub boundaries: Vec<Contour>, // Counter-clockwise
     pub surface: Rc<Surface>,
 }
 
