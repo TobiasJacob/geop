@@ -27,14 +27,14 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
         }
     }
     // Draw a line from the point to a random point on the border.
-    let q = face.boundaries[0].edges[0].start.clone();
+    let q = face.boundary.edges[0].start.clone();
     let curve = face.edge_from_to(point, q);
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
     let mut closest_distance = face.surface.distance(point, q);
     let curve_dir = curve.tangent(q);
     let normal = face.surface.normal(q);
-    let contour_dir = face.boundaries[0].tangent(q);
+    let contour_dir = face.boundary.tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
 
     let mut intersection_points = Vec::<Point>::new();

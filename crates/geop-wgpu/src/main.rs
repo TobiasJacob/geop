@@ -80,12 +80,13 @@ async fn run() {
         // Loop shifted by 0.1 in x and y direction
 
         let face1 = Face::new(
-            vec![contour.clone(), inner_contour.clone()],
+            contour.clone(),
+            vec![inner_contour.clone()],
             surface.clone(),
         );
         let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.2, 0.0)));
 
-        let union_face = face_face_difference(&face2, &face1);
+        let union_face = face_face_difference(&face2, &face1)[1].clone();
 
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 

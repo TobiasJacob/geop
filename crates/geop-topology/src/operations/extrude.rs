@@ -44,7 +44,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
         ));
         let contour = Contour::new(vec![right, top, left, bottom]);
 
-        let face = Face::new(vec![contour], Rc::new(plane));
+        let face = Face::new(contour, vec![], Rc::new(plane));
         faces.push(face);
     }
     faces.push(start_face);

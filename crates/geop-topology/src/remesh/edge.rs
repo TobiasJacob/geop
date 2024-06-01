@@ -73,7 +73,7 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
     result
 }
 
-pub fn edge_remesh(curve: &Curve, mut intervals_intermediate: Vec<EdgeRemesh>) -> Vec<Edge> {
+pub fn edge_remesh(_curve: &Curve, mut intervals_intermediate: Vec<EdgeRemesh>) -> Vec<Edge> {
     intervals_intermediate
         .drain(..)
         .map(|interval| match interval {

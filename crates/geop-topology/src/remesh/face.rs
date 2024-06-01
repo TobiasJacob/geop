@@ -3,7 +3,10 @@ use std::rc::Rc;
 use geop_geometry::surfaces::surface::Surface;
 
 use crate::{
-    contains::face_edge::{face_edge_contains, FaceEdgeContains},
+    contains::{
+        face_contour::{face_contour_contains, FaceContourContains},
+        face_edge::{face_edge_contains, FaceEdgeContains},
+    },
     debug_data::{self, DebugColor},
     intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
     split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
@@ -107,7 +110,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     res
 }
 
-pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>) -> Face {
+pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>) -> Vec<Face> {
     println!("face_remesh");
     for edge in edges_intermediate.iter() {
         println!("Edge: {:?}", edge);
@@ -159,5 +162,76 @@ pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>)
         }
     }
 
-    return Face::new(contours, surface.clone());
+    return normalize_faces(contours, surface);
+}
+
+pub struct ContourHierarchy {
+    pub contour: Contour,
+    pub children: Vec<ContourHierarchy>,
+}
+
+impl ContourHierarchy {
+    // Add contour to this hierarchy if it is inside one of the children or itself
+    pub fn add_contour(&mut self, contour: Contour, surface: Rc<Surface>) -> Option<Contour> {
+        for child in self.children.iter_mut() {
+            match face_contour_contains(
+                &Face::new(child.contour.clone(), vec![], surface.clone()),
+                &contour,
+            ) {
+                FaceContourContains::Inside => {
+                    assert!(child.add_contour(contour, surface.clone()).is_none());
+                    return None;
+                }
+                FaceContourContains::Outside => {}
+                FaceContourContains::Equals => panic!("should not happen"),
+                FaceContourContains::Wiggly => panic!("should not happen"),
+            }
+        }
+        if face_contour_contains(
+            &Face::new(contour.clone(), vec![], surface.clone()),
+            &contour,
+        ) == FaceContourContains::Inside
+        {
+            self.children.push(ContourHierarchy {
+                contour,
+                children: Vec::new(),
+            });
+            return None;
+        }
+        return Some(contour);
+    }
+
+    pub fn as_faces(&self, surface: Rc<Surface>) -> Vec<Face> {
+        let mut faces = Vec::<Face>::new();
+        let mut face = Face::new(self.contour.clone(), vec![], surface.clone());
+        for child in self.children.iter() {
+            face.holes.push(child.contour.clone());
+            for child2 in child.children.iter() {
+                faces.extend(child2.as_faces(surface.clone()));
+            }
+        }
+        faces.push(face);
+        faces
+    }
+}
+
+pub fn normalize_faces(contours: Vec<Contour>, surface: Rc<Surface>) -> Vec<Face> {
+    let mut hierarchy = Vec::<ContourHierarchy>::new();
+    for contour in contours.iter() {
+        for h in hierarchy.iter_mut() {
+            if h.add_contour(contour.clone(), surface.clone()).is_none() {
+                break;
+            }
+        }
+        hierarchy.push(ContourHierarchy {
+            contour: contour.clone(),
+            children: Vec::new(),
+        });
+    }
+    // Now build a hierarchy of Contours
+    let mut faces = Vec::<Face>::new();
+    for h in hierarchy.iter() {
+        faces.extend(h.as_faces(surface.clone()));
+    }
+    faces
 }

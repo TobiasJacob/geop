@@ -15,7 +15,8 @@ use super::{
 
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub boundaries: Vec<Contour>, // Coutner-clockwise
+    pub boundary: Contour,   // Coutner-clockwise
+    pub holes: Vec<Contour>, // Clockwise
     pub surface: Rc<Surface>,
 }
 
@@ -24,22 +25,26 @@ pub struct Face {
 // inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
 // The contours are not allowed to intersect in any way. Keep in mind that a point is not considered an intersection, hence it is allowed that the contours touch each other at points.
 impl Face {
-    pub fn new(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Face {
-        assert!(boundaries.len() > 0, "Face must have at least one boundary");
-        for contour in boundaries.iter() {
+    pub fn new(boundary: Contour, holes: Vec<Contour>, surface: Rc<Surface>) -> Face {
+        for edge in boundary.edges.iter() {
+            assert!(surface_edge_contains(&surface, edge));
+        }
+        for contour in holes.iter() {
             for edge in contour.edges.iter() {
                 assert!(surface_edge_contains(&surface, edge));
             }
         }
         Face {
-            boundaries,
+            boundary,
+            holes,
             surface,
         }
     }
 
     pub fn transform(&self, transform: Transform) -> Face {
         Face::new(
-            self.boundaries
+            self.boundary.transform(transform),
+            self.holes
                 .iter()
                 .map(|contour| contour.transform(transform))
                 .collect(),
@@ -50,7 +55,8 @@ impl Face {
     pub fn all_points(&self) -> Vec<Point> {
         let mut points = Vec::<Point>::new();
 
-        for contour in self.boundaries.iter() {
+        points.extend(self.boundary.all_points());
+        for contour in self.holes.iter() {
             points.extend(contour.all_points());
         }
         return points;
@@ -59,7 +65,10 @@ impl Face {
     pub fn all_edges(&self) -> Vec<Edge> {
         let mut edges = Vec::<Edge>::new();
 
-        for contour in self.boundaries.iter() {
+        for edge in self.boundary.edges.iter() {
+            edges.push(edge.clone());
+        }
+        for contour in self.holes.iter() {
             for edge in contour.edges.iter() {
                 edges.push(edge.clone());
             }
@@ -76,7 +85,10 @@ impl Face {
     }
 
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
-        for contour in self.boundaries.iter() {
+        if self.boundary.contains(p) != EdgePointContains::Outside {
+            return self.boundary.tangent(p);
+        }
+        for contour in self.holes.iter() {
             match contour.contains(p) {
                 EdgePointContains::Inside => return contour.tangent(p),
                 EdgePointContains::OnPoint(_) => return contour.tangent(p),
@@ -96,14 +108,16 @@ impl Face {
 
     pub fn neg(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().rev().map(|l| l.flip()).collect(),
+            boundary: self.boundary.flip(),
+            holes: self.holes.iter().rev().map(|l| l.flip()).collect(),
             surface: self.surface.clone(),
         }
     }
 
     pub fn flip(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().rev().map(|l| l.flip()).collect(),
+            boundary: self.boundary.flip(),
+            holes: self.holes.iter().rev().map(|l| l.flip()).collect(),
             surface: Rc::new(self.surface.neg()),
         }
     }
@@ -120,8 +134,9 @@ impl std::fmt::Display for Face {
                     p.basis,
                     p.u_slope.cross(p.v_slope)
                 )?;
-                for contour in self.boundaries.iter() {
-                    writeln!(f, "Contour:")?;
+                writeln!(f, "Boundary:")?;
+                for contour in self.holes.iter() {
+                    writeln!(f, "Hole:")?;
                     for edge in contour.edges.iter() {
                         writeln!(f, "  {}", edge)?;
                     }

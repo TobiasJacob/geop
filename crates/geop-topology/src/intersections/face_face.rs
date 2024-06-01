@@ -10,7 +10,7 @@ use crate::{
     topology::{contour::Contour, edge::Edge, face::Face},
 };
 
-pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
+pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Vec<Face> {
     assert!(
         face_self.surface == face_other.surface,
         "Faces must have the same surface",
@@ -36,17 +36,17 @@ pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) 
 pub enum FaceFaceIntersection {
     None,
     EdgesAndPoints(Vec<Point>, Vec<Edge>, Vec<Contour>),
-    Face(Face),
+    Faces(Vec<Face>),
 }
 
-pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFaceIntersection> {
+pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIntersection {
     assert!(
         face_self.surface != face_other.surface,
         "Faces must have different surfaces",
     );
 
     match surface_surface_intersection(&face_self.surface, &face_other.surface) {
-        FaceSurfaceIntersection::None => vec![],
+        FaceSurfaceIntersection::None => FaceFaceIntersection::None,
         FaceSurfaceIntersection::CurvesAndPoints(_curves, _points) => {
             todo!("face")
             // let mut intersections = vec![];
@@ -92,9 +92,7 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> Vec<FaceFa
             //     .collect()
         }
         FaceSurfaceIntersection::Surface(_surface) => {
-            vec![FaceFaceIntersection::Face(
-                face_face_same_surface_intersection(face_self, face_other),
-            )]
+            FaceFaceIntersection::Faces(face_face_same_surface_intersection(face_self, face_other))
         }
     }
 }
