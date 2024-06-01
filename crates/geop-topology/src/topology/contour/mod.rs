@@ -1,8 +1,9 @@
 use geop_geometry::{points::point::Point, transforms::Transform};
 
+use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
+
 use super::{
-    contains::edge_point::{edge_point_contains, EdgePointContains},
-    edge::Edge,
+    edge::Edge
 };
 
 #[derive(Clone, Debug, PartialEq)]

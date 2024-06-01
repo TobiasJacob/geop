@@ -16,11 +16,7 @@ use geop_rasterize::{
     volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list},
 };
 use geop_topology::{
-    debug_data::get_debug_data,
-    operations::extrude::extrude,
-    topology::{
-        contour::Contour, difference::face_face::face_face_difference, edge::Edge, face::Face,
-    },
+    debug_data::get_debug_data, difference::face_face::face_face_difference, operations::extrude::extrude, topology::{contour::Contour, edge::Edge, face::Face}
 };
 use geop_wgpu::window::GeopWindow;
 

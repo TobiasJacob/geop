@@ -2,12 +2,12 @@ use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, surfaces::surface::Surface, transforms::Transform};
 
-use crate::topology::contains::{
+use crate::contains::{
     edge_point::EdgePointContains, surface_edge::surface_edge_contains,
+    face_point::{face_point_contains, FacePointContains},
 };
 
 use super::{
-    contains::face_point::{face_point_contains, FacePointContains},
     contour::ContourTangent,
     {contour::Contour, edge::Edge},
 };

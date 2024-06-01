@@ -1,11 +1,7 @@
-use crate::topology::{
-    contains::{
-        face_point::{face_point_contains, FacePointContains},
-        surface_edge::surface_edge_contains,
-    },
+use crate::{contains::{face_point::{face_point_contains, FacePointContains}, surface_edge::surface_edge_contains}, topology::{
     edge::Edge,
     face::Face,
-};
+}};
 
 pub enum FaceEdgeContains {
     Inside,

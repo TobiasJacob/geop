@@ -6,7 +6,7 @@ use geop_geometry::{
     transforms::Transform,
 };
 
-use crate::topology::contains::edge_point::{edge_point_contains, EdgePointContains};
+use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 
 #[derive(Clone, Debug)]
 pub struct Edge {

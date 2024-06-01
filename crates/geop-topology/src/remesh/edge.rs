@@ -1,10 +1,6 @@
 use geop_geometry::{curves::curve::Curve, points::point::Point};
 
-use crate::topology::{
-    contains::edge_point::{edge_point_contains, EdgePointContains},
-    edge::Edge,
-    split_if_necessary::point_split_edge::split_edge_by_points_if_necessary,
-};
+use crate::{contains::edge_point::{edge_point_contains, EdgePointContains}, split_if_necessary::point_split_edge::split_edge_by_points_if_necessary, topology::edge::Edge};
 
 pub fn edge_split_points(a: &Edge, b: &Edge) -> Vec<Point> {
     let mut split_points = Vec::<Point>::new();

@@ -1,10 +1,4 @@
-pub mod contains;
 pub mod contour;
-pub mod difference;
 pub mod edge;
 pub mod face;
-pub mod intersections;
-pub mod remesh;
-pub mod split_if_necessary;
-pub mod union;
 pub mod volume;

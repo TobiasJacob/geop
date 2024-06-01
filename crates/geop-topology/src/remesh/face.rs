@@ -4,13 +4,13 @@ use geop_geometry::surfaces::surface::Surface;
 
 use crate::{
     debug_data::{self, DebugColor},
-    topology::{
         contains::face_edge::{face_edge_contains, FaceEdgeContains},
+        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
+        split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
+        topology::{
         contour::Contour,
         edge::Edge,
         face::Face,
-        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
-        split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
     },
 };
 

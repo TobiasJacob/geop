@@ -1,4 +1,4 @@
-use crate::topology::{face::Face, intersections::face_face::face_face_same_surface_intersection};
+use crate::{intersections::face_face::face_face_same_surface_intersection, topology::face::Face};
 
 pub fn face_face_difference(face_self: &Face, face_other: &Face) -> Face {
     assert!(face_self.surface == face_other.surface);

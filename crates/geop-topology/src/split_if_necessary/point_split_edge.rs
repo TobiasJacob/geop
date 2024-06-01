@@ -1,9 +1,6 @@
 use geop_geometry::points::point::Point;
 
-use crate::topology::{
-    contains::edge_point::{edge_point_contains, EdgePointContains},
-    edge::Edge,
-};
+use crate::{contains::edge_point::{edge_point_contains, EdgePointContains}, topology::edge::Edge};
 
 pub fn split_edge_by_points_if_necessary(edge: &Edge, points: &[Point]) -> Vec<Edge> {
     let mut result = vec![edge.clone()];

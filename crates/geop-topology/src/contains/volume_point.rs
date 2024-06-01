@@ -1,13 +1,11 @@
-use std::rc::Rc;
-
 use geop_geometry::{
     curves::{curve::Curve, line::Line},
     points::point::Point,
 };
 
-use crate::topology::{
-    edge::Edge, face::Face, intersections::edge_edge::EdgeEdgeIntersection, volume::Volume,
-};
+use crate::{intersections::edge_edge::EdgeEdgeIntersection, topology::{
+    edge::Edge, face::Face, volume::Volume,
+}};
 
 use super::face_point::{face_point_contains, FacePointContains};
 

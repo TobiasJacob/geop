@@ -1,11 +1,10 @@
-use std::rc::Rc;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
+use crate::contains::face_point::{face_point_contains, FacePointContains};
+
 use super::{
-    contains::face_point::{face_point_contains, FacePointContains},
     contour::Contour,
-    edge::Edge,
     face::Face,
 };
 
