@@ -3,15 +3,11 @@ use std::rc::Rc;
 use geop_geometry::surfaces::surface::Surface;
 
 use crate::{
+    contains::face_edge::{face_edge_contains, FaceEdgeContains},
     debug_data::{self, DebugColor},
-        contains::face_edge::{face_edge_contains, FaceEdgeContains},
-        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
-        split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
-        topology::{
-        contour::Contour,
-        edge::Edge,
-        face::Face,
-    },
+    intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
+    split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
+    topology::{contour::Contour, edge::Edge, face::Face},
 };
 
 use geop_geometry::points::point::Point;

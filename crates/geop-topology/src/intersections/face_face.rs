@@ -5,11 +5,10 @@ use geop_geometry::{
     },
 };
 
-use crate::{remesh::face::{face_remesh, face_split, FaceSplit}, topology::{
-    contour::Contour,
-    edge::Edge,
-    face::Face,
-}};
+use crate::{
+    remesh::face::{face_remesh, face_split, FaceSplit},
+    topology::{contour::Contour, edge::Edge, face::Face},
+};
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {
     assert!(

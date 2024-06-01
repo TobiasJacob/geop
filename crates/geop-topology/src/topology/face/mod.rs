@@ -3,8 +3,9 @@ use std::rc::Rc;
 use geop_geometry::{points::point::Point, surfaces::surface::Surface, transforms::Transform};
 
 use crate::contains::{
-    edge_point::EdgePointContains, surface_edge::surface_edge_contains,
+    edge_point::EdgePointContains,
     face_point::{face_point_contains, FacePointContains},
+    surface_edge::surface_edge_contains,
 };
 
 use super::{

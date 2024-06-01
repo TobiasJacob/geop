@@ -3,9 +3,10 @@ use geop_geometry::{
     points::point::Point,
 };
 
-use crate::{intersections::edge_edge::EdgeEdgeIntersection, topology::{
-    edge::Edge, face::Face, volume::Volume,
-}};
+use crate::{
+    intersections::edge_edge::EdgeEdgeIntersection,
+    topology::{edge::Edge, face::Face, volume::Volume},
+};
 
 use super::face_point::{face_point_contains, FacePointContains};
 

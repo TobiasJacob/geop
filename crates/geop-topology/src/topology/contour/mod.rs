@@ -2,9 +2,7 @@ use geop_geometry::{points::point::Point, transforms::Transform};
 
 use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 
-use super::{
-    edge::Edge
-};
+use super::edge::Edge;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EdgeIndex {

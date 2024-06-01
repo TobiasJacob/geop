@@ -1,12 +1,8 @@
-
 use geop_geometry::{points::point::Point, transforms::Transform};
 
 use crate::contains::face_point::{face_point_contains, FacePointContains};
 
-use super::{
-    contour::Contour,
-    face::Face,
-};
+use super::{contour::Contour, face::Face};
 
 pub struct Volume {
     pub faces: Vec<Face>,

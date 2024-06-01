@@ -5,10 +5,10 @@ use geop_geometry::{
     points::point::Point,
 };
 
-use crate::{contains::face_point::{face_point_contains, FacePointContains}, topology::{
-    edge::Edge,
-    face::Face,
-}};
+use crate::{
+    contains::face_point::{face_point_contains, FacePointContains},
+    topology::{edge::Edge, face::Face},
+};
 
 pub enum FaceEdgeIntersection {
     None,
