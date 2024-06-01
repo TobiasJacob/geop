@@ -1,8 +1,7 @@
+use geop_geometry::curve_surface_intersection::curve_surface::curve_surface_intersection;
+
 use crate::{
-    contains::{
-        face_point::{face_point_contains, FacePointContains},
-        surface_edge::surface_edge_contains,
-    },
+    contains::face_point::{face_point_contains, FacePointContains},
     topology::{edge::Edge, face::Face},
 };
 
@@ -15,7 +14,7 @@ pub enum FaceEdgeContains {
 
 // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
 pub fn face_edge_contains(face: &Face, edge: &Edge) -> FaceEdgeContains {
-    assert!(surface_edge_contains(&face.surface, edge));
+    assert!(curve_surface_intersection(&edge.curve, &*face.surface).is_curve());
     // TODO: Make an assertian that there are no intersections with the face boundaries
     // for int in countour_edge_intersection_points(face, edge) {
     //     assert!(*edge.start == *int || *edge.end == *int);

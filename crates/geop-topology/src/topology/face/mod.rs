@@ -1,11 +1,13 @@
 use std::rc::Rc;
 
-use geop_geometry::{points::point::Point, surfaces::surface::Surface, transforms::Transform};
+use geop_geometry::{
+    curve_surface_intersection::curve_surface::curve_surface_intersection, points::point::Point,
+    surfaces::surface::Surface, transforms::Transform,
+};
 
 use crate::contains::{
     edge_point::EdgePointContains,
     face_point::{face_point_contains, FacePointContains},
-    surface_edge::surface_edge_contains,
 };
 
 use super::{
@@ -27,11 +29,11 @@ pub struct Face {
 impl Face {
     pub fn new(boundary: Contour, holes: Vec<Contour>, surface: Rc<Surface>) -> Face {
         for edge in boundary.edges.iter() {
-            assert!(surface_edge_contains(&surface, edge));
+            assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
         }
         for contour in holes.iter() {
             for edge in contour.edges.iter() {
-                assert!(surface_edge_contains(&surface, edge));
+                assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
             }
         }
         Face {

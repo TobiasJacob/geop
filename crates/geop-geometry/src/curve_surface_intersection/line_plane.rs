@@ -1,13 +1,13 @@
-use crate::geometry::{surfaces::{plane::Plane, surface::Surface}, curves::line::Line, points::point::Point};
+use crate::{curves::line::Line, points::point::Point, surfaces::plane::Plane};
 
 pub enum LinePlaneIntersection {
     Line(Line),
     Point(Point),
-    None
+    None,
 }
 
-pub fn intersect_intersection(a: &Line, b: &Plane) -> LinePlaneIntersection {
-    let n = b.normal(b.basis);
+pub fn line_plane_intersection(a: &Line, b: &Plane) -> LinePlaneIntersection {
+    let n = b.normal();
     let p = b.basis;
     let v = a.direction;
     let a = a.basis;
@@ -31,25 +31,33 @@ mod tests {
     #[test]
     fn test_intersect() {
         let line = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
-        let plane = Plane::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0), Point::new(0.0, 0.0, 1.0));
-        let intersection = intersect_intersection(&line, &plane);
+        let plane = Plane::new(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(0.0, 1.0, 0.0),
+            Point::new(0.0, 0.0, 1.0),
+        );
+        let intersection = line_plane_intersection(&line, &plane);
         match intersection {
             LinePlaneIntersection::Line(line) => {
                 assert!((line.basis - Point::new(0.0, 0.0, 0.0)).norm() < crate::EQ_THRESHOLD);
                 assert!((line.direction - Point::new(1.0, 0.0, 0.0)).norm() < crate::EQ_THRESHOLD);
-            },
-            _ => panic!("Expected a line-plane intersection.")
+            }
+            _ => panic!("Expected a line-plane intersection."),
         }
     }
 
     #[test]
     fn test_parallel() {
         let line = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
-        let plane = Plane::new(Point::new(0.0, 0.0, 1.0), Point::new(0.0, 1.0, 0.0), Point::new(1.0, 0.0, 0.0));
-        let intersection = intersect_intersection(&line, &plane);
+        let plane = Plane::new(
+            Point::new(0.0, 0.0, 1.0),
+            Point::new(0.0, 1.0, 0.0),
+            Point::new(1.0, 0.0, 0.0),
+        );
+        let intersection = line_plane_intersection(&line, &plane);
         match intersection {
             LinePlaneIntersection::None => (),
-            _ => panic!("Expected no intersection.")
+            _ => panic!("Expected no intersection."),
         }
     }
 }
