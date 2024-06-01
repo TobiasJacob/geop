@@ -1,0 +1,6 @@
+[book]
+authors = ["Tobias Jacob"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Modern BRep Kernels and CAD"
