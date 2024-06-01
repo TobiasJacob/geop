@@ -118,7 +118,7 @@ async fn run() {
         let mut lines = EdgeBuffer::empty();
         lines.join(&rasterize_volume_into_line_list(
             &object,
-            [1.0, 1.0, 1.0, 1.0],
+            [0.0, 0.0, 0.0, 1.0],
         ));
         return (lines, triangles);
     });

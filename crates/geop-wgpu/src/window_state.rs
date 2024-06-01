@@ -189,8 +189,8 @@ impl WindowState {
             });
 
             render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
-            self.line_pipeline.render(&mut render_pass);
             self.traingle_pipeline.render(&mut render_pass);
+            self.line_pipeline.render(&mut render_pass);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
