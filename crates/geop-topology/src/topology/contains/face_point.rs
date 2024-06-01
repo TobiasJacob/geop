@@ -1,7 +1,9 @@
 use geop_geometry::points::point::Point;
 
 use crate::topology::{
-    edge::Edge, face::Face, intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
+    edge::Edge,
+    face::Face,
+    intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
 };
 
 use super::edge_point::{edge_point_contains, EdgePointContains};

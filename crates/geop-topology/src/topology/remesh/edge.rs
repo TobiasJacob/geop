@@ -36,28 +36,18 @@ pub enum EdgeRemesh {
 pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
     let intersections = edge_split_points(edge_a, edge_b);
 
-    let mut edges_a = split_edge_by_points_if_necessary(
-        edge_a,
-        intersections.as_slice(),
-    );
-    let mut edges_b = split_edge_by_points_if_necessary(
-        edge_b,
-        intersections.as_slice(),
-    );
+    let mut edges_a = split_edge_by_points_if_necessary(edge_a, intersections.as_slice());
+    let mut edges_b = split_edge_by_points_if_necessary(edge_b, intersections.as_slice());
 
     let mut result = Vec::<EdgeRemesh>::new();
     for a in edges_a.drain(..) {
         let mid_point = a.curve.get_midpoint(a.start, a.end);
         match edge_point_contains(edge_b, mid_point) {
             EdgePointContains::Inside => {
-                result.push(EdgeRemesh::AinB(
-                    a
-                ));
+                result.push(EdgeRemesh::AinB(a));
             }
             EdgePointContains::Outside => {
-                result.push(EdgeRemesh::AoutB(
-                    a
-                ));
+                result.push(EdgeRemesh::AoutB(a));
             }
             EdgePointContains::OnPoint(_) => {
                 panic!("This should not happen")
@@ -69,14 +59,10 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
         let mid_point = b.curve.get_midpoint(b.start, b.end);
         match edge_point_contains(edge_a, mid_point) {
             EdgePointContains::Inside => {
-                result.push(EdgeRemesh::BinA(
-                    b
-                ));
+                result.push(EdgeRemesh::BinA(b));
             }
             EdgePointContains::Outside => {
-                result.push(EdgeRemesh::BoutA(
-                    b
-                ));
+                result.push(EdgeRemesh::BoutA(b));
             }
             EdgePointContains::OnPoint(_) => {
                 panic!("This should not happen")

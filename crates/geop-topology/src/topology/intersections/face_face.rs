@@ -6,9 +6,10 @@ use geop_geometry::{
 };
 
 use crate::topology::{
+    contour::Contour,
     edge::Edge,
     face::Face,
-    remesh::face::{face_remesh, face_split, FaceSplit}, contour::Contour,
+    remesh::face::{face_remesh, face_split, FaceSplit},
 };
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Face {

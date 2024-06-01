@@ -67,11 +67,7 @@ impl Volume {
 
     pub fn transform(&self, transform: Transform) -> Volume {
         Volume {
-            faces: self
-                .faces
-                .iter()
-                .map(|f| f.transform(transform))
-                .collect(),
+            faces: self.faces.iter().map(|f| f.transform(transform)).collect(),
         }
     }
 

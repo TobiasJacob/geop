@@ -71,11 +71,7 @@ impl Face {
     }
 
     pub fn edge_from_to(&self, from: Point, to: Point) -> Edge {
-        Edge::new(
-            from.clone(),
-            to.clone(),
-            self.surface.geodesic(from, to),
-        )
+        Edge::new(from.clone(), to.clone(), self.surface.geodesic(from, to))
     }
 
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {

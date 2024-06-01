@@ -10,11 +10,9 @@ use geop_geometry::{
 use crate::topology::{contour::Contour, edge::Edge, face::Face, volume::Volume};
 
 pub fn extrude(start_face: Face, direction: Point) -> Volume {
-    let end_face = 
-        start_face
-            .transform(Transform::from_translation(direction))
-            .flip();
-
+    let end_face = start_face
+        .transform(Transform::from_translation(direction))
+        .flip();
 
     let mut faces = Vec::<Face>::new();
     let all_edges = &start_face.all_edges();
@@ -31,10 +29,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
         let right = Edge::new(
             bottom.end.clone(),
             top.start.clone(),
-            Curve::Line(Line::new(
-                bottom.end,
-                top.start - bottom.end,
-            )),
+            Curve::Line(Line::new(bottom.end, top.start - bottom.end)),
         );
         let left = Edge::new(
             top.end.clone(),

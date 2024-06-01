@@ -1,4 +1,4 @@
-use crate::{surfaces::surface::Surface, curves::curve::Curve, points::point::Point};
+use crate::{curves::curve::Curve, points::point::Point, surfaces::surface::Surface};
 
 pub enum CurveSurfaceIntersection {
     None,

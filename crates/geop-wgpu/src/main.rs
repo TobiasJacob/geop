@@ -27,11 +27,7 @@ use geop_wgpu::window::GeopWindow;
 pub fn linear_edge(s: Point, e: Point) -> Edge {
     let p1 = s;
     let p2 = e;
-    Edge::new(
-        s,
-        e,
-        Curve::Line(Line::new(p1, p2 - p1)),
-    )
+    Edge::new(s, e, Curve::Line(Line::new(p1, p2 - p1)))
 }
 
 pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {

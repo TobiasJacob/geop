@@ -1,8 +1,6 @@
 use std::rc::Rc;
 
-use crate::topology::{
-    face::Face, volume::Volume,
-};
+use crate::topology::{face::Face, volume::Volume};
 
 #[derive(Debug)]
 pub enum VolumeSplit {

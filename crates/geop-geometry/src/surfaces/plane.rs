@@ -1,4 +1,9 @@
-use crate::{curves::{line::Line, curve::Curve}, points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{
+    curves::{curve::Curve, line::Line},
+    points::point::Point,
+    transforms::Transform,
+    EQ_THRESHOLD,
+};
 
 use super::surface::TangentPoint;
 
