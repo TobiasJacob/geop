@@ -6,8 +6,14 @@ use geop_geometry::{
 };
 
 use crate::{
+    contains::face_point::{face_point_contains, FacePointContains},
     remesh::face::{face_remesh, face_split, FaceSplit},
-    topology::{contour::Contour, edge::Edge, face::Face},
+    topology::{edge::Edge, face::Face},
+};
+
+use super::{
+    curve_face::curve_face_intersection_same_surface,
+    face_edge::{face_edge_intersection, FaceEdgeIntersection},
 };
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Vec<Face> {
@@ -35,61 +41,44 @@ pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) 
 
 pub enum FaceFaceIntersection {
     None,
-    EdgesAndPoints(Vec<Point>, Vec<Edge>, Vec<Contour>),
+    EdgesAndPoints(Vec<Point>, Vec<Edge>),
     Faces(Vec<Face>),
 }
 
 pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIntersection {
-    assert!(
-        face_self.surface != face_other.surface,
-        "Faces must have different surfaces",
-    );
-
     match surface_surface_intersection(&face_self.surface, &face_other.surface) {
         FaceSurfaceIntersection::None => FaceFaceIntersection::None,
-        FaceSurfaceIntersection::CurvesAndPoints(_curves, _points) => {
-            todo!("face")
-            // let mut intersections = vec![];
-            // for point in points.iter() {
-            //     if face_point_contains(face_self, *point) != FacePointContains::Outside {
-            //         if face_point_contains(face_other, *point) != FacePointContains::Outside {
-            //             intersections.push(FaceFaceIntersection::Point(Rc::new(point.clone())));
-            //         }
-            //     }
-            // }
+        FaceSurfaceIntersection::CurvesAndPoints(curves, points) => {
+            let mut points = points
+                .iter()
+                .filter(|p| {
+                    face_point_contains(face_self, **p) != FacePointContains::Outside
+                        && face_point_contains(face_other, **p) != FacePointContains::Outside
+                })
+                .cloned()
+                .collect::<Vec<Point>>();
 
-            // let mut segments: Vec<EdgeEdgeIntersection> = vec![];
-            // for curve in curves.iter() {
-            //     let edge = Edge::new(todo!("Start"), todo!("End"), Rc::new(curve.clone()));
-            //     segments.push(EdgeEdgeIntersection::Edge(edge));
-            // }
+            let curves = curves
+                .iter()
+                .map(|curve| curve_face_intersection_same_surface(curve.clone(), face_self.clone()))
+                .flatten()
+                .map(|edge| face_edge_intersection(face_other, &edge))
+                .collect::<Vec<FaceEdgeIntersection>>();
 
-            // for face in &[face_self, face_other] {
-            //     let mut new_segments = vec![];
+            let mut edges = Vec::<Edge>::new();
+            for curve in curves.iter() {
+                match curve {
+                    FaceEdgeIntersection::Points(ps) => {
+                        points.extend(ps);
+                    }
+                    FaceEdgeIntersection::Edges(es) => {
+                        edges.extend(es.clone());
+                    }
+                    FaceEdgeIntersection::None => {}
+                }
+            }
 
-            //     for seg in segments.iter() {
-            //         match seg {
-            //             EdgeEdgeIntersection::Point(p) => {
-            //                 if face_point_contains(face, **p) != FacePointContains::Outside {
-            //                     new_segments.push(seg.clone());
-            //                 }
-            //             }
-            //             EdgeEdgeIntersection::Edge(e) => {
-            //                 new_segments.extend(face_edge_intersection(face_self, e));
-            //             }
-            //         }
-            //     }
-
-            //     segments = new_segments;
-            // }
-
-            // segments
-            //     .iter()
-            //     .map(|seg| match seg {
-            //         EdgeEdgeIntersection::Point(p) => FaceFaceIntersection::Point(p.clone()),
-            //         EdgeEdgeIntersection::Edge(e) => FaceFaceIntersection::Edge(e.clone()),
-            //     })
-            //     .collect()
+            FaceFaceIntersection::EdgesAndPoints(points, edges)
         }
         FaceSurfaceIntersection::Surface(_surface) => {
             FaceFaceIntersection::Faces(face_face_same_surface_intersection(face_self, face_other))
