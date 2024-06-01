@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use geop_geometry::{points::point::Point, transforms::Transform};
 
 use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
@@ -188,5 +190,15 @@ impl Contour {
             ));
         }
         result
+    }
+}
+
+impl Display for Contour {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Contour: ")?;
+        for edge in self.edges.iter() {
+            write!(f, "{:?} ", edge.start)?;
+        }
+        Ok(())
     }
 }

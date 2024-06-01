@@ -136,7 +136,7 @@ impl std::fmt::Display for Face {
                     p.basis,
                     p.u_slope.cross(p.v_slope)
                 )?;
-                writeln!(f, "Boundary:")?;
+                writeln!(f, "Boundary: {}", self.boundary)?;
                 for contour in self.holes.iter() {
                     writeln!(f, "Hole:")?;
                     for edge in contour.edges.iter() {
@@ -148,6 +148,6 @@ impl std::fmt::Display for Face {
                 writeln!(f, "sphere is still todo")?;
             }
         };
-        writeln!(f, "Boundaries:")
+        Ok(())
     }
 }
