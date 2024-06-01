@@ -20,28 +20,10 @@ impl VolumeNormal {
             match self {
                 VolumeNormal::OnFace(normal) => normal.dot(curve_dir) > 0.0,
                 VolumeNormal::OnEdge(normal1, normal2, tangent1neg2) => {
-                    let tangent1 = normal1.cross(*tangent1neg2);
-                    let tangent2 = tangent1neg2.cross(*normal2);
-                    let tangent1 = tangent1.normalize();
-                    let tangent2 = tangent2.normalize();
-                    let tangent1neg2 = tangent1neg2.normalize();
-                    // Check determinant of (tangent1 - curve_dir, tangent2 - curve_dir, tangent1neg2 - curve_dir)
-                    let det = (tangent1 - curve_dir)
-                        .cross(tangent2 - curve_dir)
-                        .dot(tangent1neg2 - curve_dir);
-                    todo!("Write a testcase for this");
-                    det > 0.0
+                    todo!("Write a testcase for this")
                 }
                 VolumeNormal::OnPoint(tangent1, tangent2, tangent3) => {
-                    let tangent1 = tangent1.normalize();
-                    let tangent2 = tangent2.normalize();
-                    let tangent3 = tangent3.normalize();
-                    // Check determinant of (tangent1 - curve_dir, tangent2 - curve_dir, tangent3 - curve_dir)
-                    let det = (tangent1 - curve_dir)
-                        .cross(tangent2 - curve_dir)
-                        .dot(tangent3 - curve_dir);
-                    todo!("Write a testcase for this");
-                    det > 0.0
+                    todo!("Write a testcase for this")
                 }
             }
         }
@@ -79,7 +61,7 @@ impl Volume {
             }
         }
         match relevant_faces.len() {
-            0 => panic!("Point is not inside volume"),
+            0 => panic!("Point is not on volume boundary"),
             1 => VolumeNormal::OnFace(relevant_faces[0].normal(point)),
             2 => VolumeNormal::OnEdge(
                 relevant_faces[0].normal(point),
@@ -101,7 +83,7 @@ impl Volume {
                     false => VolumeNormal::OnPoint(*t1out, *t3out, *t2out),
                 }
             }
-            _ => panic!("This case should never happen"),
+            _ => panic!("Corners with more than 3 edges are not yet supported"),
         }
     }
 }

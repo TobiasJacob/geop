@@ -137,6 +137,7 @@ impl Contour {
         assert!(self.contains(p) != EdgePointContains::Outside);
         match self.get_edge_index(p) {
             EdgeIndex::OnCorner(i1, i2) => {
+                // Tangent of i1 is incoming, tangent of i2 is outgoing
                 ContourTangent::OnCorner(self.edges[i1].tangent(p), self.edges[i2].tangent(p))
             }
             EdgeIndex::OnEdge(i) => ContourTangent::OnEdge(self.edges[i].tangent(p)),

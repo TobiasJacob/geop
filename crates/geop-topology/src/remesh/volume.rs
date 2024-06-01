@@ -29,7 +29,7 @@ pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSp
     //         .into_iter()
     //         .map(|face| face.split_if_necessary(*vert))
     //         .collect();
-    // }
+    // }is_from_inside
 
     // faces_self
     //     .into_iter()
