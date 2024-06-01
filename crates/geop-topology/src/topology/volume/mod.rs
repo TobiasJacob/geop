@@ -20,10 +20,26 @@ impl VolumeNormal {
             match self {
                 VolumeNormal::OnFace(normal) => normal.dot(curve_dir) > 0.0,
                 VolumeNormal::OnEdge(normal1, normal2, tangent1neg2) => {
-                    todo!("Write a testcase for this")
+                    let face1dir = normal1.cross(*tangent1neg2).normalize();
+                    let face2dir = tangent1neg2.cross(*normal2).normalize();
+                    // check determinant of the matrix [tangent1neg2, face1dir - curve_dir, face2dir - curve_dir]
+                    let curve_dir = -curve_dir.normalize();
+                    let det = (face1dir - curve_dir)
+                        .cross(face2dir - curve_dir)
+                        .dot(*tangent1neg2 - curve_dir);
+                    det > 0.0
                 }
                 VolumeNormal::OnPoint(tangent1, tangent2, tangent3) => {
-                    todo!("Write a testcase for this")
+                    // check determinant of the matrix [tangent1, face1dir - curve_dir, face2dir - curve_dir]
+                    let tangent1 = tangent1.normalize();
+                    let tangent2 = tangent2.normalize();
+                    let tangent3 = tangent3.normalize();
+                    let curve_dir = -curve_dir.normalize();
+                    let curve_dir = -curve_dir.normalize();
+                    let det = (tangent1 - curve_dir)
+                        .cross(tangent2 - curve_dir)
+                        .dot(tangent3 - curve_dir);
+                    det > 0.0
                 }
             }
         }

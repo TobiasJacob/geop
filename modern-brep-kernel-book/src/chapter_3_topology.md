@@ -22,6 +22,12 @@ Alternatifly, we can also take a look at the direction of the closest intersecti
 
 ![Inside or Outside](./images/indside_outside.png)
 
+A common idea is also to check the normals. If the ray is \\(n \cdot d\\) is positive for both normals \\(n\\) and the direction of the ray \\(d\\), we know we are inside the contour. This is true. But depending on if it is a concave or convex corner, it is sufficient that one of the dot products is positive (area 2 and 4), or both have to be positive (area 1).
+
+![Inside or Outside](./images/why_and_and_or_dont_work.drawio.png)
+
+
 ### Three dimensional case
 
 Same idea. If the coordinate system changes handedness, we know we are inside the corner.
+![Inside or Outside](./images/other_case.drawio.png)
