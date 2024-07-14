@@ -7,7 +7,7 @@ use geop_geometry::{
     transforms::Transform,
 };
 
-use crate::topology::{contour::Contour, edge::Edge, face::Face, volume::Volume};
+use crate::topology::{contour::Contour, edge::Edge, face::Face, shell::Shell, volume::Volume};
 
 pub fn extrude(start_face: Face, direction: Point) -> Volume {
     let end_face = start_face
@@ -50,5 +50,5 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
     faces.push(start_face);
     faces.push(end_face);
 
-    Volume::new(faces)
+    Volume::new(Shell::new(faces), vec![])
 }

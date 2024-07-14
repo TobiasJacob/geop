@@ -9,15 +9,15 @@ use crate::{
 };
 
 pub fn volume_split_contours(volume_self: &Volume, volume_other: &Volume) -> Vec<Contour> {
-    for face_self in volume_self.faces.iter() {
-        for face_other in volume_other.faces.iter() {
-            match face_face_intersection(face_self, face_other) {
-                FaceFaceIntersection::EdgesAndPoints(points, edge) => {}
-                FaceFaceIntersection::Faces(faces) => {}
-                FaceFaceIntersection::None => {}
-            }
-        }
-    }
+    // for face_self in volume_self.faces.iter() {
+    //     for face_other in volume_other.faces.iter() {
+    //         match face_face_intersection(face_self, face_other) {
+    //             FaceFaceIntersection::EdgesAndPoints(points, edge) => {}
+    //             FaceFaceIntersection::Faces(faces) => {}
+    //             FaceFaceIntersection::None => {}
+    //         }
+    //     }
+    // }
 
     todo!()
 }

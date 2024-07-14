@@ -1,4 +1,5 @@
 use geop_geometry::{
+    curves::curve::Curve,
     points::point::Point,
     surface_surface_intersection::surface_surface::{
         surface_surface_intersection, FaceSurfaceIntersection,
@@ -11,10 +12,7 @@ use crate::{
     topology::{edge::Edge, face::Face},
 };
 
-use super::{
-    curve_face::curve_face_intersection_same_surface,
-    face_edge::{face_edge_intersection, FaceEdgeIntersection},
-};
+use super::face_edge::{face_edge_intersection, FaceEdgeIntersection};
 
 pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) -> Vec<Face> {
     assert!(
@@ -43,6 +41,10 @@ pub enum FaceFaceIntersection {
     None,
     EdgesAndPoints(Vec<Point>, Vec<Edge>),
     Faces(Vec<Face>),
+}
+
+fn curve_face_intersection_same_surface(_curve: Curve, _face: Face) -> Vec<Edge> {
+    todo!()
 }
 
 pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIntersection {
