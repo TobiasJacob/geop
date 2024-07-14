@@ -6,6 +6,7 @@ use geop_geometry::{
 };
 
 use crate::contains::{
+    contour_point::contour_point_contains,
     edge_point::EdgePointContains,
     face_point::{face_point_contains, FacePointContains},
 };
@@ -87,14 +88,12 @@ impl Face {
     }
 
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
-        if self.boundary.contains(p) != EdgePointContains::Outside {
+        if contour_point_contains(&self.boundary, p) != EdgePointContains::Outside {
             return self.boundary.tangent(p);
         }
         for contour in self.holes.iter() {
-            match contour.contains(p) {
-                EdgePointContains::Inside => return contour.tangent(p),
-                EdgePointContains::OnPoint(_) => return contour.tangent(p),
-                EdgePointContains::Outside => continue,
+            if contour_point_contains(contour, p) != EdgePointContains::Outside {
+                return contour.tangent(p);
             }
         }
         panic!("Point is not on boundary");

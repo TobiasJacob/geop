@@ -1,6 +1,11 @@
-use geop_geometry::transforms::Transform;
+use geop_geometry::{points::point::Point, transforms::Transform};
 
-use super::shell::Shell;
+use crate::contains::{face_point::FacePointContains, shell_point::shell_point_contains};
+
+use super::{
+    face::Face,
+    shell::{Shell, ShellNormal},
+};
 
 pub struct Volume {
     pub boundary: Shell,   // Normal pointing outwards
@@ -17,5 +22,27 @@ impl Volume {
             boundary: self.boundary.transform(transform),
             holes: self.holes.iter().map(|h| h.transform(transform)).collect(),
         }
+    }
+
+    pub fn all_faces(&self) -> Vec<Face> {
+        let mut faces = Vec::<Face>::new();
+
+        faces.extend(self.boundary.faces.clone());
+        for hole in self.holes.iter() {
+            faces.extend(hole.faces.clone());
+        }
+        return faces;
+    }
+
+    pub fn boundary_normal(&self, p: Point) -> ShellNormal {
+        if shell_point_contains(&self.boundary, p) != FacePointContains::Outside {
+            return self.boundary.normal(p);
+        }
+        for hole in self.holes.iter() {
+            if shell_point_contains(hole, p) != FacePointContains::Outside {
+                return hole.normal(p);
+            }
+        }
+        panic!("Point is not on boundary");
     }
 }

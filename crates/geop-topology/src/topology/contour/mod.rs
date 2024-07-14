@@ -2,7 +2,10 @@ use std::fmt::Display;
 
 use geop_geometry::{points::point::Point, transforms::Transform};
 
-use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
+use crate::contains::{
+    contour_point::contour_point_contains,
+    edge_point::{edge_point_contains, EdgePointContains},
+};
 
 use super::edge::Edge;
 
@@ -96,22 +99,6 @@ impl Contour {
         Contour::new(edges)
     }
 
-    pub fn contains(&self, point: Point) -> EdgePointContains {
-        for (_i, edge) in self.edges.iter().enumerate() {
-            let contains: EdgePointContains = edge_point_contains(edge, point);
-            match contains {
-                EdgePointContains::OnPoint(point) => {
-                    return EdgePointContains::OnPoint(point);
-                }
-                EdgePointContains::Inside => {
-                    return EdgePointContains::Inside;
-                }
-                EdgePointContains::Outside => {}
-            }
-        }
-        return EdgePointContains::Outside;
-    }
-
     // Returns an edge that contains the point, or None if the point is not on the contour.
     // It can also be the start or the end point of an edge, hence, if this function is used, take special care of the case where this case.
     fn get_edge_index(&self, point: Point) -> EdgeIndex {
@@ -136,7 +123,7 @@ impl Contour {
     }
 
     pub fn tangent(&self, p: Point) -> ContourTangent {
-        assert!(self.contains(p) != EdgePointContains::Outside);
+        assert!(contour_point_contains(&self, p) != EdgePointContains::Outside);
         match self.get_edge_index(p) {
             EdgeIndex::OnCorner(i1, i2) => {
                 // Tangent of i1 is incoming, tangent of i2 is outgoing

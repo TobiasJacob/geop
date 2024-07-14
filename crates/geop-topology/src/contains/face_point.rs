@@ -54,7 +54,6 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     }
 
     for int in intersection_points {
-        // println!("int: {:?}", int);
         let distance = face.surface.distance(point, int);
         if distance < closest_distance {
             let curve_dir = curve.tangent(int);

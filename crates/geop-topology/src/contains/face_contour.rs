@@ -1,6 +1,9 @@
 use geop_geometry::curve_surface_intersection::curve_surface::curve_surface_intersection;
 
-use crate::topology::{contour::Contour, face::Face};
+use crate::{
+    intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
+    topology::{contour::Contour, face::Face},
+};
 
 use super::face_edge::{face_edge_contains, FaceEdgeContains};
 
@@ -17,10 +20,30 @@ pub fn face_contour_contains(face: &Face, contour: &Contour) -> FaceContourConta
     for edge in contour.edges.iter() {
         assert!(curve_surface_intersection(&edge.curve, &*face.surface).is_curve());
     }
-    // TODO: Make an assertian that there are no intersections with the face boundaries
-    // for int in countour_edge_intersection_points(face, edge) {
-    //     assert!(*edge.start == *int || *edge.end == *int);
-    // }
+    // Check that there are no additional intersections between the face and the contour
+    // TODO: Write a test case for this
+    for edge in face.boundary.edges.iter() {
+        for edge2 in contour.edges.iter() {
+            let intersections = edge_edge_intersection(edge, edge2);
+            match intersections {
+                EdgeEdgeIntersection::Edges(int_edges) => {
+                    for int_edge in int_edges {
+                        assert!(edge.start == edge2.start || edge.start == edge2.end);
+                        assert!(edge.end == edge2.start || edge.end == edge2.end);
+                        assert!(int_edge.start == edge.start || int_edge.start == edge.end);
+                        assert!(int_edge.end == edge.start || int_edge.end == edge.end);
+                    }
+                }
+                EdgeEdgeIntersection::Points(int_points) => {
+                    for int_point in int_points {
+                        assert!(int_point == edge.start || int_point == edge.end);
+                        assert!(int_point == edge2.start || int_point == edge2.end);
+                    }
+                }
+                EdgeEdgeIntersection::None => (),
+            }
+        }
+    }
 
     let mut inside = 0;
     let mut outside = 0;
