@@ -6,6 +6,7 @@ use crate::{
     topology::{edge::Edge, face::Face},
 };
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum FaceEdgeContains {
     Inside,
     OnBorderSameDir,
