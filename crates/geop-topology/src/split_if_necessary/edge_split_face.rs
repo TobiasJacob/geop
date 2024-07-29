@@ -1,109 +1,116 @@
 use crate::{
     contains::{
+        contour_point::contour_point_contains,
+        edge_point::EdgePointContains,
         face_edge::{face_edge_contains, FaceEdgeContains},
-        face_point::{face_point_contains, FacePointContains},
     },
-    remesh::edge,
+    remesh::face::normalize_faces,
+    split_if_necessary::point_split_edge::split_contours_by_points_if_necessary,
     topology::{contour::Contour, edge::Edge, face::Face},
 };
 
-pub fn split_face_by_contour_if_necessary(face: &Face, contour: &Contour) -> Vec<Face> {
-    // It is safe to assume that edges will start and end at the boundary of the face, since the face intersections were used to create the contours.
-    // Only the edges of the contour that are inside the face are relevant.
+pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
+    match face_edge_contains(face, edge) {
+        FaceEdgeContains::Inside => {
+            let split_points = vec![edge.start.clone(), edge.end.clone()];
 
-    let mut relevant_edges = contour
-        .edges
-        .iter()
-        .cloned()
-        .filter(|edge| face_edge_contains(face, edge) == FaceEdgeContains::Inside)
-        .collect::<Vec<Edge>>();
-
-    // Approach:
-    // Find an edge that is inside the face.
-    // Then follow the contour until we reach the boundary of the face or the contour is closed.
-    // If the contour is closed, we have a new face.
-    // If the contour is not closed, we follow the contour in the opposite direction until we reach the boundary of the face.
-    // Then we have a new face.
-
-    let mut result = Vec::<Face>::new();
-    result.push(face.clone());
-    loop {
-        let mut edges = Vec::<Edge>::new();
-        match relevant_edges.pop() {
-            Some(edge) => {
-                edges.push(edge.clone());
-            }
-            None => {
-                break;
-            }
-        }
-        loop {
-            let last_edge = edges.last().unwrap();
-
-            if last_edge.end == edges.first().unwrap().start {
-                // We closed the contour, so we have a new hole
-                todo!("Create a new face with the hole");
-                break;
-            }
-            // Check if we hit the boundary of the face
-            match face_point_contains(face, last_edge.end) {
-                FacePointContains::OnEdge(_) => {
-                    // We hit the boundary of the face
-                    break;
-                }
-                FacePointContains::OnPoint(_) => {
-                    // We hit the boundary of the face
-                    break;
-                }
-                FacePointContains::Inside => {
-                    // We are inside the face, so we can continue following the contour
-                }
-                FacePointContains::Outside => {
-                    // We are outside the face, so we can continue following the contour
-                }
-            }
-            // Find the next edge that starts where the last edge ends
-            let next_edge = relevant_edges
-                .iter()
-                .position(|edge| edge.start == last_edge.end || edge.end == last_edge.end);
-            match next_edge {
-                Some(index) => {
-                    let edge = relevant_edges.swap_remove(index);
-                    if edge.start == last_edge.end {
-                        edges.push(edge);
-                    } else {
-                        edges.push(edge.flip());
+            let mut contours = face.holes.clone();
+            contours.push(face.boundary.clone());
+            let contours = split_contours_by_points_if_necessary(contours, &split_points);
+            let start_contour =
+                contours
+                    .iter()
+                    .find(|&c| match contour_point_contains(c, edge.start) {
+                        EdgePointContains::OnPoint(_) => true,
+                        _ => false,
+                    });
+            let end_contour =
+                contours
+                    .iter()
+                    .find(|&c| match contour_point_contains(c, edge.end) {
+                        EdgePointContains::OnPoint(_) => true,
+                        _ => false,
+                    });
+            let mut new_contours = Vec::<Contour>::new();
+            match start_contour {
+                Option::Some(start_contour) => match end_contour {
+                    Option::Some(end_contour) => {
+                        if std::ptr::eq(start_contour, end_contour) {
+                            // Make it 2 contours
+                            let mut edges = start_contour.get_subcurve(edge.end, edge.start);
+                            edges.push(edge.clone());
+                            new_contours.push(Contour::new(edges));
+                            let mut edges = start_contour.get_subcurve(edge.start, edge.end);
+                            edges.push(edge.flip());
+                            new_contours.push(Contour::new(edges));
+                            // Push the rest of the contours
+                            for contour in contours.iter() {
+                                if !std::ptr::eq(contour, start_contour) {
+                                    new_contours.push(contour.clone());
+                                }
+                            }
+                        } else {
+                            // Make it 1 contour
+                            let mut edges = start_contour.get_subcurve(edge.start, edge.start);
+                            edges.push(edge.clone());
+                            edges.extend(end_contour.get_subcurve(edge.end, edge.end));
+                            edges.push(edge.flip());
+                            new_contours.push(Contour::new(edges));
+                        }
                     }
-                }
-                None => {
-                    break;
-                }
+                    Option::None => {
+                        // Make it 1 contour
+                        let mut edges = start_contour.get_subcurve(edge.start, edge.start);
+                        edges.push(edge.clone());
+                        edges.push(edge.flip());
+                        new_contours.push(Contour::new(edges));
+                    }
+                },
+                Option::None => match end_contour {
+                    Option::Some(end_contour) => {
+                        // Make it 1 contour
+                        let mut edges = end_contour.get_subcurve(edge.end, edge.end);
+                        edges.push(edge.clone());
+                        edges.push(edge.flip());
+                        new_contours.push(Contour::new(edges));
+                    }
+                    Option::None => {
+                        // Make it 1 contour
+                        let edges = vec![edge.clone(), edge.flip()];
+                        new_contours.push(Contour::new(edges));
+                    }
+                },
             }
+            return normalize_faces(new_contours, face.surface.clone());
         }
-        todo!("Create a new face with the contour");
+        FaceEdgeContains::Outside => {
+            vec![face.clone()]
+        }
+        FaceEdgeContains::OnBorderSameDir => {
+            vec![face.clone()]
+        }
+        FaceEdgeContains::OnBorderOppositeDir => {
+            vec![face.clone()]
+        }
     }
-    todo!()
 }
 
-pub fn split_face_by_contours_if_necessary(face: &Face, contours: &[Contour]) -> Vec<Face> {
+pub fn split_face_by_edges_if_necessary(face: &Face, edges: &[Edge]) -> Vec<Face> {
     let mut result = vec![face.clone()];
-    for c in contours {
+    for c in edges {
         let mut new_result = Vec::<Face>::new();
         for face in result.iter() {
-            new_result.extend(split_face_by_contour_if_necessary(face, c));
+            new_result.extend(split_face_by_edge_if_necessary(face, c));
         }
         result = new_result;
     }
     result
 }
 
-pub fn split_faces_by_contours_if_necessary(
-    faces: Vec<Face>,
-    contours: &Vec<Contour>,
-) -> Vec<Face> {
+pub fn split_faces_by_edges_if_necessary(faces: Vec<Face>, edges: &Vec<Edge>) -> Vec<Face> {
     let mut result = Vec::<Face>::new();
     for face in faces {
-        result.extend(split_face_by_contours_if_necessary(&face, &contours));
+        result.extend(split_face_by_edges_if_necessary(&face, &edges));
     }
     result
 }

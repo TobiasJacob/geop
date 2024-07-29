@@ -16,7 +16,9 @@ pub enum FaceEdgeContains {
 
 // Checks if an edge is inside the face. This guarantees that the edge is not touching any curves. The start and end point of the edge can be on the border, since they are not considered a part of the edge.
 pub fn face_edge_contains(face: &Face, edge: &Edge) -> FaceEdgeContains {
-    assert!(curve_surface_intersection(&edge.curve, &*face.surface).is_curve());
+    if !curve_surface_intersection(&edge.curve, &*face.surface).is_curve() {
+        return FaceEdgeContains::Outside;
+    }
     // Check that there are no intersections with the face boundaries
     // TODO: Test this code
     for edge2 in face.boundary.edges.iter() {

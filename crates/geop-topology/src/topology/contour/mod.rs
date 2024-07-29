@@ -148,12 +148,14 @@ impl Contour {
         };
 
         if start_i == end_i {
+            todo!("Handle the case where start and end are on the same edge, but end comes before start, such that we have to go all the way around the contour.");
             let edge = Edge::new(
                 start.clone(),
                 end.clone(),
                 self.edges[start_i].curve.clone(),
             );
             result.push(edge);
+            return result;
         }
 
         let mut edge = &self.edges[start_i];
