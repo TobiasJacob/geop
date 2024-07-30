@@ -185,24 +185,46 @@ mod tests {
         rasterize_volume_into_vertex_list,
     };
     use geop_topology::primitive_objects::volumes::cube::primitive_cube;
+    use rstest::{fixture, rstest};
 
-    #[test]
-    fn test_headless_renderer() {
+    #[fixture]
+    pub async fn renderer() -> Box<HeadlessRenderer> {
+        Box::new(HeadlessRenderer::new().await)
+    }
+
+    #[rstest]
+    async fn test_headless_renderer(#[future] renderer: Box<HeadlessRenderer>) {
         let volume = primitive_cube(1.0, 1.0, 1.0);
 
         let vertex_buffer = rasterize_volume_into_vertex_list(&volume, [0.2, 0.2, 0.2, 1.0]);
         let edge_buffer = rasterize_volume_into_line_list(&volume, [0.0, 0.0, 0.0, 1.0]);
         let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
-        let _headless_renderer = pollster::block_on(async {
-            let mut renderer = HeadlessRenderer::new().await;
-            renderer
-                .render_to_file(
-                    &vertex_buffer,
-                    &edge_buffer,
-                    &triangle_buffer,
-                    std::path::Path::new("test.png"),
-                )
-                .await;
-        });
+        renderer
+            .await
+            .render_to_file(
+                &vertex_buffer,
+                &edge_buffer,
+                &triangle_buffer,
+                std::path::Path::new("test.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_headless_renderer2(#[future] renderer: Box<HeadlessRenderer>) {
+        let volume = primitive_cube(1.0, 1.0, 1.0);
+
+        let vertex_buffer = VertexBuffer::empty();
+        let edge_buffer = rasterize_volume_into_line_list(&volume, [0.0, 0.0, 0.0, 1.0]);
+        let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
+        renderer
+            .await
+            .render_to_file(
+                &vertex_buffer,
+                &edge_buffer,
+                &triangle_buffer,
+                std::path::Path::new("test2.png"),
+            )
+            .await;
     }
 }

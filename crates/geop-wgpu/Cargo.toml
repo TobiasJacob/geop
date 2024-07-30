@@ -21,4 +21,5 @@ futures-intrusive = "0.5"
 image = "0.25.2"
 
 [dev-dependencies]
+async-std = { version = "1.5", features = ["attributes"] }
 rstest = "0.21.0"
