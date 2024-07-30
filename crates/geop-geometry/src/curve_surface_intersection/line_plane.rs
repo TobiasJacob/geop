@@ -33,7 +33,7 @@ mod tests {
         let line = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
         let plane = Plane::new(
             Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
+            Point::new(1.0, 0.0, 0.0),
             Point::new(0.0, 0.0, 1.0),
         );
         let intersection = line_plane_intersection(&line, &plane);
