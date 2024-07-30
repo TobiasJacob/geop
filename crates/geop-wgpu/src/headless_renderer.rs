@@ -56,8 +56,6 @@ impl HeadlessRenderer {
 
         let mut pipeline_manager = PipelineManager::new(
             &device,
-            vertices_points,
-            vertices_triangle,
             PhysicalSize::new(texture_size, texture_size),
             texture_format,
         )
@@ -101,6 +99,8 @@ impl HeadlessRenderer {
             };
             let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
             pipeline_manager.update_edges(&queue, vertices_line);
+            pipeline_manager.update_triangles(&queue, vertices_triangle);
+            pipeline_manager.update_vertices(&queue, vertices_points);
             pipeline_manager.run_pipelines(&mut render_pass);
         }
         encoder.copy_texture_to_buffer(

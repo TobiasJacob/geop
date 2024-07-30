@@ -2,17 +2,12 @@ use geop_geometry::points::point::Point;
 use geop_rasterize::vertex_buffer::{RenderVertex, VertexBuffer};
 use wgpu::{util::DeviceExt, TextureFormat};
 
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-#[repr(C)]
-pub struct InstanceRaw {
-    pub position: [f32; 3],
-}
-
 pub struct RenderPipelineVertex {
     vertex_buffer: wgpu::Buffer,
     instace_buffer: wgpu::Buffer,
-    num_vertices: u32,
-    num_instances: u32,
+    num_vers_per_instance: u32,
+    max_num_instances: usize,
+    render_instances: u32,
     render_pipeline: wgpu::RenderPipeline,
 }
 
@@ -62,31 +57,23 @@ impl RenderPipelineVertex {
     pub fn new(
         device: &wgpu::Device,
         texture_format: TextureFormat,
-        vertices: &VertexBuffer,
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineVertex {
-        let render_vertices = cube_vertex_buffer(0.02, [0.1, 0.1, 0.1, 1.0]);
+        let max_num_instances = 1024;
+
+        let render_vertices = cube_vertex_buffer(0.02, [1.0, 1.0, 1.0, 1.0]);
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
             contents: render_vertices.to_u8_slice(),
             usage: wgpu::BufferUsages::VERTEX,
         });
-        let num_vertices = render_vertices.vertices.len() as u32;
-
-        let instance_data = vertices
-            .vertices
-            .iter()
-            .map(|v| InstanceRaw {
-                position: v.position,
-            })
-            .collect::<Vec<_>>();
+        let num_vers_per_instance = render_vertices.vertices.len() as u32;
         let instace_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Instance Buffer")),
-            contents: bytemuck::cast_slice(&instance_data),
-            usage: wgpu::BufferUsages::VERTEX,
+            contents: vec![0u8; max_num_instances * std::mem::size_of::<RenderVertex>()].as_slice(),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
-        let num_instances = instance_data.len() as u32;
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
@@ -117,13 +104,20 @@ impl RenderPipelineVertex {
                         ],
                     },
                     wgpu::VertexBufferLayout {
-                        array_stride: std::mem::size_of::<InstanceRaw>() as wgpu::BufferAddress,
+                        array_stride: std::mem::size_of::<RenderVertex>() as wgpu::BufferAddress,
                         step_mode: wgpu::VertexStepMode::Instance,
-                        attributes: &[wgpu::VertexAttribute {
-                            offset: 0,
-                            shader_location: 2,
-                            format: wgpu::VertexFormat::Float32x3,
-                        }],
+                        attributes: &[
+                            wgpu::VertexAttribute {
+                                offset: 0,
+                                shader_location: 2,
+                                format: wgpu::VertexFormat::Float32x3,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                                shader_location: 3,
+                                format: wgpu::VertexFormat::Float32x4,
+                            },
+                        ],
                     },
                 ],
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
@@ -165,16 +159,25 @@ impl RenderPipelineVertex {
         RenderPipelineVertex {
             vertex_buffer,
             instace_buffer,
-            num_vertices,
-            num_instances,
+            num_vers_per_instance,
+            max_num_instances,
+            render_instances: 0,
             render_pipeline,
         }
+    }
+
+    pub fn update(&mut self, queue: &wgpu::Queue, instances: &VertexBuffer) {
+        if self.max_num_instances < instances.vertices.len() {
+            panic!("Too many instances to render");
+        }
+        queue.write_buffer(&self.instace_buffer, 0, instances.to_u8_slice());
+        self.render_instances = instances.vertices.len() as u32;
     }
 
     pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_pipeline(&self.render_pipeline); // 2.
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_vertex_buffer(1, self.instace_buffer.slice(..));
-        render_pass.draw(0..self.num_vertices, 0..self.num_instances);
+        render_pass.draw(0..self.num_vers_per_instance, 0..self.render_instances);
     }
 }

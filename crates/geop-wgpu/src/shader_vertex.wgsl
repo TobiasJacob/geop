@@ -14,6 +14,7 @@ struct VertexInput {
 
 struct InstanceInput {
     @location(2) instance_position: vec3<f32>,
+    @location(3) instance_color: vec4<f32>,
 };
 
 struct VertexOutput {
@@ -34,7 +35,7 @@ fn vs_main(
     var out: VertexOutput;
 
     out.position = uniforms.view_project * vec4<f32>(in.position + instance.instance_position, 1.0);
-    out.color = in.color;
+    out.color = in.color * instance.instance_color;
     //out.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
     
     return out;

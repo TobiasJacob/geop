@@ -27,9 +27,9 @@ pub struct WindowState<'a> {
 impl<'a> WindowState<'a> {
     pub async fn new(
         window: &'a Window,
-        vertices_points: &VertexBuffer,
-        vertices_line: &EdgeBuffer,
-        vertices_triangle: &TriangleBuffer,
+        vertex_buffer: &VertexBuffer,
+        edge_buffer: &EdgeBuffer,
+        triangle_buffer: &TriangleBuffer,
     ) -> Self {
         let size = window.inner_size();
 
@@ -94,16 +94,11 @@ impl<'a> WindowState<'a> {
         };
         surface.configure(&device, &config);
 
-        let mut pipeline_manager = PipelineManager::new(
-            &device,
-            vertices_points,
-            vertices_triangle,
-            size,
-            config.format,
-        )
-        .await;
+        let mut pipeline_manager = PipelineManager::new(&device, size, config.format).await;
 
-        pipeline_manager.update_edges(&queue, vertices_line);
+        pipeline_manager.update_edges(&queue, edge_buffer);
+        pipeline_manager.update_triangles(&queue, triangle_buffer);
+        pipeline_manager.update_vertices(&queue, vertex_buffer);
 
         Self {
             surface,

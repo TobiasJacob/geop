@@ -1,9 +1,12 @@
-use geop_rasterize::vertex_buffer::RenderVertex;
+use core::panic;
+
+use geop_rasterize::{triangle_buffer::TriangleBuffer, vertex_buffer::RenderVertex};
 use wgpu::{util::DeviceExt, TextureFormat};
 
 pub struct RenderPipelineTriangle {
     vertex_buffer: wgpu::Buffer,
-    num_vertices: u32,
+    max_num_triangles: usize,
+    render_triangles: u32,
     render_pipeline: wgpu::RenderPipeline,
 }
 
@@ -11,17 +14,17 @@ impl RenderPipelineTriangle {
     pub fn new(
         device: &wgpu::Device,
         texture_format: TextureFormat,
-        vertices: &[u8],
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineTriangle {
+        let max_num_triangles = 1024;
+
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
-            contents: vertices,
-            usage: wgpu::BufferUsages::VERTEX,
+            contents: vec![0u8; 3 * max_num_triangles * std::mem::size_of::<RenderVertex>()]
+                .as_slice(),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
-
-        let num_vertices = vertices.len() as u32 / std::mem::size_of::<RenderVertex>() as u32;
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
@@ -88,14 +91,32 @@ impl RenderPipelineTriangle {
 
         RenderPipelineTriangle {
             vertex_buffer,
-            num_vertices,
+            max_num_triangles,
+            render_triangles: 0,
             render_pipeline,
         }
+    }
+
+    pub fn update(&mut self, queue: &wgpu::Queue, triangles: &TriangleBuffer) {
+        if self.max_num_triangles < triangles.triangles.len() {
+            // self.max_num_triangles = triangles.triangles.len();
+            // self.vertex_buffer =
+            //     queue
+            //         .device()
+            //         .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            //             label: Some("Vertex Buffer"),
+            //             contents: triangles.to_u8_slice(),
+            //             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            //         });
+            panic!("Too many triangles to render");
+        }
+        queue.write_buffer(&self.vertex_buffer, 0, triangles.to_u8_slice());
+        self.render_triangles = triangles.triangles.len() as u32;
     }
 
     pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_pipeline(&self.render_pipeline); // 2.
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-        render_pass.draw(0..self.num_vertices, 0..1);
+        render_pass.draw(0..self.render_triangles * 3, 0..1);
     }
 }

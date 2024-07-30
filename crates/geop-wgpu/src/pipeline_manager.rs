@@ -18,8 +18,6 @@ pub struct PipelineManager {
 impl PipelineManager {
     pub async fn new(
         device: &wgpu::Device,
-        vertices_points: &VertexBuffer,
-        vertices_triangle: &TriangleBuffer,
         camera_size: winit::dpi::PhysicalSize<u32>,
         render_texture_format: TextureFormat,
     ) -> Self {
@@ -28,7 +26,6 @@ impl PipelineManager {
         let traingle_pipeline = RenderPipelineTriangle::new(
             device,
             render_texture_format,
-            vertices_triangle.to_u8_slice(),
             "Triangle",
             &camera_pipeline.render_pipeline_layout,
         );
@@ -43,7 +40,6 @@ impl PipelineManager {
         let vertex_pipeline = RenderPipelineVertex::new(
             &device,
             render_texture_format,
-            vertices_points,
             "Vertex",
             &camera_pipeline.render_pipeline_layout,
         );
@@ -56,8 +52,16 @@ impl PipelineManager {
         }
     }
 
+    pub fn update_triangles(&mut self, queue: &wgpu::Queue, triangles: &TriangleBuffer) {
+        self.traingle_pipeline.update(queue, triangles);
+    }
+
     pub fn update_edges(&mut self, queue: &wgpu::Queue, edges: &EdgeBuffer) {
         self.line_pipeline.update(queue, edges);
+    }
+
+    pub fn update_vertices(&mut self, queue: &wgpu::Queue, vertices: &VertexBuffer) {
+        self.vertex_pipeline.update(queue, vertices);
     }
 
     pub fn update_camera(&mut self, queue: &wgpu::Queue, omega: f32) {

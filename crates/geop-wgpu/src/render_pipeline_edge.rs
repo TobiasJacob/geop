@@ -95,10 +95,11 @@ impl RenderPipelineEdge {
     }
 
     pub fn update(&mut self, queue: &wgpu::Queue, edges: &EdgeBuffer) {
-        println!("Updating edge buffer");
+        if self.max_num_edges < edges.edges.len() {
+            panic!("Too many edges to render");
+        }
         queue.write_buffer(&self.vertex_buffer, 0, edges.to_u8_slice());
         self.render_edges = edges.edges.len() as u32;
-        println!("Done Updating edge buffer");
     }
 
     pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
