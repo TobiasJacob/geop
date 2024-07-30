@@ -7,10 +7,9 @@ use geop_geometry::{
 
 use crate::{
     operations::extrude::extrude,
+    primitive_objects::edges::line::primitive_line,
     topology::{contour::Contour, face::Face, volume::Volume},
 };
-
-use super::line::primitive_line;
 
 pub fn primitive_cube(size_x: f64, size_y: f64, size_z: f64) -> Volume {
     let p1 = Point::new(-size_x / 2.0, -size_y / 2.0, -size_z / 2.0);

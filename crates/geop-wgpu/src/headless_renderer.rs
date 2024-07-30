@@ -154,7 +154,7 @@ mod tests {
         rasterize_volume_into_face_list, rasterize_volume_into_line_list,
         rasterize_volume_into_vertex_list,
     };
-    use geop_topology::primitive_objects::cube::primitive_cube;
+    use geop_topology::primitive_objects::volumes::cube::primitive_cube;
 
     #[test]
     fn test_headless_renderer() {

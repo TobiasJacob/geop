@@ -1,2 +1,2 @@
-pub mod cube;
-pub mod line;
+pub mod edges;
+pub mod volumes;
