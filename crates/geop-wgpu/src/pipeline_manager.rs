@@ -6,14 +6,14 @@ use crate::{
     render_pipeline::RenderPipeline,
 };
 
-pub struct DeviceAdapter {
+pub struct PipelineManager {
     camera_pipeline: CameraPipeline,
     traingle_pipeline: RenderPipeline,
     line_pipeline: RenderPipeline,
     vertex_pipeline: PointRenderPipeline,
 }
 
-impl DeviceAdapter {
+impl PipelineManager {
     pub async fn new(
         vertices_points: &VertexBuffer,
         vertices_line: &[u8],
@@ -50,7 +50,7 @@ impl DeviceAdapter {
             &camera_pipeline.render_pipeline_layout,
         );
 
-        DeviceAdapter {
+        PipelineManager {
             camera_pipeline,
             traingle_pipeline,
             line_pipeline,

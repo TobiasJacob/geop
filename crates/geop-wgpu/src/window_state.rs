@@ -6,7 +6,7 @@ use winit::{event::*, window::Window};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-use crate::device_adapter::DeviceAdapter;
+use crate::pipeline_manager::PipelineManager;
 
 pub struct WindowState {
     surface: wgpu::Surface,
@@ -16,7 +16,7 @@ pub struct WindowState {
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
 
-    device_adapter: DeviceAdapter,
+    pipeline_manager: PipelineManager,
 }
 
 impl WindowState {
@@ -84,7 +84,7 @@ impl WindowState {
         };
         surface.configure(&device, &config);
 
-        let device_adapter = DeviceAdapter::new(
+        let device_adapter = PipelineManager::new(
             vertices_points,
             vertices_line,
             vertices_triangle,
@@ -101,7 +101,7 @@ impl WindowState {
             config,
             size,
             window,
-            device_adapter,
+            pipeline_manager: device_adapter,
         }
     }
 
@@ -139,7 +139,7 @@ impl WindowState {
         let rotations_per_second = 0.1;
         let omega = time_in_seconds * 2.0 * pi * rotations_per_second;
 
-        self.device_adapter.update_camera(&self.queue, omega);
+        self.pipeline_manager.update_camera(&self.queue, omega);
 
         let output = self.surface.get_current_texture()?;
         let view = output
@@ -171,7 +171,7 @@ impl WindowState {
                 depth_stencil_attachment: None,
             });
 
-            self.device_adapter.run_pipelines(&mut render_pass);
+            self.pipeline_manager.run_pipelines(&mut render_pass);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
