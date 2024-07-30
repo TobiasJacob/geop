@@ -4,31 +4,31 @@ use geop_rasterize::{
 use wgpu::TextureFormat;
 
 use crate::{
-    camera_pipeline::CameraPipeline, point_render_pipeline::PointRenderPipeline,
-    render_pipeline::RenderPipeline,
+    camera_pipeline::CameraPipeline, render_pipeline::RenderPipeline,
+    render_pipeline_vertex::RenderPipelineVertex,
 };
 
 pub struct PipelineManager {
     camera_pipeline: CameraPipeline,
     traingle_pipeline: RenderPipeline,
     line_pipeline: RenderPipeline,
-    vertex_pipeline: PointRenderPipeline,
+    vertex_pipeline: RenderPipelineVertex,
 }
 
 impl PipelineManager {
     pub async fn new(
+        device: &wgpu::Device,
         vertices_points: &VertexBuffer,
         vertices_line: &EdgeBuffer,
         vertices_triangle: &TriangleBuffer,
-        size: winit::dpi::PhysicalSize<u32>,
-        texture_format: TextureFormat,
-        device: &wgpu::Device,
+        camera_size: winit::dpi::PhysicalSize<u32>,
+        render_texture_format: TextureFormat,
     ) -> Self {
-        let camera_pipeline = CameraPipeline::new(device, size);
+        let camera_pipeline = CameraPipeline::new(device, camera_size);
 
         let traingle_pipeline = RenderPipeline::new(
             device,
-            texture_format,
+            render_texture_format,
             vertices_triangle.to_u8_slice(),
             "Triangle",
             wgpu::PrimitiveTopology::TriangleList,
@@ -37,16 +37,16 @@ impl PipelineManager {
 
         let line_pipeline = RenderPipeline::new(
             device,
-            texture_format,
+            render_texture_format,
             vertices_line.to_u8_slice(),
             "Line",
             wgpu::PrimitiveTopology::LineList,
             &camera_pipeline.render_pipeline_layout,
         );
 
-        let vertex_pipeline = PointRenderPipeline::new(
+        let vertex_pipeline = RenderPipelineVertex::new(
             &device,
-            texture_format,
+            render_texture_format,
             vertices_points,
             "Vertex",
             &camera_pipeline.render_pipeline_layout,

@@ -55,12 +55,12 @@ impl HeadlessRenderer {
         let texture_view = texture.create_view(&Default::default());
 
         let pipeline_manager = PipelineManager::new(
+            &device,
             vertices_points,
             vertices_line,
             vertices_triangle,
             PhysicalSize::new(texture_size, texture_size),
             texture_format,
-            &device,
         )
         .await;
 

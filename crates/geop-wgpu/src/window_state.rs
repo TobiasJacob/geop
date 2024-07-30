@@ -95,12 +95,12 @@ impl<'a> WindowState<'a> {
         surface.configure(&device, &config);
 
         let device_adapter = PipelineManager::new(
+            &device,
             vertices_points,
             vertices_line,
             vertices_triangle,
             size,
             config.format,
-            &device,
         )
         .await;
 

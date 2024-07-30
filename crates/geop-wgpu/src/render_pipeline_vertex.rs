@@ -8,7 +8,7 @@ pub struct InstanceRaw {
     pub position: [f32; 3],
 }
 
-pub struct PointRenderPipeline {
+pub struct RenderPipelineVertex {
     vertex_buffer: wgpu::Buffer,
     instace_buffer: wgpu::Buffer,
     num_vertices: u32,
@@ -58,14 +58,14 @@ fn cube_vertex_buffer(size: f64, color: [f32; 4]) -> VertexBuffer {
     result
 }
 
-impl PointRenderPipeline {
+impl RenderPipelineVertex {
     pub fn new(
         device: &wgpu::Device,
         texture_format: TextureFormat,
         vertices: &VertexBuffer,
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
-    ) -> PointRenderPipeline {
+    ) -> RenderPipelineVertex {
         let render_vertices = cube_vertex_buffer(0.02, [0.1, 0.1, 0.1, 1.0]);
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
@@ -162,7 +162,7 @@ impl PointRenderPipeline {
             cache: None,
         });
 
-        PointRenderPipeline {
+        RenderPipelineVertex {
             vertex_buffer,
             instace_buffer,
             num_vertices,
