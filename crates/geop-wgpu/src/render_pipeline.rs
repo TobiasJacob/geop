@@ -1,5 +1,5 @@
 use geop_rasterize::vertex_buffer::RenderVertex;
-use wgpu::util::DeviceExt;
+use wgpu::{util::DeviceExt, TextureFormat};
 
 pub struct RenderPipeline {
     vertex_buffer: wgpu::Buffer,
@@ -10,7 +10,7 @@ pub struct RenderPipeline {
 impl RenderPipeline {
     pub fn new(
         device: &wgpu::Device,
-        config: &wgpu::SurfaceConfiguration,
+        texture_format: TextureFormat,
         vertices: &[u8],
         label: &str,
         topology: wgpu::PrimitiveTopology,
@@ -58,7 +58,7 @@ impl RenderPipeline {
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: config.format,
+                    format: texture_format,
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],

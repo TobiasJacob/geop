@@ -94,7 +94,7 @@ impl WindowState {
 
         let traingle_pipeline = RenderPipeline::new(
             &device,
-            &config,
+            config.format,
             vertices_triangle,
             "Triangle",
             wgpu::PrimitiveTopology::TriangleList,
@@ -103,7 +103,7 @@ impl WindowState {
 
         let line_pipeline = RenderPipeline::new(
             &device,
-            &config,
+            config.format,
             vertices_line,
             "Line",
             wgpu::PrimitiveTopology::LineList,
@@ -112,7 +112,7 @@ impl WindowState {
 
         let vertex_pipeline = PointRenderPipeline::new(
             &device,
-            &config,
+            config.format,
             vertices_points,
             "Vertex",
             &camera_pipeline.render_pipeline_layout,

@@ -1,6 +1,6 @@
 use geop_geometry::points::point::Point;
 use geop_rasterize::vertex_buffer::{RenderVertex, VertexBuffer};
-use wgpu::util::DeviceExt;
+use wgpu::{util::DeviceExt, TextureFormat};
 
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 #[repr(C)]
@@ -61,7 +61,7 @@ fn cube_vertex_buffer(size: f64, color: [f32; 4]) -> VertexBuffer {
 impl PointRenderPipeline {
     pub fn new(
         device: &wgpu::Device,
-        config: &wgpu::SurfaceConfiguration,
+        texture_format: TextureFormat,
         vertices: &VertexBuffer,
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
@@ -133,7 +133,7 @@ impl PointRenderPipeline {
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
                     // 4.
-                    format: config.format,
+                    format: texture_format,
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
