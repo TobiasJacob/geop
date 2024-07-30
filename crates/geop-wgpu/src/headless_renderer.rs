@@ -1,13 +1,10 @@
 use geop_rasterize::{
-    edge::{
-        self, rasterize_edge_into_line_list, rasterize_edge_into_vertex_list,
-        rasterize_edges_into_line_list, rasterize_edges_into_vertex_list,
-    },
+    edge::{rasterize_edges_into_line_list, rasterize_edges_into_vertex_list},
     edge_buffer::EdgeBuffer,
     triangle_buffer::TriangleBuffer,
     vertex_buffer::{RenderVertex, VertexBuffer},
     volume::{
-        self, rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
         rasterize_volume_into_vertex_list,
     },
 };
