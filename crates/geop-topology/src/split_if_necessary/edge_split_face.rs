@@ -51,16 +51,16 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                             }
                         } else {
                             // Make it 1 contour
-                            let mut edges = start_contour.get_subcurve(edge.start, edge.start);
+                            let mut edges = start_contour.get_subcurve_single_point(edge.start);
                             edges.push(edge.clone());
-                            edges.extend(end_contour.get_subcurve(edge.end, edge.end));
+                            edges.extend(end_contour.get_subcurve_single_point(edge.end));
                             edges.push(edge.flip());
                             new_contours.push(Contour::new(edges));
                         }
                     }
                     Option::None => {
                         // Make it 1 contour
-                        let mut edges = start_contour.get_subcurve(edge.start, edge.start);
+                        let mut edges = start_contour.get_subcurve_single_point(edge.start);
                         edges.push(edge.clone());
                         edges.push(edge.flip());
                         new_contours.push(Contour::new(edges));
@@ -69,7 +69,7 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                 Option::None => match end_contour {
                     Option::Some(end_contour) => {
                         // Make it 1 contour
-                        let mut edges = end_contour.get_subcurve(edge.end, edge.end);
+                        let mut edges = end_contour.get_subcurve_single_point(edge.end);
                         edges.push(edge.clone());
                         edges.push(edge.flip());
                         new_contours.push(Contour::new(edges));

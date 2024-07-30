@@ -148,14 +148,18 @@ impl Contour {
         };
 
         if start_i == end_i {
-            todo!("Handle the case where start and end are on the same edge, but end comes before start, such that we have to go all the way around the contour.");
-            let edge = Edge::new(
-                start.clone(),
-                end.clone(),
-                self.edges[start_i].curve.clone(),
-            );
-            result.push(edge);
-            return result;
+            // Check if end comes before start, otherwise we have to go all the way around
+            if self.edges[start_i]
+                .curve
+                .between(start, self.edges[start_i].start, end)
+            {
+                result.push(Edge::new(
+                    start.clone(),
+                    end.clone(),
+                    self.edges[start_i].curve.clone(),
+                ));
+                return result;
+            }
         }
 
         let mut edge = &self.edges[start_i];
@@ -178,6 +182,38 @@ impl Contour {
                 edge.curve.clone(),
             ));
         }
+        result
+    }
+
+    pub fn get_subcurve_single_point(&self, point: Point) -> Vec<Edge> {
+        let i = match self.get_edge_index(point) {
+            EdgeIndex::OnEdge(i) => i,
+            EdgeIndex::OnCorner(i, _) => i,
+        };
+        let mut result = Vec::<Edge>::new();
+        result.push(Edge::new(
+            point.clone(),
+            self.edges[i].end.clone(),
+            self.edges[i].curve.clone(),
+        ));
+        for j in 1..(self.edges.len() - 1) {
+            let edge = self.edges[(i + j) % self.edges.len()].clone();
+            if edge.end == point {
+                result.push(edge);
+                break;
+            }
+            result.push(edge);
+        }
+        result.push(Edge::new(
+            self.edges[(i + self.edges.len() - 1) % self.edges.len()]
+                .start
+                .clone(),
+            point.clone(),
+            self.edges[(i + self.edges.len() - 1) % self.edges.len()]
+                .curve
+                .clone(),
+        ));
+
         result
     }
 }
