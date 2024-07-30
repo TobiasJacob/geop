@@ -74,6 +74,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
             FaceEdgeContains::OnBorderSameDir => FaceSplit::AonBSameSide(edge),
             FaceEdgeContains::OnBorderOppositeDir => FaceSplit::AonBOpSide(edge),
             FaceEdgeContains::Outside => FaceSplit::AoutB(edge),
+            FaceEdgeContains::NotSameSurface => panic!("Not same surface"),
         })
         .chain(
             edges_other
@@ -83,6 +84,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
                     FaceEdgeContains::OnBorderSameDir => FaceSplit::BonASameSide(edge),
                     FaceEdgeContains::OnBorderOppositeDir => FaceSplit::BonAOpSide(edge),
                     FaceEdgeContains::Outside => FaceSplit::BoutA(edge),
+                    FaceEdgeContains::NotSameSurface => panic!("Not same surface"),
                 }),
         )
         .collect();
@@ -185,6 +187,7 @@ impl ContourHierarchy {
                 FaceContourContains::Outside => {}
                 FaceContourContains::Equals => panic!("should not happen"),
                 FaceContourContains::Wiggly => panic!("should not happen"),
+                FaceContourContains::NotSameSurface => panic!("should not happen"),
             }
         }
         if face_contour_contains(

@@ -7,6 +7,7 @@ use super::{
     shell::{Shell, ShellNormal},
 };
 
+#[derive(Clone, Debug)]
 pub struct Volume {
     pub boundary: Shell,   // Normal pointing outwards
     pub holes: Vec<Shell>, // Normal pointing inwards

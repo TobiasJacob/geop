@@ -4,6 +4,7 @@ use crate::contains::face_point::{face_point_contains, FacePointContains};
 
 use super::face::Face;
 
+#[derive(Clone, Debug)]
 pub struct Shell {
     pub faces: Vec<Face>,
 }
@@ -68,6 +69,7 @@ impl Shell {
                     relevant_faces.push(face);
                 }
                 FacePointContains::Outside => {}
+                FacePointContains::NotOnSurface => {}
             }
         }
         match relevant_faces.len() {

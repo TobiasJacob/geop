@@ -23,7 +23,7 @@ impl Surface {
         match self {
             Surface::Plane(plane) => Surface::Plane(plane.transform(transform)),
             Surface::Sphere(sphere) => Surface::Sphere(match sphere.transform(transform) {
-                SphereTransform::Ellipsoid() => panic!("Ellipsoid not implemented"),
+                SphereTransform::Ellipsoid() => todo!("Ellipsoid not implemented"),
                 SphereTransform::Sphere(sphere) => sphere,
             }),
         }

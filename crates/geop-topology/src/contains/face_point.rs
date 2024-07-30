@@ -13,11 +13,14 @@ pub enum FacePointContains {
     OnEdge(Edge),
     OnPoint(Point),
     Outside,
+    NotOnSurface,
 }
 
 pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
-    // println!("face_contains_point: {:?}", point);
-    // println!("face: {:}", face);
+    if !face.surface.on_surface(point) {
+        return FacePointContains::NotOnSurface;
+    }
+
     // If the point is on the border, it is part of the set
     for edge in face.all_edges() {
         match edge_point_contains(&edge, point) {

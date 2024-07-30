@@ -26,6 +26,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
             FacePointContains::OnEdge(edge) => return VolumePointContains::OnEdge(edge),
             FacePointContains::OnPoint(point) => return VolumePointContains::OnPoint(point),
             FacePointContains::Outside => {}
+            FacePointContains::NotOnSurface => {}
         }
     }
 

@@ -18,6 +18,7 @@ pub fn shell_point_contains(shell: &Shell, point: Point) -> FacePointContains {
                 return FacePointContains::Inside;
             }
             FacePointContains::Outside => {}
+            FacePointContains::NotOnSurface => {}
         }
     }
     return FacePointContains::Outside;

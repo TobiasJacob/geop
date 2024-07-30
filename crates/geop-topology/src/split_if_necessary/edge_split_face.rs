@@ -92,6 +92,9 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
         FaceEdgeContains::OnBorderOppositeDir => {
             vec![face.clone()]
         }
+        FaceEdgeContains::NotSameSurface => {
+            vec![face.clone()]
+        }
     }
 }
 
