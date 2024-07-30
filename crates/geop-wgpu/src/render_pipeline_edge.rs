@@ -13,7 +13,6 @@ impl RenderPipelineEdge {
         texture_format: TextureFormat,
         vertices: &[u8],
         label: &str,
-        topology: wgpu::PrimitiveTopology,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineEdge {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -66,7 +65,7 @@ impl RenderPipelineEdge {
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
             }),
             primitive: wgpu::PrimitiveState {
-                topology, // 1.
+                topology: wgpu::PrimitiveTopology::LineList,
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
                 cull_mode: Some(wgpu::Face::Back),

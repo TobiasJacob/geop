@@ -31,7 +31,6 @@ impl PipelineManager {
             render_texture_format,
             vertices_triangle.to_u8_slice(),
             "Triangle",
-            wgpu::PrimitiveTopology::TriangleList,
             &camera_pipeline.render_pipeline_layout,
         );
 
@@ -40,7 +39,6 @@ impl PipelineManager {
             render_texture_format,
             vertices_line.to_u8_slice(),
             "Line",
-            wgpu::PrimitiveTopology::LineList,
             &camera_pipeline.render_pipeline_layout,
         );
 
