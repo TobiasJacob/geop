@@ -10,7 +10,6 @@ impl HeadlessRenderer {
         vertices_points: &VertexBuffer,
         vertices_line: &[u8],
         vertices_triangle: &[u8],
-        size: winit::dpi::PhysicalSize<u32>,
     ) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             #[cfg(not(target_arch = "wasm32"))]
@@ -32,7 +31,7 @@ impl HeadlessRenderer {
             .request_device(&Default::default(), None)
             .await
             .unwrap();
-        let texture_size = 256u32;
+        let texture_size = 1024u32;
 
         let texture_format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
@@ -87,9 +86,9 @@ impl HeadlessRenderer {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 0.1,
-                            g: 0.2,
-                            b: 0.3,
+                            r: 1.0,
+                            g: 1.0,
+                            b: 1.0,
                             a: 1.0,
                         }),
                         store: wgpu::StoreOp::Store,
@@ -151,22 +150,23 @@ impl HeadlessRenderer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use geop_rasterize::edge_buffer::EdgeBuffer;
-    use geop_rasterize::triangle_buffer::TriangleBuffer;
+    use geop_rasterize::volume::{
+        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_vertex_list,
+    };
+    use geop_topology::primitive_objects::cube::primitive_cube;
 
     #[test]
     fn test_headless_renderer() {
-        let vertices_points = VertexBuffer::empty();
-        let binding = EdgeBuffer::empty();
-        let vertices_line = binding.to_u8_slice();
-        let binding = TriangleBuffer::empty();
-        let vertices_triangle = binding.to_u8_slice();
-        let size = PhysicalSize::new(256, 256);
+        let volume = primitive_cube(1.0, 1.0, 1.0);
+
+        let vertex_buffer = rasterize_volume_into_vertex_list(&volume, [0.2, 0.2, 0.2, 1.0]);
+        let edge_buffer = rasterize_volume_into_line_list(&volume, [0.0, 0.0, 0.0, 1.0]);
+        let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
         let _headless_renderer = pollster::block_on(HeadlessRenderer::new(
-            &vertices_points,
-            vertices_line,
-            vertices_triangle,
-            size,
+            &vertex_buffer,
+            edge_buffer.to_u8_slice(),
+            triangle_buffer.to_u8_slice(),
         ));
     }
 }

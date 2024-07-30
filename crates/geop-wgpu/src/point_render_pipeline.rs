@@ -66,7 +66,7 @@ impl PointRenderPipeline {
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> PointRenderPipeline {
-        let render_vertices = cube_vertex_buffer(0.02, [0.3, 0.3, 0.3, 1.0]);
+        let render_vertices = cube_vertex_buffer(0.02, [0.1, 0.1, 0.1, 1.0]);
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
             contents: render_vertices.to_u8_slice(),

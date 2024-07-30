@@ -1,10 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use geop_geometry::{
-    curves::{curve::Curve, line::Line},
-    points::point::Point,
-    transforms::Transform,
-};
+use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform};
 
 use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 
@@ -23,11 +19,6 @@ impl Edge {
         assert!(curve.on_manifold(start));
         assert!(curve.on_manifold(end));
         Edge { start, end, curve }
-    }
-
-    pub fn new_line(start: Point, end: Point) -> Edge {
-        let l = Line::new(start, end - start);
-        Edge::new(start, end, Curve::Line(l))
     }
 
     pub fn neg(&self) -> Edge {
