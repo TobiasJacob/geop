@@ -1,11 +1,15 @@
 use std::iter;
 
+use geop_rasterize::vertex_buffer::VertexBuffer;
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-use crate::{camera_pipeline::CameraPipeline, render_pipeline::RenderPipeline};
+use crate::{
+    camera_pipeline::CameraPipeline, point_render_pipeline::PointRenderPipeline,
+    render_pipeline::RenderPipeline,
+};
 
 pub struct WindowState {
     surface: wgpu::Surface,
@@ -18,13 +22,13 @@ pub struct WindowState {
 
     traingle_pipeline: RenderPipeline,
     line_pipeline: RenderPipeline,
-    vertex_pipeline: RenderPipeline,
+    vertex_pipeline: PointRenderPipeline,
 }
 
 impl WindowState {
     pub async fn new(
         window: Window,
-        vertices_points: &[u8],
+        vertices_points: &VertexBuffer,
         vertices_line: &[u8],
         vertices_triangle: &[u8],
     ) -> Self {
@@ -106,12 +110,11 @@ impl WindowState {
             &camera_pipeline.render_pipeline_layout,
         );
 
-        let vertex_pipeline = RenderPipeline::new(
+        let vertex_pipeline = PointRenderPipeline::new(
             &device,
             &config,
             vertices_points,
             "Vertex",
-            wgpu::PrimitiveTopology::PointList,
             &camera_pipeline.render_pipeline_layout,
         );
 

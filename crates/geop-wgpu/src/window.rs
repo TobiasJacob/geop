@@ -59,7 +59,7 @@ impl GeopWindow {
         // );
         let state = WindowState::new(
             window,
-            vertex_buffer_points.to_u8_slice(),
+            &vertex_buffer_points,
             vertex_buffer_line.to_u8_slice(),
             vertex_buffer_triange.to_u8_slice(),
         )
