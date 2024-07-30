@@ -3,9 +3,9 @@ use geop_rasterize::{
 };
 use winit::{
     event::*,
-    event_loop::{ControlFlow, EventLoop},
+    event_loop::EventLoop,
     keyboard::{KeyCode, PhysicalKey},
-    window::{Window, WindowBuilder},
+    window::Window,
 };
 
 use crate::window_state::WindowState;
