@@ -19,3 +19,7 @@ path = "crates/geop-topology"
 [workspace.dependencies.geop-rasterize]
 version = "0.1.0"
 path = "crates/geop-rasterize"
+
+[workspace.dependencies.geop-wgpu]
+version = "0.1.0"
+path = "crates/geop-wgpu"

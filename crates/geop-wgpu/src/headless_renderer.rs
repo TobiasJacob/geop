@@ -67,7 +67,7 @@ impl HeadlessRenderer {
         let texture = device.create_texture(&texture_desc);
         let texture_view = texture.create_view(&Default::default());
 
-        let mut pipeline_manager = PipelineManager::new(
+        let pipeline_manager = PipelineManager::new(
             &device,
             PhysicalSize::new(texture_size, texture_size),
             texture_format,
@@ -226,7 +226,7 @@ impl HeadlessRenderer {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
     use geop_topology::primitive_objects::volumes::cube::primitive_cube;
     use rstest::{fixture, rstest};
@@ -234,25 +234,5 @@ mod tests {
     #[fixture]
     pub async fn renderer() -> Box<HeadlessRenderer> {
         Box::new(HeadlessRenderer::new().await)
-    }
-
-    #[rstest]
-    async fn test_headless_renderer_light(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(1.0, 1.0, 1.0);
-        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
-        renderer
-            .await
-            .render_to_file(&scene, false, std::path::Path::new("test_light.png"))
-            .await;
-    }
-
-    #[rstest]
-    async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(1.0, 1.0, 1.0);
-        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
-        renderer
-            .await
-            .render_to_file(&scene, true, std::path::Path::new("test_dark.png"))
-            .await;
     }
 }

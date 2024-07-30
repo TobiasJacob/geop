@@ -7,3 +7,8 @@ edition = "2021"
 
 [dependencies]
 geop-geometry.workspace=true
+
+[dev-dependencies]
+geop-wgpu.workspace=true
+async-std = { version = "1.5", features = ["attributes"] }
+rstest = "0.21.0"

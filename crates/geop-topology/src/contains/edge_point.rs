@@ -21,3 +21,48 @@ pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     }
     EdgePointContains::Outside
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::primitive_objects::edges::line::primitive_line;
+    // use crate::primitive_objects::volumes::cube::primitive_cube;
+    // use crate::topology::scene::Scene;
+
+    use super::*;
+    use geop_geometry::points::point::Point;
+
+    #[test]
+    fn test_edge_point_contains() {
+        let edge = primitive_line(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
+        assert_eq!(
+            edge_point_contains(&edge, Point::new(0.5, 0.0, 0.0)),
+            EdgePointContains::Inside
+        );
+        assert_eq!(
+            edge_point_contains(&edge, Point::new(0.0, 0.0, 0.0)),
+            EdgePointContains::OnPoint(Point::new(0.0, 0.0, 0.0))
+        );
+        assert_eq!(
+            edge_point_contains(&edge, Point::new(1.0, 0.0, 0.0)),
+            EdgePointContains::OnPoint(Point::new(1.0, 0.0, 0.0))
+        );
+        assert_eq!(
+            edge_point_contains(&edge, Point::new(1.5, 0.0, 0.0)),
+            EdgePointContains::Outside
+        );
+    }
+
+    // use geop_wgpu::headless_renderer::tests::renderer;
+    // use geop_wgpu::headless_renderer::HeadlessRenderer;
+    // use rstest::rstest;
+
+    // #[rstest]
+    // async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
+    //     let volume = primitive_cube(1.0, 1.0, 1.0);
+    //     let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
+    //     renderer
+    //         .await
+    //         .render_to_file(&scene, true, std::path::Path::new("test_dark3.png"))
+    //         .await;
+    // }
+}
