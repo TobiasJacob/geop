@@ -4,21 +4,22 @@ use geop_rasterize::{
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    keyboard::{KeyCode, PhysicalKey},
+    window::{Window, WindowBuilder},
 };
 
 use crate::window_state::WindowState;
 
-pub struct GeopWindow {
-    event_loop: EventLoop<()>,
-    state: WindowState,
+pub struct GeopWindow<'a> {
+    state: WindowState<'a>,
 }
 
-impl GeopWindow {
+impl<'a> GeopWindow<'a> {
     pub async fn new(
         vertex_buffer_points: VertexBuffer,
         vertex_buffer_line: EdgeBuffer,
         vertex_buffer_triange: TriangleBuffer,
+        window: &'a Window,
     ) -> Self {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "wasm32")] {
@@ -28,9 +29,6 @@ impl GeopWindow {
                 env_logger::init();
             }
         }
-
-        let event_loop = EventLoop::new(); // Loop provided by winit for handling window events
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
 
         #[cfg(target_arch = "wasm32")]
         {
@@ -65,63 +63,70 @@ impl GeopWindow {
         )
         .await;
 
-        Self { event_loop, state }
+        Self { state }
     }
 
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
-    pub fn show(self) {
+    pub fn show(self, event_loop: EventLoop<()>) {
         let mut state = self.state;
-        self.event_loop.run(move |event, _, control_flow| {
-            match event {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == state.window().id() => {
-                    if !state.input(event) {
-                        // UPDATED!
-                        match event {
-                            WindowEvent::CloseRequested
-                            | WindowEvent::KeyboardInput {
-                                input:
-                                    KeyboardInput {
-                                        state: ElementState::Pressed,
-                                        virtual_keycode: Some(VirtualKeyCode::Escape),
-                                        ..
-                                    },
-                                ..
-                            } => *control_flow = ControlFlow::Exit,
-                            WindowEvent::Resized(physical_size) => {
-                                state.resize(*physical_size);
-                            }
-                            WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                                // new_inner_size is &&mut so w have to dereference it twice
-                                state.resize(**new_inner_size);
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-                Event::RedrawRequested(window_id) if window_id == state.window().id() => {
-                    state.update();
-                    match state.render() {
-                        Ok(_) => {}
-                        // Reconfigure the surface if it's lost or outdated
-                        Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
-                            state.resize(state.size())
-                        }
-                        // The system is out of memory, we should probably quit
-                        Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+        event_loop
+            .run(move |event, control_flow| {
+                match event {
+                    Event::WindowEvent {
+                        ref event,
+                        window_id,
+                    } if window_id == state.window().id() => {
+                        if !state.input(event) {
+                            // UPDATED!
+                            match event {
+                                WindowEvent::CloseRequested
+                                | WindowEvent::KeyboardInput {
+                                    event:
+                                        KeyEvent {
+                                            state: ElementState::Pressed,
+                                            physical_key: PhysicalKey::Code(KeyCode::Escape),
+                                            ..
+                                        },
+                                    ..
+                                } => control_flow.exit(),
+                                WindowEvent::Resized(physical_size) => {
+                                    state.resize(*physical_size);
+                                }
+                                // WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                                //     // new_inner_size is &&mut so w have to dereference it twice
+                                //     state.resize(**new_inner_size);
+                                // }
+                                WindowEvent::RedrawRequested
+                                    if window_id == state.window().id() =>
+                                {
+                                    state.update();
+                                    match state.render() {
+                                        Ok(_) => {}
+                                        // Reconfigure the surface if it's lost or outdated
+                                        Err(
+                                            wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated,
+                                        ) => state.resize(state.size()),
+                                        // The system is out of memory, we should probably quit
+                                        Err(wgpu::SurfaceError::OutOfMemory) => control_flow.exit(),
 
-                        Err(wgpu::SurfaceError::Timeout) => log::warn!("Surface timeout"),
+                                        Err(wgpu::SurfaceError::Timeout) => {
+                                            log::warn!("Surface timeout")
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
                     }
+                    // ... at the end of the WindowEvent block
+                    Event::AboutToWait => {
+                        // RedrawRequested will only trigger once unless we manually
+                        // request it.
+                        state.window().request_redraw();
+                    }
+                    _ => {}
                 }
-                Event::RedrawEventsCleared => {
-                    // RedrawRequested will only trigger once, unless we manually
-                    // request it.
-                    state.window().request_redraw();
-                }
-                _ => {}
-            }
-        });
+            })
+            .unwrap();
     }
 }

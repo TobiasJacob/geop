@@ -14,6 +14,6 @@ cfg-if = "1.0.0"
 env_logger = "0.10.0"
 log = "0.4.20"
 pollster = "0.3.0"
-wgpu = "0.17.0"
-winit = "0.28.6"
+wgpu = { version = "22.0", features = ["spirv"] }
+winit = { version = "0.29", features = ["rwh_05"] }
 cgmath = "0.18"

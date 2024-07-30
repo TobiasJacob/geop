@@ -8,20 +8,23 @@ use wasm_bindgen::prelude::*;
 
 use crate::pipeline_manager::PipelineManager;
 
-pub struct WindowState {
-    surface: wgpu::Surface,
+pub struct WindowState<'a> {
+    surface: wgpu::Surface<'a>,
     device: wgpu::Device,
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
-    window: Window,
+    // The window must be declared after the surface so
+    // it gets dropped after it as the surface contains
+    // unsafe references to the window's resources.
+    window: &'a Window,
 
     pipeline_manager: PipelineManager,
 }
 
-impl WindowState {
+impl<'a> WindowState<'a> {
     pub async fn new(
-        window: Window,
+        window: &'a Window,
         vertices_points: &VertexBuffer,
         vertices_line: &[u8],
         vertices_triangle: &[u8],
@@ -29,11 +32,14 @@ impl WindowState {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
-            backends: wgpu::Backends::all(),
-            dx12_shader_compiler: Default::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            backends: wgpu::Backends::PRIMARY,
+            #[cfg(target_arch = "wasm32")]
+            backends: wgpu::Backends::GL,
+            ..Default::default()
         });
 
-        let surface = unsafe { instance.create_surface(&window) }.unwrap();
+        let surface = instance.create_surface(window).unwrap();
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -48,14 +54,15 @@ impl WindowState {
             .request_device(
                 &wgpu::DeviceDescriptor {
                     label: None,
-                    features: wgpu::Features::empty(),
+                    required_features: wgpu::Features::empty(),
                     // WebGL doesn't support all of wgpu's features, so if
-                    // we're building for the web we'll have to disable some.
-                    limits: if cfg!(target_arch = "wasm32") {
+                    // we're building for the web, we'll have to disable some.
+                    required_limits: if cfg!(target_arch = "wasm32") {
                         wgpu::Limits::downlevel_webgl2_defaults()
                     } else {
                         wgpu::Limits::default()
                     },
+                    memory_hints: wgpu::MemoryHints::default(),
                 },
                 // Some(&std::path::Path::new("trace")), // Trace path
                 None,
@@ -81,6 +88,7 @@ impl WindowState {
             present_mode: surface_caps.present_modes[0],
             alpha_mode: surface_caps.alpha_modes[0],
             view_formats: vec![],
+            desired_maximum_frame_latency: 2,
         };
         surface.configure(&device, &config);
 
@@ -165,10 +173,12 @@ impl WindowState {
                             b: 0.1,
                             a: 1.0,
                         }),
-                        store: true,
+                        store: wgpu::StoreOp::Store,
                     },
                 })],
                 depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
             });
 
             self.pipeline_manager.run_pipelines(&mut render_pass);

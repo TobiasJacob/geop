@@ -126,6 +126,7 @@ impl PointRenderPipeline {
                         }],
                     },
                 ],
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 // 3.
@@ -137,6 +138,7 @@ impl PointRenderPipeline {
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             }),
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
@@ -156,7 +158,8 @@ impl PointRenderPipeline {
                 mask: !0,                         // 3.
                 alpha_to_coverage_enabled: false, // 4.
             },
-            multiview: None, // 5.
+            multiview: None,
+            cache: None,
         });
 
         PointRenderPipeline {

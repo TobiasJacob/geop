@@ -26,6 +26,7 @@ use geop_topology::{
     topology::{contour::Contour, edge::Edge, face::Face},
 };
 use geop_wgpu::window::GeopWindow;
+use winit::{event_loop::EventLoop, window::WindowBuilder};
 
 pub fn linear_edge(s: Point, e: Point) -> Edge {
     let p1 = s;
@@ -51,6 +52,9 @@ pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
 }
 
 async fn run() {
+    let event_loop = EventLoop::new().unwrap(); // Loop provided by winit for handling window events
+    let window = WindowBuilder::new().build(&event_loop).unwrap();
+
     let result = panic::catch_unwind(|| {
         let v1 = Point::new(0.2, 0.2, 0.0);
         let v2 = Point::new(0.8, 0.2, 0.0);
@@ -129,8 +133,8 @@ async fn run() {
     });
     match result {
         Ok((points, lines, triangles)) => {
-            let window = GeopWindow::new(points, lines, triangles).await;
-            window.show();
+            let window = GeopWindow::new(points, lines, triangles, &window).await;
+            window.show(event_loop);
         }
         Err(e) => {
             println!("Error: {:?}", e);
@@ -151,9 +155,9 @@ async fn run() {
                 ));
             }
 
-            let window = GeopWindow::new(VertexBuffer::empty(), lines, triangles).await;
+            let window = GeopWindow::new(VertexBuffer::empty(), lines, triangles, &window).await;
             println!("Error: {:?}", e);
-            window.show();
+            window.show(event_loop);
         }
     }
 }

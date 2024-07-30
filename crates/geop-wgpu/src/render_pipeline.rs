@@ -51,6 +51,7 @@ impl RenderPipeline {
                         },
                     ],
                 }],
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 // 3.
@@ -62,6 +63,7 @@ impl RenderPipeline {
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             }),
             primitive: wgpu::PrimitiveState {
                 topology, // 1.
@@ -81,7 +83,8 @@ impl RenderPipeline {
                 mask: !0,                         // 3.
                 alpha_to_coverage_enabled: false, // 4.
             },
-            multiview: None, // 5.
+            multiview: None,
+            cache: None, // 5.
         });
 
         RenderPipeline {
