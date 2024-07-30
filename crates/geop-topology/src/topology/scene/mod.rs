@@ -9,3 +9,19 @@ pub struct Scene {
     pub edges: Vec<Edge>,
     pub points: Vec<Point>,
 }
+
+impl Scene {
+    pub fn new(
+        volumes: Vec<Volume>,
+        faces: Vec<Face>,
+        edges: Vec<Edge>,
+        points: Vec<Point>,
+    ) -> Scene {
+        Scene {
+            volumes,
+            faces,
+            edges,
+            points,
+        }
+    }
+}

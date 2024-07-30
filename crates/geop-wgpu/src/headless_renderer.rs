@@ -1,6 +1,17 @@
 use geop_rasterize::{
-    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
+    edge::{
+        self, rasterize_edge_into_line_list, rasterize_edge_into_vertex_list,
+        rasterize_edges_into_line_list, rasterize_edges_into_vertex_list,
+    },
+    edge_buffer::EdgeBuffer,
+    triangle_buffer::TriangleBuffer,
+    vertex_buffer::{RenderVertex, VertexBuffer},
+    volume::{
+        self, rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_vertex_list,
+    },
 };
+use geop_topology::topology::scene::Scene;
 use winit::dpi::PhysicalSize;
 
 use crate::pipeline_manager::PipelineManager;
@@ -97,11 +108,31 @@ impl HeadlessRenderer {
 
     pub async fn render_to_file(
         &mut self,
-        vertices_points: &VertexBuffer,
-        vertices_line: &EdgeBuffer,
-        vertices_triangle: &TriangleBuffer,
+        scene: &Scene,
+        dark_mode: bool,
         file_path: &std::path::Path,
     ) {
+        let background_color = if dark_mode {
+            [0.02, 0.02, 0.02, 1.0]
+        } else {
+            [1.0, 1.0, 1.0, 1.0]
+        };
+        let face_color = if dark_mode {
+            [0.2, 0.2, 0.2, 1.0]
+        } else {
+            [0.6, 0.6, 0.6, 1.0]
+        };
+        let edge_color = if dark_mode {
+            [0.7, 0.7, 0.7, 1.0]
+        } else {
+            [0.2, 0.2, 0.2, 1.0]
+        };
+        let point_color = if dark_mode {
+            [0.8, 0.8, 0.8, 1.0]
+        } else {
+            [0.1, 0.1, 0.1, 1.0]
+        };
+
         let u32_size = std::mem::size_of::<u32>() as u32;
         let mut encoder = self
             .device
@@ -114,10 +145,10 @@ impl HeadlessRenderer {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: 1.0,
-                            g: 1.0,
-                            b: 1.0,
-                            a: 1.0,
+                            r: background_color[0],
+                            g: background_color[1],
+                            b: background_color[2],
+                            a: background_color[3],
                         }),
                         store: wgpu::StoreOp::Store,
                     },
@@ -126,14 +157,34 @@ impl HeadlessRenderer {
                 timestamp_writes: None,
                 occlusion_query_set: None,
             };
+            let mut vertex_buffer = VertexBuffer::empty();
+            let mut edge_buffer = EdgeBuffer::empty();
+            let mut triangle_buffer = TriangleBuffer::empty();
+
+            for volume in scene.volumes.iter() {
+                vertex_buffer.join(&rasterize_volume_into_vertex_list(volume, point_color));
+                edge_buffer.join(&rasterize_volume_into_line_list(volume, edge_color));
+                triangle_buffer.join(&rasterize_volume_into_face_list(volume, face_color));
+            }
+
+            vertex_buffer.join(&rasterize_edges_into_vertex_list(&scene.edges, point_color));
+            edge_buffer.join(&rasterize_edges_into_line_list(&scene.edges, edge_color));
+
+            vertex_buffer.join(&VertexBuffer::new(
+                scene
+                    .points
+                    .iter()
+                    .map(|p| RenderVertex::new(p.clone(), point_color))
+                    .collect(),
+            ));
 
             let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
             self.pipeline_manager
-                .update_edges(&self.queue, vertices_line);
+                .update_edges(&self.queue, &edge_buffer);
             self.pipeline_manager
-                .update_triangles(&self.queue, vertices_triangle);
+                .update_triangles(&self.queue, &triangle_buffer);
             self.pipeline_manager
-                .update_vertices(&self.queue, vertices_points);
+                .update_vertices(&self.queue, &vertex_buffer);
             self.pipeline_manager.run_pipelines(&mut render_pass);
         }
 
@@ -180,10 +231,6 @@ impl HeadlessRenderer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use geop_rasterize::volume::{
-        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
-        rasterize_volume_into_vertex_list,
-    };
     use geop_topology::primitive_objects::volumes::cube::primitive_cube;
     use rstest::{fixture, rstest};
 
@@ -193,38 +240,22 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_headless_renderer(#[future] renderer: Box<HeadlessRenderer>) {
+    async fn test_headless_renderer_light(#[future] renderer: Box<HeadlessRenderer>) {
         let volume = primitive_cube(1.0, 1.0, 1.0);
-
-        let vertex_buffer = rasterize_volume_into_vertex_list(&volume, [0.2, 0.2, 0.2, 1.0]);
-        let edge_buffer = rasterize_volume_into_line_list(&volume, [0.0, 0.0, 0.0, 1.0]);
-        let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
+        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
         renderer
             .await
-            .render_to_file(
-                &vertex_buffer,
-                &edge_buffer,
-                &triangle_buffer,
-                std::path::Path::new("test.png"),
-            )
+            .render_to_file(&scene, false, std::path::Path::new("test_light.png"))
             .await;
     }
 
     #[rstest]
-    async fn test_headless_renderer2(#[future] renderer: Box<HeadlessRenderer>) {
+    async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
         let volume = primitive_cube(1.0, 1.0, 1.0);
-
-        let vertex_buffer = VertexBuffer::empty();
-        let edge_buffer = rasterize_volume_into_line_list(&volume, [0.0, 0.0, 0.0, 1.0]);
-        let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
+        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
         renderer
             .await
-            .render_to_file(
-                &vertex_buffer,
-                &edge_buffer,
-                &triangle_buffer,
-                std::path::Path::new("test2.png"),
-            )
+            .render_to_file(&scene, true, std::path::Path::new("test_dark.png"))
             .await;
     }
 }

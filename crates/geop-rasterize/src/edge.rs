@@ -1,6 +1,9 @@
 use geop_topology::topology::edge::Edge;
 
-use crate::edge_buffer::{EdgeBuffer, RenderEdge};
+use crate::{
+    edge_buffer::{EdgeBuffer, RenderEdge},
+    vertex_buffer::{RenderVertex, VertexBuffer},
+};
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_edge_into_line_list(edge: &Edge, color: [f32; 4]) -> EdgeBuffer {
@@ -26,4 +29,21 @@ pub fn rasterize_edges_into_line_list(edges: &[Edge], color: [f32; 4]) -> EdgeBu
             acc.join(&rasterize_edge_into_line_list(edge, color));
             acc
         })
+}
+
+pub fn rasterize_edge_into_vertex_list(edge: &Edge, color: [f32; 4]) -> VertexBuffer {
+    let verts = vec![
+        RenderVertex::new(edge.start, color),
+        RenderVertex::new(edge.end, color),
+    ];
+    VertexBuffer::new(verts)
+}
+
+pub fn rasterize_edges_into_vertex_list(edge: &[Edge], color: [f32; 4]) -> VertexBuffer {
+    let mut verts = Vec::with_capacity(edge.len() * 2);
+    for e in edge {
+        verts.push(RenderVertex::new(e.start, color));
+        verts.push(RenderVertex::new(e.end, color));
+    }
+    VertexBuffer::new(verts)
 }
