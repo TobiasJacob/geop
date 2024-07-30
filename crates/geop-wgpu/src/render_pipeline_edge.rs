@@ -1,13 +1,13 @@
 use geop_rasterize::vertex_buffer::RenderVertex;
 use wgpu::{util::DeviceExt, TextureFormat};
 
-pub struct RenderPipeline {
+pub struct RenderPipelineEdge {
     vertex_buffer: wgpu::Buffer,
     num_vertices: u32,
     render_pipeline: wgpu::RenderPipeline,
 }
 
-impl RenderPipeline {
+impl RenderPipelineEdge {
     pub fn new(
         device: &wgpu::Device,
         texture_format: TextureFormat,
@@ -15,7 +15,7 @@ impl RenderPipeline {
         label: &str,
         topology: wgpu::PrimitiveTopology,
         render_pipeline_layout: &wgpu::PipelineLayout,
-    ) -> RenderPipeline {
+    ) -> RenderPipelineEdge {
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
             contents: vertices,
@@ -87,7 +87,7 @@ impl RenderPipeline {
             cache: None, // 5.
         });
 
-        RenderPipeline {
+        RenderPipelineEdge {
             vertex_buffer,
             num_vertices,
             render_pipeline,

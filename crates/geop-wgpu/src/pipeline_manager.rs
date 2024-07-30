@@ -4,14 +4,14 @@ use geop_rasterize::{
 use wgpu::TextureFormat;
 
 use crate::{
-    camera_pipeline::CameraPipeline, render_pipeline::RenderPipeline,
-    render_pipeline_vertex::RenderPipelineVertex,
+    camera_pipeline::CameraPipeline, render_pipeline_edge::RenderPipelineEdge,
+    render_pipeline_triangle::RenderPipelineTriangle, render_pipeline_vertex::RenderPipelineVertex,
 };
 
 pub struct PipelineManager {
     camera_pipeline: CameraPipeline,
-    traingle_pipeline: RenderPipeline,
-    line_pipeline: RenderPipeline,
+    traingle_pipeline: RenderPipelineTriangle,
+    line_pipeline: RenderPipelineEdge,
     vertex_pipeline: RenderPipelineVertex,
 }
 
@@ -26,7 +26,7 @@ impl PipelineManager {
     ) -> Self {
         let camera_pipeline = CameraPipeline::new(device, camera_size);
 
-        let traingle_pipeline = RenderPipeline::new(
+        let traingle_pipeline = RenderPipelineTriangle::new(
             device,
             render_texture_format,
             vertices_triangle.to_u8_slice(),
@@ -35,7 +35,7 @@ impl PipelineManager {
             &camera_pipeline.render_pipeline_layout,
         );
 
-        let line_pipeline = RenderPipeline::new(
+        let line_pipeline = RenderPipelineEdge::new(
             device,
             render_texture_format,
             vertices_line.to_u8_slice(),
