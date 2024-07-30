@@ -34,7 +34,6 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
                 edge_other.clone().flip()
             };
 
-            println!("Intersecting edge {:?} and {:?}", edge_self, edge_other);
             let intervals: Vec<EdgeRemesh> = edge_split(edge_self, &edge_other)
                 .drain(..)
                 .filter(|int| match int {
@@ -44,7 +43,6 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
                     EdgeRemesh::BoutA(_) => false,
                 })
                 .collect();
-            println!("Intervals: {:?}", intervals);
 
             EdgeEdgeIntersection::Edges(edge_remesh(&edge_self.curve, intervals))
         }

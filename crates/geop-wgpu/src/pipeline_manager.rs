@@ -1,4 +1,6 @@
-use geop_rasterize::vertex_buffer::VertexBuffer;
+use geop_rasterize::{
+    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
+};
 use wgpu::TextureFormat;
 
 use crate::{
@@ -16,8 +18,8 @@ pub struct PipelineManager {
 impl PipelineManager {
     pub async fn new(
         vertices_points: &VertexBuffer,
-        vertices_line: &[u8],
-        vertices_triangle: &[u8],
+        vertices_line: &EdgeBuffer,
+        vertices_triangle: &TriangleBuffer,
         size: winit::dpi::PhysicalSize<u32>,
         texture_format: TextureFormat,
         device: &wgpu::Device,
@@ -27,7 +29,7 @@ impl PipelineManager {
         let traingle_pipeline = RenderPipeline::new(
             device,
             texture_format,
-            vertices_triangle,
+            vertices_triangle.to_u8_slice(),
             "Triangle",
             wgpu::PrimitiveTopology::TriangleList,
             &camera_pipeline.render_pipeline_layout,
@@ -36,7 +38,7 @@ impl PipelineManager {
         let line_pipeline = RenderPipeline::new(
             device,
             texture_format,
-            vertices_line,
+            vertices_line.to_u8_slice(),
             "Line",
             wgpu::PrimitiveTopology::LineList,
             &camera_pipeline.render_pipeline_layout,

@@ -1,6 +1,8 @@
 use std::iter;
 
-use geop_rasterize::vertex_buffer::VertexBuffer;
+use geop_rasterize::{
+    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
+};
 use winit::{event::*, window::Window};
 
 #[cfg(target_arch = "wasm32")]
@@ -26,8 +28,8 @@ impl<'a> WindowState<'a> {
     pub async fn new(
         window: &'a Window,
         vertices_points: &VertexBuffer,
-        vertices_line: &[u8],
-        vertices_triangle: &[u8],
+        vertices_line: &EdgeBuffer,
+        vertices_triangle: &TriangleBuffer,
     ) -> Self {
         let size = window.inner_size();
 

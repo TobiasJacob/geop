@@ -1,4 +1,6 @@
-use geop_rasterize::vertex_buffer::VertexBuffer;
+use geop_rasterize::{
+    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
+};
 use winit::dpi::PhysicalSize;
 
 use crate::pipeline_manager::PipelineManager;
@@ -8,8 +10,8 @@ struct HeadlessRenderer {}
 impl HeadlessRenderer {
     pub async fn new(
         vertices_points: &VertexBuffer,
-        vertices_line: &[u8],
-        vertices_triangle: &[u8],
+        vertices_line: &EdgeBuffer,
+        vertices_triangle: &TriangleBuffer,
     ) -> Self {
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             #[cfg(not(target_arch = "wasm32"))]
@@ -165,8 +167,8 @@ mod tests {
         let triangle_buffer = rasterize_volume_into_face_list(&volume, [0.6, 0.6, 0.6, 1.0]);
         let _headless_renderer = pollster::block_on(HeadlessRenderer::new(
             &vertex_buffer,
-            edge_buffer.to_u8_slice(),
-            triangle_buffer.to_u8_slice(),
+            &edge_buffer,
+            &triangle_buffer,
         ));
     }
 }
