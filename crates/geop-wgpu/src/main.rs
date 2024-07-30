@@ -13,7 +13,11 @@ use geop_rasterize::{
     edge_buffer::EdgeBuffer,
     face::rasterize_face_into_triangle_list,
     triangle_buffer::{RenderTriangle, TriangleBuffer},
-    volume::{rasterize_volume_into_face_list, rasterize_volume_into_line_list},
+    vertex_buffer::VertexBuffer,
+    volume::{
+        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_vertex_list,
+    },
 };
 use geop_topology::{
     debug_data::get_debug_data,
@@ -116,11 +120,16 @@ async fn run() {
             &object,
             [0.0, 0.0, 0.0, 1.0],
         ));
-        return (lines, triangles);
+        let mut points = VertexBuffer::empty();
+        points.join(&rasterize_volume_into_vertex_list(
+            &object,
+            [1.0, 0.0, 0.0, 1.0],
+        ));
+        return (points, lines, triangles);
     });
     match result {
-        Ok((lines, triangles)) => {
-            let window = GeopWindow::new(lines, triangles).await;
+        Ok((points, lines, triangles)) => {
+            let window = GeopWindow::new(points, lines, triangles).await;
             window.show();
         }
         Err(e) => {
@@ -142,7 +151,7 @@ async fn run() {
                 ));
             }
 
-            let window = GeopWindow::new(lines, triangles).await;
+            let window = GeopWindow::new(VertexBuffer::empty(), lines, triangles).await;
             println!("Error: {:?}", e);
             window.show();
         }

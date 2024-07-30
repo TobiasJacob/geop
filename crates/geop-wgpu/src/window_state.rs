@@ -18,10 +18,16 @@ pub struct WindowState {
 
     traingle_pipeline: RenderPipeline,
     line_pipeline: RenderPipeline,
+    vertex_pipeline: RenderPipeline,
 }
 
 impl WindowState {
-    pub async fn new(window: Window, vertices_line: &[u8], vertices_triangle: &[u8]) -> Self {
+    pub async fn new(
+        window: Window,
+        vertices_points: &[u8],
+        vertices_line: &[u8],
+        vertices_triangle: &[u8],
+    ) -> Self {
         let size = window.inner_size();
 
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -100,6 +106,15 @@ impl WindowState {
             &camera_pipeline.render_pipeline_layout,
         );
 
+        let vertex_pipeline = RenderPipeline::new(
+            &device,
+            &config,
+            vertices_points,
+            "Vertex",
+            wgpu::PrimitiveTopology::PointList,
+            &camera_pipeline.render_pipeline_layout,
+        );
+
         Self {
             surface,
             device,
@@ -110,6 +125,7 @@ impl WindowState {
             traingle_pipeline,
             line_pipeline,
             camera_pipeline,
+            vertex_pipeline,
         }
     }
 
@@ -191,6 +207,7 @@ impl WindowState {
             render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
             self.traingle_pipeline.render(&mut render_pass);
             self.line_pipeline.render(&mut render_pass);
+            self.vertex_pipeline.render(&mut render_pass);
         }
 
         self.queue.submit(iter::once(encoder.finish()));

@@ -1,4 +1,6 @@
-use geop_rasterize::{edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer};
+use geop_rasterize::{
+    edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
+};
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
@@ -14,6 +16,7 @@ pub struct GeopWindow {
 
 impl GeopWindow {
     pub async fn new(
+        vertex_buffer_points: VertexBuffer,
         vertex_buffer_line: EdgeBuffer,
         vertex_buffer_triange: TriangleBuffer,
     ) -> Self {
@@ -56,6 +59,7 @@ impl GeopWindow {
         // );
         let state = WindowState::new(
             window,
+            vertex_buffer_points.to_u8_slice(),
             vertex_buffer_line.to_u8_slice(),
             vertex_buffer_triange.to_u8_slice(),
         )
