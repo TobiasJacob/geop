@@ -54,10 +54,9 @@ impl HeadlessRenderer {
         let texture = device.create_texture(&texture_desc);
         let texture_view = texture.create_view(&Default::default());
 
-        let pipeline_manager = PipelineManager::new(
+        let mut pipeline_manager = PipelineManager::new(
             &device,
             vertices_points,
-            vertices_line,
             vertices_triangle,
             PhysicalSize::new(texture_size, texture_size),
             texture_format,
@@ -101,6 +100,7 @@ impl HeadlessRenderer {
                 occlusion_query_set: None,
             };
             let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
+            pipeline_manager.update_edges(&queue, vertices_line);
             pipeline_manager.run_pipelines(&mut render_pass);
         }
         encoder.copy_texture_to_buffer(

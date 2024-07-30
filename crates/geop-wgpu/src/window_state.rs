@@ -94,15 +94,16 @@ impl<'a> WindowState<'a> {
         };
         surface.configure(&device, &config);
 
-        let device_adapter = PipelineManager::new(
+        let mut pipeline_manager = PipelineManager::new(
             &device,
             vertices_points,
-            vertices_line,
             vertices_triangle,
             size,
             config.format,
         )
         .await;
+
+        pipeline_manager.update_edges(&queue, vertices_line);
 
         Self {
             surface,
@@ -111,7 +112,7 @@ impl<'a> WindowState<'a> {
             config,
             size,
             window,
-            pipeline_manager: device_adapter,
+            pipeline_manager,
         }
     }
 

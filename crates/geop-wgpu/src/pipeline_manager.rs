@@ -19,7 +19,6 @@ impl PipelineManager {
     pub async fn new(
         device: &wgpu::Device,
         vertices_points: &VertexBuffer,
-        vertices_line: &EdgeBuffer,
         vertices_triangle: &TriangleBuffer,
         camera_size: winit::dpi::PhysicalSize<u32>,
         render_texture_format: TextureFormat,
@@ -37,8 +36,7 @@ impl PipelineManager {
         let line_pipeline = RenderPipelineEdge::new(
             device,
             render_texture_format,
-            vertices_line.to_u8_slice(),
-            "Line",
+            "Edge",
             &camera_pipeline.render_pipeline_layout,
         );
 
@@ -56,6 +54,10 @@ impl PipelineManager {
             line_pipeline,
             vertex_pipeline,
         }
+    }
+
+    pub fn update_edges(&mut self, queue: &wgpu::Queue, edges: &EdgeBuffer) {
+        self.line_pipeline.update(queue, edges);
     }
 
     pub fn update_camera(&mut self, queue: &wgpu::Queue, omega: f32) {

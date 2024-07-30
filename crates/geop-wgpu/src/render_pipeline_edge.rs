@@ -1,9 +1,10 @@
-use geop_rasterize::vertex_buffer::RenderVertex;
+use geop_rasterize::{edge_buffer::EdgeBuffer, vertex_buffer::RenderVertex};
 use wgpu::{util::DeviceExt, TextureFormat};
 
 pub struct RenderPipelineEdge {
     vertex_buffer: wgpu::Buffer,
-    num_vertices: u32,
+    max_num_edges: usize,
+    render_edges: u32,
     render_pipeline: wgpu::RenderPipeline,
 }
 
@@ -11,17 +12,16 @@ impl RenderPipelineEdge {
     pub fn new(
         device: &wgpu::Device,
         texture_format: TextureFormat,
-        vertices: &[u8],
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineEdge {
+        let max_num_edges = 1024;
+
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
-            contents: vertices,
-            usage: wgpu::BufferUsages::VERTEX,
+            contents: vec![0u8; 2 * max_num_edges * std::mem::size_of::<RenderVertex>()].as_slice(),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
-
-        let num_vertices = vertices.len() as u32 / std::mem::size_of::<RenderVertex>() as u32;
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
@@ -88,14 +88,22 @@ impl RenderPipelineEdge {
 
         RenderPipelineEdge {
             vertex_buffer,
-            num_vertices,
+            max_num_edges,
+            render_edges: 0,
             render_pipeline,
         }
+    }
+
+    pub fn update(&mut self, queue: &wgpu::Queue, edges: &EdgeBuffer) {
+        println!("Updating edge buffer");
+        queue.write_buffer(&self.vertex_buffer, 0, edges.to_u8_slice());
+        self.render_edges = edges.edges.len() as u32;
+        println!("Done Updating edge buffer");
     }
 
     pub fn render<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_pipeline(&self.render_pipeline); // 2.
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-        render_pass.draw(0..self.num_vertices, 0..1);
+        render_pass.draw(0..self.render_edges * 2, 0..1);
     }
 }
