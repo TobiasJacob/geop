@@ -90,7 +90,7 @@ impl RenderPipelineVertex {
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
-            source: wgpu::ShaderSource::Wgsl(include_str!("shader_point.wgsl").into()),
+            source: wgpu::ShaderSource::Wgsl(include_str!("shader_vertex.wgsl").into()),
         });
 
         let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
