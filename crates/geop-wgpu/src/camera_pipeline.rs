@@ -58,7 +58,7 @@ pub struct CameraPipeline {
 }
 
 impl CameraPipeline {
-    pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> CameraPipeline {
+    pub fn new(device: &wgpu::Device, size: winit::dpi::PhysicalSize<u32>) -> CameraPipeline {
         let camera = Camera {
             // position the camera one unit up and 2 units back
             // +z is out of the screen
@@ -67,7 +67,7 @@ impl CameraPipeline {
             target: (0.0, 0.0, 0.0).into(),
             // which way is "up"
             up: cgmath::Vector3::unit_z(),
-            aspect: config.width as f32 / config.height as f32,
+            aspect: size.width as f32 / size.height as f32,
             fovy: 45.0,
             znear: 0.1,
             zfar: 100.0,

@@ -6,10 +6,7 @@ use winit::{event::*, window::Window};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
-use crate::{
-    camera_pipeline::CameraPipeline, point_render_pipeline::PointRenderPipeline,
-    render_pipeline::RenderPipeline,
-};
+use crate::device_adapter::DeviceAdapter;
 
 pub struct WindowState {
     surface: wgpu::Surface,
@@ -18,11 +15,8 @@ pub struct WindowState {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     window: Window,
-    camera_pipeline: CameraPipeline,
 
-    traingle_pipeline: RenderPipeline,
-    line_pipeline: RenderPipeline,
-    vertex_pipeline: PointRenderPipeline,
+    device_adapter: DeviceAdapter,
 }
 
 impl WindowState {
@@ -90,33 +84,15 @@ impl WindowState {
         };
         surface.configure(&device, &config);
 
-        let camera_pipeline = CameraPipeline::new(&device, &config);
-
-        let traingle_pipeline = RenderPipeline::new(
-            &device,
-            config.format,
-            vertices_triangle,
-            "Triangle",
-            wgpu::PrimitiveTopology::TriangleList,
-            &camera_pipeline.render_pipeline_layout,
-        );
-
-        let line_pipeline = RenderPipeline::new(
-            &device,
-            config.format,
-            vertices_line,
-            "Line",
-            wgpu::PrimitiveTopology::LineList,
-            &camera_pipeline.render_pipeline_layout,
-        );
-
-        let vertex_pipeline = PointRenderPipeline::new(
-            &device,
-            config.format,
+        let device_adapter = DeviceAdapter::new(
             vertices_points,
-            "Vertex",
-            &camera_pipeline.render_pipeline_layout,
-        );
+            vertices_line,
+            vertices_triangle,
+            size,
+            config.format,
+            &device,
+        )
+        .await;
 
         Self {
             surface,
@@ -125,10 +101,7 @@ impl WindowState {
             config,
             size,
             window,
-            traingle_pipeline,
-            line_pipeline,
-            camera_pipeline,
-            vertex_pipeline,
+            device_adapter,
         }
     }
 
@@ -166,16 +139,7 @@ impl WindowState {
         let rotations_per_second = 0.1;
         let omega = time_in_seconds * 2.0 * pi * rotations_per_second;
 
-        self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;
-        self.camera_pipeline.camera.eye.y = omega.cos() * 2.0;
-        self.camera_pipeline
-            .camera_uniform
-            .update_view_proj(&self.camera_pipeline.camera);
-        self.queue.write_buffer(
-            &self.camera_pipeline.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]),
-        );
+        self.device_adapter.update_camera(&self.queue, omega);
 
         let output = self.surface.get_current_texture()?;
         let view = output
@@ -207,10 +171,7 @@ impl WindowState {
                 depth_stencil_attachment: None,
             });
 
-            render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
-            self.traingle_pipeline.render(&mut render_pass);
-            self.line_pipeline.render(&mut render_pass);
-            self.vertex_pipeline.render(&mut render_pass);
+            self.device_adapter.run_pipelines(&mut render_pass);
         }
 
         self.queue.submit(iter::once(encoder.finish()));
