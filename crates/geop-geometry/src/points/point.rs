@@ -63,6 +63,10 @@ impl Point {
         let norm = self.norm() * basis.norm();
         (dot / norm).acos()
     }
+
+    pub fn new_unit_x() -> Point {
+        Point::new(1.0, 0.0, 0.0)
+    }
 }
 
 impl Add for Point {

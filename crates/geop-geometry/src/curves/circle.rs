@@ -16,7 +16,9 @@ pub enum CircleTransform {
 }
 
 impl Circle {
-    pub fn new(basis: Point, normal: Point, radius: Point) -> Circle {
+    pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
+        let x = Point::new(1.0, 0.0, 0.0);
+        let radius = x.cross(normal).normalize() * radius;
         let normal = normal.normalize();
         assert!(
             normal.dot(radius).abs() < EQ_THRESHOLD,
@@ -36,11 +38,11 @@ impl Circle {
         let radius = transform * (self.radius + self.basis) - basis;
         let scale_factor = radius.norm() / self.radius.norm();
         assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipses.");
-        CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius))
+        CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius.norm()))
     }
 
     pub fn neg(&self) -> Circle {
-        Circle::new(self.basis, -self.normal, self.radius)
+        Circle::new(self.basis, -self.normal, self.radius.norm())
     }
 
     pub fn tangent(&self, p: Point) -> Point {

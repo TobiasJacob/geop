@@ -30,7 +30,7 @@ impl Sphere {
 
     pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
-        return Circle::new(self.basis, normal, (q - self.basis).normalize());
+        return Circle::new(self.basis, normal, (q - self.basis).norm());
     }
 
     pub fn transform(&self, transform: Transform) -> SphereTransform {
@@ -108,7 +108,7 @@ impl Sphere {
 
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
         let normal = (p - self.basis).cross(q - self.basis).normalize();
-        let circle = Circle::new(self.basis, normal, (q - self.basis).normalize());
+        let circle = Circle::new(self.basis, normal, (q - self.basis).norm());
         Curve::Circle(circle)
     }
 }

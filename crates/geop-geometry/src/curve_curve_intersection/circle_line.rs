@@ -39,11 +39,7 @@ mod tests {
 
     #[test]
     fn test_circle_line_intersection() {
-        let c = Circle::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 1.0),
-            Point::new(1.0, 0.0, 0.0),
-        );
+        let c = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
         let l = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
         let i = circle_line_intersection(&c, &l);
         match i {

@@ -22,7 +22,7 @@ pub fn plane_sphere_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersecti
         let center = a + (b - a) * (r.powi(2) / (a - b).norm().powi(2));
         let normal = (b - a) / (b - a).norm();
         let radius = discriminant.sqrt() * center.cross(normal).normalize();
-        PlaneSphereIntersection::Circle(Circle::new(center, normal, radius))
+        PlaneSphereIntersection::Circle(Circle::new(center, normal, radius.norm()))
     } else if discriminant <= EQ_THRESHOLD && discriminant >= -EQ_THRESHOLD {
         PlaneSphereIntersection::Point(a)
     } else {

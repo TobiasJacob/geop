@@ -1,3 +1,5 @@
+pub mod geometry;
+
 #[cfg(test)]
 mod tests {
     use geop_topology::{primitive_objects::volumes::cube::primitive_cube, topology::scene::Scene};

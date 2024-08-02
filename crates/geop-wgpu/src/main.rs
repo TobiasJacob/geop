@@ -46,7 +46,7 @@ pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
         Curve::Circle(Circle::new(
             center,
             Point::new(0.0, 0.0, 1.0),
-            point - center,
+            (point - center).norm(),
         )),
     )
 }

@@ -24,7 +24,7 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
     if n1.is_parallel(n2) && n1.is_perpendicular(p1 - p2) {
         // Check if both circles have the same centerpoint
         if d < EQ_THRESHOLD && r1 == r2 {
-            return CircleCircleIntersection::Circle(Circle::new(p1, n1, radius_backup));
+            return CircleCircleIntersection::Circle(Circle::new(p1, n1, radius_backup.norm()));
         }
         // Check if both circles are concentric
         else if d < EQ_THRESHOLD && r1 != r2 {
@@ -59,26 +59,10 @@ mod tests {
 
     #[test]
     fn test_circle_circle_intersection() {
-        let a = Circle::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 3.0),
-            Point::new(2.0, 0.0, 0.0),
-        );
-        let b = Circle::new(
-            Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 1.0),
-            Point::new(2.0, 0.0, 0.0),
-        );
-        let c: Circle = Circle::new(
-            Point::new(4.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 2.0),
-            Point::new(2.0, 0.0, 0.0),
-        );
-        let d = Circle::new(
-            Point::new(6.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 2.0),
-            Point::new(2.0, 0.0, 0.0),
-        );
+        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 3.0), 2.0);
+        let b = Circle::new(Point::new(1.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 2.0);
+        let c: Circle = Circle::new(Point::new(4.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), 2.0);
+        let d = Circle::new(Point::new(6.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), 2.0);
 
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::TwoPoint(p1, p2) => {
