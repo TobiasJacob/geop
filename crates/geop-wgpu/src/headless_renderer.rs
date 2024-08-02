@@ -221,6 +221,8 @@ impl HeadlessRenderer {
         let buffer =
             ImageBuffer::<Rgba<u8>, _>::from_raw(self.texture_size, self.texture_size, data)
                 .unwrap();
+        // Create folder if it doesn't exist
+        std::fs::create_dir_all(file_path.parent().unwrap()).unwrap();
         buffer.save(file_path).unwrap();
     }
 }
@@ -228,8 +230,7 @@ impl HeadlessRenderer {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use geop_topology::primitive_objects::volumes::cube::primitive_cube;
-    use rstest::{fixture, rstest};
+    use rstest::fixture;
 
     #[fixture]
     pub async fn renderer() -> Box<HeadlessRenderer> {

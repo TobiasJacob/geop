@@ -6,6 +6,7 @@ members = [
     "crates/geop-topology",
     "crates/geop-rasterize",
     "crates/geop-wgpu",
+    "crates/modern-brep-kernel-book",
 ]
 
 [workspace.dependencies.geop-geometry]
@@ -23,3 +24,9 @@ path = "crates/geop-rasterize"
 [workspace.dependencies.geop-wgpu]
 version = "0.1.0"
 path = "crates/geop-wgpu"
+
+[workspace.dependencies.modern-brep-kernel-book]
+version = "0.1.0"
+path = "crates/modern-brep-kernel-book"
+
+
