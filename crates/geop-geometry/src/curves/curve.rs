@@ -13,7 +13,7 @@ pub enum Curve {
     Circle(Circle),
 }
 
-// This represents an oriented curve. Curves with redundant representations (e.g. a line with the direction vector not being normalized) have to be normalized in the new function. Unnormalized curves are not allowed.
+// This represents a curve, which can be a line or a circle.
 impl Curve {
     // Transform
     pub fn transform(&self, transform: Transform) -> Curve {
@@ -26,6 +26,7 @@ impl Curve {
         }
     }
 
+    // Change the direction of the curve
     pub fn neg(&self) -> Curve {
         match self {
             Curve::Line(line) => Curve::Line(line.neg()),
@@ -33,8 +34,7 @@ impl Curve {
         }
     }
 
-    // fn project(&self, p: Point) -> (f64, f64);
-    // Tangent / Direction of the curve at the given point. Not normalized.
+    // Normalized Tangent / Direction of the curve at the given point.
     pub fn tangent(&self, p: Point) -> Point {
         match self {
             Curve::Line(line) => line.tangent(p),
@@ -42,11 +42,11 @@ impl Curve {
         }
     }
 
-    // Checks if point is on manifold
-    pub fn on_manifold(&self, p: Point) -> bool {
+    // Checks if point is on the curve.
+    pub fn on_curve(&self, p: Point) -> bool {
         match self {
-            Curve::Line(line) => line.on_manifold(p),
-            Curve::Circle(circle) => circle.on_manifold(p),
+            Curve::Line(line) => line.on_curve(p),
+            Curve::Circle(circle) => circle.on_curve(p),
         }
     }
 
@@ -58,16 +58,6 @@ impl Curve {
         }
     }
 
-    // // Returns the Riemannian metric between u and v
-    // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64;
-    // // Returns the Riemannian distance between x and y (x and y on manifold).
-    // fn distance(&self, x: Point, y: Point) -> f64;
-    // // Exponential of u at base x. u_z is ignored.
-    // fn exp(&self, x: Point, u: TangentParameter) -> Point;
-    // // Log of y at base x. Z coordinate is set to 0.
-    // fn log(&self, x: Point, y: Point) -> TangentParameter;
-    // // Parallel transport of v from x to y.
-    // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter;
     // Checks if m is between x and y. m==x and m==y are true.
     pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         match self {
@@ -75,6 +65,7 @@ impl Curve {
             Curve::Circle(circle) => circle.between(m, start, end),
         }
     }
+
     // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
     pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {

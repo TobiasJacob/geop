@@ -44,11 +44,11 @@ impl Circle {
     }
 
     pub fn tangent(&self, p: Point) -> Point {
-        assert!(self.on_manifold(p));
+        assert!(self.on_curve(p));
         (p - self.basis).cross(self.dir_cross).normalize()
     }
 
-    pub fn on_manifold(&self, p: Point) -> bool {
+    pub fn on_curve(&self, p: Point) -> bool {
         (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD
             && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
     }
@@ -56,8 +56,8 @@ impl Circle {
     pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 let start = start - self.basis;
                 let end = end - self.basis;
                 let x_start = self.radius.dot(start);
@@ -94,11 +94,11 @@ impl Circle {
 
     // Checks if m is between x and y. m==x and m==y are true.
     pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
-        assert!(self.on_manifold(m));
+        assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 let mut angle_m = (m - self.basis).angle(self.radius);
                 let angle_start = (start - self.basis).angle(self.radius);
                 let mut angle_end = (end - self.basis).angle(self.radius);
@@ -111,11 +111,11 @@ impl Circle {
                 angle_start <= angle_m && angle_m <= angle_end
             }
             (Some(start), None) => {
-                assert!(self.on_manifold(start));
+                assert!(self.on_curve(start));
                 true
             }
             (None, Some(end)) => {
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(end));
                 true
             }
             (None, None) => true,
@@ -125,8 +125,8 @@ impl Circle {
     pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 let start = start - self.basis;
                 let end = end - self.basis;
                 let mid = (start + end) / 2.0;
@@ -139,11 +139,11 @@ impl Circle {
                 }
             }
             (Some(start), None) => {
-                assert!(self.on_manifold(start));
+                assert!(self.on_curve(start));
                 return self.basis - (start - self.basis);
             }
             (None, Some(end)) => {
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(end));
                 return self.basis - (end - self.basis);
             }
             (None, None) => {

@@ -28,7 +28,7 @@ impl Line {
         self.direction.clone()
     }
 
-    pub fn on_manifold(&self, p: Point) -> bool {
+    pub fn on_curve(&self, p: Point) -> bool {
         let v = p - self.basis;
         let v = v - self.direction * (v.dot(self.direction));
         v.norm() < EQ_THRESHOLD
@@ -37,8 +37,8 @@ impl Line {
     pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 start + (end - start) * t
             }
             (Some(start), None) => start + self.direction * t * HORIZON_DIST,
@@ -75,19 +75,19 @@ impl Line {
 
     // Checks if m is between x and y. m==x and m==y are true.
     pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
-        assert!(self.on_manifold(m));
+        assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
             }
             (Some(start), None) => {
-                assert!(self.on_manifold(start));
+                assert!(self.on_curve(start));
                 (m - start).dot(self.direction) >= 0.0
             }
             (None, Some(end)) => {
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(end));
                 (m - end).dot(self.direction) <= 0.0
             }
             (None, None) => true,
@@ -97,8 +97,8 @@ impl Line {
     pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_manifold(start));
-                assert!(self.on_manifold(end));
+                assert!(self.on_curve(start));
+                assert!(self.on_curve(end));
                 (start + end) / 2.0
             }
             (Some(start), None) => start + self.direction * 1.0,

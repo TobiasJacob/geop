@@ -10,7 +10,7 @@ pub enum EdgePointContains {
 }
 
 pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
-    if !edge.curve.on_manifold(point) {
+    if !edge.curve.on_curve(point) {
         return EdgePointContains::Outside;
     }
     if Some(point) == edge.start || Some(point) == edge.end {
