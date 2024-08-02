@@ -1,6 +1,6 @@
 use geop_geometry::points::point::Point;
 
-use crate::topology::{edge::Edge, face::Face};
+use crate::topology::{edge::Edge, face::Face, scene::Color};
 
 #[derive(Debug, Clone)]
 pub enum DebugColor {
@@ -16,18 +16,18 @@ pub enum DebugColor {
 }
 
 impl DebugColor {
-    pub fn to_color(&self) -> [f32; 4] {
+    pub fn to_color(&self) -> Color {
         let a = 0.1;
         match self {
-            DebugColor::Red => [1.0, 0.0, 0.0, a],
-            DebugColor::Green => [0.0, 1.0, 0.0, a],
-            DebugColor::Blue => [0.0, 0.0, 1.0, a],
-            DebugColor::Yellow => [1.0, 1.0, 0.0, a],
-            DebugColor::Cyan => [0.0, 1.0, 1.0, a],
-            DebugColor::Magenta => [1.0, 0.0, 1.0, a],
-            DebugColor::White => [1.0, 1.0, 1.0, a],
-            DebugColor::Black => [0.0, 0.0, 0.0, a],
-            DebugColor::Transparent => [0.0, 0.0, 0.0, a],
+            DebugColor::Red => Color::new(1.0, 0.0, 0.0, a),
+            DebugColor::Green => Color::new(0.0, 1.0, 0.0, a),
+            DebugColor::Blue => Color::new(0.0, 0.0, 1.0, a),
+            DebugColor::Yellow => Color::new(1.0, 1.0, 0.0, a),
+            DebugColor::Cyan => Color::new(0.0, 1.0, 1.0, a),
+            DebugColor::Magenta => Color::new(1.0, 0.0, 1.0, a),
+            DebugColor::White => Color::new(1.0, 1.0, 1.0, a),
+            DebugColor::Black => Color::new(0.0, 0.0, 0.0, a),
+            DebugColor::Transparent => Color::new(0.0, 0.0, 0.0, a),
         }
     }
 }

@@ -1,4 +1,5 @@
 use geop_geometry::points::point::Point;
+use geop_topology::topology::scene::Color;
 
 use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
@@ -15,7 +16,7 @@ pub struct RenderTriangle {
 }
 
 impl RenderTriangle {
-    pub fn new(a: Point, b: Point, c: Point, color: [f32; 4]) -> Self {
+    pub fn new(a: Point, b: Point, c: Point, color: Color) -> Self {
         RenderTriangle {
             a: RenderVertex::new(a, color),
             b: RenderVertex::new(b, color),
@@ -48,7 +49,7 @@ impl TriangleBuffer {
         self.triangles.extend_from_slice(&other.triangles);
     }
 
-    pub fn to_line_list(&self, color: [f32; 4]) -> EdgeBuffer {
+    pub fn to_line_list(&self, color: Color) -> EdgeBuffer {
         let mut edges = Vec::<RenderEdge>::with_capacity(3 * self.triangles.len());
         for triangle in &self.triangles {
             edges.push(RenderEdge::new(triangle.a.into(), triangle.b.into(), color));

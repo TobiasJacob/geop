@@ -94,5 +94,6 @@ pub enum LineLineIntersection {
 pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection;
 ```
 
-Take a look at the different cases:
+Here is an example of the intersection of multiple lines with each other. The intersections are red, the lines are black. Two black lines overlap each other and result in a red line. The other lines intersect only in the red points.
 
+![Line Intersections](./generated_images/geometry/line_line_intersections.png)

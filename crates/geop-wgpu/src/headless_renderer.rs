@@ -1,5 +1,8 @@
 use geop_rasterize::{
-    edge::{rasterize_edges_into_line_list, rasterize_edges_into_vertex_list},
+    edge::{
+        rasterize_edge_into_line_list, rasterize_edge_into_vertex_list,
+        rasterize_edges_into_line_list, rasterize_edges_into_vertex_list,
+    },
     edge_buffer::EdgeBuffer,
     triangle_buffer::TriangleBuffer,
     vertex_buffer::{RenderVertex, VertexBuffer},
@@ -8,7 +11,7 @@ use geop_rasterize::{
         rasterize_volume_into_vertex_list,
     },
 };
-use geop_topology::topology::scene::Scene;
+use geop_topology::topology::scene::{Color, Scene};
 use winit::dpi::PhysicalSize;
 
 use crate::pipeline_manager::PipelineManager;
@@ -110,24 +113,24 @@ impl HeadlessRenderer {
         file_path: &std::path::Path,
     ) {
         let background_color = if dark_mode {
-            [0.02, 0.02, 0.02, 1.0]
+            Color::from_brightness(0.2)
         } else {
-            [1.0, 1.0, 1.0, 1.0]
+            Color::from_brightness(1.0)
         };
         let face_color = if dark_mode {
-            [0.2, 0.2, 0.2, 1.0]
+            Color::from_brightness(0.2)
         } else {
-            [0.6, 0.6, 0.6, 1.0]
+            Color::from_brightness(0.6)
         };
         let edge_color = if dark_mode {
-            [0.7, 0.7, 0.7, 1.0]
+            Color::from_brightness(0.7)
         } else {
-            [0.2, 0.2, 0.2, 1.0]
+            Color::from_brightness(0.2)
         };
         let point_color = if dark_mode {
-            [0.8, 0.8, 0.8, 1.0]
+            Color::from_brightness(0.8)
         } else {
-            [0.1, 0.1, 0.1, 1.0]
+            Color::from_brightness(0.1)
         };
 
         let u32_size = std::mem::size_of::<u32>() as u32;
@@ -142,10 +145,10 @@ impl HeadlessRenderer {
                     resolve_target: None,
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: background_color[0],
-                            g: background_color[1],
-                            b: background_color[2],
-                            a: background_color[3],
+                            r: background_color.r as f64,
+                            g: background_color.g as f64,
+                            b: background_color.b as f64,
+                            a: background_color.a as f64,
                         }),
                         store: wgpu::StoreOp::Store,
                     },
@@ -158,20 +161,31 @@ impl HeadlessRenderer {
             let mut edge_buffer = EdgeBuffer::empty();
             let mut triangle_buffer = TriangleBuffer::empty();
 
-            for volume in scene.volumes.iter() {
-                vertex_buffer.join(&rasterize_volume_into_vertex_list(volume, point_color));
-                edge_buffer.join(&rasterize_volume_into_line_list(volume, edge_color));
-                triangle_buffer.join(&rasterize_volume_into_face_list(volume, face_color));
+            for (volume, color) in scene.volumes.iter() {
+                vertex_buffer.join(&rasterize_volume_into_vertex_list(
+                    volume,
+                    *color * point_color,
+                ));
+                edge_buffer.join(&rasterize_volume_into_line_list(
+                    volume,
+                    *color * edge_color,
+                ));
+                triangle_buffer.join(&rasterize_volume_into_face_list(
+                    volume,
+                    *color * face_color,
+                ));
             }
 
-            vertex_buffer.join(&rasterize_edges_into_vertex_list(&scene.edges, point_color));
-            edge_buffer.join(&rasterize_edges_into_line_list(&scene.edges, edge_color));
+            for (edge, color) in scene.edges.iter() {
+                vertex_buffer.join(&rasterize_edge_into_vertex_list(edge, *color * point_color));
+                edge_buffer.join(&rasterize_edge_into_line_list(edge, *color * edge_color));
+            }
 
             vertex_buffer.join(&VertexBuffer::new(
                 scene
                     .points
                     .iter()
-                    .map(|p| RenderVertex::new(p.clone(), point_color))
+                    .map(|(p, color)| RenderVertex::new(p.clone(), *color * point_color))
                     .collect(),
             ));
 

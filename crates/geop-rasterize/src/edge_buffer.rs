@@ -1,4 +1,5 @@
 use geop_geometry::points::point::Point;
+use geop_topology::topology::scene::Color;
 
 use crate::vertex_buffer::RenderVertex;
 
@@ -11,7 +12,7 @@ pub struct RenderEdge {
 }
 
 impl RenderEdge {
-    pub fn new(start: Point, end: Point, color: [f32; 4]) -> Self {
+    pub fn new(start: Point, end: Point, color: Color) -> Self {
         RenderEdge {
             start: RenderVertex::new(start, color),
             end: RenderVertex::new(end, color),

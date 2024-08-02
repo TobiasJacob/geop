@@ -1,5 +1,6 @@
 use geop_geometry::points::point::Point;
 use geop_rasterize::vertex_buffer::{RenderVertex, VertexBuffer};
+use geop_topology::topology::scene::Color;
 use wgpu::{util::DeviceExt, TextureFormat};
 
 pub struct RenderPipelineVertex {
@@ -17,7 +18,7 @@ fn render_face(
     point2: Point,
     point3: Point,
     point4: Point,
-    color: [f32; 4],
+    color: Color,
 ) -> VertexBuffer {
     return VertexBuffer::new(vec![
         RenderVertex::new(point1, color),
@@ -29,7 +30,7 @@ fn render_face(
     ]);
 }
 
-fn cube_vertex_buffer(size: f64, color: [f32; 4]) -> VertexBuffer {
+fn cube_vertex_buffer(size: f64, color: Color) -> VertexBuffer {
     // Simple 12 triangles to form a cube
     let size = size / 2.0;
     let point1 = Point::new(size, size, -size);
@@ -62,7 +63,7 @@ impl RenderPipelineVertex {
     ) -> RenderPipelineVertex {
         let max_num_instances = 1024;
 
-        let render_vertices = cube_vertex_buffer(0.02, [1.0, 1.0, 1.0, 1.0]);
+        let render_vertices = cube_vertex_buffer(0.02, Color::white());
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
             contents: render_vertices.to_u8_slice(),

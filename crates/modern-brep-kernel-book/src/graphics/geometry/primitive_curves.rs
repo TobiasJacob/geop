@@ -3,7 +3,7 @@ mod tests {
     use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::edges::{circle::primitive_circle, line::primitive_infinite_line},
-        topology::scene::Scene,
+        topology::scene::{Color, Scene},
     };
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
@@ -13,7 +13,7 @@ mod tests {
     #[rstest]
     async fn test_primitive_line(#[future] renderer: Box<HeadlessRenderer>) {
         let edge = primitive_infinite_line(Point::new(-1.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
-        let scene = Scene::new(vec![], vec![], vec![edge], vec![]);
+        let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
             .render_to_file(
@@ -27,7 +27,7 @@ mod tests {
     #[rstest]
     async fn test_primitive_circle(#[future] renderer: Box<HeadlessRenderer>) {
         let edge = primitive_circle(Point::new_zero(), Point::new_unit_z(), 1.0);
-        let scene = Scene::new(vec![], vec![], vec![edge], vec![]);
+        let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
             .render_to_file(

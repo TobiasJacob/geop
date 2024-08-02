@@ -5,7 +5,7 @@ use geop_geometry::{
     surfaces::surface::{Surface, TangentPoint},
     EQ_THRESHOLD,
 };
-use geop_topology::topology::face::Face;
+use geop_topology::topology::{face::Face, scene::Color};
 
 use crate::{
     contour::rasterize_contour_into_line_list,
@@ -189,7 +189,7 @@ pub fn triangle_intersects_triangle_list(
     return false;
 }
 
-pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 4]) -> TriangleBuffer {
+pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {
     println!("/////////////////////////////////////////////////////////");
     // Now we have to divide the face into triangles. First rasterize the boundaries.
     let mut contours = Vec::<EdgeBuffer>::new();
@@ -308,7 +308,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: [f32; 4]) -> Triang
     return TriangleBuffer::new(triangles);
 }
 
-pub fn rasterize_face_into_line_list(face: &Face, color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_face_into_line_list(face: &Face, color: Color) -> EdgeBuffer {
     let mut buffer = EdgeBuffer::empty();
     let edges = rasterize_contour_into_line_list(&face.boundary, color);
     buffer.join(&edges);

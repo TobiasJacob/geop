@@ -1,5 +1,5 @@
 use geop_geometry::curves::curve::Curve;
-use geop_topology::topology::edge::Edge;
+use geop_topology::topology::{edge::Edge, scene::Color};
 
 use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
@@ -7,7 +7,7 @@ use crate::{
 };
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_edge_into_line_list(edge: &Edge, color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_edge_into_line_list(edge: &Edge, color: Color) -> EdgeBuffer {
     let n = match edge.curve {
         Curve::Line(_) => 1,
         Curve::Circle(_) => 128,
@@ -26,7 +26,7 @@ pub fn rasterize_edge_into_line_list(edge: &Edge, color: [f32; 4]) -> EdgeBuffer
 }
 
 // Rasterizes multiple edge loop into triangle list.
-pub fn rasterize_edges_into_line_list(edges: &[Edge], color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_edges_into_line_list(edges: &[Edge], color: Color) -> EdgeBuffer {
     edges
         .iter()
         .fold(EdgeBuffer::new(Vec::new()), |mut acc, edge| {
@@ -35,7 +35,7 @@ pub fn rasterize_edges_into_line_list(edges: &[Edge], color: [f32; 4]) -> EdgeBu
         })
 }
 
-pub fn rasterize_edge_into_vertex_list(edge: &Edge, color: [f32; 4]) -> VertexBuffer {
+pub fn rasterize_edge_into_vertex_list(edge: &Edge, color: Color) -> VertexBuffer {
     let mut verts = Vec::with_capacity(2);
     if let Some(start) = edge.start {
         verts.push(RenderVertex::new(start, color));
@@ -46,7 +46,7 @@ pub fn rasterize_edge_into_vertex_list(edge: &Edge, color: [f32; 4]) -> VertexBu
     VertexBuffer::new(verts)
 }
 
-pub fn rasterize_edges_into_vertex_list(edges: &[Edge], color: [f32; 4]) -> VertexBuffer {
+pub fn rasterize_edges_into_vertex_list(edges: &[Edge], color: Color) -> VertexBuffer {
     let mut verts = Vec::with_capacity(edges.len() * 2);
     for e in edges {
         if let Some(start) = e.start {

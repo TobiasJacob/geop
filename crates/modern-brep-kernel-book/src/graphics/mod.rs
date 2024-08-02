@@ -2,7 +2,10 @@ pub mod geometry;
 
 #[cfg(test)]
 mod tests {
-    use geop_topology::{primitive_objects::volumes::cube::primitive_cube, topology::scene::Scene};
+    use geop_topology::{
+        primitive_objects::volumes::cube::primitive_cube,
+        topology::scene::{Color, Scene},
+    };
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
 
@@ -11,7 +14,7 @@ mod tests {
     #[rstest]
     async fn test_headless_renderer_light(#[future] renderer: Box<HeadlessRenderer>) {
         let volume = primitive_cube(1.0, 1.0, 1.0);
-        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
+        let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
             .render_to_file(
@@ -25,7 +28,7 @@ mod tests {
     #[rstest]
     async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
         let volume = primitive_cube(1.0, 1.0, 1.0);
-        let scene = Scene::new(vec![volume], vec![], vec![], vec![]);
+        let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
             .render_to_file(

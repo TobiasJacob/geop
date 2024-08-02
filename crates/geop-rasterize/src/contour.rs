@@ -1,9 +1,9 @@
-use geop_topology::topology::contour::Contour;
+use geop_topology::topology::{contour::Contour, scene::Color};
 
 use crate::edge_buffer::{EdgeBuffer, RenderEdge};
 
 // Rasterizes an edge loop into triangle list.
-pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_contour_into_line_list(contour: &Contour, color: Color) -> EdgeBuffer {
     let n = 5;
     let n2 = contour.edges.len();
     let mut edges = Vec::<RenderEdge>::with_capacity(n * n2);
@@ -22,7 +22,7 @@ pub fn rasterize_contour_into_line_list(contour: &Contour, color: [f32; 4]) -> E
 }
 
 // Rasterizes multiple edge loop into triangle list.
-pub fn rasterize_contours_into_line_list(contour: &[Contour], color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_contours_into_line_list(contour: &[Contour], color: Color) -> EdgeBuffer {
     contour
         .iter()
         .fold(EdgeBuffer::new(Vec::new()), |mut acc, contour| {

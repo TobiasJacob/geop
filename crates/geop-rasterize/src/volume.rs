@@ -1,4 +1,4 @@
-use geop_topology::topology::volume::Volume;
+use geop_topology::topology::{scene::Color, volume::Volume};
 
 use crate::{
     edge_buffer::EdgeBuffer,
@@ -7,7 +7,7 @@ use crate::{
     vertex_buffer::{RenderVertex, VertexBuffer},
 };
 
-pub fn rasterize_volume_into_face_list(volume: &Volume, color: [f32; 4]) -> TriangleBuffer {
+pub fn rasterize_volume_into_face_list(volume: &Volume, color: Color) -> TriangleBuffer {
     let mut buffer = TriangleBuffer::empty();
 
     for face in volume.boundary.faces.iter() {
@@ -27,7 +27,7 @@ pub fn rasterize_volume_into_face_list(volume: &Volume, color: [f32; 4]) -> Tria
     buffer
 }
 
-pub fn rasterize_volume_into_line_list(volume: &Volume, color: [f32; 4]) -> EdgeBuffer {
+pub fn rasterize_volume_into_line_list(volume: &Volume, color: Color) -> EdgeBuffer {
     let mut buffer = EdgeBuffer::empty();
 
     for face in volume.boundary.faces.iter() {
@@ -45,7 +45,7 @@ pub fn rasterize_volume_into_line_list(volume: &Volume, color: [f32; 4]) -> Edge
     buffer
 }
 
-pub fn rasterize_volume_into_vertex_list(volume: &Volume, color: [f32; 4]) -> VertexBuffer {
+pub fn rasterize_volume_into_vertex_list(volume: &Volume, color: Color) -> VertexBuffer {
     let mut buffer = VertexBuffer::empty();
 
     for face in volume.all_faces().iter() {

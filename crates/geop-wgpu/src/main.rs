@@ -23,7 +23,7 @@ use geop_topology::{
     debug_data::get_debug_data,
     difference::face_face::face_face_difference,
     operations::extrude::extrude,
-    topology::{contour::Contour, edge::Edge, face::Face},
+    topology::{contour::Contour, edge::Edge, face::Face, scene::Color},
 };
 use geop_wgpu::window::GeopWindow;
 use winit::{event_loop::EventLoop, window::WindowBuilder};
@@ -106,7 +106,7 @@ async fn run() {
             Point::new(0.0, 0.0, 0.0),
             Point::new(1.0, 0.0, 0.0),
             Point::new(0.0, 1.0, 0.0),
-            [1.0, 1.0, 0.0, 1.0],
+            Color::white(),
         )]);
         println!("Union face: {:?}", union_face);
         // let vertex_buffer_triange = rasterize_face_into_triangle_list(&union_face, [0.0, 1.0, 0.0]);
@@ -115,20 +115,11 @@ async fn run() {
         // vertex_buffer_triange.join(&vertex_buffer_triange2);
         // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
         let mut triangles = TriangleBuffer::empty();
-        triangles.join(&rasterize_volume_into_face_list(
-            &object,
-            [1.0, 1.0, 1.0, 1.0],
-        ));
+        triangles.join(&rasterize_volume_into_face_list(&object, Color::white()));
         let mut lines = EdgeBuffer::empty();
-        lines.join(&rasterize_volume_into_line_list(
-            &object,
-            [0.0, 0.0, 0.0, 1.0],
-        ));
+        lines.join(&rasterize_volume_into_line_list(&object, Color::white()));
         let mut points = VertexBuffer::empty();
-        points.join(&rasterize_volume_into_vertex_list(
-            &object,
-            [1.0, 0.0, 0.0, 1.0],
-        ));
+        points.join(&rasterize_volume_into_vertex_list(&object, Color::white()));
         return (points, lines, triangles);
     });
     match result {
