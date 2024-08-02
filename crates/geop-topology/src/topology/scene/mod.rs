@@ -17,6 +17,31 @@ impl Color {
         Color { r, g, b, a }
     }
 
+    pub fn standard_pallet(dark_mode: bool) -> (Color, Color, Color, Color) {
+        let background_color = if dark_mode {
+            Color::from_brightness(0.2)
+        } else {
+            Color::from_brightness(1.0)
+        };
+        let face_color = if dark_mode {
+            Color::from_brightness(0.2)
+        } else {
+            Color::from_brightness(0.6)
+        };
+        let edge_color = if dark_mode {
+            Color::from_brightness(0.7)
+        } else {
+            Color::from_brightness(0.2)
+        };
+        let point_color = if dark_mode {
+            Color::from_brightness(0.8)
+        } else {
+            Color::from_brightness(0.1)
+        };
+
+        (background_color, face_color, edge_color, point_color)
+    }
+
     pub fn from_brightness(brightness: f32) -> Color {
         Color {
             r: brightness,

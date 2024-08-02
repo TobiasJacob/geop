@@ -115,11 +115,20 @@ async fn run() {
         // vertex_buffer_triange.join(&vertex_buffer_triange2);
         // let lines = rasterize_contours_into_line_list(&union_face.boundaries, [1.0, 1.0, 1.0]);
         let mut triangles = TriangleBuffer::empty();
-        triangles.join(&rasterize_volume_into_face_list(&object, Color::white()));
+        triangles.join(&rasterize_volume_into_face_list(
+            &object,
+            Color::from_brightness(1.0),
+        ));
         let mut lines = EdgeBuffer::empty();
-        lines.join(&rasterize_volume_into_line_list(&object, Color::white()));
+        lines.join(&rasterize_volume_into_line_list(
+            &object,
+            Color::from_brightness(0.3),
+        ));
         let mut points = VertexBuffer::empty();
-        points.join(&rasterize_volume_into_vertex_list(&object, Color::white()));
+        points.join(&rasterize_volume_into_vertex_list(
+            &object,
+            Color::from_brightness(0.1),
+        ));
         return (points, lines, triangles);
     });
     match result {

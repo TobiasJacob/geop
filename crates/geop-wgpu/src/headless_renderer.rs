@@ -112,27 +112,8 @@ impl HeadlessRenderer {
         dark_mode: bool,
         file_path: &std::path::Path,
     ) {
-        let background_color = if dark_mode {
-            Color::from_brightness(0.2)
-        } else {
-            Color::from_brightness(1.0)
-        };
-        let face_color = if dark_mode {
-            Color::from_brightness(0.2)
-        } else {
-            Color::from_brightness(0.6)
-        };
-        let edge_color = if dark_mode {
-            Color::from_brightness(0.7)
-        } else {
-            Color::from_brightness(0.2)
-        };
-        let point_color = if dark_mode {
-            Color::from_brightness(0.8)
-        } else {
-            Color::from_brightness(0.1)
-        };
-
+        let (background_color, face_color, edge_color, point_color) =
+            Color::standard_pallet(dark_mode);
         let u32_size = std::mem::size_of::<u32>() as u32;
         let mut encoder = self
             .device
