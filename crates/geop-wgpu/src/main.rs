@@ -31,7 +31,7 @@ use winit::{event_loop::EventLoop, window::WindowBuilder};
 pub fn linear_edge(s: Point, e: Point) -> Edge {
     let p1 = s;
     let p2 = e;
-    Edge::new(s, e, Curve::Line(Line::new(p1, p2 - p1)))
+    Edge::new(Some(s), Some(e), Curve::Line(Line::new(p1, p2 - p1)))
 }
 
 pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
@@ -41,8 +41,8 @@ pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
     );
     let point = s;
     Edge::new(
-        s,
-        e,
+        Some(s),
+        Some(e),
         Curve::Circle(Circle::new(
             center,
             Point::new(0.0, 0.0, 1.0),

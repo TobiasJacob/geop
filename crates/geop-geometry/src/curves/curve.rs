@@ -57,7 +57,7 @@ impl Curve {
     }
 
     // Interpolate between start and end at t. t is between 0 and 1.
-    pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
+    pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match self {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
@@ -76,7 +76,7 @@ impl Curve {
     // // Parallel transport of v from x to y.
     // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter;
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, m: Point, start: Point, end: Point) -> bool {
+    pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         match self {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
@@ -84,11 +84,20 @@ impl Curve {
         }
     }
     // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
-    pub fn get_midpoint(&self, start: Point, end: Point) -> Point {
+    // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
+    pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
             Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
+        }
+    }
+
+    pub fn project(&self, p: Point) -> Point {
+        match self {
+            Curve::Line(line) => line.project(p),
+            Curve::Circle(circle) => circle.project(p),
+            Curve::Ellipse(ellipse) => ellipse.project(p),
         }
     }
 }

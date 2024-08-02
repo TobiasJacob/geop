@@ -25,8 +25,12 @@ pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Point> {
                 }
                 EdgeEdgeIntersection::Edges(edges) => {
                     for edge in edges {
-                        intersections.push(edge.start.clone());
-                        intersections.push(edge.end.clone());
+                        if let Some(p) = edge.start {
+                            intersections.push(p);
+                        }
+                        if let Some(p) = edge.end {
+                            intersections.push(p);
+                        }
                     }
                 }
                 EdgeEdgeIntersection::None => {}

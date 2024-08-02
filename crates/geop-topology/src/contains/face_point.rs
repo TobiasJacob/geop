@@ -30,7 +30,7 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
         }
     }
     // Draw a line from the point to a random point on the border.
-    let q = face.boundary.edges[0].start.clone();
+    let q = face.boundary.edges[0].get_midpoint();
     let curve = face.edge_from_to(point, q);
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
@@ -48,8 +48,12 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
             }
             EdgeEdgeIntersection::Edges(edges) => {
                 for edge in edges {
-                    intersection_points.push(edge.start.clone());
-                    intersection_points.push(edge.end.clone());
+                    if let Some(p) = edge.start {
+                        intersection_points.push(p);
+                    }
+                    if let Some(p) = edge.end {
+                        intersection_points.push(p);
+                    }
                 }
             }
             EdgeEdgeIntersection::None => {}

@@ -43,6 +43,17 @@ impl Mul<Point> for Transform {
     }
 }
 
+impl Mul<Option<Point>> for Transform {
+    type Output = Option<Point>;
+
+    fn mul(self, other: Option<Point>) -> Option<Point> {
+        match other {
+            Some(point) => Some(self * point),
+            None => None,
+        }
+    }
+}
+
 impl Transform {
     pub fn from_translation(point: Point) -> Transform {
         let mut matrix = [[0.0; 4]; 4];

@@ -74,9 +74,10 @@ impl Contour {
     pub fn all_points(&self) -> Vec<Point> {
         let mut points = Vec::<Point>::new();
         for edge in self.edges.iter() {
-            points.push(edge.start.clone());
+            if let Some(start) = edge.start {
+                points.push(start);
+            }
         }
-        points.push(self.edges.last().unwrap().end.clone());
         return points;
     }
 
@@ -107,7 +108,7 @@ impl Contour {
                 EdgePointContains::Inside => {
                     return EdgeIndex::OnEdge(i);
                 }
-                EdgePointContains::OnPoint(p) => match p == edge.end {
+                EdgePointContains::OnPoint(p) => match Some(p) == edge.end {
                     true => return EdgeIndex::OnCorner(i, (i + 1) % self.edges.len()),
                     false => {
                         return EdgeIndex::OnCorner(
@@ -151,11 +152,11 @@ impl Contour {
             // Check if end comes before start, otherwise we have to go all the way around
             if self.edges[start_i]
                 .curve
-                .between(start, self.edges[start_i].start, end)
+                .between(start, self.edges[start_i].start, Some(end))
             {
                 result.push(Edge::new(
-                    start.clone(),
-                    end.clone(),
+                    Some(start.clone()),
+                    Some(end.clone()),
                     self.edges[start_i].curve.clone(),
                 ));
                 return result;
@@ -163,9 +164,9 @@ impl Contour {
         }
 
         let mut edge = &self.edges[start_i];
-        if start != edge.end {
+        if Some(start) != edge.end {
             result.push(Edge::new(
-                start.clone(),
+                Some(start.clone()),
                 edge.end.clone(),
                 edge.curve.clone(),
             ));
@@ -175,10 +176,10 @@ impl Contour {
             result.push(edge.clone());
         }
         edge = &self.edges[end_i % self.edges.len()];
-        if edge.start != end {
+        if edge.start != Some(end) {
             result.push(Edge::new(
                 edge.start.clone(),
-                end.clone(),
+                Some(end.clone()),
                 edge.curve.clone(),
             ));
         }
@@ -192,13 +193,13 @@ impl Contour {
         };
         let mut result = Vec::<Edge>::new();
         result.push(Edge::new(
-            point.clone(),
+            Some(point.clone()),
             self.edges[i].end.clone(),
             self.edges[i].curve.clone(),
         ));
         for j in 1..(self.edges.len() - 1) {
             let edge = self.edges[(i + j) % self.edges.len()].clone();
-            if edge.end == point {
+            if edge.end == Some(point) {
                 result.push(edge);
                 break;
             }
@@ -208,7 +209,7 @@ impl Contour {
             self.edges[(i + self.edges.len() - 1) % self.edges.len()]
                 .start
                 .clone(),
-            point.clone(),
+            Some(point.clone()),
             self.edges[(i + self.edges.len() - 1) % self.edges.len()]
                 .curve
                 .clone(),

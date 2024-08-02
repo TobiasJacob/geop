@@ -9,17 +9,25 @@ use crate::{
 pub fn edge_split_points(a: &Edge, b: &Edge) -> Vec<Point> {
     let mut split_points = Vec::<Point>::new();
 
-    if !split_points.contains(&a.start) {
-        split_points.push(a.start.clone());
+    if let Some(p) = a.start {
+        if !split_points.contains(&p) {
+            split_points.push(p.clone());
+        }
     }
-    if !split_points.contains(&a.end) {
-        split_points.push(a.end.clone());
+    if let Some(p) = a.end {
+        if !split_points.contains(&p) {
+            split_points.push(p.clone());
+        }
     }
-    if !split_points.contains(&b.start) {
-        split_points.push(b.start.clone());
+    if let Some(p) = b.start {
+        if !split_points.contains(&p) {
+            split_points.push(p.clone());
+        }
     }
-    if !split_points.contains(&b.end) {
-        split_points.push(b.end.clone());
+    if let Some(p) = b.end {
+        if !split_points.contains(&p) {
+            split_points.push(p.clone());
+        }
     }
 
     split_points

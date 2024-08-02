@@ -13,8 +13,16 @@ pub fn split_edge_by_points_if_necessary(edge: &Edge, points: &[Point]) -> Vec<E
             if edge_point_contains(edge, *p) != EdgePointContains::Inside {
                 new_result.push(edge.clone());
             } else {
-                new_result.push(Edge::new(edge.start.clone(), p.clone(), edge.curve.clone()));
-                new_result.push(Edge::new(p.clone(), edge.end.clone(), edge.curve.clone()));
+                new_result.push(Edge::new(
+                    edge.start.clone(),
+                    Some(p.clone()),
+                    edge.curve.clone(),
+                ));
+                new_result.push(Edge::new(
+                    Some(p.clone()),
+                    edge.end.clone(),
+                    edge.curve.clone(),
+                ));
             }
         }
         result = new_result;

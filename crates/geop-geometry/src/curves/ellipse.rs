@@ -33,7 +33,7 @@ impl Ellipse {
         todo!("Implement on_manifold")
     }
 
-    pub fn interpolate(&self, _start: Point, _end: Point, _t: f64) -> Point {
+    pub fn interpolate(&self, _start: Option<Point>, _end: Option<Point>, _t: f64) -> Point {
         todo!("Implement interpolate")
     }
 
@@ -58,12 +58,16 @@ impl Ellipse {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, _m: Point, _start: Point, _end: Point) -> bool {
+    pub fn between(&self, _m: Point, _start: Option<Point>, _end: Option<Point>) -> bool {
         todo!("Implement between")
     }
 
-    pub fn get_midpoint(&self, _start: Point, _end: Point) -> Point {
+    pub fn get_midpoint(&self, _start: Option<Point>, _end: Option<Point>) -> Point {
         todo!("Implement get_midpoint")
+    }
+
+    pub fn project(&self, _p: Point) -> Point {
+        todo!("Implement project")
     }
 }
 

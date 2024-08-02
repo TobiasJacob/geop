@@ -13,7 +13,7 @@ pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     if !edge.curve.on_manifold(point) {
         return EdgePointContains::Outside;
     }
-    if point == edge.start || point == edge.end {
+    if Some(point) == edge.start || Some(point) == edge.end {
         return EdgePointContains::OnPoint(point);
     }
     if edge.curve.between(point, edge.start, edge.end) {

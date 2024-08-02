@@ -14,7 +14,7 @@ pub enum FaceEdgeContains {
 
 // Checks if the edge is on the surface, and if the midpoint of an edge is inside the face.
 pub fn face_edge_contains(face: &Face, edge: &Edge) -> FaceEdgeContains {
-    let p = edge.get_midpoint(edge.start, edge.end);
+    let p = edge.get_midpoint();
     match face_point_contains(face, p) {
         FacePointContains::Inside => FaceEdgeContains::Inside,
         FacePointContains::Outside => FaceEdgeContains::Outside,

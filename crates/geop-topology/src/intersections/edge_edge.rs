@@ -19,14 +19,13 @@ pub enum EdgeEdgeIntersection {
     Edges(Vec<Edge>),
 }
 
-// All intersections where it crosses other edge. The end points are included.
 pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIntersection {
     match curve_curve_intersection(&edge_self.curve, &edge_other.curve) {
         CurveCurveIntersection::Curve(_) => {
             let same_dir = edge_self
                 .curve
-                .tangent(edge_self.start)
-                .dot(edge_other.curve.tangent(edge_self.start))
+                .tangent(edge_self.get_midpoint())
+                .dot(edge_other.curve.tangent(edge_self.get_midpoint()))
                 > 0.0;
             let edge_other = if same_dir {
                 edge_other.clone()

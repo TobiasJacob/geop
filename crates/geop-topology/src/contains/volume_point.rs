@@ -33,8 +33,8 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
     // choose a random point on a face
     let q = volume.all_faces()[0].inner_point();
     let edge = Edge::new(
-        other.clone(),
-        q.clone(),
+        Some(other.clone()),
+        Some(q.clone()),
         Curve::Line(Line::new(other, q - other)),
     );
 
@@ -48,10 +48,10 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
         match intersections {
             FaceEdgeIntersection::Edges(edges) => {
                 for edge in edges {
-                    let distance = (other - edge.start).norm();
+                    let distance = (other - edge.get_midpoint()).norm();
                     if distance < closest_distance {
-                        let curve_dir = edge.curve.tangent(edge.start);
-                        let normal = volume.boundary_normal(edge.start);
+                        let curve_dir = edge.curve.tangent(edge.get_midpoint());
+                        let normal = volume.boundary_normal(edge.get_midpoint());
                         closest_distance = distance;
                         closest_intersect_from_inside = normal.is_from_inside(curve_dir);
                     }

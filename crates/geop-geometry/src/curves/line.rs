@@ -1,4 +1,4 @@
-use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
 
 #[derive(Debug, Clone)]
 pub struct Line {
@@ -34,10 +34,17 @@ impl Line {
         v.norm() < EQ_THRESHOLD
     }
 
-    pub fn interpolate(&self, start: Point, end: Point, t: f64) -> Point {
-        assert!(self.on_manifold(start));
-        assert!(self.on_manifold(end));
-        start + (end - start) * t
+    pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+        match (start, end) {
+            (Some(start), Some(end)) => {
+                assert!(self.on_manifold(start));
+                assert!(self.on_manifold(end));
+                start + (end - start) * t
+            }
+            (Some(start), None) => start + self.direction * t * HORIZON_DIST,
+            (None, Some(end)) => end - self.direction * t * HORIZON_DIST,
+            (None, None) => self.basis + self.direction * (t - 0.5) * 2.0 * HORIZON_DIST,
+        }
     }
 
     // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
@@ -67,17 +74,42 @@ impl Line {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, m: Point, start: Point, end: Point) -> bool {
+    pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         assert!(self.on_manifold(m));
-        assert!(self.on_manifold(start));
-        assert!(self.on_manifold(end));
-        (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
+        match (start, end) {
+            (Some(start), Some(end)) => {
+                assert!(self.on_manifold(start));
+                assert!(self.on_manifold(end));
+                (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
+            }
+            (Some(start), None) => {
+                assert!(self.on_manifold(start));
+                (m - start).dot(self.direction) >= 0.0
+            }
+            (None, Some(end)) => {
+                assert!(self.on_manifold(end));
+                (m - end).dot(self.direction) <= 0.0
+            }
+            (None, None) => true,
+        }
     }
 
-    pub fn get_midpoint(&self, start: Point, end: Point) -> Point {
-        assert!(self.on_manifold(start));
-        assert!(self.on_manifold(end));
-        (start + end) / 2.0
+    pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+        match (start, end) {
+            (Some(start), Some(end)) => {
+                assert!(self.on_manifold(start));
+                assert!(self.on_manifold(end));
+                (start + end) / 2.0
+            }
+            (Some(start), None) => start + self.direction * 1.0,
+            (None, Some(end)) => end - self.direction * 1.0,
+            (None, None) => self.basis + self.direction * HORIZON_DIST,
+        }
+    }
+
+    pub fn project(&self, p: Point) -> Point {
+        let v = p - self.basis;
+        self.basis + self.direction * v.dot(self.direction)
     }
 }
 

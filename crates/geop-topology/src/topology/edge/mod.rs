@@ -6,19 +6,52 @@ use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 
 #[derive(Clone, Debug)]
 pub struct Edge {
-    pub start: Point,
-    pub end: Point,
+    pub start: Option<Point>,
+    pub end: Option<Point>,
     pub curve: Curve,
 }
 // Represents an Edge, defined by a curve, and a start and end point.
 // It is important to know that the start and end point are not considered a part of the edge.
 // E.g. "intersection" between two edges at end points are not considered intersections.
 impl Edge {
-    pub fn new(start: Point, end: Point, curve: Curve) -> Edge {
-        assert!(start != end); // Prevent zero length edges
-        assert!(curve.on_manifold(start));
-        assert!(curve.on_manifold(end));
-        Edge { start, end, curve }
+    pub fn new(start: Option<Point>, end: Option<Point>, curve: Curve) -> Edge {
+        match start {
+            Some(start) => match end {
+                Some(end) => {
+                    let start = curve.project(start);
+                    let end = curve.project(end);
+                    match start == end {
+                        true => Edge {
+                            start: None,
+                            end: None,
+                            curve,
+                        },
+                        false => Edge {
+                            start: Some(start),
+                            end: Some(end),
+                            curve,
+                        },
+                    }
+                }
+                None => Edge {
+                    start: Some(curve.project(start)),
+                    end: None,
+                    curve,
+                },
+            },
+            None => match end {
+                Some(end) => Edge {
+                    start: None,
+                    end: Some(curve.project(end)),
+                    curve,
+                },
+                None => Edge {
+                    start: None,
+                    end: None,
+                    curve,
+                },
+            },
+        }
     }
 
     pub fn neg(&self) -> Edge {
@@ -37,10 +70,8 @@ impl Edge {
         )
     }
 
-    pub fn get_midpoint(&self, a: Point, b: Point) -> Point {
-        assert!(self.curve.on_manifold(a));
-        assert!(self.curve.on_manifold(b));
-        self.curve.get_midpoint(a, b)
+    pub fn get_midpoint(&self) -> Point {
+        self.curve.get_midpoint(self.start, self.end)
     }
 
     pub fn tangent(&self, p: Point) -> Point {

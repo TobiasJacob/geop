@@ -32,18 +32,25 @@ pub fn rasterize_edges_into_line_list(edges: &[Edge], color: [f32; 4]) -> EdgeBu
 }
 
 pub fn rasterize_edge_into_vertex_list(edge: &Edge, color: [f32; 4]) -> VertexBuffer {
-    let verts = vec![
-        RenderVertex::new(edge.start, color),
-        RenderVertex::new(edge.end, color),
-    ];
+    let mut verts = Vec::with_capacity(2);
+    if let Some(start) = edge.start {
+        verts.push(RenderVertex::new(start, color));
+    }
+    if let Some(end) = edge.end {
+        verts.push(RenderVertex::new(end, color));
+    }
     VertexBuffer::new(verts)
 }
 
-pub fn rasterize_edges_into_vertex_list(edge: &[Edge], color: [f32; 4]) -> VertexBuffer {
-    let mut verts = Vec::with_capacity(edge.len() * 2);
-    for e in edge {
-        verts.push(RenderVertex::new(e.start, color));
-        verts.push(RenderVertex::new(e.end, color));
+pub fn rasterize_edges_into_vertex_list(edges: &[Edge], color: [f32; 4]) -> VertexBuffer {
+    let mut verts = Vec::with_capacity(edges.len() * 2);
+    for e in edges {
+        if let Some(start) = e.start {
+            verts.push(RenderVertex::new(start, color));
+        }
+        if let Some(end) = e.end {
+            verts.push(RenderVertex::new(end, color));
+        }
     }
     VertexBuffer::new(verts)
 }
