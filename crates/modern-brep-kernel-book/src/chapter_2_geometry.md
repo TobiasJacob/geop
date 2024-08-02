@@ -115,3 +115,8 @@ This property also extends to more complicated geometries like nurbs and means t
 Here is an example of the intersection of multiple lines with each other. The intersections are red, the lines are black. Two black lines overlap each other and result in a red line. The other lines intersect only in the red points.
 
 ![Line Intersections](./generated_images/geometry/line_line_intersections.png)
+
+These are the intersection cases for circles. The circles are black, the intersections are red. Two circles overlap and result in a circle. Two other circles intersect in two points. The last case is where the circles just touch each other and intersect in one point.
+
+![Circle Intersections](./generated_images/geometry/circle_circle_intersections.png)
+
