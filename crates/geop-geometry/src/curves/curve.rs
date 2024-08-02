@@ -66,7 +66,8 @@ impl Curve {
         }
     }
 
-    // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
+    // Get the midpoint between start and end.
+    // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
     pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match self {
@@ -75,6 +76,7 @@ impl Curve {
         }
     }
 
+    // Finds the closest point on the curve to the given point.
     pub fn project(&self, p: Point) -> Point {
         match self {
             Curve::Line(line) => line.project(p),

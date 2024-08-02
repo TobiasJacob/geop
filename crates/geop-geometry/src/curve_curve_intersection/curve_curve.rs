@@ -29,9 +29,13 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
             },
         },
         Curve::Circle(circle) => match edge_other {
-            Curve::Line(_other_line) => {
-                todo!("Circle-Line intersection")
-            }
+            Curve::Line(other_line) => match circle_line_intersection(circle, other_line) {
+                CircleLineIntersection::None => CurveCurveIntersection::None,
+                CircleLineIntersection::OnePoint(p) => CurveCurveIntersection::Points(vec![p]),
+                CircleLineIntersection::TwoPoint(p1, p2) => {
+                    CurveCurveIntersection::Points(vec![p1, p2])
+                }
+            },
             Curve::Circle(other_circle) => match circle_circle_intersection(circle, other_circle) {
                 CircleCircleIntersection::None => CurveCurveIntersection::None,
                 CircleCircleIntersection::OnePoint(p) => CurveCurveIntersection::Points(vec![p]),
