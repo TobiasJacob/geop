@@ -27,3 +27,5 @@ let circle = Circle::new(
 );
 ```
 
+![Circle](./generated_images/geometry/primitive_circle.png)
+

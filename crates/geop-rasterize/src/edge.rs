@@ -1,3 +1,4 @@
+use geop_geometry::curves::curve::Curve;
 use geop_topology::topology::edge::Edge;
 
 use crate::{
@@ -7,7 +8,11 @@ use crate::{
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_edge_into_line_list(edge: &Edge, color: [f32; 4]) -> EdgeBuffer {
-    let n = 5;
+    let n = match edge.curve {
+        Curve::Line(_) => 1,
+        Curve::Circle(_) => 128,
+        Curve::Ellipse(_) => 128,
+    };
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {
         let v1 = (j as f64) / n as f64;

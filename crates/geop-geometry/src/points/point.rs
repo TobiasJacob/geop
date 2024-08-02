@@ -64,8 +64,20 @@ impl Point {
         (dot / norm).acos()
     }
 
+    pub fn new_zero() -> Point {
+        Point::new(0.0, 0.0, 0.0)
+    }
+
     pub fn new_unit_x() -> Point {
         Point::new(1.0, 0.0, 0.0)
+    }
+
+    pub fn new_unit_y() -> Point {
+        Point::new(0.0, 1.0, 0.0)
+    }
+
+    pub fn new_unit_z() -> Point {
+        Point::new(0.0, 0.0, 1.0)
     }
 }
 
