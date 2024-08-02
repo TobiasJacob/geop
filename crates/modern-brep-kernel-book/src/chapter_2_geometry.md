@@ -85,14 +85,32 @@ These are all the methods that have to be used to interact with curves. You migh
 Intersections are fully supported between all curves. Keep in mind, that intersections are not always a single point. For example, two lines can intersect in one point, but they can also intersect in infinitely many points if they are the same line, or in no points if they are parallel. This is represented by the enum data type that is returned by the intersection function.
 
 ```rust
-pub enum LineLineIntersection {
-    Line(Line),
-    Point(Point),
+#[derive(Debug)]
+pub enum CircleCircleIntersection {
+    Circle(Circle),
+    TwoPoint(Point, Point),
+    OnePoint(Point),
     None,
 }
 
-pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection;
+pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleIntersection;
 ```
+
+Interestingly, there are no cases where the intersection of two curves results in a curve and a point.
+
+> **Note**: The intersection of two curves is EITHER a curve OR a list of points OR nothing. There is no case where the intersection is a curve and a point, or a bounded curve.
+
+```rust
+pub enum CurveCurveIntersection {
+    None,
+    Points(Vec<Point>),
+    Curve(Curve),
+}
+
+pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveCurveIntersection;
+```
+
+This property also extends to more complicated geometries like nurbs and means these datastructures are well closed under intersection. This also explains why they reside in their own crate. We use this property many times later in the topology modules.
 
 Here is an example of the intersection of multiple lines with each other. The intersections are red, the lines are black. Two black lines overlap each other and result in a red line. The other lines intersect only in the red points.
 

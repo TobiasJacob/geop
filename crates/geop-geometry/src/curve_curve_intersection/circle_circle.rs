@@ -30,9 +30,17 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
         else if d < EQ_THRESHOLD && r1 != r2 {
             return CircleCircleIntersection::None;
         }
-        // Check if both circles intersect in one point
+        // Check if both circles intersect in one point from outside
         else if (d - r1 - r2).abs() < EQ_THRESHOLD {
             let p = p1 + (p2 - p1).normalize() * r1;
+            return CircleCircleIntersection::OnePoint(p);
+        }
+        // Check if both circles intersect in one point from inside
+        else if (r1 - d - r2).abs() < EQ_THRESHOLD {
+            let p = p1 + (p2 - p1).normalize() * r1;
+            return CircleCircleIntersection::OnePoint(p);
+        } else if (r2 - d - r1).abs() < EQ_THRESHOLD {
+            let p = p2 + (p1 - p2).normalize() * r2;
             return CircleCircleIntersection::OnePoint(p);
         }
         // Check if both circles are disjoint
