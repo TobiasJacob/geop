@@ -52,7 +52,6 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                 faces.push(face);
             }
             Curve::Circle(_) => panic!("Cannot extrude circular edges"),
-            Curve::Ellipse(_) => todo!(),
         }
     }
     faces.push(start_face);

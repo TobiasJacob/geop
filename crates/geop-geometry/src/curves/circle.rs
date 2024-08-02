@@ -1,7 +1,5 @@
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
-use super::ellipse::Ellipse;
-
 #[derive(Debug, Clone)]
 pub struct Circle {
     pub basis: Point,
@@ -12,7 +10,7 @@ pub struct Circle {
 
 pub enum CircleTransform {
     Circle(Circle),
-    Ellipse(Ellipse),
+    Ellipse(), // TODO: Implement this
 }
 
 impl Circle {

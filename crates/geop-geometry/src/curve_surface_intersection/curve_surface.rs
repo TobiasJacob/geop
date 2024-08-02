@@ -50,8 +50,5 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
         Curve::Circle(_circle) => {
             todo!("Implement circle-surface intersection.")
         }
-        Curve::Ellipse(_ellipse) => {
-            todo!("Implement ellipse-surface intersection.")
-        }
     }
 }

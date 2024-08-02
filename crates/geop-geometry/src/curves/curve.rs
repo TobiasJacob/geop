@@ -4,7 +4,6 @@ use crate::{points::point::Point, transforms::Transform};
 
 use super::{
     circle::{Circle, CircleTransform},
-    ellipse::Ellipse,
     line::Line,
 };
 
@@ -12,7 +11,6 @@ use super::{
 pub enum Curve {
     Line(Line),
     Circle(Circle),
-    Ellipse(Ellipse),
 }
 
 // This represents an oriented curve. Curves with redundant representations (e.g. a line with the direction vector not being normalized) have to be normalized in the new function. Unnormalized curves are not allowed.
@@ -23,9 +21,8 @@ impl Curve {
             Curve::Line(line) => Curve::Line(line.transform(transform)),
             Curve::Circle(circle) => match circle.transform(transform) {
                 CircleTransform::Circle(circle) => Curve::Circle(circle),
-                CircleTransform::Ellipse(ellipse) => Curve::Ellipse(ellipse),
+                CircleTransform::Ellipse() => todo!("Implement this"),
             },
-            Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.transform(transform)),
         }
     }
 
@@ -33,7 +30,6 @@ impl Curve {
         match self {
             Curve::Line(line) => Curve::Line(line.neg()),
             Curve::Circle(circle) => Curve::Circle(circle.neg()),
-            Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.neg()),
         }
     }
 
@@ -43,7 +39,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
-            Curve::Ellipse(ellipse) => ellipse.tangent(p),
         }
     }
 
@@ -52,7 +47,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.on_manifold(p),
             Curve::Circle(circle) => circle.on_manifold(p),
-            Curve::Ellipse(ellipse) => ellipse.on_manifold(p),
         }
     }
 
@@ -61,7 +55,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
-            Curve::Ellipse(ellipse) => ellipse.interpolate(start, end, t),
         }
     }
 
@@ -80,7 +73,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
-            Curve::Ellipse(ellipse) => ellipse.between(m, start, end),
         }
     }
     // Get the midpoint between start and end. Not that this is well defined even on a circle, because the midpoint is between start and end.
@@ -89,7 +81,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
-            Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
         }
     }
 
@@ -97,7 +88,6 @@ impl Curve {
         match self {
             Curve::Line(line) => line.project(p),
             Curve::Circle(circle) => circle.project(p),
-            Curve::Ellipse(ellipse) => ellipse.project(p),
         }
     }
 }

@@ -102,7 +102,6 @@ impl Display for Edge {
         match &self.curve {
             Curve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
             Curve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
-            Curve::Ellipse(_ellipse) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
         }
     }
 }

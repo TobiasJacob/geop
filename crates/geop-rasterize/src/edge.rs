@@ -11,7 +11,6 @@ pub fn rasterize_edge_into_line_list(edge: &Edge, color: [f32; 4]) -> EdgeBuffer
     let n = match edge.curve {
         Curve::Line(_) => 1,
         Curve::Circle(_) => 128,
-        Curve::Ellipse(_) => 128,
     };
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {
