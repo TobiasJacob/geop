@@ -51,9 +51,7 @@ impl Plane {
     }
 
     pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
-        assert!(u.0.z.abs() < EQ_THRESHOLD);
-        assert!(v.0.z.abs() < EQ_THRESHOLD);
-        u.0.dot(v.0)
+        u.dot(v)
     }
 
     pub fn distance(&self, x: Point, y: Point) -> f64 {
@@ -62,26 +60,24 @@ impl Plane {
 
     pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
-        assert!(u.0.z.abs() < EQ_THRESHOLD);
-        x + u.0.x * self.u_slope + u.0.y * self.v_slope
+        x + u
     }
 
-    pub fn log(&self, x: Point, y: Point) -> TangentPoint {
+    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
-        let diff = y - x;
-        TangentPoint(Point::new(
-            diff.dot(self.u_slope),
-            diff.dot(self.v_slope),
-            0.0,
-        ))
+        Some(y - x)
     }
 
-    pub fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
+    pub fn parallel_transport(
+        &self,
+        v: Option<TangentPoint>,
+        x: Point,
+        y: Point,
+    ) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
-        assert!(v.0.z.abs() < EQ_THRESHOLD);
-        v.0
+        v
     }
 
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
@@ -95,6 +91,12 @@ impl Plane {
             self.basis - self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
             self.basis + self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
         ]
+    }
+
+    pub fn project(&self, point: Point) -> Point {
+        let normal = self.normal();
+        let distance = (point - self.basis).dot(normal);
+        point - distance * normal
     }
 }
 

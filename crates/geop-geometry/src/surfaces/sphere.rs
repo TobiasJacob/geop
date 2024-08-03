@@ -59,9 +59,7 @@ impl Sphere {
     }
 
     pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
-        assert!(u.0.z.abs() < EQ_THRESHOLD);
-        assert!(v.0.z.abs() < EQ_THRESHOLD);
-        u.0.dot(v.0)
+        u.dot(v)
     }
 
     pub fn distance(&self, x: Point, y: Point) -> f64 {
@@ -73,37 +71,68 @@ impl Sphere {
 
     pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
-        assert!(u.0.z.abs() < EQ_THRESHOLD);
-        let u_norm = u.0.norm();
-        let u_normalized = u.0 / u_norm;
+
+        if u.norm() < EQ_THRESHOLD {
+            return x;
+        }
+        let u_norm = u.norm();
+        let u_normalized = u / u_norm;
         x * u_norm.cos() * self.radius
             + u_normalized.cross(x) * u_norm.sin() * self.radius
             + self.basis
     }
 
-    pub fn log(&self, x: Point, y: Point) -> TangentPoint {
+    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
+
+        if x == y {
+            return Some(Point::new_zero());
+        }
         let x = (x - self.basis) / self.radius;
         let y = (y - self.basis) / self.radius;
         let dir = y - x.dot(y) * x;
         let dir_norm = dir.norm();
-        TangentPoint(self.distance(x, y) * dir / dir_norm)
+        if dir_norm < EQ_THRESHOLD {
+            return None;
+        }
+        Some(self.distance(x, y) * dir / dir_norm)
     }
 
-    pub fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
-        assert!(v.0.z.abs() < EQ_THRESHOLD);
+    pub fn parallel_transport(
+        &self,
+        v: Option<TangentPoint>,
+        x: Point,
+        y: Point,
+    ) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
-        let x = (x - self.basis) / self.radius;
-        let y = (y - self.basis) / self.radius;
-        let u = self.log(x, y);
-        let u_norm = u.0.norm();
-        let u_normalized = u.0 / u_norm;
-        -x * u_norm.sin() * u_normalized.dot(v.0)
-            + u_normalized * u_norm.cos() * u_normalized.dot(v.0)
-            + v.0
-            + u_normalized * u_normalized.dot(v.0)
+        match v {
+            None => {
+                return None;
+            }
+            Some(v) => {
+                let x = (x - self.basis) / self.radius;
+                let y = (y - self.basis) / self.radius;
+                let u = self.log(x, y);
+                match u {
+                    None => return Some(-y),
+                    Some(u) => {
+                        let u_norm = u.norm();
+                        if u_norm < EQ_THRESHOLD {
+                            return Some(v);
+                        }
+                        let u_normalized = u / u_norm;
+                        Some(
+                            -x * u_norm.sin() * u_normalized.dot(v)
+                                + u_normalized * u_norm.cos() * u_normalized.dot(v)
+                                + v
+                                + u_normalized * u_normalized.dot(v),
+                        )
+                    }
+                }
+            }
+        }
     }
 
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
@@ -127,6 +156,15 @@ impl Sphere {
             }
         }
         points
+    }
+
+    pub fn project(&self, point: Point) -> Point {
+        let diff = point - self.basis;
+        let dist = diff.norm();
+        if dist < EQ_THRESHOLD {
+            return self.basis;
+        }
+        self.basis + diff * self.radius / dist
     }
 }
 

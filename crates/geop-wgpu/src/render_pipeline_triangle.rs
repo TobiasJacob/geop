@@ -19,7 +19,7 @@ impl RenderPipelineTriangle {
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineTriangle {
-        let max_num_triangles = 1024;
+        let max_num_triangles = 4096;
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),

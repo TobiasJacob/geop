@@ -30,6 +30,29 @@ use crate::{
 // Source: https://www.redblobgames.com/x/1842-delaunay-voronoi-sphere/
 // To perform delaungy in 3d it is fine to project the points into their tangent plane and perform delaunay triangulation there.
 
+// pub fn inside_triangle_circumcircle(
+//     surface: &Surface,
+//     edge: &RenderEdge,
+//     ref_point: &RenderVertex,
+//     point: &RenderVertex,
+// ) -> bool {
+//     // First project points into the tangent plane.
+//     // Using mid_point as the reference point will ensure consistent results of the projection if ref_point is changed for point.
+//     let mid_point = surface.project(edge.mid_point());
+//     let projected_triangles = [
+//         surface.log(edge.start.into(), mid_point),
+//         surface.log(edge.end.into(), mid_point),
+//         surface.log(ref_point.point(), mid_point)
+//     ];
+
+fn determinant(row0: Point, row1: Point, row2: Point) -> f64 {
+    // use rule of sarrus to calculate determinant
+    row0.x * row1.y * row2.z - row0.z * row1.y * row2.x + row0.y * row1.z * row2.x
+        - row0.y * row1.x * row2.z
+        + row0.z * row1.x * row2.y
+        - row0.x * row1.z * row2.y
+}
+
 // This function checks if the point is inside the circumcircle of the triangle. The points have to be in counter clockwise order.
 pub fn inside_triangle_circumcircle(
     surface: &Surface,
@@ -37,38 +60,38 @@ pub fn inside_triangle_circumcircle(
     point: RenderVertex,
 ) -> bool {
     // First project points into the tangent plane.
-    let projected_triangles = [
-        surface.log(traingle.a.into(), point.into()),
-        surface.log(traingle.b.into(), point.into()),
-        surface.log(traingle.c.into(), point.into()),
-    ];
+    let projected_triangle0 = surface.log(traingle.a.point(), point.point());
+    let projected_triangle1 = surface.log(traingle.b.point(), point.point());
+    let projected_triangle2 = surface.log(traingle.c.point(), point.point());
+
+    let (projected_triangle0, projected_triangle1, projected_triangle2) = match (
+        projected_triangle0,
+        projected_triangle1,
+        projected_triangle2,
+    ) {
+        (Some(p0), Some(p1), Some(p2)) => (p0, p1, p2),
+        _ => return false,
+    };
+
     // Now use the classic delaunay algorithm in 2d.
 
     // Matrix as in https://en.wikipedia.org/wiki/Delaunay_triangulation
     // For planar Delaunay triangulation, we will check if the point lies inside the circumcircle of the triangle
+    let cross_dir = surface.normal(point.point());
 
-    let x1 = projected_triangles[0].0.x as f64;
-    let y1 = projected_triangles[0].0.y as f64;
-    let x2 = projected_triangles[1].0.x as f64;
-    let y2 = projected_triangles[1].0.y as f64;
-    let x3 = projected_triangles[2].0.x as f64;
-    let y3 = projected_triangles[2].0.y as f64;
-
-    let mat = [
-        [x1, y1, (x1).powi(2) + (y1).powi(2)],
-        [x2, y2, (x2).powi(2) + (y2).powi(2)],
-        [x3, y3, (x3).powi(2) + (y3).powi(2)],
-    ];
-
-    // use rule of sarrus to calculate determinant
-    let determinant = mat[0][0] * mat[1][1] * mat[2][2] - mat[0][2] * mat[1][1] * mat[2][0]
-        + mat[0][1] * mat[1][2] * mat[2][0]
-        - mat[0][1] * mat[1][0] * mat[2][2]
-        + mat[0][2] * mat[1][0] * mat[2][1]
-        - mat[0][0] * mat[1][2] * mat[2][1];
+    let mat0 = projected_triangle0 + cross_dir * projected_triangle0.norm_sq();
+    let mat1 = projected_triangle1 + cross_dir * projected_triangle1.norm_sq();
+    let mat2 = projected_triangle2 + cross_dir * projected_triangle2.norm_sq();
+    let det = determinant(mat0, mat1, mat2);
 
     // TODO: Check if we can do the triangulation in a single pass by choosing the point with minimum determinant right away...
-    -determinant < -EQ_THRESHOLD // Check this is < -0.0001, which means it is inside the circumcircle
+    // Check if -determinant is < 0, which means it is inside the circumcircle
+    // println!("Determinant: {}", det);
+    // Check if determinant is nan
+    if det.is_nan() {
+        panic!("Determinant is nan");
+    }
+    det > EQ_THRESHOLD * 10.0 // Check this is < -0.0001, which means it is inside the circumcircle
 }
 
 pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTriangle) -> bool {
@@ -80,7 +103,14 @@ pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTria
         surface.log(triangle.a.into(), triangle.b.into()),
         surface.log(triangle.a.into(), triangle.c.into()),
     );
-    let det = v1.0.x * v2.0.y - v1.0.y * v2.0.x;
+
+    let (v1, v2) = match (v1, v2) {
+        (Some(v1), Some(v2)) => (v1, v2),
+        _ => return false,
+    };
+
+    let normal = surface.normal(triangle.a.point());
+    let det = determinant(v1, v2, normal);
     return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
 }
 
@@ -128,21 +158,26 @@ pub fn triangle_intersects_triangle(
     triangle: &RenderTriangle,
     other_triangle: &RenderTriangle,
 ) -> bool {
-    let reference_point = triangle.a;
-
-    let project_fn = |p: &RenderNormalVertex| match surface {
-        Surface::Plane(plane) => plane.log(reference_point.into(), p.point().into()).0,
-        Surface::Sphere(sphere) => sphere.log(reference_point.into(), p.point().into()).0,
-    };
+    let reference_point = triangle.a.point();
 
     // six points with x and y coordinates
-    let a1 = project_fn(&triangle.a);
-    let b1 = project_fn(&triangle.b);
-    let c1 = project_fn(&triangle.c);
+    let a1 = surface.log(triangle.a.point(), reference_point);
+    let b1 = surface.log(triangle.b.point(), reference_point);
+    let c1 = surface.log(triangle.c.point(), reference_point);
 
-    let a2 = project_fn(&other_triangle.a);
-    let b2 = project_fn(&other_triangle.b);
-    let c2 = project_fn(&other_triangle.c);
+    let (a1, b1, c1) = match (a1, b1, c1) {
+        (Some(a1), Some(b1), Some(c1)) => (a1, b1, c1),
+        _ => return true,
+    };
+
+    let a2 = surface.log(other_triangle.a.point(), reference_point);
+    let b2 = surface.log(other_triangle.b.point(), reference_point);
+    let c2 = surface.log(other_triangle.c.point(), reference_point);
+
+    let (a2, b2, c2) = match (a2, b2, c2) {
+        (Some(a2), Some(b2), Some(c2)) => (a2, b2, c2),
+        _ => return true,
+    };
 
     // list of edges for both triangles
     let edges_triangle_1 = [(a1, b1), (b1, c1), (c1, a1)];
@@ -212,7 +247,7 @@ pub fn check_triangle(
         surface.normal(edge.end.point()),
         surface.normal(point.point()),
     );
-    // Check if the triangle is clockwise
+    // Check if the triangle is clockwise and has area > 0
     if !check_triangle_counter_clockwise(surface, &triangle) {
         return None;
     }
@@ -221,6 +256,20 @@ pub fn check_triangle(
         if !inside_triangle_circumcircle(surface, baseline_triangle, point) {
             return None;
         }
+        println!("Detected inside_triangle_circumcircle");
+        println!(
+            "Triangle: {:?} {:?} {:?}",
+            baseline_triangle.a.point(),
+            baseline_triangle.b.point(),
+            baseline_triangle.c.point()
+        );
+        println!(
+            "Triangle-log: {:?} {:?} {:?}",
+            surface.log(baseline_triangle.a.point(), point.into()),
+            surface.log(baseline_triangle.b.point(), point.into()),
+            surface.log(baseline_triangle.c.point(), point.into())
+        );
+        println!("Point: {:?}", point);
     }
     // Sometimes, edges are pushed to the back of the queue which have already 2 triangles connected to them. In this case, we can skip the edge.
     if triangle_intersects_triangle_list(surface, &triangle, triangle_list) {
@@ -276,6 +325,9 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 let distance = face
                     .surface
                     .distance(connection_points[i].point(), connection_points[j].point());
+                if distance < EQ_THRESHOLD {
+                    continue;
+                }
                 if distance < min_distance {
                     min_distance = distance;
                     best_edge = Some(RenderEdge::new(
@@ -296,6 +348,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     // Now iterate until all open_edges are processed.
     while let Some(edge) = open_edges.pop_front() {
         let mut best_triangle: Option<(RenderVertex, RenderTriangle)> = None;
+        println!("Open edges: {}", open_edges.len());
         // Now find the smallest valid triangle
         loop {
             let mut found_better_triangle = false;
@@ -308,6 +361,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                     &triangles,
                     best_triangle.as_ref().map(|(_, t)| t),
                 ) {
+                    println!("Found triangle: {:?}", point);
                     found_better_triangle = true;
                     best_triangle = Some((*point, triangle));
                     break;

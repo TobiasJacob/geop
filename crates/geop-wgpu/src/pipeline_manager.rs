@@ -74,6 +74,7 @@ impl PipelineManager {
     pub fn update_camera(&mut self, queue: &wgpu::Queue, omega: f32) {
         self.camera_pipeline.camera.eye.x = omega.sin() * 2.0;
         self.camera_pipeline.camera.eye.y = omega.cos() * 2.0;
+        self.camera_pipeline.camera.eye.z = omega.cos() * 2.0;
         self.camera_pipeline
             .camera_uniform
             .update_view_proj(&self.camera_pipeline.camera);

@@ -5,8 +5,7 @@ use super::{
     sphere::{Sphere, SphereTransform},
 };
 
-#[derive(Clone, Debug)]
-pub struct TangentPoint(pub Point);
+pub type TangentPoint = Point;
 
 pub trait SurfaceLike {
     // // Angle between a and b at x.
@@ -71,14 +70,19 @@ impl Surface {
         }
     }
     // Log of y at base x. Z coordinate is set to 0.
-    pub fn log(&self, x: Point, y: Point) -> TangentPoint {
+    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         match self {
             Surface::Plane(plane) => plane.log(x, y),
             Surface::Sphere(sphere) => sphere.log(x, y),
         }
     }
     // Parallel transport of v from x to y.
-    pub fn parallel_transport(&self, v: TangentPoint, x: Point, y: Point) -> Point {
+    pub fn parallel_transport(
+        &self,
+        v: Option<TangentPoint>,
+        x: Point,
+        y: Point,
+    ) -> Option<TangentPoint> {
         match self {
             Surface::Plane(plane) => plane.parallel_transport(v, x, y),
             Surface::Sphere(sphere) => sphere.parallel_transport(v, x, y),
@@ -96,6 +100,13 @@ impl Surface {
         match self {
             Surface::Plane(plane) => plane.point_grid(),
             Surface::Sphere(sphere) => sphere.point_grid(),
+        }
+    }
+
+    pub fn project(&self, point: Point) -> Point {
+        match self {
+            Surface::Plane(plane) => plane.project(point),
+            Surface::Sphere(sphere) => sphere.project(point),
         }
     }
 }
