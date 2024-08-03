@@ -105,8 +105,10 @@ impl Face {
 
     pub fn normal(&self, p: Point) -> Point {
         match face_point_contains(self, p) {
-            FacePointContains::Inside => (),
-            _ => panic!("Point is not on face"),
+            _ => (),
+            FacePointContains::NotOnSurface => {
+                panic!("Point is not on surface");
+            }
         }
         self.surface.normal(p)
     }

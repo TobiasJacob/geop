@@ -79,6 +79,7 @@ impl PipelineManager {
 
     pub fn run_pipelines<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
+        render_pass.set_bind_group(1, &self.camera_pipeline.light_bind_group, &[]);
         self.traingle_pipeline.render(render_pass);
         self.line_pipeline.render(render_pass);
         self.vertex_pipeline.render(render_pass);

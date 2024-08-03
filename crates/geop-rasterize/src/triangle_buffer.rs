@@ -3,24 +3,32 @@ use geop_topology::topology::scene::Color;
 
 use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
-    vertex_buffer::RenderVertex,
+    vertex_normal_buffer::RenderNormalVertex,
 };
 
 // This is a triangle that can be rendered on-screen. The vertices are in counter clockwise order.
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct RenderTriangle {
-    pub a: RenderVertex,
-    pub b: RenderVertex,
-    pub c: RenderVertex,
+    pub a: RenderNormalVertex,
+    pub b: RenderNormalVertex,
+    pub c: RenderNormalVertex,
 }
 
 impl RenderTriangle {
-    pub fn new(a: Point, b: Point, c: Point, color: Color) -> Self {
+    pub fn new(
+        a: Point,
+        b: Point,
+        c: Point,
+        color: Color,
+        normal_a: Point,
+        normal_b: Point,
+        normal_c: Point,
+    ) -> Self {
         RenderTriangle {
-            a: RenderVertex::new(a, color),
-            b: RenderVertex::new(b, color),
-            c: RenderVertex::new(c, color),
+            a: RenderNormalVertex::new(a, color, normal_a),
+            b: RenderNormalVertex::new(b, color, normal_b),
+            c: RenderNormalVertex::new(c, color, normal_c),
         }
     }
 }

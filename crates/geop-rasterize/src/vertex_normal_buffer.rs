@@ -4,14 +4,15 @@ use geop_topology::topology::scene::Color;
 // This is called RenderVertex to distinguish it from Vertex from topology package.
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 #[repr(C)]
-pub struct RenderVertex {
+pub struct RenderNormalVertex {
     pub position: [f32; 3],
     pub color: [f32; 4],
+    pub normal: [f32; 3],
 }
 
-impl RenderVertex {
-    pub fn new(p: Point, color: Color) -> Self {
-        RenderVertex {
+impl RenderNormalVertex {
+    pub fn new(p: Point, color: Color, normal: Point) -> Self {
+        RenderNormalVertex {
             position: [p.x as f32, p.y as f32, p.z as f32],
             color: [
                 color.r as f32,
@@ -19,6 +20,7 @@ impl RenderVertex {
                 color.b as f32,
                 color.a as f32,
             ],
+            normal: [normal.x as f32, normal.y as f32, normal.z as f32],
         }
     }
 
@@ -32,8 +34,8 @@ impl RenderVertex {
 }
 
 // Implement conversion to Point
-impl From<RenderVertex> for Point {
-    fn from(v: RenderVertex) -> Self {
+impl From<RenderNormalVertex> for Point {
+    fn from(v: RenderNormalVertex) -> Self {
         Point::new(
             v.position[0] as f64,
             v.position[1] as f64,
@@ -42,18 +44,18 @@ impl From<RenderVertex> for Point {
     }
 }
 
-pub struct VertexBuffer {
-    pub vertices: Vec<RenderVertex>,
+pub struct VertexNormalBuffer {
+    pub vertices: Vec<RenderNormalVertex>,
 }
 
-impl VertexBuffer {
+impl VertexNormalBuffer {
     // New is only visible in this crate
-    pub fn new(vertices: Vec<RenderVertex>) -> Self {
-        VertexBuffer { vertices }
+    pub fn new(vertices: Vec<RenderNormalVertex>) -> Self {
+        Self { vertices }
     }
 
     pub fn empty() -> Self {
-        VertexBuffer {
+        Self {
             vertices: Vec::new(),
         }
     }
@@ -62,7 +64,7 @@ impl VertexBuffer {
         bytemuck::cast_slice(&self.vertices)
     }
 
-    pub fn join(&mut self, other: &VertexBuffer) {
+    pub fn join(&mut self, other: &Self) {
         self.vertices.extend_from_slice(&other.vertices);
     }
 }

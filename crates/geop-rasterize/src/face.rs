@@ -12,6 +12,7 @@ use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
     triangle_buffer::{RenderTriangle, TriangleBuffer},
     vertex_buffer::RenderVertex,
+    vertex_normal_buffer::RenderNormalVertex,
 };
 
 // struct PointBuffer {
@@ -124,19 +125,19 @@ pub fn triangle_intersects_triangle(
 ) -> bool {
     let reference_point = triangle.a;
 
-    let project_fn = |p: RenderVertex| match surface {
-        Surface::Plane(plane) => plane.log(reference_point.into(), p.into()).0,
-        Surface::Sphere(sphere) => sphere.log(reference_point.into(), p.into()).0,
+    let project_fn = |p: &RenderNormalVertex| match surface {
+        Surface::Plane(plane) => plane.log(reference_point.into(), p.point().into()).0,
+        Surface::Sphere(sphere) => sphere.log(reference_point.into(), p.point().into()).0,
     };
 
     // six points with x and y coordinates
-    let a1 = project_fn(triangle.a);
-    let b1 = project_fn(triangle.b);
-    let c1 = project_fn(triangle.c);
+    let a1 = project_fn(&triangle.a);
+    let b1 = project_fn(&triangle.b);
+    let c1 = project_fn(&triangle.c);
 
-    let a2 = project_fn(other_triangle.a);
-    let b2 = project_fn(other_triangle.b);
-    let c2 = project_fn(other_triangle.c);
+    let a2 = project_fn(&other_triangle.a);
+    let b2 = project_fn(&other_triangle.b);
+    let c2 = project_fn(&other_triangle.c);
 
     // list of edges for both triangles
     let edges_triangle_1 = [(a1, b1), (b1, c1), (c1, a1)];
@@ -232,7 +233,15 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             }
             if triangle_intersects_triangle_list(
                 &face.surface,
-                &RenderTriangle::new(edge.start.into(), edge.end.into(), point.into(), color),
+                &RenderTriangle::new(
+                    edge.start.point(),
+                    edge.end.point(),
+                    point.point(),
+                    color,
+                    face.normal(edge.start.point()),
+                    face.normal(edge.end.point()),
+                    face.normal(point.point()),
+                ),
                 &triangles,
             ) {
                 continue;
@@ -269,10 +278,13 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 if triangle_intersects_triangle_list(
                     &face.surface,
                     &RenderTriangle::new(
-                        edge.start.into(),
-                        edge.end.into(),
-                        new_point.into(),
+                        edge.start.point(),
+                        edge.end.point(),
+                        new_point.point(),
                         color,
+                        face.normal(edge.start.point()),
+                        face.normal(edge.end.point()),
+                        face.normal(new_point.point()),
                     ),
                     &triangles,
                 ) {
@@ -294,6 +306,9 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             edge.end.into(),
             point.into(),
             color,
+            face.normal(edge.start.point()),
+            face.normal(edge.end.point()),
+            face.normal(point.point()),
         ));
         let inner_edge_1 = RenderEdge::new(point.into(), edge.end.into(), color);
         if !edge_intersects_contours(&face.surface, &inner_edge_1, &contours) {

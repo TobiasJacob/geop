@@ -1,21 +1,27 @@
 // Vertex shader
-struct Uniforms {
-    view_project: mat4x4<f32>,
-};
-
+struct Camera {
+    view_proj: mat4x4<f32>,
+}
 @group(0) @binding(0)
-var<uniform> uniforms: Uniforms;
+var<uniform> camera: Camera;
+
+struct Light {
+    position: vec3<f32>,
+    color: vec3<f32>,
+}
+@group(1) @binding(0)
+var<uniform> light: Light;
 
 struct VertexInput {
     @location(0) position: vec3<f32>,
     @location(1) color: vec4<f32>,
-    // @location(2) normal: vec3<f32>,
+    @location(2) normal: vec3<f32>,
 };
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) color: vec4<f32>,
-    // @location(1) normal: vec3<f32>,
+    @location(1) normal: vec3<f32>,
 };
 
 struct FragmentOutput {
@@ -28,7 +34,7 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
 
-    out.position = uniforms.view_project * vec4<f32>(in.position, 1.0);
+    out.position = camera.view_proj * vec4<f32>(in.position, 1.0);
     out.color = in.color;
     //out.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
     

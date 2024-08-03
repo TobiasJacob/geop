@@ -1,6 +1,6 @@
 use core::panic;
 
-use geop_rasterize::{triangle_buffer::TriangleBuffer, vertex_buffer::RenderVertex};
+use geop_rasterize::{triangle_buffer::TriangleBuffer, vertex_normal_buffer::RenderNormalVertex};
 use wgpu::{util::DeviceExt, TextureFormat};
 
 pub struct RenderPipelineTriangle {
@@ -21,7 +21,7 @@ impl RenderPipelineTriangle {
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),
-            contents: vec![0u8; 3 * max_num_triangles * std::mem::size_of::<RenderVertex>()]
+            contents: vec![0u8; 3 * max_num_triangles * std::mem::size_of::<RenderNormalVertex>()]
                 .as_slice(),
             usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
         });
@@ -38,7 +38,7 @@ impl RenderPipelineTriangle {
                 module: &shader,
                 entry_point: "vs_main", // 1.
                 buffers: &[wgpu::VertexBufferLayout {
-                    array_stride: std::mem::size_of::<RenderVertex>() as wgpu::BufferAddress,
+                    array_stride: std::mem::size_of::<RenderNormalVertex>() as wgpu::BufferAddress,
                     step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &[
                         wgpu::VertexAttribute {
@@ -50,6 +50,11 @@ impl RenderPipelineTriangle {
                             offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
                             shader_location: 1,
                             format: wgpu::VertexFormat::Float32x4,
+                        },
+                        wgpu::VertexAttribute {
+                            offset: std::mem::size_of::<[f32; 7]>() as wgpu::BufferAddress,
+                            shader_location: 2,
+                            format: wgpu::VertexFormat::Float32x3,
                         },
                     ],
                 }],
