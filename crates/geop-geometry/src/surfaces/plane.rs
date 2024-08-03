@@ -87,6 +87,10 @@ impl Plane {
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
         Curve::Line(Line::new(p, q - p))
     }
+
+    pub fn point_grid(&self) -> Vec<Point> {
+        Vec::new()
+    }
 }
 
 impl PartialEq for Plane {

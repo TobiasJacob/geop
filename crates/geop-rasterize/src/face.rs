@@ -5,7 +5,10 @@ use geop_geometry::{
     surfaces::surface::{Surface, TangentPoint},
     EQ_THRESHOLD,
 };
-use geop_topology::topology::{face::Face, scene::Color};
+use geop_topology::{
+    contains::face_point::{face_point_contains, FacePointContains},
+    topology::{face::Face, scene::Color},
+};
 
 use crate::{
     contour::rasterize_contour_into_line_list,
@@ -242,16 +245,26 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
         contours.push(points);
     }
 
+    // Rasterize the edges first
     let mut open_edges: VecDeque<RenderEdge> = contours
         .iter()
         .flat_map(|contour| contour.edges.iter())
         .cloned()
         .collect();
-    let connection_points = contours
+    let mut connection_points = contours
         .iter()
         .flat_map(|contour| contour.edges.iter())
         .map(|edge| edge.start)
         .collect::<Vec<RenderVertex>>();
+
+    // Then generate additional points on the surface
+    connection_points.extend(
+        face.surface
+            .point_grid()
+            .drain(..)
+            .filter(|p| face_point_contains(face, *p) == FacePointContains::Inside)
+            .map(|point| RenderVertex::new(point.clone(), color)),
+    );
 
     // TODO: Insert connection points in the surface
     // TODO: If open_edges has a length of 0, select a valid starting edge

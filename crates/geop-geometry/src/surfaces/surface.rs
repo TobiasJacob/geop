@@ -91,4 +91,11 @@ impl Surface {
             Surface::Sphere(sphere) => sphere.geodesic(x, y),
         }
     }
+    // Returns a point grid on the surface, which can be used for visualization.
+    pub fn point_grid(&self) -> Vec<Point> {
+        match self {
+            Surface::Plane(plane) => plane.point_grid(),
+            Surface::Sphere(sphere) => sphere.point_grid(),
+        }
+    }
 }
