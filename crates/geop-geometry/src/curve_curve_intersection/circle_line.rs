@@ -10,25 +10,27 @@ pub enum CircleLineIntersection {
     OnePoint(Point),
     None,
 }
-
-pub fn circle_line_intersection(a: &Circle, b: &Line) -> CircleLineIntersection {
+pub fn circle_line_intersection(circle: &Circle, line: &Line) -> CircleLineIntersection {
     assert!(
-        a.normal.is_perpendicular(b.direction),
+        circle.normal.is_perpendicular(line.direction),
         "3D circle-line intersection is not implemented yet"
     );
-    // Assume that the line is normalized
-    let v = b.basis - a.basis;
-    let v = v.dot(b.direction);
-    let w = v * v - (v * v - a.radius.norm_sq());
-    if w < -EQ_THRESHOLD {
+
+    let v = circle.basis - line.basis;
+    let dir = line.direction.normalize();
+    let projection = v.dot(dir);
+    let distance_sq = v.norm_sq() - projection * projection;
+    let radius_sq = circle.radius.norm_sq();
+
+    if distance_sq > radius_sq + EQ_THRESHOLD {
         CircleLineIntersection::None
-    } else if w < EQ_THRESHOLD {
-        CircleLineIntersection::OnePoint(a.basis + b.direction * v)
+    } else if (radius_sq - distance_sq).abs() < EQ_THRESHOLD {
+        CircleLineIntersection::OnePoint(line.basis + dir * projection)
     } else {
-        let w = w.sqrt();
+        let offset = (radius_sq - distance_sq).sqrt();
         CircleLineIntersection::TwoPoint(
-            a.basis + b.direction * (v - w),
-            a.basis + b.direction * (v + w),
+            line.basis + dir * (projection - offset),
+            line.basis + dir * (projection + offset),
         )
     }
 }
