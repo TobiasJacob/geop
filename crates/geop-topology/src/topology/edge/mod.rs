@@ -18,6 +18,8 @@ impl Edge {
         match start {
             Some(start) => match end {
                 Some(end) => {
+                    assert!(curve.on_curve(start));
+                    assert!(curve.on_curve(end));
                     let start = curve.project(start);
                     let end = curve.project(end);
                     match start == end {

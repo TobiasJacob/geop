@@ -30,11 +30,11 @@ mod tests {
 
         for p in face.surface.point_grid(4.0) {
             match face_point_contains(&face, p) {
-                FacePointContains::Inside => scene.points.push((p, Color::white())),
-                FacePointContains::OnEdge(_) => scene.points.push((p, Color::green())),
-                FacePointContains::OnPoint(_) => scene.points.push((p, Color::green())),
+                FacePointContains::Inside => scene.points.push((p, Color::green())),
+                FacePointContains::OnEdge(_) => scene.points.push((p, Color::blue())),
+                FacePointContains::OnPoint(_) => scene.points.push((p, Color::gray())),
                 FacePointContains::Outside => scene.points.push((p, Color::red())),
-                FacePointContains::NotOnSurface => scene.points.push((p, Color::blue())),
+                FacePointContains::NotOnSurface => scene.points.push((p, Color::black())),
             };
         }
 
