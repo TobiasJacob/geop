@@ -54,6 +54,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/geometry/line_line_intersections.png"),
             )
             .await;
@@ -99,6 +101,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new(
                     "src/generated_images/geometry/circle_circle_intersections.png",
                 ),
@@ -150,6 +154,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/geometry/circle_line_intersections.png"),
             )
             .await;

@@ -29,6 +29,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/geometry/log_unit_x.png"),
             )
             .await;

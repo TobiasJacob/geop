@@ -42,9 +42,9 @@ impl Sphere {
     pub fn normal(&self, p: Point) -> Point {
         assert!(self.on_surface(p));
         if self.normal_outwards {
-            (self.basis - p).normalize()
-        } else {
             (p - self.basis).normalize()
+        } else {
+            (self.basis - p).normalize()
         }
     }
 

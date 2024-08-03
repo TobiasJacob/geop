@@ -1,3 +1,4 @@
+use geop_geometry::points::point::Point;
 use geop_rasterize::{
     edge::{
         rasterize_edge_into_line_list, rasterize_edge_into_vertex_list,
@@ -114,6 +115,8 @@ impl HeadlessRenderer {
         &mut self,
         scene: &Scene,
         dark_mode: bool,
+        wireframe_mode: bool,
+        camera_pos: Point,
         file_path: &std::path::Path,
     ) {
         let (background_color, face_color, edge_color, point_color) =
@@ -174,10 +177,12 @@ impl HeadlessRenderer {
                     *color * point_color,
                 ));
                 edge_buffer.join(&rasterize_face_into_line_list(&face, *color * edge_color));
-                triangle_buffer.join(&rasterize_face_into_triangle_list(
-                    face,
-                    *color * face_color,
-                ));
+                let triangles = rasterize_face_into_triangle_list(face, *color * face_color);
+                if wireframe_mode {
+                    edge_buffer.join(&triangles.to_line_list(*color * edge_color));
+                } else {
+                    triangle_buffer.join(&triangles);
+                }
             }
 
             for (edge, color) in scene.edges.iter() {
@@ -194,6 +199,8 @@ impl HeadlessRenderer {
             ));
 
             let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
+            self.pipeline_manager
+                .update_camera_pos(&self.queue, camera_pos);
             self.pipeline_manager
                 .update_edges(&self.queue, &edge_buffer);
             self.pipeline_manager

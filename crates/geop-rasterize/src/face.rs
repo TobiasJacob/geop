@@ -221,7 +221,7 @@ pub fn check_triangle(
     edge: RenderEdge,
     point: RenderVertex,
     color: Color,
-    triangle_list: &[RenderTriangle],
+    processed_edges: &[RenderEdge],
     is_better_than: Option<&RenderVertex>,
 ) -> Option<RenderVertex> {
     let triangle = RenderTriangle::new(
@@ -246,8 +246,14 @@ pub fn check_triangle(
         // println!("Edge: {:?}", edge);
         // println!("Point: {:?}", point);
     }
-    // Sometimes, edges are pushed to the back of the queue which have already 2 triangles connected to them. In this case, we can skip the edge.
-    if triangle_intersects_triangle_list(surface, &triangle, triangle_list) {
+    // Make sure that in cases where the delaunay triangulation is not clear, we do not create a triangle that intersects with the existing triangles
+    // if triangle_intersects_triangle_list(surface, &triangle, triangle_list) {
+    //     return None;
+    // }
+    if processed_edges.contains(&RenderEdge::new(edge.end.into(), point.into(), color)) {
+        return None;
+    }
+    if processed_edges.contains(&RenderEdge::new(point.into(), edge.start.into(), color)) {
         return None;
     }
     return Some(point);
@@ -324,17 +330,22 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     let mut processed_edges = Vec::<RenderEdge>::new();
     let mut counter = 0;
     while let Some(edge) = open_edges.pop_front() {
-        processed_edges.push(edge);
-        counter += 1;
-        if counter > 1000 {
-            break;
+        if processed_edges.contains(&edge) {
+            continue;
         }
-        let mut best_triangle_point: Option<RenderVertex> = None;
+        processed_edges.push(edge);
+
         println!(
-            "Open edges: {} Result len: {}",
+            "Counter: {} Open edges: {} Result len: {}",
+            counter,
             open_edges.len(),
             triangles.len()
         );
+        counter += 1;
+        if counter > 500 {
+            break;
+        }
+        let mut best_triangle_point: Option<RenderVertex> = None;
         // Now find the smallest valid triangle
         loop {
             let mut found_better_triangle = false;
@@ -344,7 +355,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                     edge,
                     *point,
                     color,
-                    &triangles,
+                    processed_edges.as_slice(),
                     best_triangle_point.as_ref(),
                 ) {
                     // println!("Edge {:?} Found better point: {:?}", edge, better_point);
@@ -367,6 +378,8 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 face.surface.normal(edge.end.point()),
                 face.surface.normal(point.point()),
             ));
+            processed_edges.push(RenderEdge::new(point.into(), edge.start.into(), color));
+            processed_edges.push(RenderEdge::new(edge.end.into(), point.into(), color));
 
             for inner_edge in [
                 RenderEdge::new(edge.start.into(), point.into(), color),
@@ -375,9 +388,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 // This will prevent the algorithm from spreading out of the face and filling the holes
                 if !edge_will_be_blocked_by_contour(&inner_edge, &contours) {
                     if !open_edges.contains(&inner_edge) {
-                        if !processed_edges.contains(&inner_edge) {
-                            open_edges.push_back(inner_edge);
-                        }
+                        open_edges.push_back(inner_edge);
                     }
                 }
             }

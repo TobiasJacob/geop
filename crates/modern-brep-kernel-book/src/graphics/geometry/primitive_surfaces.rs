@@ -19,6 +19,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                true,
+                Point::new(0.0, -2.0, -1.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_sphere.png"),
             )
             .await;

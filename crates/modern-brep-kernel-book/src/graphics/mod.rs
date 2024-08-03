@@ -2,6 +2,7 @@ pub mod geometry;
 
 #[cfg(test)]
 mod tests {
+    use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
         topology::scene::{Color, Scene},
@@ -20,6 +21,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/test_light.png"),
             )
             .await;
@@ -34,6 +37,8 @@ mod tests {
             .render_to_file(
                 &scene,
                 true,
+                false,
+                Point::new(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/test_dark.png"),
             )
             .await;

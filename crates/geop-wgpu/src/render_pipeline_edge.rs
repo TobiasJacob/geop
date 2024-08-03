@@ -17,7 +17,7 @@ impl RenderPipelineEdge {
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineEdge {
-        let max_num_edges = 1024;
+        let max_num_edges = 4 * 4096;
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some(&format!("{label} Vertex Buffer")),

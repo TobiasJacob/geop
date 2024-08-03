@@ -85,6 +85,24 @@ impl PipelineManager {
         );
     }
 
+    pub fn update_camera_pos(
+        &mut self,
+        queue: &wgpu::Queue,
+        camera_pos: geop_geometry::points::point::Point,
+    ) {
+        self.camera_pipeline.camera.eye.x = camera_pos.x as f32;
+        self.camera_pipeline.camera.eye.y = camera_pos.y as f32;
+        self.camera_pipeline.camera.eye.z = camera_pos.z as f32;
+        self.camera_pipeline
+            .camera_uniform
+            .update_view_proj(&self.camera_pipeline.camera);
+        queue.write_buffer(
+            &self.camera_pipeline.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]),
+        )
+    }
+
     pub fn run_pipelines<'a>(&'a self, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_bind_group(0, &self.camera_pipeline.camera_bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_pipeline.light_bind_group, &[]);

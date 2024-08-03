@@ -11,6 +11,7 @@ pub mod window_state;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
         topology::scene::{Color, Scene},
@@ -24,7 +25,13 @@ mod tests {
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
-            .render_to_file(&scene, false, std::path::Path::new("test_light.png"))
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, -2.0, 1.0),
+                std::path::Path::new("test_light.png"),
+            )
             .await;
     }
 
@@ -34,7 +41,13 @@ mod tests {
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
-            .render_to_file(&scene, true, std::path::Path::new("test_dark.png"))
+            .render_to_file(
+                &scene,
+                true,
+                false,
+                Point::new(0.0, -2.0, 1.0),
+                std::path::Path::new("test_dark.png"),
+            )
             .await;
     }
 }

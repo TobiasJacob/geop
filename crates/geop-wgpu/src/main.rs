@@ -15,7 +15,7 @@ use geop_rasterize::{
     triangle_buffer::{RenderTriangle, TriangleBuffer},
     vertex_buffer::VertexBuffer,
     volume::{
-        rasterize_volume_into_triangle_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_line_list, rasterize_volume_into_triangle_list,
         rasterize_volume_into_vertex_list,
     },
 };
@@ -23,6 +23,7 @@ use geop_topology::{
     debug_data::get_debug_data,
     difference::face_face::face_face_difference,
     operations::extrude::extrude,
+    primitive_objects::faces::sphere::primitive_sphere,
     topology::{contour::Contour, edge::Edge, face::Face, scene::Color},
 };
 use geop_wgpu::window::GeopWindow;
@@ -98,6 +99,8 @@ async fn run() {
 
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
+        let sphere = primitive_sphere(Point::new_zero(), 1.0);
+
         let mut triangles = TriangleBuffer::empty();
         triangles.join(&rasterize_volume_into_triangle_list(
             &object,
@@ -108,6 +111,10 @@ async fn run() {
             &object,
             Color::from_brightness(0.3),
         ));
+        lines.join(
+            &rasterize_face_into_triangle_list(&sphere, Color::white())
+                .to_line_list(Color::white()),
+        );
         let mut points = VertexBuffer::empty();
         points.join(&rasterize_volume_into_vertex_list(
             &object,
