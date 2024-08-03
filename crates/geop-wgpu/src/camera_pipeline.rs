@@ -40,12 +40,9 @@ pub struct CameraUniform {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct LightUniform {
-    position: [f32; 3],
+    direction: [f32; 3],
     // Due to uniforms requiring 16 byte (4 float) spacing, we need to use a padding field here
     _padding: u32,
-    color: [f32; 3],
-    // Due to uniforms requiring 16 byte (4 float) spacing, we need to use a padding field here
-    _padding2: u32,
 }
 
 impl CameraUniform {
@@ -96,10 +93,8 @@ impl CameraPipeline {
         });
 
         let light_uniform = LightUniform {
-            position: [2.0, 2.0, 2.0],
+            direction: [2.0, 1.0, -2.0],
             _padding: 0,
-            color: [1.0, 1.0, 1.0],
-            _padding2: 0,
         };
 
         // We'll want to update our lights position, so we use COPY_DST

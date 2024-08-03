@@ -6,8 +6,7 @@ struct Camera {
 var<uniform> camera: Camera;
 
 struct Light {
-    position: vec3<f32>,
-    color: vec3<f32>,
+    direction: vec3<f32>,
 }
 @group(1) @binding(0)
 var<uniform> light: Light;
@@ -36,7 +35,7 @@ fn vs_main(
 
     out.position = camera.view_proj * vec4<f32>(in.position, 1.0);
     out.color = in.color;
-    //out.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+    out.normal = in.normal;
     
     return out;
 }
@@ -44,8 +43,16 @@ fn vs_main(
 @fragment
 fn fs_main(in: VertexOutput) -> FragmentOutput {
     var out: FragmentOutput;
-    
-    out.color = in.color;
+
+    let ambient_color = 0.5;
+
+    let light_dir = normalize(light.direction);
+    let diffuse_strength = max(dot(in.normal, -light_dir), 0.0);
+    let diffuse_color = diffuse_strength * (1 - ambient_color);
+
+    let result = (ambient_color + diffuse_color) * in.color.xyz;
+
+    out.color = vec4<f32>(result, in.color.a);
 
     return out;
 }
