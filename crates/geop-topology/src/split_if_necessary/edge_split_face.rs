@@ -12,15 +12,15 @@ use crate::{
 pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
     match face_edge_contains(face, edge) {
         FaceEdgeContains::Inside => {
-            let split_points = vec![edge.start.clone(), edge.end.clone()]
-                .drain(..)
-                .filter_map(|p| p)
-                .collect();
-
-            let mut contours = face.holes.clone();
-            contours.push(face.boundary.clone());
-            let contours = split_contours_by_points_if_necessary(contours, &split_points);
             todo!()
+            // let split_points = vec![edge.start.clone(), edge.end.clone()]
+            //     .drain(..)
+            //     .filter_map(|p| p)
+            //     .collect();
+
+            // let mut contours = face.holes.clone();
+            // contours.push(face.boundary.clone());
+            // let contours = split_contours_by_points_if_necessary(contours, &split_points);
             // let start_contour =
             //     contours
             //         .iter()

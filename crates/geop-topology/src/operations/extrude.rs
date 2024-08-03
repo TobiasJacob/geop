@@ -48,7 +48,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                         .collect(),
                 );
 
-                let face = Face::new(contour, vec![], Rc::new(plane));
+                let face = Face::new(Some(contour), vec![], Rc::new(plane));
                 faces.push(face);
             }
             Curve::Circle(_) => panic!("Cannot extrude circular edges"),

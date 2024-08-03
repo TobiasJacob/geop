@@ -18,8 +18,8 @@ use super::{
 
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub boundary: Contour,   // Coutner-clockwise
-    pub holes: Vec<Contour>, // Clockwise
+    pub boundary: Option<Contour>, // Coutner-clockwise
+    pub holes: Vec<Contour>,       // Clockwise
     pub surface: Rc<Surface>,
 }
 
@@ -28,9 +28,11 @@ pub struct Face {
 // inner_loops have to be counter-clockwise, if the face is looked at from normal direction (normal facing towards you).
 // The contours are not allowed to intersect in any way. Keep in mind that a point is not considered an intersection, hence it is allowed that the contours touch each other at points.
 impl Face {
-    pub fn new(boundary: Contour, holes: Vec<Contour>, surface: Rc<Surface>) -> Face {
-        for edge in boundary.edges.iter() {
-            assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
+    pub fn new(boundary: Option<Contour>, holes: Vec<Contour>, surface: Rc<Surface>) -> Face {
+        if let Some(boundary) = &boundary {
+            for edge in boundary.edges.iter() {
+                assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
+            }
         }
         for contour in holes.iter() {
             for edge in contour.edges.iter() {
@@ -46,7 +48,10 @@ impl Face {
 
     pub fn transform(&self, transform: Transform) -> Face {
         Face::new(
-            self.boundary.transform(transform),
+            match &self.boundary {
+                Some(boundary) => Some(boundary.transform(transform)),
+                None => None,
+            },
             self.holes
                 .iter()
                 .map(|contour| contour.transform(transform))
@@ -58,7 +63,9 @@ impl Face {
     pub fn all_points(&self) -> Vec<Point> {
         let mut points = Vec::<Point>::new();
 
-        points.extend(self.boundary.all_points());
+        if let Some(boundary) = &self.boundary {
+            points.extend(boundary.all_points());
+        }
         for contour in self.holes.iter() {
             points.extend(contour.all_points());
         }
@@ -68,8 +75,10 @@ impl Face {
     pub fn all_edges(&self) -> Vec<Edge> {
         let mut edges = Vec::<Edge>::new();
 
-        for edge in self.boundary.edges.iter() {
-            edges.push(edge.clone());
+        if let Some(boundary) = &self.boundary {
+            for edge in boundary.edges.iter() {
+                edges.push(edge.clone());
+            }
         }
         for contour in self.holes.iter() {
             for edge in contour.edges.iter() {
@@ -91,9 +100,21 @@ impl Face {
         )
     }
 
+    pub fn get_boundary_point(&self) -> Option<Point> {
+        if let Some(boundary) = &self.boundary {
+            return Some(boundary.edges[0].get_midpoint());
+        }
+        if self.holes.len() > 0 {
+            return Some(self.holes[0].edges[0].get_midpoint());
+        }
+        None
+    }
+
     pub fn boundary_tangent(&self, p: Point) -> ContourTangent {
-        if contour_point_contains(&self.boundary, p) != EdgePointContains::Outside {
-            return self.boundary.tangent(p);
+        if let Some(boundary) = &self.boundary {
+            if contour_point_contains(boundary, p) != EdgePointContains::Outside {
+                return boundary.tangent(p);
+            }
         }
         for contour in self.holes.iter() {
             if contour_point_contains(contour, p) != EdgePointContains::Outside {
@@ -115,7 +136,10 @@ impl Face {
 
     pub fn neg(&self) -> Face {
         Face {
-            boundary: self.boundary.flip(),
+            boundary: match &self.boundary {
+                Some(boundary) => Some(boundary.flip()),
+                None => None,
+            },
             holes: self.holes.iter().rev().map(|l| l.flip()).collect(),
             surface: self.surface.clone(),
         }
@@ -123,7 +147,10 @@ impl Face {
 
     pub fn flip(&self) -> Face {
         Face {
-            boundary: self.boundary.flip(),
+            boundary: match &self.boundary {
+                Some(boundary) => Some(boundary.flip()),
+                None => None,
+            },
             holes: self.holes.iter().rev().map(|l| l.flip()).collect(),
             surface: Rc::new(self.surface.neg()),
         }
@@ -141,7 +168,7 @@ impl std::fmt::Display for Face {
                     p.basis,
                     p.u_slope.cross(p.v_slope)
                 )?;
-                writeln!(f, "Boundary: {}", self.boundary)?;
+                writeln!(f, "Boundary: {:?}", self.boundary)?;
                 for contour in self.holes.iter() {
                     writeln!(f, "Hole:")?;
                     for edge in contour.edges.iter() {

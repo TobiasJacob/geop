@@ -88,7 +88,7 @@ async fn run() {
         // Loop shifted by 0.1 in x and y direction
 
         let face1 = Face::new(
-            contour.clone(),
+            Some(contour.clone()),
             vec![inner_contour.clone()],
             surface.clone(),
         );
