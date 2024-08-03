@@ -49,7 +49,7 @@ impl Circle {
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        (p - self.basis).cross(self.normal).normalize()
+        (self.normal).cross(p - self.basis).normalize()
     }
 
     pub fn on_curve(&self, p: Point) -> bool {

@@ -92,4 +92,52 @@ mod tests {
             )
             .await;
     }
+
+    #[rstest]
+    async fn test_face_contains_rectangle2(#[future] renderer: Box<HeadlessRenderer>) {
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+
+        let mut face =
+            primitive_rectangle(Point::new_zero(), Point::new_unit_x(), Point::new_unit_y());
+        face.holes.push(
+            primitive_rectangle(
+                Point::new_zero(),
+                Point::new_unit_x() / 2.0,
+                Point::new_unit_y() / 2.0,
+            )
+            .boundary
+            .unwrap()
+            .flip(),
+        );
+
+        let plane = match &*face.surface {
+            Surface::Plane(p) => p,
+            _ => panic!("Surface is not a plane"),
+        };
+
+        for e in face.all_edges() {
+            scene.edges.push((e, Color::white()));
+        }
+
+        for p in plane.point_grid(30.0, 3.0) {
+            match face_point_contains(&face, p) {
+                FacePointContains::Inside => scene.points.push((p, Color::green())),
+                FacePointContains::OnEdge(_) => scene.points.push((p, Color::blue())),
+                FacePointContains::OnPoint(_) => scene.points.push((p, Color::gray())),
+                FacePointContains::Outside => scene.points.push((p, Color::red())),
+                FacePointContains::NotOnSurface => scene.points.push((p, Color::black())),
+            };
+        }
+
+        renderer
+            .await
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, 0.1, 2.20),
+                std::path::Path::new("src/generated_images/topology/face_contains_rectangle2.png"),
+            )
+            .await;
+    }
 }
