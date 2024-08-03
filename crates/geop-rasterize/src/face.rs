@@ -58,7 +58,7 @@ pub fn inside_triangle_circumcircle(
     surface: &Surface,
     edge: &RenderEdge,
     ref_point: &RenderVertex,
-    point: RenderVertex,
+    point: &RenderVertex,
 ) -> bool {
     let mid_point = surface.project(edge.mid_point());
     // First project points into the tangent plane.
@@ -104,7 +104,7 @@ pub fn inside_triangle_circumcircle(
     if det.is_nan() {
         panic!("Determinant is nan");
     }
-    det > EQ_THRESHOLD * 10.0 // Check this is < -0.0001, which means it is inside the circumcircle
+    det > EQ_THRESHOLD * 10.0 // Check this is -det < -0.0001, which means it is inside the circumcircle
 }
 
 pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTriangle) -> bool {
@@ -222,7 +222,7 @@ pub fn check_triangle(
     point: RenderVertex,
     color: Color,
     processed_edges: &[RenderEdge],
-    is_better_than: Option<&RenderVertex>,
+    other_candidate_points: &[RenderVertex],
 ) -> Option<RenderVertex> {
     let triangle = RenderTriangle::new(
         edge.start.into(),
@@ -238,8 +238,8 @@ pub fn check_triangle(
         return None;
     }
 
-    if let Some(baseline_triangle_point) = is_better_than {
-        if !inside_triangle_circumcircle(surface, &edge, baseline_triangle_point, point) {
+    for other_point in other_candidate_points.iter() {
+        if inside_triangle_circumcircle(surface, &edge, &point, other_point) {
             return None;
         }
         // println!("Detected inside_triangle_circumcircle");
@@ -342,29 +342,21 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             triangles.len()
         );
         counter += 1;
-        if counter > 500 {
+        if counter > 1500 {
             break;
         }
         let mut best_triangle_point: Option<RenderVertex> = None;
         // Now find the smallest valid triangle
-        loop {
-            let mut found_better_triangle = false;
-            for point in connection_points.iter() {
-                if let Some(better_point) = check_triangle(
-                    &face.surface,
-                    edge,
-                    *point,
-                    color,
-                    processed_edges.as_slice(),
-                    best_triangle_point.as_ref(),
-                ) {
-                    // println!("Edge {:?} Found better point: {:?}", edge, better_point);
-                    found_better_triangle = true;
-                    best_triangle_point = Some(better_point);
-                    break;
-                }
-            }
-            if !found_better_triangle {
+        for point in connection_points.iter() {
+            if let Some(better_point) = check_triangle(
+                &face.surface,
+                edge,
+                *point,
+                color,
+                processed_edges.as_slice(),
+                &connection_points,
+            ) {
+                best_triangle_point = Some(better_point);
                 break;
             }
         }
@@ -388,7 +380,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 // This will prevent the algorithm from spreading out of the face and filling the holes
                 if !edge_will_be_blocked_by_contour(&inner_edge, &contours) {
                     if !open_edges.contains(&inner_edge) {
-                        open_edges.push_back(inner_edge);
+                        open_edges.push_front(inner_edge);
                     }
                 }
             }
