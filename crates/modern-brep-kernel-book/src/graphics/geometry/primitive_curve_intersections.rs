@@ -3,7 +3,6 @@ mod tests {
     use std::vec;
 
     use geop_geometry::points::point::Point;
-    use geop_rasterize::edge::rasterize_edge_into_line_list;
     use geop_topology::{
         intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
         primitive_objects::edges::{circle::primitive_circle, line::primitive_infinite_line},

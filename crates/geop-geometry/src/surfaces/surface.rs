@@ -18,6 +18,7 @@ pub enum Surface {
     Sphere(Sphere),
 }
 impl Surface {
+    // Transforms the surface by the given transform.
     pub fn transform(&self, transform: Transform) -> Surface {
         match self {
             Surface::Plane(plane) => Surface::Plane(plane.transform(transform)),
@@ -27,20 +28,23 @@ impl Surface {
             }),
         }
     }
+
+    // Change normal direction of the surface.
     pub fn neg(&self) -> Surface {
         match self {
             Surface::Plane(plane) => Surface::Plane(plane.neg()),
             Surface::Sphere(sphere) => Surface::Sphere(sphere.neg()),
         }
     }
-    // fn project(&self, p: &Point) -> Point
+
+    // Returns the normal of the surface at point p.
     pub fn normal(&self, p: Point) -> Point {
         match self {
             Surface::Plane(plane) => plane.normal(),
             Surface::Sphere(sphere) => sphere.normal(p),
         }
     }
-    // Checks if the point p is contained in the surface.
+    // Checks if the point p is on the surface.
     pub fn on_surface(&self, p: Point) -> bool {
         match self {
             Surface::Plane(plane) => plane.on_surface(p),
@@ -102,7 +106,7 @@ impl Surface {
             Surface::Sphere(sphere) => sphere.point_grid(density),
         }
     }
-
+    // Finds the closest point on the surface to the given point.
     pub fn project(&self, point: Point) -> Point {
         match self {
             Surface::Plane(plane) => plane.project(point),

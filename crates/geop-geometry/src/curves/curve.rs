@@ -50,6 +50,14 @@ impl Curve {
         }
     }
 
+    // Returns the distance between x and y.
+    pub fn distance(&self, x: Point, y: Point) -> f64 {
+        match self {
+            Curve::Line(line) => line.distance(x, y),
+            Curve::Circle(circle) => circle.distance(x, y),
+        }
+    }
+
     // Interpolate between start and end at t. t is between 0 and 1.
     pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match self {

@@ -57,6 +57,13 @@ impl Circle {
             && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
     }
 
+    pub fn distance(&self, x: Point, y: Point) -> f64 {
+        assert!(self.on_curve(x));
+        assert!(self.on_curve(y));
+        let angle = (x - self.basis).angle(y - self.basis);
+        self.radius.norm() * angle
+    }
+
     pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -69,7 +76,10 @@ impl Circle {
                 let y_start = self.dir_cross.dot(start);
                 let y_end = self.dir_cross.dot(end);
                 let angle1 = y_start.atan2(x_start);
-                let angle2 = y_end.atan2(x_end);
+                let mut angle2 = y_end.atan2(x_end);
+                if angle2 < angle1 {
+                    angle2 += 2.0 * std::f64::consts::PI;
+                }
                 let angle = angle1 + t * (angle2 - angle1);
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }

@@ -34,6 +34,13 @@ impl Line {
         v.norm() < EQ_THRESHOLD
     }
 
+    pub fn distance(&self, x: Point, y: Point) -> f64 {
+        assert!(self.on_curve(x));
+        assert!(self.on_curve(y));
+        let v = x - y;
+        v.norm()
+    }
+
     pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {

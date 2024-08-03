@@ -85,6 +85,13 @@ impl Edge {
         assert!(t >= 0.0 && t <= 1.0);
         self.curve.interpolate(self.start, self.end, t)
     }
+
+    pub fn length(&self) -> Option<f64> {
+        match (self.start, self.end) {
+            (Some(start), Some(end)) => Some(self.curve.distance(start, end)),
+            _ => None,
+        }
+    }
 }
 
 impl PartialEq for Edge {
