@@ -16,7 +16,7 @@ mod tests {
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        for p in face.surface.point_grid() {
+        for p in face.surface.point_grid(1.0) {
             scene.points.push((p, Color::white()));
             assert!(face.surface.on_surface(p));
             if let Some(p) = face.surface.log(Point::new(0.0, 0.0, -0.3), p) {

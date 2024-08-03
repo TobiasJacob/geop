@@ -1,4 +1,5 @@
 pub mod geometry;
+pub mod topology;
 
 #[cfg(test)]
 mod tests {

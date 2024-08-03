@@ -84,13 +84,20 @@ impl Plane {
         Curve::Line(Line::new(p, q - p))
     }
 
-    pub fn point_grid(&self) -> Vec<Point> {
-        vec![
-            self.basis - self.u_slope * HORIZON_DIST - self.v_slope * HORIZON_DIST,
-            self.basis + self.u_slope * HORIZON_DIST - self.v_slope * HORIZON_DIST,
-            self.basis - self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
-            self.basis + self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
-        ]
+    pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
+        let n = (density + 1.0) as usize;
+        let mut points = Vec::new();
+        for i in 0..n {
+            for j in 0..n {
+                let u = i as f64 / (n as f64 - 1.0);
+                let v = j as f64 / (n as f64 - 1.0);
+                let point = self.basis
+                    + (u - 0.5) * horizon_dist * self.u_slope
+                    + (v - 0.5) * horizon_dist * self.v_slope;
+                points.push(point);
+            }
+        }
+        points
     }
 
     pub fn project(&self, point: Point) -> Point {

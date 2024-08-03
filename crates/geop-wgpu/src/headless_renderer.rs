@@ -54,7 +54,7 @@ impl HeadlessRenderer {
             .request_device(&Default::default(), None)
             .await
             .unwrap();
-        let texture_size = 1024u32;
+        let texture_size = 2048u32;
 
         let texture_format = wgpu::TextureFormat::Rgba8UnormSrgb;
 
@@ -186,7 +186,7 @@ impl HeadlessRenderer {
             }
 
             for (edge, color) in scene.edges.iter() {
-                vertex_buffer.join(&rasterize_edge_into_vertex_list(edge, *color * point_color));
+                // vertex_buffer.join(&rasterize_edge_into_vertex_list(edge, *color * point_color));
                 edge_buffer.join(&rasterize_edge_into_line_list(edge, *color * edge_color));
             }
 
@@ -194,7 +194,7 @@ impl HeadlessRenderer {
                 scene
                     .points
                     .iter()
-                    .map(|(p, color)| RenderVertex::new(p.clone(), *color * point_color))
+                    .map(|(p, color)| RenderVertex::new(p.clone(), *color))
                     .collect(),
             ));
 

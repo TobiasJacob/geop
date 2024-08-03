@@ -63,7 +63,7 @@ impl RenderPipelineVertex {
         label: &str,
         render_pipeline_layout: &wgpu::PipelineLayout,
     ) -> RenderPipelineVertex {
-        let max_num_instances = 1024;
+        let max_num_instances = 4096;
 
         let render_vertices = cube_vertex_buffer(0.02, Color::white());
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

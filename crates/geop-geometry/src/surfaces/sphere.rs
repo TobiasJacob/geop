@@ -136,19 +136,21 @@ impl Sphere {
     }
 
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+        assert!(self.on_surface(p));
+        assert!(self.on_surface(q));
         let normal = (p - self.basis).cross(q - self.basis).normalize();
-        let circle = Circle::new(self.basis, normal, (q - self.basis).norm());
+        let circle = Circle::new(self.basis, normal, self.radius);
         Curve::Circle(circle)
     }
 
-    pub fn point_grid(&self) -> Vec<Point> {
-        let n = 16;
-        let m = 16;
+    pub fn point_grid(&self, density: f64) -> Vec<Point> {
+        let n = (16.0 * density) as usize;
+        let m = (16.0 * density) as usize;
         let mut points = Vec::with_capacity(n * m);
         for i in 0..n {
             for j in 0..m {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
-                let phi = std::f64::consts::PI * j as f64 / m as f64;
+                let phi = std::f64::consts::PI * j as f64 / (m - 1) as f64;
                 let x = self.basis.x + self.radius * theta.cos() * phi.sin();
                 let y = self.basis.y + self.radius * theta.sin() * phi.sin();
                 let z = self.basis.z + self.radius * phi.cos();

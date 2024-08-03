@@ -290,7 +290,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     // Then generate additional points on the surface
     connection_points.extend(
         face.surface
-            .point_grid()
+            .point_grid(1.0)
             .drain(..)
             .filter(|p| face_point_contains(face, *p) == FacePointContains::Inside)
             .map(|point| RenderVertex::new(point.clone(), color)),

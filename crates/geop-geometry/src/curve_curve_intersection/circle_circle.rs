@@ -8,14 +8,17 @@ pub enum CircleCircleIntersection {
     None,
 }
 
-pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleIntersection {
-    let radius_backup = a.radius;
-    let r1 = a.radius.norm();
-    let r2 = b.radius.norm();
-    let p1 = a.basis;
-    let p2 = b.basis;
-    let n1 = a.normal;
-    let n2 = b.normal;
+pub fn circle_circle_intersection(
+    circle_a: &Circle,
+    circle_b: &Circle,
+) -> CircleCircleIntersection {
+    let radius_backup = circle_a.radius;
+    let r1 = circle_a.radius.norm();
+    let r2 = circle_b.radius.norm();
+    let p1 = circle_a.basis;
+    let p2 = circle_b.basis;
+    let n1 = circle_a.normal;
+    let n2 = circle_b.normal;
 
     let d = (p1 - p2).norm();
     let a = (r1.powi(2) - r2.powi(2) + d.powi(2)) / (2.0 * d);
@@ -23,7 +26,7 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
     // Check if both circles are on the same plane
     if n1.is_parallel(n2) && n1.is_perpendicular(p1 - p2) {
         // Check if both circles have the same centerpoint
-        if d < EQ_THRESHOLD && r1 == r2 {
+        if d < EQ_THRESHOLD && (r1 - r2).abs() < EQ_THRESHOLD {
             return CircleCircleIntersection::Circle(Circle::new(p1, n1, radius_backup.norm()));
         }
         // Check if both circles are concentric
@@ -56,6 +59,14 @@ pub fn circle_circle_intersection(a: &Circle, b: &Circle) -> CircleCircleInterse
             let p2 = p - n * h;
             return CircleCircleIntersection::TwoPoint(p1, p2);
         }
+    }
+
+    if p1 == p2 && (r1 - r2).abs() < EQ_THRESHOLD {
+        // We already know that normals are different, so they will intersect in 2 points
+        let n = n1.cross(n2).normalize();
+        let p1 = p1 + n * r1;
+        let p2 = p1 - n * r1;
+        return CircleCircleIntersection::TwoPoint(p1, p2);
     }
     // Check if both circles are on different planes that intersect
     todo!("Implement intersection for circles on different planes");

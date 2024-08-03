@@ -15,8 +15,12 @@ pub enum CircleTransform {
 
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
-        let x = Point::new(1.0, 0.0, 0.0);
-        let radius = x.cross(normal).normalize() * radius;
+        let radius = match Point::new_unit_x().cross(normal).norm_sq()
+            > Point::new_unit_y().cross(normal).norm_sq()
+        {
+            true => Point::new_unit_x().cross(normal).normalize() * radius,
+            false => Point::new_unit_y().cross(normal).normalize() * radius,
+        };
         let normal = normal.normalize();
         assert!(
             normal.dot(radius).abs() < EQ_THRESHOLD,
@@ -45,7 +49,7 @@ impl Circle {
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        (p - self.basis).cross(self.dir_cross).normalize()
+        (p - self.basis).cross(self.normal).normalize()
     }
 
     pub fn on_curve(&self, p: Point) -> bool {

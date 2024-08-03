@@ -1,5 +1,5 @@
-use std::panic;
 use std::rc::Rc;
+use std::{panic, vec};
 
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
@@ -19,6 +19,7 @@ use geop_rasterize::{
         rasterize_volume_into_vertex_list,
     },
 };
+use geop_topology::primitive_objects::edges::circle::primitive_circle;
 use geop_topology::{
     debug_data::get_debug_data,
     difference::face_face::face_face_difference,
@@ -99,7 +100,12 @@ async fn run() {
 
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
-        let sphere = primitive_sphere(Point::new_zero(), 1.0);
+        let mut sphere = primitive_sphere(Point::new_zero(), 1.0);
+        sphere.boundary = Some(Contour::new(vec![primitive_circle(
+            Point::new_zero(),
+            Point::new(0.5, 0.5, 0.5),
+            1.0,
+        )]));
 
         let mut triangles = TriangleBuffer::empty();
         triangles.join(&rasterize_volume_into_triangle_list(

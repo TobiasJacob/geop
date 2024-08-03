@@ -1,4 +1,4 @@
-use crate::{curves::curve::Curve, points::point::Point, transforms::Transform};
+use crate::{curves::curve::Curve, points::point::Point, transforms::Transform, HORIZON_DIST};
 
 use super::{
     plane::Plane,
@@ -96,10 +96,10 @@ impl Surface {
         }
     }
     // Returns a point grid on the surface, which can be used for visualization.
-    pub fn point_grid(&self) -> Vec<Point> {
+    pub fn point_grid(&self, density: f64) -> Vec<Point> {
         match self {
-            Surface::Plane(plane) => plane.point_grid(),
-            Surface::Sphere(sphere) => sphere.point_grid(),
+            Surface::Plane(plane) => plane.point_grid(density, HORIZON_DIST),
+            Surface::Sphere(sphere) => sphere.point_grid(density),
         }
     }
 
