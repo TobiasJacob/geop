@@ -49,7 +49,7 @@ impl Circle {
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        (self.normal).cross(p - self.basis).normalize()
+        self.normal.cross(p - self.basis).normalize()
     }
 
     pub fn on_curve(&self, p: Point) -> bool {
@@ -103,10 +103,13 @@ impl Circle {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                let mut angle_m = (m - self.basis).angle(self.radius);
-                let angle_start = (start - self.basis).angle(self.radius);
-                let mut angle_end = (end - self.basis).angle(self.radius);
-                if angle_start < angle_end {
+                let start = start - self.basis;
+                let end = end - self.basis;
+                let m = m - self.basis;
+                let angle_start = self.dir_cross.dot(start).atan2(self.radius.dot(start));
+                let mut angle_end = self.dir_cross.dot(end).atan2(self.radius.dot(end));
+                let mut angle_m = self.dir_cross.dot(m).atan2(self.radius.dot(m));
+                if angle_end < angle_start {
                     angle_end += 2.0 * std::f64::consts::PI;
                 }
                 if angle_m < angle_start {

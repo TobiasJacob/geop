@@ -36,18 +36,18 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
             return FacePointContains::Inside;
         }
     };
-    let curve = face.edge_from_to(point, q);
+    let geodesic = face.edge_from_to(point, q);
 
     // Find the closest intersection point and check by using the face normal and the curve tangent if the intersection is from inside or outside.
     let mut closest_distance = face.surface.distance(point, q);
-    let curve_dir = curve.tangent(q);
+    let curve_dir = geodesic.tangent(q);
     let normal = face.surface.normal(q);
     let contour_dir = face.boundary_tangent(q);
     let mut closest_intersect_from_inside = contour_dir.is_inside(normal, curve_dir);
 
     let mut intersection_points = Vec::<Point>::new();
     for edge in face.all_edges() {
-        match edge_edge_intersection(&edge, &curve) {
+        match edge_edge_intersection(&edge, &geodesic) {
             EdgeEdgeIntersection::Points(points) => {
                 intersection_points.extend(points);
             }
@@ -68,7 +68,7 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     for int in intersection_points {
         let distance = face.surface.distance(point, int);
         if distance < closest_distance {
-            let curve_dir = curve.tangent(int);
+            let curve_dir = geodesic.tangent(int);
             let normal = face.surface.normal(int);
             let contour_dir = face.boundary_tangent(int);
             closest_distance = distance;
