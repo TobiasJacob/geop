@@ -19,7 +19,7 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
-                std::path::Path::new("src/generated_images/geometry/primitive_line.png"),
+                std::path::Path::new("src/generated_images/geometry/primitive_sphere.png"),
             )
             .await;
     }

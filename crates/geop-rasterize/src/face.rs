@@ -192,7 +192,7 @@ pub fn triangle_intersects_triangle_list(
 
 pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {
     println!("/////////////////////////////////////////////////////////");
-    // Now we have to divide the face into triangles. First rasterize the boundaries.
+    // Now we have to divide the face into triangles. First rasterize the boundaries. This will give us a set of open edges to work with
     let mut contours = Vec::<EdgeBuffer>::new();
     if let Some(boundary) = &face.boundary {
         contours.push(rasterize_contour_into_line_list(&boundary, color));
@@ -206,25 +206,27 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
         contours.push(points);
     }
 
-    let all_edges: Vec<RenderEdge> = contours
+    let mut open_edges: VecDeque<RenderEdge> = contours
         .iter()
         .flat_map(|contour| contour.edges.iter())
         .cloned()
         .collect();
-    let mut open_edges = VecDeque::from(all_edges.clone());
+    let connection_points = contours
+        .iter()
+        .flat_map(|contour| contour.edges.iter())
+        .map(|edge| edge.start)
+        .collect::<Vec<RenderVertex>>();
+
+    // TODO: Insert connection points in the surface
+    // TODO: If open_edges has a length of 0, select a valid starting edge
     let mut triangles = Vec::<RenderTriangle>::new();
 
-    // Now make sure that all discrete boundaries are connected to a single boundary.
-    let counter = 0;
+    // Now iterate until all open_edges are processed.
     while let Some(edge) = open_edges.pop_front() {
-        // counter += 1;
-        if counter > 50 {
-            break;
-        }
         let mut i = usize::MAX;
-        // println!("Render Edge: {:?}", edge);
-        for j in 0..all_edges.len() {
-            let point = all_edges[j].start;
+        // Find an initial valid triangle to start with
+        for j in 0..connection_points.len() {
+            let point = connection_points[j];
             if !check_triangle_counter_clockwise(&face.surface, &[edge.start, edge.end, point]) {
                 continue;
             }
@@ -249,12 +251,13 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
         if i == usize::MAX {
             continue;
         }
+        // Now find the smallest valid triangle
         loop {
             let mut found_one_inside = false;
             let mut min_det = -EQ_THRESHOLD;
-            let current_point = all_edges[i].start;
-            for j in 0..all_edges.len() {
-                let new_point = all_edges[j].start;
+            let current_point = connection_points[i];
+            for j in 0..connection_points.len() {
+                let new_point = connection_points[j];
                 if i == j || current_point.point() == new_point.point() {
                     continue;
                 }
@@ -296,7 +299,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 break;
             }
         }
-        let point = all_edges[i].start;
+        let point = connection_points[i];
         // triangles.push(RenderTriangle::new(edge.start.into(), point.into(), edge.end.into(), color));
         triangles.push(RenderTriangle::new(
             edge.start.into(),
