@@ -2,7 +2,7 @@ use crate::{
     curves::{curve::Curve, line::Line},
     points::point::Point,
     transforms::Transform,
-    EQ_THRESHOLD,
+    EQ_THRESHOLD, HORIZON_DIST,
 };
 
 use super::surface::TangentPoint;
@@ -89,7 +89,12 @@ impl Plane {
     }
 
     pub fn point_grid(&self) -> Vec<Point> {
-        Vec::new()
+        vec![
+            self.basis - self.u_slope * HORIZON_DIST - self.v_slope * HORIZON_DIST,
+            self.basis + self.u_slope * HORIZON_DIST - self.v_slope * HORIZON_DIST,
+            self.basis - self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
+            self.basis + self.u_slope * HORIZON_DIST + self.v_slope * HORIZON_DIST,
+        ]
     }
 }
 

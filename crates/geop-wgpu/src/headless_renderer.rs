@@ -4,10 +4,14 @@ use geop_rasterize::{
         rasterize_edges_into_line_list, rasterize_edges_into_vertex_list,
     },
     edge_buffer::EdgeBuffer,
+    face::{
+        rasterize_face_into_line_list, rasterize_face_into_triangle_list,
+        rasterize_face_into_vertex_list,
+    },
     triangle_buffer::TriangleBuffer,
     vertex_buffer::{RenderVertex, VertexBuffer},
     volume::{
-        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_line_list, rasterize_volume_into_triangle_list,
         rasterize_volume_into_vertex_list,
     },
 };
@@ -158,8 +162,20 @@ impl HeadlessRenderer {
                     volume,
                     *color * edge_color,
                 ));
-                triangle_buffer.join(&rasterize_volume_into_face_list(
+                triangle_buffer.join(&rasterize_volume_into_triangle_list(
                     volume,
+                    *color * face_color,
+                ));
+            }
+
+            for (face, color) in scene.faces.iter() {
+                vertex_buffer.join(&rasterize_face_into_vertex_list(
+                    &face,
+                    *color * point_color,
+                ));
+                edge_buffer.join(&rasterize_face_into_line_list(&face, *color * edge_color));
+                triangle_buffer.join(&rasterize_face_into_triangle_list(
+                    face,
                     *color * face_color,
                 ));
             }

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/deps/modern_brep_kernel_book-4f0f4796b2f5f8ae",
             "args": [
-                "test_circle_line_intersection"
+                "test_primitive_sphere"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

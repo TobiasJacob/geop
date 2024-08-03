@@ -7,7 +7,7 @@ use crate::{
     vertex_buffer::{RenderVertex, VertexBuffer},
 };
 
-pub fn rasterize_volume_into_face_list(volume: &Volume, color: Color) -> TriangleBuffer {
+pub fn rasterize_volume_into_triangle_list(volume: &Volume, color: Color) -> TriangleBuffer {
     let mut buffer = TriangleBuffer::empty();
 
     for face in volume.boundary.faces.iter() {

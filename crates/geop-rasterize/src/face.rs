@@ -14,7 +14,7 @@ use crate::{
     contour::rasterize_contour_into_line_list,
     edge_buffer::{EdgeBuffer, RenderEdge},
     triangle_buffer::{RenderTriangle, TriangleBuffer},
-    vertex_buffer::RenderVertex,
+    vertex_buffer::{RenderVertex, VertexBuffer},
     vertex_normal_buffer::RenderNormalVertex,
 };
 
@@ -266,8 +266,31 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             .map(|point| RenderVertex::new(point.clone(), color)),
     );
 
-    // TODO: Insert connection points in the surface
-    // TODO: If open_edges has a length of 0, select a valid starting edge
+    // If the surface is unbounded, we have to find a valid edge to start with. From there we can build the triangles.
+    if open_edges.is_empty() {
+        // Find the two closest points
+        let mut min_distance = f64::INFINITY;
+        let mut best_edge = None;
+        for i in 0..connection_points.len() {
+            for j in i + 1..connection_points.len() {
+                let distance = face
+                    .surface
+                    .distance(connection_points[i].point(), connection_points[j].point());
+                if distance < min_distance {
+                    min_distance = distance;
+                    best_edge = Some(RenderEdge::new(
+                        connection_points[i].into(),
+                        connection_points[j].into(),
+                        color,
+                    ));
+                }
+            }
+        }
+        if let Some(best_edge) = best_edge {
+            open_edges.push_back(best_edge);
+        }
+    }
+
     let mut triangles = Vec::<RenderTriangle>::new();
 
     // Now iterate until all open_edges are processed.
@@ -320,4 +343,25 @@ pub fn rasterize_face_into_line_list(face: &Face, color: Color) -> EdgeBuffer {
         buffer.join(&rasterize_contour_into_line_list(contour, color));
     }
     buffer
+}
+
+pub fn rasterize_face_into_vertex_list(face: &Face, color: Color) -> VertexBuffer {
+    let mut buffer = Vec::<RenderVertex>::new();
+    if let Some(boundary) = &face.boundary {
+        buffer.extend(
+            rasterize_contour_into_line_list(boundary, color)
+                .edges
+                .iter()
+                .map(|edge| edge.start),
+        );
+    }
+    for contour in face.holes.iter() {
+        buffer.extend(
+            rasterize_contour_into_line_list(contour, color)
+                .edges
+                .iter()
+                .map(|edge| edge.start),
+        );
+    }
+    VertexBuffer::new(buffer)
 }

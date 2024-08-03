@@ -15,7 +15,7 @@ use geop_rasterize::{
     triangle_buffer::{RenderTriangle, TriangleBuffer},
     vertex_buffer::VertexBuffer,
     volume::{
-        rasterize_volume_into_face_list, rasterize_volume_into_line_list,
+        rasterize_volume_into_triangle_list, rasterize_volume_into_line_list,
         rasterize_volume_into_vertex_list,
     },
 };
@@ -99,7 +99,7 @@ async fn run() {
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
         let mut triangles = TriangleBuffer::empty();
-        triangles.join(&rasterize_volume_into_face_list(
+        triangles.join(&rasterize_volume_into_triangle_list(
             &object,
             Color::new(1.0, 1.0, 1.0, 1.0),
         ));
