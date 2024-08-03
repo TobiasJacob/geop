@@ -4,6 +4,7 @@ pub mod pipeline_manager;
 pub mod render_pipeline_edge;
 pub mod render_pipeline_triangle;
 pub mod render_pipeline_vertex;
+pub mod texture;
 pub mod window;
 pub mod window_state;
 

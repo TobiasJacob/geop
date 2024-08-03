@@ -101,7 +101,7 @@ async fn run() {
         let mut triangles = TriangleBuffer::empty();
         triangles.join(&rasterize_volume_into_face_list(
             &object,
-            Color::from_brightness(1.0),
+            Color::new(1.0, 1.0, 1.0, 1.0),
         ));
         let mut lines = EdgeBuffer::empty();
         lines.join(&rasterize_volume_into_line_list(

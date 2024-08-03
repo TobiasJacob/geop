@@ -3,6 +3,8 @@ use core::panic;
 use geop_rasterize::{triangle_buffer::TriangleBuffer, vertex_normal_buffer::RenderNormalVertex};
 use wgpu::{util::DeviceExt, TextureFormat};
 
+use crate::texture;
+
 pub struct RenderPipelineTriangle {
     vertex_buffer: wgpu::Buffer,
     max_num_triangles: usize,
@@ -76,7 +78,7 @@ impl RenderPipelineTriangle {
                 topology: wgpu::PrimitiveTopology::TriangleList, // 1.
                 strip_index_format: None,
                 front_face: wgpu::FrontFace::Ccw, // 2.
-                cull_mode: Some(wgpu::Face::Back),
+                cull_mode: None,
                 // Setting this to anything other than Fill requires Features::NON_FILL_POLYGON_MODE
                 polygon_mode: wgpu::PolygonMode::Fill,
                 // Requires Features::DEPTH_CLIP_CONTROL
@@ -84,7 +86,13 @@ impl RenderPipelineTriangle {
                 // Requires Features::CONSERVATIVE_RASTERIZATION
                 conservative: false,
             },
-            depth_stencil: None, // 1.
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: texture::Texture::DEPTH_FORMAT,
+                depth_write_enabled: true,
+                depth_compare: wgpu::CompareFunction::Less, // 1.
+                stencil: wgpu::StencilState::default(),     // 2.
+                bias: wgpu::DepthBiasState::default(),
+            }),
             multisample: wgpu::MultisampleState {
                 count: 1,                         // 2.
                 mask: !0,                         // 3.

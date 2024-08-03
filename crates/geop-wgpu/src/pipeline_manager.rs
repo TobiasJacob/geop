@@ -4,8 +4,11 @@ use geop_rasterize::{
 use wgpu::TextureFormat;
 
 use crate::{
-    camera_pipeline::CameraPipeline, render_pipeline_edge::RenderPipelineEdge,
-    render_pipeline_triangle::RenderPipelineTriangle, render_pipeline_vertex::RenderPipelineVertex,
+    camera_pipeline::CameraPipeline,
+    render_pipeline_edge::RenderPipelineEdge,
+    render_pipeline_triangle::RenderPipelineTriangle,
+    render_pipeline_vertex::RenderPipelineVertex,
+    texture::{self, Texture},
 };
 
 pub struct PipelineManager {
@@ -13,6 +16,7 @@ pub struct PipelineManager {
     traingle_pipeline: RenderPipelineTriangle,
     line_pipeline: RenderPipelineEdge,
     vertex_pipeline: RenderPipelineVertex,
+    pub depth_texture: Texture,
 }
 
 impl PipelineManager {
@@ -21,6 +25,8 @@ impl PipelineManager {
         camera_size: winit::dpi::PhysicalSize<u32>,
         render_texture_format: TextureFormat,
     ) -> Self {
+        let depth_texture = Texture::create_depth_texture(&device, &camera_size, "depth_texture");
+
         let camera_pipeline = CameraPipeline::new(device, camera_size);
 
         let traingle_pipeline = RenderPipelineTriangle::new(
@@ -49,6 +55,7 @@ impl PipelineManager {
             traingle_pipeline,
             line_pipeline,
             vertex_pipeline,
+            depth_texture,
         }
     }
 
@@ -83,5 +90,10 @@ impl PipelineManager {
         self.traingle_pipeline.render(render_pass);
         self.line_pipeline.render(render_pass);
         self.vertex_pipeline.render(render_pass);
+    }
+
+    pub fn resize(&mut self, device: &wgpu::Device, new_size: winit::dpi::PhysicalSize<u32>) {
+        self.depth_texture =
+            texture::Texture::create_depth_texture(&device, &new_size, "depth_texture");
     }
 }
