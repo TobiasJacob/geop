@@ -20,7 +20,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::new(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_line.png"),
             )
             .await;
@@ -28,7 +28,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_circle(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_circle(Point::new_zero(), Point::new_unit_z(), 1.0);
+        let edge = primitive_circle(Point::new_zero(), Point::new_unit_y(), 1.0);
         let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
@@ -36,7 +36,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::new(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_circle.png"),
             )
             .await;

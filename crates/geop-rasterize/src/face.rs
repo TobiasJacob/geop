@@ -320,6 +320,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             }
         }
         if let Some(best_edge) = best_edge {
+            open_edges.push_back(best_edge.flip());
             open_edges.push_back(best_edge);
         }
     }

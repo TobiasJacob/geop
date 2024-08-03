@@ -85,7 +85,7 @@ impl Plane {
     }
 
     pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
-        let n = (density + 1.0) as usize;
+        let n = (density + 1.1) as usize;
         let mut points = Vec::new();
         for i in 0..n {
             for j in 0..n {

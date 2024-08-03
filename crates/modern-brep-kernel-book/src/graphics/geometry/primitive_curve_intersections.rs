@@ -3,6 +3,7 @@ mod tests {
     use std::vec;
 
     use geop_geometry::points::point::Point;
+    use geop_rasterize::edge::rasterize_edge_into_line_list;
     use geop_topology::{
         intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
         primitive_objects::edges::{circle::primitive_circle, line::primitive_infinite_line},
@@ -16,12 +17,11 @@ mod tests {
     #[rstest]
     async fn test_line_line_intersections(#[future] renderer: Box<HeadlessRenderer>) {
         let line1 =
-            primitive_infinite_line(Point::new(-1.0, -0.5, 0.0), Point::new(1.0, -0.5, 0.0));
-        let line2 = primitive_infinite_line(Point::new(-1.0, 0.5, 0.0), Point::new(1.0, 0.5, 0.0));
-        let line3 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.0), Point::new(0.0, 1.0, 0.0));
+            primitive_infinite_line(Point::new(-1.0, 0.0, -0.5), Point::new(1.0, 0.0, -0.5));
+        let line2 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.5), Point::new(1.0, 0.0, 0.5));
+        let line3 = primitive_infinite_line(Point::new(-1.0, 0.0, -1.0), Point::new(1.0, 0.0, 1.0));
 
         let mut scene_edges = vec![
-            (line1.clone(), Color::white()),
             (line2.clone(), Color::white()),
             (line3.clone(), Color::white()),
         ];
@@ -55,7 +55,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::new(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/line_line_intersections.png"),
             )
             .await;
@@ -63,9 +63,9 @@ mod tests {
 
     #[rstest]
     async fn test_circle_circle_intersections(#[future] renderer: Box<HeadlessRenderer>) {
-        let circle1 = primitive_circle(Point::new(0.7, 0.3, 0.0), Point::new_unit_z(), 0.3);
-        let circle2 = primitive_circle(Point::new(0.4, 0.3, 0.0), Point::new_unit_z(), 0.6);
-        let circle3 = primitive_circle(Point::new(-0.4, 0.3, 0.0), Point::new_unit_z(), 0.8);
+        let circle1 = primitive_circle(Point::new(0.7, 0.0, 0.3), Point::new_unit_y(), 0.3);
+        let circle2 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::new_unit_y(), 0.6);
+        let circle3 = primitive_circle(Point::new(-0.4, 0.0, 0.3), Point::new_unit_y(), 0.8);
 
         let mut scene_edges = vec![
             (circle1.clone(), Color::white()),
@@ -102,7 +102,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::new(0.0, -3.0, 0.0),
                 std::path::Path::new(
                     "src/generated_images/geometry/circle_circle_intersections.png",
                 ),
@@ -112,11 +112,11 @@ mod tests {
 
     #[rstest]
     async fn test_circle_line_intersection(#[future] renderer: Box<HeadlessRenderer>) {
-        let circle1 = primitive_circle(Point::new(0.4, 0.3, 0.0), Point::new_unit_z(), 0.6);
-        let line1 = primitive_infinite_line(Point::new(-1.0, 0.3, 0.0), Point::new(1.0, 0.3, 0.0));
-        let line2 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
-        let line3 = primitive_infinite_line(Point::new(-1.0, 0.9, 0.0), Point::new(1.0, 0.9, 0.0));
-        let line4 = primitive_infinite_line(Point::new(-1.0, 1.0, 0.0), Point::new(1.0, 1.0, 0.0));
+        let circle1 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::new_unit_y(), 0.6);
+        let line1 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.3), Point::new(1.0, 0.0, 0.3));
+        let line2 = primitive_infinite_line(Point::new(-1.0, 0.0, -0.1), Point::new(1.0, 0.0, 0.1));
+        let line3 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.9), Point::new(1.0, 0.0, 0.9));
+        let line4 = primitive_infinite_line(Point::new(-1.0, 0.0, 1.0), Point::new(1.0, 0.0, 1.0));
 
         let mut scene_edges = vec![
             (circle1.clone(), Color::white()),
@@ -155,7 +155,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::new(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/circle_line_intersections.png"),
             )
             .await;
