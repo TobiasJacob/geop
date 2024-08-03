@@ -22,6 +22,20 @@ impl RenderEdge {
     pub fn mid_point(&self) -> Point {
         (self.start.point() + self.end.point()) / 2.0
     }
+
+    pub fn flip(&self) -> Self {
+        RenderEdge {
+            start: self.end,
+            end: self.start,
+        }
+    }
+}
+
+// Equalities for RenderEdge
+impl PartialEq for RenderEdge {
+    fn eq(&self, other: &Self) -> bool {
+        self.start == other.start && self.end == other.end
+    }
 }
 
 #[derive(Debug)]

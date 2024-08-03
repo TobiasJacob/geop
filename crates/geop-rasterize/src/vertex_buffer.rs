@@ -31,6 +31,12 @@ impl RenderVertex {
     }
 }
 
+impl PartialEq for RenderVertex {
+    fn eq(&self, other: &Self) -> bool {
+        self.position == other.position && self.color == other.color
+    }
+}
+
 // Implement conversion to Point
 impl From<RenderVertex> for Point {
     fn from(v: RenderVertex) -> Self {

@@ -89,9 +89,9 @@ impl Sphere {
         if x == y {
             return Some(Point::new_zero());
         }
-        let x = (x - self.basis) / self.radius;
-        let y = (y - self.basis) / self.radius;
-        let dir = y - x.dot(y) * x;
+        let x2 = (x - self.basis) / self.radius;
+        let y2 = (y - self.basis) / self.radius;
+        let dir = y2 - x2.dot(y2) * x2;
         let dir_norm = dir.norm();
         if dir_norm < EQ_THRESHOLD {
             return None;
