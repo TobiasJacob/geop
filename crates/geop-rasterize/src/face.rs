@@ -30,14 +30,15 @@ use crate::{
 // This function checks if the point is inside the circumcircle of the triangle. The points have to be in counter clockwise order.
 pub fn inside_triangle_circumcircle(
     surface: &Surface,
-    traingle: &[RenderVertex; 3],
+    traingle: &RenderTriangle,
     point: RenderVertex,
-) -> f64 {
+) -> bool {
     // First project points into the tangent plane.
-    let projected_triangles = traingle
-        .iter()
-        .map(|p| surface.log(point.into(), (*p).into()))
-        .collect::<Vec<TangentPoint>>();
+    let projected_triangles = [
+        surface.log(traingle.a.into(), point.into()),
+        surface.log(traingle.b.into(), point.into()),
+        surface.log(traingle.c.into(), point.into()),
+    ];
     // Now use the classic delaunay algorithm in 2d.
 
     // Matrix as in https://en.wikipedia.org/wiki/Delaunay_triangulation
@@ -63,17 +64,18 @@ pub fn inside_triangle_circumcircle(
         + mat[0][2] * mat[1][0] * mat[2][1]
         - mat[0][0] * mat[1][2] * mat[2][1];
 
-    -determinant // Check this is < -0.0001, which means it is inside the circumcircle
+    // TODO: Check if we can do the triangulation in a single pass by choosing the point with minimum determinant right away...
+    -determinant < -EQ_THRESHOLD // Check this is < -0.0001, which means it is inside the circumcircle
 }
 
-pub fn check_triangle_counter_clockwise(surface: &Surface, traingle: &[RenderVertex; 3]) -> bool {
-    assert!(surface.on_surface(traingle[0].point()));
-    assert!(surface.on_surface(traingle[1].point()));
-    assert!(surface.on_surface(traingle[2].point()));
+pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTriangle) -> bool {
+    assert!(surface.on_surface(triangle.a.point()));
+    assert!(surface.on_surface(triangle.b.point()));
+    assert!(surface.on_surface(triangle.c.point()));
 
     let (v1, v2) = (
-        surface.log(traingle[0].into(), traingle[1].into()),
-        surface.log(traingle[0].into(), traingle[2].into()),
+        surface.log(triangle.a.into(), triangle.b.into()),
+        surface.log(triangle.a.into(), triangle.c.into()),
     );
     let det = v1.0.x * v2.0.y - v1.0.y * v2.0.x;
     return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
@@ -190,6 +192,40 @@ pub fn triangle_intersects_triangle_list(
     return false;
 }
 
+pub fn check_triangle(
+    surface: &Surface,
+    edge: RenderEdge,
+    point: RenderVertex,
+    color: Color,
+    triangle_list: &[RenderTriangle],
+    is_better_than: Option<&RenderTriangle>,
+) -> Option<RenderTriangle> {
+    let triangle = RenderTriangle::new(
+        edge.start.into(),
+        edge.end.into(),
+        point.into(),
+        color,
+        surface.normal(edge.start.point()),
+        surface.normal(edge.end.point()),
+        surface.normal(point.point()),
+    );
+    // Check if the triangle is clockwise
+    if !check_triangle_counter_clockwise(surface, &triangle) {
+        return None;
+    }
+
+    if let Some(baseline_triangle) = is_better_than {
+        if !inside_triangle_circumcircle(surface, baseline_triangle, point) {
+            return None;
+        }
+    }
+    // Sometimes, edges are pushed to the back of the queue which have already 2 triangles connected to them. In this case, we can skip the edge.
+    if triangle_intersects_triangle_list(surface, &triangle, triangle_list) {
+        return None;
+    }
+    return Some(triangle);
+}
+
 pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {
     println!("/////////////////////////////////////////////////////////");
     // Now we have to divide the face into triangles. First rasterize the boundaries. This will give us a set of open edges to work with
@@ -223,100 +259,39 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
 
     // Now iterate until all open_edges are processed.
     while let Some(edge) = open_edges.pop_front() {
-        let mut i = usize::MAX;
-        // Find an initial valid triangle to start with
-        for j in 0..connection_points.len() {
-            let point = connection_points[j];
-            if !check_triangle_counter_clockwise(&face.surface, &[edge.start, edge.end, point]) {
-                continue;
-            }
-            if triangle_intersects_triangle_list(
-                &face.surface,
-                &RenderTriangle::new(
-                    edge.start.point(),
-                    edge.end.point(),
-                    point.point(),
-                    color,
-                    face.normal(edge.start.point()),
-                    face.normal(edge.end.point()),
-                    face.normal(point.point()),
-                ),
-                &triangles,
-            ) {
-                continue;
-            }
-            i = j;
-            break;
-        }
-        if i == usize::MAX {
-            continue;
-        }
+        let mut best_triangle: Option<(RenderVertex, RenderTriangle)> = None;
         // Now find the smallest valid triangle
         loop {
-            let mut found_one_inside = false;
-            let mut min_det = -EQ_THRESHOLD;
-            let current_point = connection_points[i];
-            for j in 0..connection_points.len() {
-                let new_point = connection_points[j];
-                if i == j || current_point.point() == new_point.point() {
-                    continue;
-                }
-                if !check_triangle_counter_clockwise(
+            let mut found_better_triangle = false;
+            for point in connection_points.iter() {
+                if let Some(triangle) = check_triangle(
                     &face.surface,
-                    &[edge.start, edge.end, new_point],
-                ) {
-                    continue;
-                }
-                let new_det = inside_triangle_circumcircle(
-                    &face.surface,
-                    &[edge.start, edge.end, current_point],
-                    new_point,
-                );
-                if new_det >= min_det {
-                    continue;
-                }
-                if triangle_intersects_triangle_list(
-                    &face.surface,
-                    &RenderTriangle::new(
-                        edge.start.point(),
-                        edge.end.point(),
-                        new_point.point(),
-                        color,
-                        face.normal(edge.start.point()),
-                        face.normal(edge.end.point()),
-                        face.normal(new_point.point()),
-                    ),
+                    edge,
+                    *point,
+                    color,
                     &triangles,
+                    best_triangle.as_ref().map(|(_, t)| t),
                 ) {
-                    continue;
+                    found_better_triangle = true;
+                    best_triangle = Some((*point, triangle));
+                    break;
                 }
-                i = j;
-                found_one_inside = true;
-                min_det = new_det;
-                // println!("Found new point with i, j: {}, {}", i, j);
             }
-            if !found_one_inside {
+            if !found_better_triangle {
                 break;
             }
         }
-        let point = connection_points[i];
-        // triangles.push(RenderTriangle::new(edge.start.into(), point.into(), edge.end.into(), color));
-        triangles.push(RenderTriangle::new(
-            edge.start.into(),
-            edge.end.into(),
-            point.into(),
-            color,
-            face.normal(edge.start.point()),
-            face.normal(edge.end.point()),
-            face.normal(point.point()),
-        ));
-        let inner_edge_1 = RenderEdge::new(point.into(), edge.end.into(), color);
-        if !edge_intersects_contours(&face.surface, &inner_edge_1, &contours) {
-            open_edges.push_back(inner_edge_1);
-        }
-        let inner_edge_2 = RenderEdge::new(edge.start.into(), point.into(), color);
-        if !edge_intersects_contours(&face.surface, &inner_edge_2, &contours) {
-            open_edges.push_back(inner_edge_2);
+        if let Some((point, best_triangle)) = best_triangle {
+            triangles.push(best_triangle);
+
+            for inner_edge in [
+                RenderEdge::new(edge.start.into(), point.into(), color),
+                RenderEdge::new(point.into(), edge.end.into(), color),
+            ] {
+                if !edge_intersects_contours(&face.surface, &inner_edge, &contours) {
+                    open_edges.push_back(inner_edge);
+                }
+            }
         }
     }
 
