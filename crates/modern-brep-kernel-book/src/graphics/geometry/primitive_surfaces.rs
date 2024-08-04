@@ -34,7 +34,7 @@ mod tests {
     #[rstest]
     async fn test_primitive_sphere(#[future] renderer: Box<HeadlessRenderer>) {
         let face = primitive_sphere(Point::new_zero(), 1.0);
-        let scene = Scene::new(vec![], vec![(face, Color::white())], vec![], vec![]);
+        let scene = Scene::new(vec![], vec![(face, Color::light_gray())], vec![], vec![]);
         renderer
             .await
             .render_to_file(
