@@ -10,7 +10,7 @@ use crate::{
 pub fn rasterize_edge_into_line_list(edge: &Edge, color: Color) -> EdgeBuffer {
     let n = match edge.curve {
         Curve::Line(_) => 10,
-        Curve::Circle(_) => 128,
+        Curve::Circle(_) => 32,
     };
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {

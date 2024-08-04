@@ -4,7 +4,7 @@ mod tests {
 
     use geop_booleans::{
         intersections::face_face::{face_face_intersection, FaceFaceIntersection},
-        remesh::face::{self, face_remesh, face_split, face_split_points, FaceSplit},
+        remesh::face::{face_remesh, face_split, face_split_points, FaceSplit},
     };
     use geop_geometry::{
         points::point::Point,
@@ -170,12 +170,12 @@ mod tests {
         let (face1, face2) = generate_scene();
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        // for edge in face1.all_edges() {
-        //     scene.edges.push((edge.clone(), Color::white()));
-        // }
-        // for edge in face2.all_edges() {
-        //     scene.edges.push((edge.clone(), Color::white()));
-        // }
+        for edge in face1.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
+        for edge in face2.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
 
         let intersection_face = face_face_intersection(&face1, &face2);
         match intersection_face {
@@ -200,7 +200,7 @@ mod tests {
             .render_to_file(
                 &scene,
                 false,
-                true,
+                false,
                 Point::new(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_intersection.png"),
             )
