@@ -14,7 +14,7 @@ mod tests {
     async fn test_surface_log_operation_unit_x(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
         let face = primitive_sphere(Point::new_zero(), 1.0);
-        scene.faces.push((face.clone(), Color::white()));
+        scene.faces.push((face.clone(), Color::light_gray()));
 
         let anchor = Point::new(-0.5, -1.3, 0.5).normalize();
         scene.points.push((anchor, Color::blue()));

@@ -16,7 +16,7 @@ mod tests {
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        scene.faces.push((face.clone(), Color::white()));
+        scene.faces.push((face.clone(), Color::light_gray()));
 
         let points = vec![
             Point::new(0.1, -1.0, 0.7),

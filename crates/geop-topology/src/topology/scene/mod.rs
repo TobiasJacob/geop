@@ -96,6 +96,15 @@ impl Color {
         }
     }
 
+    pub fn light_gray() -> Color {
+        Color {
+            r: 0.85,
+            g: 0.85,
+            b: 0.85,
+            a: 1.0,
+        }
+    }
+
     pub fn black() -> Color {
         Color {
             r: 0.0,
