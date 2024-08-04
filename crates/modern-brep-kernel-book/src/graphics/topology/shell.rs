@@ -14,7 +14,7 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
         scene
             .volumes
-            .push((primitive_cube(1.0, 1.0, 1.0), Color::white()));
+            .push((primitive_cube(1.0, 1.0, 1.0), Color::light_gray()));
         let mut renderer = renderer.await;
         renderer
             .render_to_file(
