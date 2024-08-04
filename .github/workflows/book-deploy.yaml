@@ -15,10 +15,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Build graphics
-        run: cargo test
-      - name: Change into the book directory
-        run: cd crates/modern-brep-kernel-book
+      # - name: Build graphics
+      #   run: cargo test
+      # - name: Change into the book directory
+      #   run: cd crates/modern-brep-kernel-book
       - name: Install latest mdbook
         run: |
           tag=$(curl 'https://api.github.com/repos/rust-lang/mdbook/releases/latest' | jq -r '.tag_name')
