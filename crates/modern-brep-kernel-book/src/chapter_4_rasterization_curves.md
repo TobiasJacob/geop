@@ -1,1 +1,0 @@
-# Rasterization of Curves
