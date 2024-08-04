@@ -9,19 +9,23 @@ use super::{
 
 #[derive(Clone, Debug)]
 pub struct Volume {
-    pub boundary: Shell,   // Normal pointing outwards
-    pub holes: Vec<Shell>, // Normal pointing inwards
+    pub boundary: Shell,      // Normal pointing outwards
+    pub cavities: Vec<Shell>, // Normal pointing inwards
 }
 
 impl Volume {
-    pub fn new(boundary: Shell, holes: Vec<Shell>) -> Volume {
-        Volume { boundary, holes }
+    pub fn new(boundary: Shell, cavities: Vec<Shell>) -> Volume {
+        Volume { boundary, cavities }
     }
 
     pub fn transform(&self, transform: Transform) -> Volume {
         Volume {
             boundary: self.boundary.transform(transform),
-            holes: self.holes.iter().map(|h| h.transform(transform)).collect(),
+            cavities: self
+                .cavities
+                .iter()
+                .map(|h| h.transform(transform))
+                .collect(),
         }
     }
 
@@ -29,7 +33,7 @@ impl Volume {
         let mut faces = Vec::<Face>::new();
 
         faces.extend(self.boundary.faces.clone());
-        for hole in self.holes.iter() {
+        for hole in self.cavities.iter() {
             faces.extend(hole.faces.clone());
         }
         return faces;
@@ -39,7 +43,7 @@ impl Volume {
         if shell_point_contains(&self.boundary, p) != FacePointContains::Outside {
             return self.boundary.normal(p);
         }
-        for hole in self.holes.iter() {
+        for hole in self.cavities.iter() {
             if shell_point_contains(hole, p) != FacePointContains::Outside {
                 return hole.normal(p);
             }

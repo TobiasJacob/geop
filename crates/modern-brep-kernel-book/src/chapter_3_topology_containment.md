@@ -1,7 +1,20 @@
 # Containment
 
+The crate also allows for containment checks for every topological structure. They work by ray casting and checking the normal at the intersection with the boundary. This also works for edge cases when the casted ray hits a corner.
 
-## Checking if something is inside or outside a contour
+This works for various faces. Red means outside, green means inside, blue means on the edge, and gray means on the corner.
+
+![Containment](./generated_images/topology/face_contains_rectangle.png)
+
+![Containment](./generated_images/topology/face_contains_rectangle2.png)
+
+![Containment](./generated_images/topology/face_contains.png)
+
+And also for various volumes.
+
+TODO: Add images
+
+## Why cant we just count the intersections?
 
 Imagine we are at a corner of a contour. We want to check if a point is inside or outside the contour. We can do this by drawing a line from the point to the corner (ray). If the line crosses the contour an odd number of times, the point is inside the contour. If the line crosses the contour an even number of times, the point is outside the contour.
 

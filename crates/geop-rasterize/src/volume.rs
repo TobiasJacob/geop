@@ -16,7 +16,7 @@ pub fn rasterize_volume_into_triangle_list(volume: &Volume, color: Color) -> Tri
         buffer.join(&face_buffer);
     }
 
-    for hole in volume.holes.iter() {
+    for hole in volume.cavities.iter() {
         for face in hole.faces.iter() {
             println!("Rasterizing face: {}", face);
             let face_buffer = rasterize_face_into_triangle_list(face, color);
@@ -35,7 +35,7 @@ pub fn rasterize_volume_into_line_list(volume: &Volume, color: Color) -> EdgeBuf
         buffer.join(&face_buffer);
     }
 
-    for hole in volume.holes.iter() {
+    for hole in volume.cavities.iter() {
         for face in hole.faces.iter() {
             let face_buffer = rasterize_face_into_line_list(face, color);
             buffer.join(&face_buffer);

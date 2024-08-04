@@ -24,7 +24,7 @@ mod tests {
         let mut face = primitive_sphere(Point::new_zero(), 1.0);
         face.boundary = Some(Contour::new(vec![primitive_circle(
             Point::new_zero(),
-            Point::new(0.5, 0.5, 0.5),
+            -Point::new(0.5, 0.5, 0.5),
             1.0,
         )]));
 
@@ -37,6 +37,7 @@ mod tests {
                 FacePointContains::NotOnSurface => scene.points.push((p, Color::black())),
             };
         }
+        scene.faces.push((face, Color::white()));
 
         renderer
             .await
@@ -81,6 +82,7 @@ mod tests {
             };
         }
 
+        scene.faces.push((face, Color::white()));
         renderer
             .await
             .render_to_file(
@@ -129,6 +131,7 @@ mod tests {
             };
         }
 
+        scene.faces.push((face, Color::white()));
         renderer
             .await
             .render_to_file(
