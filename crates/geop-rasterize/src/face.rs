@@ -1,10 +1,6 @@
-use std::{collections::VecDeque, os::unix::process};
+use std::collections::VecDeque;
 
-use geop_geometry::{
-    points::point::Point,
-    surfaces::surface::{Surface, TangentPoint},
-    EQ_THRESHOLD,
-};
+use geop_geometry::{points::point::Point, surfaces::surface::Surface, EQ_THRESHOLD};
 use geop_topology::{
     contains::face_point::{face_point_contains, FacePointContains},
     topology::{face::Face, scene::Color},
@@ -15,7 +11,6 @@ use crate::{
     edge_buffer::{EdgeBuffer, RenderEdge},
     triangle_buffer::{RenderTriangle, TriangleBuffer},
     vertex_buffer::{RenderVertex, VertexBuffer},
-    vertex_normal_buffer::RenderNormalVertex,
 };
 
 // struct PointBuffer {
@@ -203,6 +198,29 @@ pub fn triangle_intersects_triangle(
     true
 }
 
+// 3D line line intersection
+pub fn render_edge_intersects_render_edge(edge1: &RenderEdge, edge2: &RenderEdge) -> bool {
+    let dir1 = edge1.end.point() - edge1.start.point();
+    let dir2 = edge2.end.point() - edge2.start.point();
+
+    // Parallel lines are assumed to not intersect
+    let cross = dir1.cross(dir2);
+    let cross_normsq = cross.norm_sq();
+    if cross_normsq < EQ_THRESHOLD {
+        return false;
+    }
+
+    let diff = edge2.start.point() - edge1.start.point();
+    let t = diff.cross(dir2).dot(cross) / cross_normsq;
+    let u = diff.cross(dir1).dot(cross) / cross_normsq;
+
+    // Check if the intersection point is on the line segments
+    if t > EQ_THRESHOLD && t < 1.0 - EQ_THRESHOLD && u > EQ_THRESHOLD && u < 1.0 - EQ_THRESHOLD {
+        return true;
+    }
+    return false;
+}
+
 pub fn triangle_intersects_triangle_list(
     surface: &Surface,
     triangle: &RenderTriangle,
@@ -223,7 +241,7 @@ pub fn check_triangle(
     color: Color,
     processed_edges: &[RenderEdge],
     other_candidate_points: &[RenderVertex],
-) -> Option<RenderVertex> {
+) -> Option<()> {
     let triangle = RenderTriangle::new(
         edge.start.into(),
         edge.end.into(),
@@ -238,8 +256,10 @@ pub fn check_triangle(
         return None;
     }
 
+    // let mut violation_count = 0 as usize;
     for other_point in other_candidate_points.iter() {
         if inside_triangle_circumcircle(surface, &edge, &point, other_point) {
+            // violation_count += 1;
             return None;
         }
         // println!("Detected inside_triangle_circumcircle");
@@ -256,7 +276,33 @@ pub fn check_triangle(
     if processed_edges.contains(&RenderEdge::new(point.into(), edge.start.into(), color)) {
         return None;
     }
-    return Some(point);
+    // Check if the triangle intersects with any boundary. This prevents an accidential "wall glitch" of small long thin holes in a circle, which may be overstepped otherwise.
+    // let new_edge1 = RenderEdge::new(edge.start.into(), point.into(), color);
+    // let new_edge2 = RenderEdge::new(point.into(), edge.end.into(), color);
+    // for contour in contours.iter() {
+    //     for e in contour.edges.iter() {
+    //         if render_edge_intersects_render_edge(&new_edge1, e) {
+    //             return None;
+    //         }
+    //         if render_edge_intersects_render_edge(&new_edge2, e) {
+    //             return None;
+    //         }
+    //     }
+    // }
+    // for processed_edge in processed_edges.iter() {
+    //     if render_edge_intersects_render_edge(&new_edge1, processed_edge) {
+    //         return None;
+    //     }
+    //     if render_edge_intersects_render_edge(&new_edge2, processed_edge) {
+    //         return None;
+    //     }
+    // }
+    // for other_triangle in triangles.iter() {
+    //     if triangle_intersects_triangle(surface, &triangle, other_triangle) {
+    //         return None;
+    //     }
+    // }
+    return Some();
 }
 
 pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {
@@ -347,9 +393,10 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
             break;
         }
         let mut best_triangle_point: Option<RenderVertex> = None;
-        // Now find the smallest valid triangle
+        // let mut best_value = usize::max_value();
+        // Now find the best valid triangle
         for point in connection_points.iter() {
-            if let Some(better_point) = check_triangle(
+            if let Some(_) = check_triangle(
                 &face.surface,
                 edge,
                 *point,
@@ -357,7 +404,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                 processed_edges.as_slice(),
                 &connection_points,
             ) {
-                best_triangle_point = Some(better_point);
+                best_triangle_point = Some(*point);
                 break;
             }
         }
@@ -404,21 +451,9 @@ pub fn rasterize_face_into_line_list(face: &Face, color: Color) -> EdgeBuffer {
 
 pub fn rasterize_face_into_vertex_list(face: &Face, color: Color) -> VertexBuffer {
     let mut buffer = Vec::<RenderVertex>::new();
-    if let Some(boundary) = &face.boundary {
-        buffer.extend(
-            rasterize_contour_into_line_list(boundary, color)
-                .edges
-                .iter()
-                .map(|edge| edge.start),
-        );
-    }
-    for contour in face.holes.iter() {
-        buffer.extend(
-            rasterize_contour_into_line_list(contour, color)
-                .edges
-                .iter()
-                .map(|edge| edge.start),
-        );
+
+    for p in face.all_points().iter() {
+        buffer.push(RenderVertex::new(p.clone(), color));
     }
     VertexBuffer::new(buffer)
 }
