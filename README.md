@@ -58,7 +58,7 @@ A crate that defines the boolean operations (intersection, union, difference) be
 
 This is used to convert the topological structures into triangles.
 
-![Rasterize](./crates/modern-brep-kernel-book/src/generated_images/topology/shell1.png)
+![Rasterize](./crates/modern-brep-kernel-book/src/generated_images/topology/face1wire.png)
 
 ## Geop-Wgpu
 
