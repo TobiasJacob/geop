@@ -19,6 +19,8 @@ FaceSplit::BonAOpSide(_) => false,
 FaceSplit::BoutA(_) => false,
 ```
 
+By checking if the midpoint of each edge is inside, outside, or on the boundary of the other face, we can determine which edges have to stay for the intersection operation. The following picture shows each category in a different color in an exploded view.
+
 ![Picture](./generated_images/booleans/face_splits.png)
 
 Then the segments are reassembled into new contours. The contours are then sorted into a hierarchy and the faces are reassembled.
