@@ -380,7 +380,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
         if processed_edges.contains(&edge) {
             continue;
         }
-        if face_point_contains(face, edge.mid_point()) != FacePointContains::Inside {
+        if face_point_contains(face, edge.mid_point()) == FacePointContains::Outside {
             continue;
         }
 
