@@ -11,7 +11,7 @@ use geop_topology::{
     topology::{edge::Edge, face::Face},
 };
 
-use crate::remesh::face::{face_remesh, face_split, FaceSplit};
+use crate::remesh::face::{face_remesh, face_split, normalize_faces, FaceSplit};
 
 use super::face_edge::{face_edge_intersection, FaceEdgeIntersection};
 
@@ -35,7 +35,8 @@ pub fn face_face_same_surface_intersection(face_self: &Face, face_other: &Face) 
         })
         .collect::<Vec<FaceSplit>>();
 
-    return face_remesh(face_self.surface.clone(), edges);
+    let contours = face_remesh(edges);
+    return normalize_faces(contours, face_self.surface.clone());
 }
 
 pub enum FaceFaceIntersection {

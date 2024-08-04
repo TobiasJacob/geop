@@ -5,6 +5,8 @@ use geop_topology::{
     topology::{contour::Contour, edge::Edge},
 };
 
+// This operation splits an edge by a list of points.
+// If one part goes to infinity, it will be removed.
 pub fn split_edge_by_points_if_necessary(edge: &Edge, points: &[Point]) -> Vec<Edge> {
     let mut result = vec![edge.clone()];
     for p in points {
@@ -13,16 +15,30 @@ pub fn split_edge_by_points_if_necessary(edge: &Edge, points: &[Point]) -> Vec<E
             if edge_point_contains(edge, *p) != EdgePointContains::Inside {
                 new_result.push(edge.clone());
             } else {
-                new_result.push(Edge::new(
-                    edge.start.clone(),
-                    Some(p.clone()),
-                    edge.curve.clone(),
-                ));
-                new_result.push(Edge::new(
-                    Some(p.clone()),
-                    edge.end.clone(),
-                    edge.curve.clone(),
-                ));
+                match (edge.start.clone(), edge.end.clone()) {
+                    (Some(start), Some(end)) => {
+                        new_result.push(Edge::new(
+                            Some(start),
+                            Some(p.clone()),
+                            edge.curve.clone(),
+                        ));
+                        new_result.push(Edge::new(Some(p.clone()), Some(end), edge.curve.clone()));
+                    }
+                    (Some(start), None) => {
+                        new_result.push(Edge::new(
+                            Some(start),
+                            Some(p.clone()),
+                            edge.curve.clone(),
+                        ));
+                    }
+                    (None, Some(end)) => {
+                        new_result.push(Edge::new(Some(p.clone()), Some(end), edge.curve.clone()));
+                    }
+                    (None, None) => {
+                        new_result.push(Edge::new(None, Some(p.clone()), edge.curve.clone()));
+                        new_result.push(Edge::new(Some(p.clone()), None, edge.curve.clone()));
+                    }
+                }
             }
         }
         result = new_result;

@@ -8,9 +8,9 @@
             "name": "Run Test Debugger",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/target/debug/deps/modern_brep_kernel_book-4f0f4796b2f5f8ae",
+            "program": "${workspaceFolder}/target/debug/deps/modern_brep_kernel_book-7f89b2d096534c3e",
             "args": [
-                "test_primitive_sphere"
+                "test_face_boolean_intersection"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -1,4 +1,7 @@
-use std::rc::Rc;
+use std::{
+    fmt::{Debug, Display, Formatter},
+    rc::Rc,
+};
 
 use geop_geometry::surfaces::surface::Surface;
 use geop_topology::{
@@ -117,7 +120,7 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     res
 }
 
-pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>) -> Vec<Face> {
+pub fn face_remesh(mut edges_intermediate: Vec<FaceSplit>) -> Vec<Contour> {
     println!("face_remesh");
     for edge in edges_intermediate.iter() {
         println!("Edge: {:?}", edge);
@@ -169,7 +172,7 @@ pub fn face_remesh(surface: Rc<Surface>, mut edges_intermediate: Vec<FaceSplit>)
         }
     }
 
-    return normalize_faces(contours, surface);
+    return contours;
 }
 
 pub struct ContourHierarchy {
@@ -179,14 +182,20 @@ pub struct ContourHierarchy {
 
 impl ContourHierarchy {
     // Add contour to this hierarchy if it is inside one of the children or itself
-    pub fn add_contour(&mut self, contour: Contour, surface: Rc<Surface>) -> Option<Contour> {
+    pub fn consume_contour_if_inside(
+        &mut self,
+        contour: Contour,
+        surface: Rc<Surface>,
+    ) -> Option<Contour> {
         for child in self.children.iter_mut() {
             match face_contour_contains(
-                &Face::new(Some(child.contour.clone()), vec![], surface.clone()),
+                &Face::new(Some(child.contour.flip()), vec![], surface.clone()),
                 &contour,
             ) {
                 FaceContourContains::Inside => {
-                    assert!(child.add_contour(contour, surface.clone()).is_none());
+                    assert!(child
+                        .consume_contour_if_inside(contour, surface.clone())
+                        .is_none());
                     return None;
                 }
                 FaceContourContains::Outside => {}
@@ -196,7 +205,7 @@ impl ContourHierarchy {
             }
         }
         if face_contour_contains(
-            &Face::new(Some(contour.clone()), vec![], surface.clone()),
+            &Face::new(Some(self.contour.clone()), vec![], surface.clone()),
             &contour,
         ) == FaceContourContains::Inside
         {
@@ -223,23 +232,53 @@ impl ContourHierarchy {
     }
 }
 
+impl Display for ContourHierarchy {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "ContourHierarchy({}", self.contour)?;
+        for child in self.children.iter() {
+            writeln!(f, "  Child: {}", child)?;
+        }
+        writeln!(f, ")")?;
+        Ok(())
+    }
+}
+
 pub fn normalize_faces(contours: Vec<Contour>, surface: Rc<Surface>) -> Vec<Face> {
-    let mut hierarchy = Vec::<ContourHierarchy>::new();
-    for contour in contours.iter() {
-        for h in hierarchy.iter_mut() {
-            if h.add_contour(contour.clone(), surface.clone()).is_none() {
-                break;
+    println!("normalize_faces");
+    println!("Contours: {}", contours.len());
+    let mut hierarchies = Vec::<ContourHierarchy>::new();
+    'outer_loop: for contour in contours.iter() {
+        for h in hierarchies.iter_mut() {
+            if h.consume_contour_if_inside(contour.clone(), surface.clone())
+                .is_none()
+            {
+                continue 'outer_loop;
             }
         }
-        hierarchy.push(ContourHierarchy {
+        hierarchies.push(ContourHierarchy {
             contour: contour.clone(),
             children: Vec::new(),
         });
     }
     // Now build a hierarchy of Contours
     let mut faces = Vec::<Face>::new();
-    for h in hierarchy.iter() {
+    for h in hierarchies.iter() {
         faces.extend(h.as_faces(surface.clone()));
+    }
+
+    println!("Hierarchies: {}", hierarchies.len());
+    for h in hierarchies.iter() {
+        println!("Hierarchy: {}", h);
+    }
+    // Now build a hierarchy of Contours
+    let mut faces = Vec::<Face>::new();
+    for h in hierarchies.iter() {
+        faces.extend(h.as_faces(surface.clone()));
+    }
+
+    println!("Faces: {}", faces.len());
+    for face in faces.iter() {
+        println!("Face: {}", face);
     }
     faces
 }

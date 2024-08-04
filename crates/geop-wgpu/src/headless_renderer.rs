@@ -1,6 +1,6 @@
 use geop_geometry::points::point::Point;
 use geop_rasterize::{
-    edge::rasterize_edge_into_line_list,
+    edge::{rasterize_edge_into_line_list, rasterize_edge_into_vertex_list},
     edge_buffer::EdgeBuffer,
     face::{
         rasterize_face_into_line_list, rasterize_face_into_triangle_list,
@@ -177,6 +177,16 @@ impl HeadlessRenderer {
                 let triangles = rasterize_face_into_triangle_list(face, *color * face_color);
                 if wireframe_mode {
                     edge_buffer.join(&triangles.to_line_list(*color * edge_color));
+                    for edge in face.all_edges() {
+                        for rasterized_edge in
+                            rasterize_edge_into_line_list(&edge, *color * edge_color)
+                                .edges
+                                .iter()
+                        {
+                            vertex_buffer.vertices.push(rasterized_edge.start.clone());
+                            vertex_buffer.vertices.push(rasterized_edge.end.clone());
+                        }
+                    }
                 } else {
                     triangle_buffer.join(&triangles);
                 }

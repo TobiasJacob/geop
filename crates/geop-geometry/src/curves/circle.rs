@@ -144,9 +144,9 @@ impl Circle {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                let start = start - self.basis;
-                let end = end - self.basis;
-                let mid = (start + end) / 2.0;
+                let start_rel = start - self.basis;
+                let end_rel = end - self.basis;
+                let mid = (start_rel + end_rel) / 2.0;
                 let mid = mid.normalize() * self.radius.norm();
                 let p1 = mid + self.basis;
                 if self.between(p1, Some(start), Some(end)) {

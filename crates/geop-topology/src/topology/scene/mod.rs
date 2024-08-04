@@ -104,6 +104,21 @@ impl Color {
             a: 1.0,
         }
     }
+
+    pub fn ten_different_colors(i: usize) -> Color {
+        vec![
+            Color::new(1.0, 0.0, 0.0, 1.0),
+            Color::new(0.0, 1.0, 0.0, 1.0),
+            Color::new(0.0, 0.0, 1.0, 1.0),
+            Color::new(1.0, 1.0, 0.0, 1.0),
+            Color::new(1.0, 0.0, 1.0, 1.0),
+            Color::new(0.0, 1.0, 1.0, 1.0),
+            Color::new(0.5, 0.0, 0.0, 1.0),
+            Color::new(0.0, 0.5, 0.0, 1.0),
+            Color::new(0.0, 0.0, 0.5, 1.0),
+            Color::new(0.5, 0.5, 0.0, 1.0),
+        ][i % 10]
+    }
 }
 
 impl Mul<f32> for Color {

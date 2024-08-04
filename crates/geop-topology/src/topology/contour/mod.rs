@@ -223,7 +223,11 @@ impl Display for Contour {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Contour: ")?;
         for edge in self.edges.iter() {
-            write!(f, "{:?} ", edge.start)?;
+            if let Some(start) = edge.start {
+                write!(f, "{:?} ", start)?;
+            } else {
+                write!(f, "None ")?;
+            }
         }
         Ok(())
     }
