@@ -13,7 +13,7 @@ use geop_rasterize::{
     edge::rasterize_edge_into_line_list,
     edge_buffer::EdgeBuffer,
     face::rasterize_face_into_triangle_list,
-    triangle_buffer::{RenderTriangle, TriangleBuffer},
+    triangle_buffer::TriangleBuffer,
     vertex_buffer::VertexBuffer,
     volume::{
         rasterize_volume_into_line_list, rasterize_volume_into_triangle_list,
@@ -117,10 +117,7 @@ async fn run() {
             &object,
             Color::from_brightness(0.3),
         ));
-        lines.join(
-            &rasterize_face_into_triangle_list(&sphere, Color::white())
-                .to_line_list(Color::white()),
-        );
+        triangles.join(&rasterize_face_into_triangle_list(&sphere, Color::white()));
         let mut points = VertexBuffer::empty();
         points.join(&rasterize_volume_into_vertex_list(
             &object,

@@ -1,6 +1,9 @@
 use crate::{curves::curve::Curve, points::point::Point, surfaces::surface::Surface};
 
-use super::line_plane::{line_plane_intersection, LinePlaneIntersection};
+use super::{
+    circle_plane::{circle_plane_intersection, CirclePlaneIntersection},
+    line_plane::{line_plane_intersection, LinePlaneIntersection},
+};
 
 pub enum CurveSurfaceIntersection {
     None,
@@ -47,8 +50,17 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
                 todo!("Implement line-sphere intersection.");
             }
         },
-        Curve::Circle(_circle) => {
-            todo!("Implement circle-surface intersection.")
-        }
+        Curve::Circle(circle) => match surface {
+            Surface::Plane(plane) => match circle_plane_intersection(circle, plane) {
+                CirclePlaneIntersection::None => CurveSurfaceIntersection::None,
+                CirclePlaneIntersection::Points(points) => CurveSurfaceIntersection::Points(points),
+                CirclePlaneIntersection::Circle(circle) => {
+                    CurveSurfaceIntersection::Curve(Curve::Circle(circle))
+                }
+            },
+            Surface::Sphere(_sphere) => {
+                todo!("Implement circle-sphere intersection.");
+            }
+        },
     }
 }
