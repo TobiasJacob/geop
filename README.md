@@ -31,7 +31,10 @@ Documentation: [Modern Brep Kernel Book](https://tobiasjacob.github.io/geop/)
     1. Sphere: A sphere in 3D space.
     1. Cylinder (WIP): A cylinder in 3D space.
 
-Dis crate also defines all intersections between any two combination of these objects.
+This crate also defines all intersections between any two combination of these objects.
+
+![Geodesics](crates/modern-brep-kernel-book/src/generated_images/geometry/geodesics.png)
+![LogExp](crates/modern-brep-kernel-book/src/generated_images/geometry/log_exp_map.png)
 
 ## Geop-Topology
 
@@ -43,6 +46,8 @@ Dis crate also defines all intersections between any two combination of these ob
 
 This crate also defines the contains operation, and has functions to create simple primitives.
 
+![Topolog](./crates/modern-brep-kernel-book/src/generated_images/topology/face_contains_rectangle.png)
+
 ## Geop-Boolean
 
 A crate that defines the boolean operations (intersection, union, difference) between two volumes or faces.
@@ -52,6 +57,8 @@ A crate that defines the boolean operations (intersection, union, difference) be
 ## Geop-Rasterize
 
 This is used to convert the topological structures into triangles.
+
+![Rasterize](./crates/modern-brep-kernel-book/src/generated_images/topology/shell1.png)
 
 ## Geop-Wgpu
 
