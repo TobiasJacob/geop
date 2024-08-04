@@ -33,7 +33,15 @@ impl RenderVertex {
 
 impl PartialEq for RenderVertex {
     fn eq(&self, other: &Self) -> bool {
-        self.position == other.position && self.color == other.color
+        Point::new(
+            self.position[0] as f64,
+            self.position[1] as f64,
+            self.position[2] as f64,
+        ) == Point::new(
+            other.position[0] as f64,
+            other.position[1] as f64,
+            other.position[2] as f64,
+        ) && self.color == other.color
     }
 }
 
