@@ -302,7 +302,7 @@ pub fn check_triangle(
     //         return None;
     //     }
     // }
-    return Some();
+    return Some(());
 }
 
 pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {

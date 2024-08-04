@@ -12,3 +12,17 @@ pub struct Face {
 
 A face can look something like this:
 
+![Face](./generated_images/topology/face1.png)
+
+In wireframe mode, you see how the face is triangulated for rendering
+
+![Face Wireframe](./generated_images/topology/face1wire.png)
+
+Faces can also be non-planar, like this half sphere:
+
+![Face Half Sphere](./generated_images/topology/face2.png)
+
+In wireframe mode, you see how the face is triangulated for rendering
+
+![Face Half Sphere Wireframe](./generated_images/topology/face2wire.png)
+
