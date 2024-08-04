@@ -1,15 +1,15 @@
-use crate::{
-    remesh::face::normalize_faces,
-    split_if_necessary::point_split_edge::split_contours_by_points_if_necessary,
-};
+// use crate::{
+//     remesh::face::normalize_faces,
+//     split_if_necessary::point_split_edge::split_contours_by_points_if_necessary,
+// };
 
 use geop_topology::{
     contains::{
-        contour_point::contour_point_contains,
-        edge_point::EdgePointContains,
+        // contour_point::contour_point_contains,
+        // edge_point::EdgePointContains,
         face_edge::{face_edge_contains, FaceEdgeContains},
     },
-    topology::{contour::Contour, edge::Edge, face::Face},
+    topology::{edge::Edge, face::Face},
 };
 
 pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {

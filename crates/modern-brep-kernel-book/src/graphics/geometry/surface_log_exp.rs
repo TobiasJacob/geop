@@ -3,7 +3,7 @@ mod tests {
     use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::{edges::line::primitive_line, faces::sphere::primitive_sphere},
-        topology::scene::{self, Color, Scene},
+        topology::scene::{Color, Scene},
     };
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;

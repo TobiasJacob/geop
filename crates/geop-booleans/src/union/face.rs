@@ -1,7 +1,7 @@
 use crate::remesh::face::{face_remesh, face_split, normalize_faces, FaceSplit};
 use geop_topology::topology::face::Face;
 
-pub fn face_union(face_self: &Face, face_other: &Face) -> Vec<Face> {
+pub fn face_face_union(face_self: &Face, face_other: &Face) -> Vec<Face> {
     assert!(
         face_self.surface == face_other.surface,
         "Faces must have the same surface",

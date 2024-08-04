@@ -1,6 +1,6 @@
 use geop_geometry::points::point::Point;
 use geop_rasterize::{
-    edge::{rasterize_edge_into_line_list, rasterize_edge_into_vertex_list},
+    edge::rasterize_edge_into_line_list,
     edge_buffer::EdgeBuffer,
     face::{
         rasterize_face_into_line_list, rasterize_face_into_triangle_list,

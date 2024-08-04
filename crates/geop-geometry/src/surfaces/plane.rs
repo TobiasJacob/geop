@@ -2,7 +2,7 @@ use crate::{
     curves::{curve::Curve, line::Line},
     points::point::Point,
     transforms::Transform,
-    EQ_THRESHOLD, HORIZON_DIST,
+    EQ_THRESHOLD,
 };
 
 use super::surface::TangentPoint;

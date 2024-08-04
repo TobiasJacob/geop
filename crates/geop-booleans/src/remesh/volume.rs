@@ -1,7 +1,4 @@
-use crate::{
-    intersections::face_face::{face_face_intersection, FaceFaceIntersection},
-    split_if_necessary::edge_split_face::split_faces_by_edges_if_necessary,
-};
+use crate::intersections::face_face::{face_face_intersection, FaceFaceIntersection};
 use geop_topology::topology::{edge::Edge, face::Face, volume::Volume};
 
 // Points are ignored for now.
@@ -37,14 +34,13 @@ pub enum VolumeSplit {
     BoutA(Face),
 }
 
-pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSplit> {
-    let mut intersections = volume_split_edges(volume_self, volume_other);
-
-    let mut faces_self = split_faces_by_edges_if_necessary(volume_self.all_faces(), &intersections);
-    let mut faces_other =
-        split_faces_by_edges_if_necessary(volume_other.all_faces(), &intersections);
-
+pub fn volume_split(_volume_self: &Volume, _volume_other: &Volume) -> Vec<VolumeSplit> {
     todo!("Implement volume split");
+    // let mut intersections = volume_split_edges(volume_self, volume_other);
+
+    // let mut faces_self = split_faces_by_edges_if_necessary(volume_self.all_faces(), &intersections);
+    // let mut faces_other =
+    //     split_faces_by_edges_if_necessary(volume_other.all_faces(), &intersections);
 
     // faces_self
     //     .into_iter()

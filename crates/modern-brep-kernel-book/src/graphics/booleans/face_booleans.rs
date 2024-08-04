@@ -3,8 +3,10 @@ mod tests {
     use std::rc::Rc;
 
     use geop_booleans::{
+        difference::face_face::face_face_difference,
         intersections::face_face::{face_face_intersection, FaceFaceIntersection},
         remesh::face::{face_remesh, face_split, face_split_points, FaceSplit},
+        union::face::face_face_union,
     };
     use geop_geometry::{
         points::point::Point,
@@ -203,6 +205,72 @@ mod tests {
                 false,
                 Point::new(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_intersection.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face_boolean_difference(#[future] renderer: Box<HeadlessRenderer>) {
+        let (face1, face2) = generate_scene();
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+
+        for edge in face1.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
+        for edge in face2.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
+
+        let faces = face_face_difference(&face1, &face2);
+        for face in faces {
+            let face = face.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+            for edge in face.all_edges() {
+                scene.edges.push((edge.clone(), Color::red()));
+            }
+            scene.faces.push((face, Color::white()));
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, -4.0, 0.0),
+                std::path::Path::new("src/generated_images/booleans/face_difference.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face_boolean_union(#[future] renderer: Box<HeadlessRenderer>) {
+        let (face1, face2) = generate_scene();
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+
+        for edge in face1.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
+        for edge in face2.all_edges() {
+            scene.edges.push((edge.clone(), Color::white()));
+        }
+
+        let faces = face_face_union(&face1, &face2);
+        for face in faces {
+            let face = face.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+            for edge in face.all_edges() {
+                scene.edges.push((edge.clone(), Color::red()));
+            }
+            scene.faces.push((face, Color::white()));
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, -4.0, 0.0),
+                std::path::Path::new("src/generated_images/booleans/face_union.png"),
             )
             .await;
     }

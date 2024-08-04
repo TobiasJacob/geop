@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{curves::curve::Curve, points::point::Point};
+    use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::faces::sphere::primitive_sphere,
         topology::scene::{Color, Scene},

@@ -126,12 +126,11 @@ impl Face {
 
     pub fn normal(&self, p: Point) -> Point {
         match face_point_contains(self, p) {
-            _ => (),
             FacePointContains::NotOnSurface => {
                 panic!("Point is not on surface");
             }
+            _ => self.surface.normal(p),
         }
-        self.surface.normal(p)
     }
 
     pub fn neg(&self) -> Face {

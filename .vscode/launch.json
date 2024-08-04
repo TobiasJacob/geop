@@ -12,10 +12,7 @@
             "args": [
                 "test_face_boolean_intersection"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
             // "preLaunchTask": "cargo test build",
         }
     ]
