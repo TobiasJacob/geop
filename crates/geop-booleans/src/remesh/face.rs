@@ -1,16 +1,17 @@
 use std::rc::Rc;
 
 use geop_geometry::surfaces::surface::Surface;
-
-use crate::{
+use geop_topology::{
     contains::{
         face_contour::{face_contour_contains, FaceContourContains},
         face_edge::{face_edge_contains, FaceEdgeContains},
     },
-    debug_data::{self, DebugColor},
+    topology::{contour::Contour, edge::Edge, face::Face},
+};
+
+use crate::{
     intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
     split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
-    topology::{contour::Contour, edge::Edge, face::Face},
 };
 
 use geop_geometry::points::point::Point;
@@ -63,11 +64,11 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
 
     let intersections = face_split_points(face_self, face_other);
 
-    println!("intersections: {:}", intersections.len());
-    for point in intersections.iter() {
-        println!("Point: {:?}", point);
-        debug_data::add_point(point.clone(), DebugColor::Green);
-    }
+    // println!("intersections: {:}", intersections.len());
+    // for point in intersections.iter() {
+    //     println!("Point: {:?}", point);
+    //     debug_data::add_point(point.clone(), DebugColor::Green);
+    // }
     let edges_self = split_edges_by_points_if_necessary(face_self.all_edges(), &intersections);
     let edges_other = split_edges_by_points_if_necessary(face_other.all_edges(), &intersections);
 
@@ -93,25 +94,25 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
         )
         .collect();
 
-    for edge in res.iter() {
-        println!("Edge: {:?}", edge);
-        match edge {
-            FaceSplit::AinB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Black),
-            FaceSplit::AonBSameSide(edge) => debug_data::add_edge((edge).clone(), DebugColor::Red),
-            FaceSplit::AonBOpSide(edge) => {
-                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-            }
-            FaceSplit::AoutB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
-            FaceSplit::BinA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Yellow),
-            FaceSplit::BonASameSide(edge) => {
-                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-            }
-            FaceSplit::BonAOpSide(edge) => {
-                debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-            }
-            FaceSplit::BoutA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
-        }
-    }
+    // for edge in res.iter() {
+    //     println!("Edge: {:?}", edge);
+    //     match edge {
+    //         FaceSplit::AinB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Black),
+    //         FaceSplit::AonBSameSide(edge) => debug_data::add_edge((edge).clone(), DebugColor::Red),
+    //         FaceSplit::AonBOpSide(edge) => {
+    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
+    //         }
+    //         FaceSplit::AoutB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
+    //         FaceSplit::BinA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Yellow),
+    //         FaceSplit::BonASameSide(edge) => {
+    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
+    //         }
+    //         FaceSplit::BonAOpSide(edge) => {
+    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
+    //         }
+    //         FaceSplit::BoutA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
+    //     }
+    // }
 
     res
 }

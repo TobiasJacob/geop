@@ -2,9 +2,9 @@
 mod tests {
     use std::vec;
 
+    use geop_booleans::intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection};
     use geop_geometry::points::point::Point;
     use geop_topology::{
-        intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
         primitive_objects::edges::{circle::primitive_circle, line::primitive_infinite_line},
         topology::scene::{Color, Scene},
     };

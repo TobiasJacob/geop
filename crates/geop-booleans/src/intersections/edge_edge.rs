@@ -3,12 +3,11 @@ use geop_geometry::{
     points::point::Point,
 };
 
-use crate::{
+use crate::remesh::edge::{edge_remesh, edge_split, EdgeRemesh};
+use geop_topology::{
     contains::edge_point::{edge_point_contains, EdgePointContains},
-    remesh::edge::{edge_remesh, edge_split, EdgeRemesh},
     topology::edge::Edge,
 };
-
 // Intersect between start1/2 and end1/2. Returns None if there is no intersection.
 // Keep in mind that all curves are treated as infinite lines, such that start after end means that the line starts, goes to +infinity, goes to -infinty and then ends.
 // Vec is used bc. e.g. two half circles might have to distinct intersections at both ends.

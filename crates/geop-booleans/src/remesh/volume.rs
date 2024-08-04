@@ -1,8 +1,8 @@
 use crate::{
     intersections::face_face::{face_face_intersection, FaceFaceIntersection},
     split_if_necessary::edge_split_face::split_faces_by_edges_if_necessary,
-    topology::{edge::Edge, face::Face, volume::Volume},
 };
+use geop_topology::topology::{edge::Edge, face::Face, volume::Volume};
 
 // Points are ignored for now.
 pub fn volume_split_edges(volume_self: &Volume, volume_other: &Volume) -> Vec<Edge> {

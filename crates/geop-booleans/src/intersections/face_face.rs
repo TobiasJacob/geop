@@ -6,11 +6,12 @@ use geop_geometry::{
     },
 };
 
-use crate::{
+use geop_topology::{
     contains::face_point::{face_point_contains, FacePointContains},
-    remesh::face::{face_remesh, face_split, FaceSplit},
     topology::{edge::Edge, face::Face},
 };
+
+use crate::remesh::face::{face_remesh, face_split, FaceSplit};
 
 use super::face_edge::{face_edge_intersection, FaceEdgeIntersection};
 

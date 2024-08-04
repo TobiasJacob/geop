@@ -1,7 +1,5 @@
-use crate::{
-    remesh::face::{face_remesh, face_split, FaceSplit},
-    topology::face::Face,
-};
+use crate::remesh::face::{face_remesh, face_split, FaceSplit};
+use geop_topology::topology::face::Face;
 
 pub fn face_union(face_self: &Face, face_other: &Face) -> Vec<Face> {
     assert!(

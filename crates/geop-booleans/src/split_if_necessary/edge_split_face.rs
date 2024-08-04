@@ -1,11 +1,14 @@
 use crate::{
+    remesh::face::normalize_faces,
+    split_if_necessary::point_split_edge::split_contours_by_points_if_necessary,
+};
+
+use geop_topology::{
     contains::{
         contour_point::contour_point_contains,
         edge_point::EdgePointContains,
         face_edge::{face_edge_contains, FaceEdgeContains},
     },
-    remesh::face::normalize_faces,
-    split_if_necessary::point_split_edge::split_contours_by_points_if_necessary,
     topology::{contour::Contour, edge::Edge, face::Face},
 };
 

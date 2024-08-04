@@ -1,5 +1,5 @@
 [package]
-name = "modern-brep-kernel-book"
+name = "geop-booleans"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,10 +8,3 @@ edition = "2021"
 [dependencies]
 geop-geometry.workspace=true
 geop-topology.workspace=true
-geop-rasterize.workspace=true
-geop-wgpu.workspace=true
-geop-booleans.workspace=true
-
-[dev-dependencies]
-async-std = { version = "1.5", features = ["attributes"] }
-rstest = "0.21.0"

@@ -4,6 +4,7 @@ resolver = "2"
 members = [
     "crates/geop-geometry",
     "crates/geop-topology",
+    "crates/geop-booleans",
     "crates/geop-rasterize",
     "crates/geop-wgpu",
     "crates/modern-brep-kernel-book",
@@ -16,6 +17,10 @@ path = "crates/geop-geometry"
 [workspace.dependencies.geop-topology]
 version = "0.1.0"
 path = "crates/geop-topology"
+
+[workspace.dependencies.geop-booleans]
+version = "0.1.0"
+path = "crates/geop-booleans"
 
 [workspace.dependencies.geop-rasterize]
 version = "0.1.0"

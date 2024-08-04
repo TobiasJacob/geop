@@ -1,9 +1,9 @@
-use geop_geometry::points::point::Point;
-
-use crate::{
-    intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
-    topology::{edge::Edge, face::Face},
+use geop_geometry::{
+    curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
+    points::point::Point,
 };
+
+use crate::topology::{edge::Edge, face::Face};
 
 use super::edge_point::{edge_point_contains, EdgePointContains};
 
@@ -47,21 +47,33 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
 
     let mut intersection_points = Vec::<Point>::new();
     for edge in face.all_edges() {
-        match edge_edge_intersection(&edge, &geodesic) {
-            EdgeEdgeIntersection::Points(points) => {
-                intersection_points.extend(points);
-            }
-            EdgeEdgeIntersection::Edges(edges) => {
-                for edge in edges {
-                    if let Some(p) = edge.start {
-                        intersection_points.push(p);
-                    }
-                    if let Some(p) = edge.end {
-                        intersection_points.push(p);
+        match curve_curve_intersection(&edge.curve, &geodesic.curve) {
+            CurveCurveIntersection::Points(points) => {
+                for p in points {
+                    if edge_point_contains(&geodesic, p) != EdgePointContains::Outside {
+                        if edge_point_contains(&edge, p) != EdgePointContains::Outside {
+                            intersection_points.push(p)
+                        }
                     }
                 }
             }
-            EdgeEdgeIntersection::None => {}
+            CurveCurveIntersection::Curve(_curve) => {
+                if let Some(start) = edge.start {
+                    match edge_point_contains(&geodesic, start) {
+                        EdgePointContains::Inside => intersection_points.push(start),
+                        EdgePointContains::Outside => {}
+                        EdgePointContains::OnPoint(_) => intersection_points.push(start),
+                    }
+                }
+                if let Some(end) = edge.end {
+                    match edge_point_contains(&geodesic, end) {
+                        EdgePointContains::Inside => intersection_points.push(end),
+                        EdgePointContains::Outside => {}
+                        EdgePointContains::OnPoint(_) => intersection_points.push(end),
+                    }
+                }
+            }
+            CurveCurveIntersection::None => {}
         }
     }
 

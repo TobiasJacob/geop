@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use std::{panic, vec};
 
+use geop_booleans::difference::face_face::face_face_difference;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
     points::point::Point,
@@ -22,7 +23,6 @@ use geop_rasterize::{
 use geop_topology::primitive_objects::edges::circle::primitive_circle;
 use geop_topology::{
     debug_data::get_debug_data,
-    difference::face_face::face_face_difference,
     operations::extrude::extrude,
     primitive_objects::faces::sphere::primitive_sphere,
     topology::{contour::Contour, edge::Edge, face::Face, scene::Color},

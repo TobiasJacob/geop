@@ -1,6 +1,6 @@
 use geop_geometry::points::point::Point;
 
-use crate::{
+use geop_topology::{
     contains::edge_point::{edge_point_contains, EdgePointContains},
     topology::{contour::Contour, edge::Edge},
 };
