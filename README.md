@@ -5,7 +5,7 @@ Geop is a modern CAD Kernel. It uses Riemannian Manifolds to be numerically stab
 
 Documentation: [Modern Brep Kernel Book](https://tobiasjacob.github.io/geop/)
 
-- :white_check_mark: **Testing and documenting as a book:** CAD Kernels are hard to debug and to explain, as the algorithms become very theoretical. This is what the modern-brep-kernel-book is for. The graphics do not only serve as a visual representation of the algorithms, but also as a way to test them. The book is written in markdown and is meant to be an introduction for new developers and users.
+- :white_check_mark: **Testing and documenting as a book:** CAD Kernels are hard to debug and to explain, as the algorithms become very theoretical. This is what the [Modern Brep Kernel Book](https://tobiasjacob.github.io/geop/) is for. The graphics do not only serve as a visual representation of the algorithms, but also as a way to test them. The book is written in markdown and is meant to be an introduction for new developers and users.
 - :speech_balloon: **Accurate results:** Makes use of Rusts expressive type system to ensure correctness. For example, the intersection result of two lines is
     ```rust
     pub enum LineLineIntersection {
@@ -47,6 +47,8 @@ This crate also defines all intersections between any two combination of these o
 This crate also defines the contains operation, and has functions to create simple primitives.
 
 ![Topolog](./crates/modern-brep-kernel-book/src/generated_images/topology/face_contains_rectangle.png)
+
+![Shell](./crates/modern-brep-kernel-book/src/generated_images/topology/shell1.png)
 
 ## Geop-Boolean
 
