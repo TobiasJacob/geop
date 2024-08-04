@@ -55,7 +55,7 @@ mod tests {
                 Point::new_unit_z(),
             ))),
         );
-        scene.faces.push((face, Color::white()));
+        scene.faces.push((face, Color::light_gray()));
         scene
     }
 
@@ -63,13 +63,14 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         let mut sphere = primitive_sphere(Point::new_zero(), 1.0);
-        sphere.boundary = Some(Contour::new(vec![primitive_circle(
+        let edge = primitive_circle(
             Point::new_zero(),
             -Point::new(0.5, 3.0, 0.5).normalize(),
             1.0,
-        )]));
+        );
+        sphere.boundary = Some(Contour::new(vec![edge.clone()]));
 
-        scene.faces.push((sphere, Color::white()));
+        scene.faces.push((sphere, Color::light_gray()));
         scene
     }
     use geop_wgpu::headless_renderer::HeadlessRenderer;
@@ -116,7 +117,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -4.0, 0.0),
+                Point::new(4.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face2.png"),
             )
             .await;
@@ -131,7 +132,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(0.0, -4.0, 0.0),
+                Point::new(4.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face2wire.png"),
             )
             .await;
