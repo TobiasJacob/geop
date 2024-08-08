@@ -24,10 +24,6 @@ impl Plane {
         }
     }
 
-    pub fn curve_from_to(&self, p: Point, q: Point) -> Line {
-        return Line::new(p, q - p);
-    }
-
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let u_slope = transform * (self.u_slope + self.basis) - basis;

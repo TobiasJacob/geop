@@ -28,11 +28,6 @@ impl Sphere {
         }
     }
 
-    pub fn curve_from_to(&self, p: Point, q: Point) -> Circle {
-        let normal = (p - self.basis).cross(q - self.basis).normalize();
-        return Circle::new(self.basis, normal, (q - self.basis).norm());
-    }
-
     pub fn transform(&self, transform: Transform) -> SphereTransform {
         let basis = transform * self.basis;
         let radius = self.radius * transform.uniform_scale_factor();
@@ -77,9 +72,7 @@ impl Sphere {
         }
         let u_norm = u.norm();
         let u_normalized = u / u_norm;
-        x * u_norm.cos() * self.radius
-            + u_normalized.cross(x) * u_norm.sin() * self.radius
-            + self.basis
+        x * u_norm.cos() + u_normalized * u_norm.sin() * self.radius + self.basis
     }
 
     pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
@@ -93,6 +86,7 @@ impl Sphere {
         let y2 = (y - self.basis) / self.radius;
         let dir = y2 - x2.dot(y2) * x2;
         let dir_norm = dir.norm();
+        // For the case that we are on the opposite side of the sphere
         if dir_norm < EQ_THRESHOLD {
             return None;
         }
@@ -172,6 +166,8 @@ impl Sphere {
 
 impl PartialEq for Sphere {
     fn eq(&self, other: &Sphere) -> bool {
-        self.basis == other.basis && (self.radius - other.radius).abs() < EQ_THRESHOLD
+        self.basis == other.basis
+            && (self.radius - other.radius).abs() < EQ_THRESHOLD
+            && self.normal_outwards == other.normal_outwards
     }
 }
