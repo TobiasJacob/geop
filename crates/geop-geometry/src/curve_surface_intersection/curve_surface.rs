@@ -68,5 +68,6 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
                 todo!("Implement circle-cylinder intersection.");
             }
         },
+        Curve::Ellipsis(_) => todo!("Implement this"),
     }
 }

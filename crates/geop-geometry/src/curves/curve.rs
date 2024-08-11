@@ -4,6 +4,7 @@ use crate::{points::point::Point, transforms::Transform};
 
 use super::{
     circle::{Circle, CircleTransform},
+    ellipsis::Ellipsis,
     line::Line,
 };
 
@@ -11,6 +12,7 @@ use super::{
 pub enum Curve {
     Line(Line),
     Circle(Circle),
+    Ellipsis(Ellipsis),
 }
 
 // This represents a curve, which can be a line or a circle.
@@ -23,6 +25,7 @@ impl Curve {
                 CircleTransform::Circle(circle) => Curve::Circle(circle),
                 CircleTransform::Ellipse() => todo!("Implement this"),
             },
+            Curve::Ellipsis(ellipsis) => Curve::Ellipsis(ellipsis.transform(transform)),
         }
     }
 
@@ -31,6 +34,7 @@ impl Curve {
         match self {
             Curve::Line(line) => Curve::Line(line.neg()),
             Curve::Circle(circle) => Curve::Circle(circle.neg()),
+            Curve::Ellipsis(ellipsis) => Curve::Ellipsis(ellipsis.neg()),
         }
     }
 
@@ -39,6 +43,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
+            Curve::Ellipsis(ellipsis) => ellipsis.tangent(p),
         }
     }
 
@@ -47,6 +52,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.on_curve(p),
             Curve::Circle(circle) => circle.on_curve(p),
+            Curve::Ellipsis(ellipsis) => ellipsis.on_curve(p),
         }
     }
 
@@ -55,6 +61,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),
+            Curve::Ellipsis(ellipsis) => ellipsis.distance(x, y),
         }
     }
 
@@ -63,6 +70,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
+            Curve::Ellipsis(ellipsis) => ellipsis.interpolate(start, end, t),
         }
     }
 
@@ -71,6 +79,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
+            Curve::Ellipsis(ellipsis) => ellipsis.between(m, start, end),
         }
     }
 
@@ -81,6 +90,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
+            Curve::Ellipsis(ellipsis) => ellipsis.get_midpoint(start, end),
         }
     }
 
@@ -89,6 +99,7 @@ impl Curve {
         match self {
             Curve::Line(line) => line.project(p),
             Curve::Circle(circle) => circle.project(p),
+            Curve::Ellipsis(ellipsis) => ellipsis.project(p),
         }
     }
 }

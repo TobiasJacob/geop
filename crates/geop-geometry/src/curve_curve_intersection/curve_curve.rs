@@ -27,6 +27,7 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                     CurveCurveIntersection::Points(vec![p1, p2])
                 }
             },
+            Curve::Ellipsis(_) => todo!("Implement this"),
         },
         Curve::Circle(circle) => match edge_other {
             Curve::Line(other_line) => match circle_line_intersection(circle, other_line) {
@@ -46,6 +47,8 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                     CurveCurveIntersection::Curve(Curve::Circle(c))
                 }
             },
+            Curve::Ellipsis(_) => todo!("Implement this"),
         },
+        Curve::Ellipsis(_) => todo!("Implement this"),
     }
 }
