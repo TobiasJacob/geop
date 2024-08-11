@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{points::point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform};
 
 use super::{
     circle::{Circle, CircleTransform},
@@ -101,5 +101,13 @@ impl Curve {
             Curve::Circle(circle) => circle.project(p),
             Curve::Ellipsis(ellipsis) => ellipsis.project(p),
         }
+    }
+
+    pub fn get_bounding_box(
+        &self,
+        interval_self: Option<Point>,
+        midpoint_self: Option<Point>,
+    ) -> BoundingBox {
+        todo!()
     }
 }

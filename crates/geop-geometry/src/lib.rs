@@ -5,6 +5,7 @@ pub mod curves;
 pub mod points;
 pub mod surfaces;
 
+pub mod bounding_box;
 pub mod curve_curve_intersection;
 pub mod curve_surface_intersection;
 pub mod surface_surface_intersection;

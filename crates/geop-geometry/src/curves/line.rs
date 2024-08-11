@@ -108,9 +108,9 @@ impl Line {
                 assert!(self.on_curve(end));
                 (start + end) / 2.0
             }
-            (Some(start), None) => start + self.direction * 1.0,
-            (None, Some(end)) => end - self.direction * 1.0,
-            (None, None) => self.basis + self.direction * HORIZON_DIST,
+            (Some(start), None) => start + self.direction * HORIZON_DIST,
+            (None, Some(end)) => end - self.direction * HORIZON_DIST,
+            (None, None) => self.basis,
         }
     }
 
