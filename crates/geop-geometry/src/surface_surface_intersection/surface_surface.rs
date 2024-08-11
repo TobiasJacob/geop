@@ -28,6 +28,9 @@ pub fn surface_surface_intersection(
             Surface::Sphere(_sphere_other) => {
                 todo!("Plane-Sphere intersection")
             }
+            Surface::Cylinder(_cylinder_other) => {
+                todo!("Plane-Cylinder intersection")
+            }
         },
         Surface::Sphere(_sphere_self) => match face_other {
             Surface::Plane(_plane_other) => {
@@ -35,6 +38,20 @@ pub fn surface_surface_intersection(
             }
             Surface::Sphere(_sphere_other) => {
                 todo!("Sphere-Sphere intersection")
+            }
+            Surface::Cylinder(_cylinder_other) => {
+                todo!("Sphere-Cylinder intersection")
+            }
+        },
+        Surface::Cylinder(_cylinder_self) => match face_other {
+            Surface::Plane(_plane_other) => {
+                todo!("Cylinder-Plane intersection")
+            }
+            Surface::Sphere(_sphere_other) => {
+                todo!("Cylinder-Sphere intersection")
+            }
+            Surface::Cylinder(_cylinder_other) => {
+                todo!("Cylinder-Cylinder intersection")
             }
         },
     }

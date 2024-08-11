@@ -49,6 +49,9 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
             Surface::Sphere(_sphere) => {
                 todo!("Implement line-sphere intersection.");
             }
+            Surface::Cylinder(_cylinder) => {
+                todo!("Implement line-cylinder intersection.");
+            }
         },
         Curve::Circle(circle) => match surface {
             Surface::Plane(plane) => match circle_plane_intersection(circle, plane) {
@@ -60,6 +63,9 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
             },
             Surface::Sphere(_sphere) => {
                 todo!("Implement circle-sphere intersection.");
+            }
+            Surface::Cylinder(_cylinder) => {
+                todo!("Implement circle-cylinder intersection.");
             }
         },
     }

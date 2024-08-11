@@ -178,6 +178,9 @@ impl std::fmt::Display for Face {
             Surface::Sphere(_s) => {
                 writeln!(f, "sphere is still todo")?;
             }
+            Surface::Cylinder(_c) => {
+                writeln!(f, "cylinder is still todo")?;
+            }
         };
         Ok(())
     }
