@@ -9,6 +9,7 @@ pub enum EllipsisEllipsisIntersection {
     Ellipsis(Ellipsis),
     OnePoint(Point),
     TwoPoint(Point, Point),
+    ThreePoint(Point, Point, Point),
     FourPoint(Point, Point, Point, Point),
     None,
 }
@@ -26,6 +27,11 @@ pub fn ellipsis_ellipsis_intersection(
         0 => EllipsisEllipsisIntersection::None,
         1 => EllipsisEllipsisIntersection::OnePoint(intersection_points[0]),
         2 => EllipsisEllipsisIntersection::TwoPoint(intersection_points[0], intersection_points[1]),
+        3 => EllipsisEllipsisIntersection::ThreePoint(
+            intersection_points[0],
+            intersection_points[1],
+            intersection_points[2],
+        ),
         4 => EllipsisEllipsisIntersection::FourPoint(
             intersection_points[0],
             intersection_points[1],

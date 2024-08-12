@@ -178,4 +178,13 @@ impl Scene {
             points,
         }
     }
+
+    pub fn empty() -> Scene {
+        Scene {
+            volumes: Vec::new(),
+            faces: Vec::new(),
+            edges: Vec::new(),
+            points: Vec::new(),
+        }
+    }
 }

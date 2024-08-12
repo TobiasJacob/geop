@@ -3,9 +3,11 @@ mod tests {
     use std::vec;
 
     use geop_booleans::intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection};
-    use geop_geometry::points::point::Point;
+    use geop_geometry::{curves::ellipsis::Ellipsis, points::point::Point};
     use geop_topology::{
-        primitive_objects::edges::{circle::primitive_circle, line::primitive_infinite_line},
+        primitive_objects::edges::{
+            circle::primitive_circle, ellipsis::primitive_ellipsis, line::primitive_infinite_line,
+        },
         topology::scene::{Color, Scene},
     };
     use geop_wgpu::headless_renderer::HeadlessRenderer;
@@ -156,6 +158,39 @@ mod tests {
                 false,
                 Point::new(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/circle_line_intersections.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    pub async fn ellipses_ellipses_intersection(#[future] renderer: Box<HeadlessRenderer>) {
+        let ellipsis1 = primitive_ellipsis(
+            Point::new_zero(),
+            Point::new_unit_y(),
+            Point::new_unit_x() * 1.5,
+            Point::new_unit_z() * 0.5,
+        );
+        let ellipsis2 = primitive_ellipsis(
+            Point::new(1.0, 0.0, 0.0),
+            Point::new_unit_y(),
+            Point::new_unit_x() * 0.5,
+            Point::new_unit_z() * 1.5,
+        );
+
+        let mut scene = Scene::empty();
+        scene.edges.push((ellipsis1, Color::white()));
+        scene.edges.push((ellipsis2, Color::white()));
+
+        renderer
+            .await
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, -4.0, 0.0),
+                std::path::Path::new(
+                    "src/generated_images/geometry/ellipses_ellipses_intersection.png",
+                ),
             )
             .await;
     }
