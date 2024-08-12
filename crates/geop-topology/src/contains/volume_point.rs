@@ -3,7 +3,7 @@ use geop_geometry::{
     curve_surface_intersection::curve_surface::{
         curve_surface_intersection, CurveSurfaceIntersection,
     },
-    curves::{curve::Curve, line::Line},
+    curves::{curve::Curve, line::Line, CurveLike},
     points::point::Point,
 };
 

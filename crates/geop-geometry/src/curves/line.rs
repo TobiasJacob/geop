@@ -1,5 +1,7 @@
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
 
+use super::{curve::Curve, CurveLike};
+
 #[derive(Debug, Clone)]
 pub struct Line {
     pub basis: Point,
@@ -23,25 +25,35 @@ impl Line {
     pub fn neg(&self) -> Line {
         Line::new(self.basis, -self.direction)
     }
+}
 
-    pub fn tangent(&self, _p: Point) -> Point {
+impl CurveLike for Line {
+    fn transform(&self, transform: Transform) -> Curve {
+        Curve::Line(self.transform(transform))
+    }
+
+    fn neg(&self) -> Curve {
+        Curve::Line(self.neg())
+    }
+
+    fn tangent(&self, _p: Point) -> Point {
         self.direction.clone()
     }
 
-    pub fn on_curve(&self, p: Point) -> bool {
+    fn on_curve(&self, p: Point) -> bool {
         let v = p - self.basis;
         let v = v - self.direction * (v.dot(self.direction));
         v.norm() < EQ_THRESHOLD
     }
 
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let v = x - y;
         v.norm()
     }
 
-    pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -81,7 +93,7 @@ impl Line {
     // }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -101,7 +113,7 @@ impl Line {
         }
     }
 
-    pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -114,9 +126,17 @@ impl Line {
         }
     }
 
-    pub fn project(&self, p: Point) -> Point {
+    fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         self.basis + self.direction * v.dot(self.direction)
+    }
+
+    fn get_bounding_box(
+        &self,
+        interval_self: Option<Point>,
+        midpoint_self: Option<Point>,
+    ) -> crate::bounding_box::BoundingBox {
+        todo!()
     }
 }
 

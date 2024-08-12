@@ -1,5 +1,7 @@
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
+use super::{curve::Curve, CurveLike};
+
 #[derive(Debug, Clone)]
 pub struct Ellipsis {
     pub basis: Point,
@@ -31,7 +33,7 @@ impl Ellipsis {
         }
     }
 
-    pub fn transform(&self, transform: Transform) -> Ellipsis {
+    fn transform(&self, transform: Transform) -> Ellipsis {
         let basis = transform * self.basis;
         let normal = transform * (self.normal + self.basis) - basis;
         let major_radius = transform * (self.major_radius + self.basis) - basis;
@@ -47,8 +49,18 @@ impl Ellipsis {
             self.minor_radius,
         )
     }
+}
 
-    pub fn tangent(&self, p: Point) -> Point {
+impl CurveLike for Ellipsis {
+    fn transform(&self, transform: Transform) -> Curve {
+        Curve::Ellipsis(self.transform(transform))
+    }
+
+    fn neg(&self) -> Curve {
+        Curve::Ellipsis(self.neg())
+    }
+
+    fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm();
@@ -57,7 +69,7 @@ impl Ellipsis {
         tangent.normalize()
     }
 
-    pub fn on_curve(&self, p: Point) -> bool {
+    fn on_curve(&self, p: Point) -> bool {
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm();
@@ -65,14 +77,14 @@ impl Ellipsis {
             && ((x.powi(2) + y.powi(2) - 1.0).abs() < EQ_THRESHOLD)
     }
 
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
         self.major_radius.norm() * angle
     }
 
-    pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -114,7 +126,7 @@ impl Ellipsis {
         }
     }
 
-    pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -149,7 +161,7 @@ impl Ellipsis {
         }
     }
 
-    pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -179,10 +191,18 @@ impl Ellipsis {
         }
     }
 
-    pub fn project(&self, p: Point) -> Point {
+    fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         let v = v - self.normal * (v.dot(self.normal));
         v.normalize() * self.major_radius.norm() + self.basis
+    }
+
+    fn get_bounding_box(
+        &self,
+        interval_self: Option<Point>,
+        midpoint_self: Option<Point>,
+    ) -> crate::bounding_box::BoundingBox {
+        todo!()
     }
 }
 

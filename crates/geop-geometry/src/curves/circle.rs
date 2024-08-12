@@ -1,5 +1,7 @@
 use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
+use super::{curve::Curve, CurveLike};
+
 #[derive(Debug, Clone)]
 pub struct Circle {
     pub basis: Point,
@@ -46,25 +48,38 @@ impl Circle {
     pub fn neg(&self) -> Circle {
         Circle::new(self.basis, -self.normal, self.radius.norm())
     }
+}
 
-    pub fn tangent(&self, p: Point) -> Point {
+impl CurveLike for Circle {
+    fn transform(&self, transform: Transform) -> Curve {
+        match self.transform(transform) {
+            CircleTransform::Circle(circle) => Curve::Circle(circle),
+            CircleTransform::Ellipse() => todo!("Implement this"),
+        }
+    }
+
+    fn neg(&self) -> Curve {
+        Curve::Circle(self.neg())
+    }
+
+    fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
         self.normal.cross(p - self.basis).normalize()
     }
 
-    pub fn on_curve(&self, p: Point) -> bool {
+    fn on_curve(&self, p: Point) -> bool {
         (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD
             && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
     }
 
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
         self.radius.norm() * angle
     }
 
-    pub fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -107,7 +122,7 @@ impl Circle {
     }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    pub fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -139,7 +154,7 @@ impl Circle {
         }
     }
 
-    pub fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -169,10 +184,18 @@ impl Circle {
         }
     }
 
-    pub fn project(&self, p: Point) -> Point {
+    fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         let v = v - self.normal * (v.dot(self.normal));
         v.normalize() * self.radius.norm() + self.basis
+    }
+
+    fn get_bounding_box(
+        &self,
+        interval_self: Option<Point>,
+        midpoint_self: Option<Point>,
+    ) -> crate::bounding_box::BoundingBox {
+        todo!("Implement this")
     }
 }
 

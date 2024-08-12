@@ -1,6 +1,10 @@
 use std::fmt::{Display, Formatter};
 
-use geop_geometry::{curves::curve::Curve, points::point::Point, transforms::Transform};
+use geop_geometry::{
+    curves::{curve::Curve, CurveLike},
+    points::point::Point,
+    transforms::Transform,
+};
 
 use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 

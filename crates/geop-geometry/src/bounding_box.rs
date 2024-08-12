@@ -1,4 +1,4 @@
-use crate::points::point::Point;
+use crate::{points::point::Point, EQ_THRESHOLD};
 
 pub struct BoundingBox {
     pub min: Point,
@@ -12,8 +12,10 @@ impl BoundingBox {
 
     // Checks if the 3d bounding boxes intersect in at least one point.
     pub fn intersects(&self, other: &BoundingBox) -> bool {
-        (self.min.x <= other.max.x || self.max.x >= other.min.x)
-            && (self.min.y <= other.max.y || self.max.y >= other.min.y)
-            && (self.min.z <= other.max.z || self.max.z >= other.min.z)
+        (self.min.x <= other.max.x + EQ_THRESHOLD || self.max.x + EQ_THRESHOLD >= other.min.x)
+            && (self.min.y <= other.max.y + EQ_THRESHOLD
+                || self.max.y + EQ_THRESHOLD >= other.min.y)
+            && (self.min.z <= other.max.z + EQ_THRESHOLD
+                || self.max.z + EQ_THRESHOLD >= other.min.z)
     }
 }
