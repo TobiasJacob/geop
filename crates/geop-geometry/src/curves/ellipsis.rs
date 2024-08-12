@@ -1,4 +1,4 @@
-use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform, EQ_THRESHOLD};
 
 use super::{curve::Curve, CurveLike};
 
@@ -33,7 +33,7 @@ impl Ellipsis {
         }
     }
 
-    fn transform(&self, transform: Transform) -> Ellipsis {
+    pub fn transform(&self, transform: Transform) -> Ellipsis {
         let basis = transform * self.basis;
         let normal = transform * (self.normal + self.basis) - basis;
         let major_radius = transform * (self.major_radius + self.basis) - basis;
@@ -48,6 +48,36 @@ impl Ellipsis {
             self.major_radius,
             self.minor_radius,
         )
+    }
+
+    pub fn get_extremal_points(&self) -> Vec<Point> {
+        let disc_x = (self.major_radius.x * self.major_radius.x
+            + self.minor_radius.x * self.minor_radius.x)
+            .sqrt();
+        let disc_x = (self.major_radius * self.major_radius.x
+            + self.minor_radius * self.minor_radius.x)
+            / disc_x;
+        let disc_y = (self.major_radius.y * self.major_radius.y
+            + self.minor_radius.y * self.minor_radius.y)
+            .sqrt();
+        let disc_y = (self.major_radius * self.major_radius.y
+            + self.minor_radius * self.minor_radius.y)
+            / disc_y;
+        let disc_z = (self.major_radius.z * self.major_radius.z
+            + self.minor_radius.z * self.minor_radius.z)
+            .sqrt();
+        let disc_z = (self.major_radius * self.major_radius.z
+            + self.minor_radius * self.minor_radius.z)
+            / disc_z;
+
+        vec![
+            self.basis + disc_x,
+            self.basis - disc_x,
+            self.basis + disc_y,
+            self.basis - disc_y,
+            self.basis + disc_z,
+            self.basis - disc_z,
+        ]
     }
 }
 
@@ -71,8 +101,8 @@ impl CurveLike for Ellipsis {
 
     fn on_curve(&self, p: Point) -> bool {
         let p = p - self.basis;
-        let x = self.major_radius.dot(p) / self.major_radius.norm();
-        let y = self.minor_radius.dot(p) / self.minor_radius.norm();
+        let x = self.major_radius.dot(p) / self.major_radius.norm_sq();
+        let y = self.minor_radius.dot(p) / self.minor_radius.norm_sq();
         (p.dot(self.normal).abs() < EQ_THRESHOLD)
             && ((x.powi(2) + y.powi(2) - 1.0).abs() < EQ_THRESHOLD)
     }
@@ -197,12 +227,41 @@ impl CurveLike for Ellipsis {
         v.normalize() * self.major_radius.norm() + self.basis
     }
 
-    fn get_bounding_box(
-        &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
-    ) -> crate::bounding_box::BoundingBox {
-        todo!()
+    fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox {
+        if let Some(start) = start {
+            assert!(self.on_curve(start));
+        }
+        if let Some(end) = end {
+            assert!(self.on_curve(end));
+        }
+        match (start, end) {
+            (Some(start), Some(end)) => {
+                if start == end {
+                    return BoundingBox::new(start, start);
+                }
+            }
+            _ => {}
+        }
+
+        let mid_point = self.get_midpoint(start, end);
+        let mut bounding_box = BoundingBox::new(mid_point, mid_point);
+        if let Some(start) = start {
+            bounding_box.add_point(start);
+        }
+        if let Some(end) = end {
+            bounding_box.add_point(end);
+        }
+        // Now find the max x, y, z values
+        // https://iquilezles.org/articles/ellipses/
+
+        let extremal_points = self.get_extremal_points();
+        for point in extremal_points {
+            if self.between(point, start, end) {
+                bounding_box.add_point(point);
+            }
+        }
+
+        bounding_box
     }
 }
 

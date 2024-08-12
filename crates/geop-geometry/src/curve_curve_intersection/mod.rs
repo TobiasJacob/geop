@@ -18,51 +18,49 @@ fn curve_curve_intersection_numerical_iteration(
     interval_self: (Option<Point>, Option<Point>),
     interval_other: (Option<Point>, Option<Point>),
 ) -> Vec<Point> {
-    let midpoint_self = edge_self.get_midpoint(interval_self.0, interval_self.1);
-    let midpoint_other = edge_other.get_midpoint(interval_other.0, interval_other.1);
+    println!("curve_curve_intersection_numerical_iteration");
+    let bounding_box_self = edge_self.get_bounding_box(interval_self.0, interval_self.1);
+    let bounding_box_other = edge_other.get_bounding_box(interval_other.0, interval_other.1);
 
-    if (midpoint_self - midpoint_other).norm() < PRECISION / 8.0 {
+    if !bounding_box_self.intersects(&bounding_box_other) {
+        return Vec::new();
+    }
+
+    let midpoint_self = edge_self.get_midpoint(interval_self.0, interval_self.1);
+    if bounding_box_self.min_size() < PRECISION {
         return vec![midpoint_self];
     }
 
-    let bounding_box_self_0 = edge_self.get_bounding_box(interval_self.0, Some(midpoint_self));
-    let bounding_box_self_1 = edge_self.get_bounding_box(Some(midpoint_self), interval_self.1);
-    let bounding_box_other_0 = edge_other.get_bounding_box(interval_other.0, Some(midpoint_other));
-    let bounding_box_other_1 = edge_other.get_bounding_box(Some(midpoint_other), interval_other.1);
+    let midpoint_other = edge_other.get_midpoint(interval_other.0, interval_other.1);
+    if bounding_box_other.min_size() < PRECISION {
+        return vec![midpoint_other];
+    }
 
-    let mut result = Vec::new();
-    if bounding_box_self_0.intersects(&bounding_box_other_0) {
-        result.extend(curve_curve_intersection_numerical_iteration(
-            edge_self,
-            edge_other,
-            (interval_self.0, Some(midpoint_self)),
-            (interval_other.0, Some(midpoint_other)),
-        ));
-    }
-    if bounding_box_self_0.intersects(&bounding_box_other_1) {
-        result.extend(curve_curve_intersection_numerical_iteration(
-            edge_self,
-            edge_other,
-            (interval_self.0, Some(midpoint_self)),
-            (Some(midpoint_other), interval_other.1),
-        ));
-    }
-    if bounding_box_self_1.intersects(&bounding_box_other_0) {
-        result.extend(curve_curve_intersection_numerical_iteration(
-            edge_self,
-            edge_other,
-            (Some(midpoint_self), interval_self.1),
-            (interval_other.0, Some(midpoint_other)),
-        ));
-    }
-    if bounding_box_self_1.intersects(&bounding_box_other_1) {
-        result.extend(curve_curve_intersection_numerical_iteration(
-            edge_self,
-            edge_other,
-            (Some(midpoint_self), interval_self.1),
-            (Some(midpoint_other), interval_other.1),
-        ));
-    }
+    let mut result: Vec<Point> = Vec::new();
+    result.extend(curve_curve_intersection_numerical_iteration(
+        edge_self,
+        edge_other,
+        (interval_self.0, Some(midpoint_self)),
+        (interval_other.0, Some(midpoint_other)),
+    ));
+    result.extend(curve_curve_intersection_numerical_iteration(
+        edge_self,
+        edge_other,
+        (interval_self.0, Some(midpoint_self)),
+        (Some(midpoint_other), interval_other.1),
+    ));
+    result.extend(curve_curve_intersection_numerical_iteration(
+        edge_self,
+        edge_other,
+        (Some(midpoint_self), interval_self.1),
+        (interval_other.0, Some(midpoint_other)),
+    ));
+    result.extend(curve_curve_intersection_numerical_iteration(
+        edge_self,
+        edge_other,
+        (Some(midpoint_self), interval_self.1),
+        (Some(midpoint_other), interval_other.1),
+    ));
     result
 }
 

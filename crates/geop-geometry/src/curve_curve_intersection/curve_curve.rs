@@ -3,6 +3,7 @@ use crate::{curves::curve::Curve, points::point::Point};
 use super::{
     circle_circle::{circle_circle_intersection, CircleCircleIntersection},
     circle_line::{circle_line_intersection, CircleLineIntersection},
+    ellipsis_ellipsis::{ellipsis_ellipsis_intersection, EllipsisEllipsisIntersection},
     line_line::{line_line_intersection, LineLineIntersection},
 };
 
@@ -49,6 +50,29 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
             },
             Curve::Ellipsis(_) => todo!("Implement this"),
         },
-        Curve::Ellipsis(_) => todo!("Implement this"),
+        Curve::Ellipsis(ellipsis) => match edge_other {
+            Curve::Line(_) => todo!("Implement this"),
+            Curve::Circle(_) => todo!("Implement this"),
+            Curve::Ellipsis(other_ellipsis) => {
+                match ellipsis_ellipsis_intersection(ellipsis, other_ellipsis) {
+                    EllipsisEllipsisIntersection::Ellipsis(ellipsis) => {
+                        CurveCurveIntersection::Curve(Curve::Ellipsis(ellipsis))
+                    }
+                    EllipsisEllipsisIntersection::OnePoint(p0) => {
+                        CurveCurveIntersection::Points(vec![p0])
+                    }
+                    EllipsisEllipsisIntersection::TwoPoint(p0, p1) => {
+                        CurveCurveIntersection::Points(vec![p0, p1])
+                    }
+                    EllipsisEllipsisIntersection::ThreePoint(p0, p1, p2) => {
+                        CurveCurveIntersection::Points(vec![p0, p1, p2])
+                    }
+                    EllipsisEllipsisIntersection::FourPoint(p0, p1, p2, p3) => {
+                        CurveCurveIntersection::Points(vec![p0, p1, p2, p3])
+                    }
+                    EllipsisEllipsisIntersection::None => CurveCurveIntersection::None,
+                }
+            }
+        },
     }
 }

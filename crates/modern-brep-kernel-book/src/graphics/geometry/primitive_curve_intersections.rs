@@ -178,8 +178,21 @@ mod tests {
         );
 
         let mut scene = Scene::empty();
-        scene.edges.push((ellipsis1, Color::white()));
-        scene.edges.push((ellipsis2, Color::white()));
+        scene.edges.push((ellipsis1.clone(), Color::white()));
+        scene.edges.push((ellipsis2.clone(), Color::white()));
+
+        let intersections = edge_edge_intersection(&ellipsis1, &ellipsis2);
+        match intersections {
+            EdgeEdgeIntersection::Edges(edges) => {
+                panic!("Unexpected edges: {:?}", edges);
+            }
+            EdgeEdgeIntersection::Points(points) => {
+                for point in points {
+                    scene.points.push((point, Color::red()));
+                }
+            }
+            EdgeEdgeIntersection::None => {}
+        }
 
         renderer
             .await

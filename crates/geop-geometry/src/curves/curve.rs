@@ -26,7 +26,7 @@ impl CurveLike for Curve {
                 CircleTransform::Circle(circle) => Curve::Circle(circle),
                 CircleTransform::Ellipse() => todo!("Implement this"),
             },
-            Curve::Ellipsis(ellipsis) => ellipsis.transform(transform),
+            Curve::Ellipsis(ellipsis) => Curve::Ellipsis(ellipsis.transform(transform)),
         }
     }
 
