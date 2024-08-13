@@ -33,6 +33,20 @@ impl Ellipsis {
         }
     }
 
+    fn transform_point_to_circle(&self, p: Point) -> Point {
+        assert!(self.on_curve(p));
+        let p = p - self.basis;
+        let x = self.major_radius.dot(p) / self.major_radius.norm_sq();
+        let y = self.minor_radius.dot(p) / self.minor_radius.norm_sq();
+        Point::new(x, y, 0.0)
+    }
+
+    fn transform_point_from_circle(&self, p: Point) -> Point {
+        assert!(p.z.abs() < EQ_THRESHOLD);
+        assert!(p.is_normalized());
+        p.x * self.major_radius + p.y * self.minor_radius + self.basis
+    }
+
     pub fn transform(&self, transform: Transform) -> Ellipsis {
         let basis = transform * self.basis;
         let normal = transform * (self.normal + self.basis) - basis;
@@ -78,6 +92,10 @@ impl Ellipsis {
             self.basis + disc_z,
             self.basis - disc_z,
         ]
+        .iter() // Filter nan. Nan means that the ellipsis is parallel to a plane, so there is no extremal point.
+        .filter(|p| p.x.is_finite() && p.y.is_finite() && p.z.is_finite())
+        .cloned()
+        .collect()
     }
 }
 
@@ -196,11 +214,20 @@ impl CurveLike for Ellipsis {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                let start_rel = start - self.basis;
-                let end_rel = end - self.basis;
+                let start_rel = self.transform_point_to_circle(start);
+                let end_rel = self.transform_point_to_circle(end);
+                // println!("start_rel: {:?}", start_rel);
+                // println!("end_rel: {:?}", end_rel);
                 let mid = (start_rel + end_rel) / 2.0;
-                let mid = mid.normalize() * self.major_radius.norm();
-                let p1 = mid + self.basis;
+                // println!("mid: {:?}", mid);
+                if mid.norm() < EQ_THRESHOLD {
+                    return self.transform_point_from_circle(
+                        Point::new_unit_z().cross(start_rel).normalize(),
+                    );
+                }
+                let mid = mid.normalize();
+                // println!("mid: {:?}", mid);
+                let p1 = self.transform_point_from_circle(mid);
                 if self.between(p1, Some(start), Some(end)) {
                     return p1;
                 } else {

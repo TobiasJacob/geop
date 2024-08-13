@@ -7,6 +7,7 @@ use super::{
     line_line::{line_line_intersection, LineLineIntersection},
 };
 
+#[derive(Debug, PartialEq)]
 pub enum CurveCurveIntersection {
     None,
     Points(Vec<Point>),

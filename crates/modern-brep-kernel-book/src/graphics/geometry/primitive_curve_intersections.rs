@@ -189,6 +189,7 @@ mod tests {
             EdgeEdgeIntersection::Points(points) => {
                 for point in points {
                     scene.points.push((point, Color::red()));
+                    println!("Intersection point: {:?}", point);
                 }
             }
             EdgeEdgeIntersection::None => {}

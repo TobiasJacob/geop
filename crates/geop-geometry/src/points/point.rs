@@ -42,6 +42,7 @@ impl Point {
         )
     }
 
+    // TODO: This operation should return a Result, as the operation is not always possible. It fails when norm is zero. This is not as rare as it seems. It helps users to catch bugs.
     pub fn normalize(self) -> Point {
         let norm = self.norm();
         assert!(norm > EQ_THRESHOLD);

@@ -162,6 +162,10 @@ impl CurveLike for Circle {
                 let start_rel = start - self.basis;
                 let end_rel = end - self.basis;
                 let mid = (start_rel + end_rel) / 2.0;
+                if mid.norm() < EQ_THRESHOLD {
+                    return self.normal.cross(start_rel).normalize() * self.radius.norm()
+                        + self.basis;
+                }
                 let mid = mid.normalize() * self.radius.norm();
                 let p1 = mid + self.basis;
                 if self.between(p1, Some(start), Some(end)) {

@@ -1,3 +1,5 @@
 /target
 /Cargo.lock
 crates/geop-wgpu/*.png
+venv
+bbdebug
