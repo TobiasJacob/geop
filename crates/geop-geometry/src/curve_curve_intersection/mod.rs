@@ -12,7 +12,7 @@ pub mod curve_curve;
 pub mod ellipsis_ellipsis;
 pub mod line_line;
 
-const PRECISION: f64 = EQ_THRESHOLD / 10.0;
+const PRECISION: f64 = EQ_THRESHOLD / 100.0;
 
 fn curve_curve_intersection_numerical_iteration(
     edge_self: &dyn CurveLike,
@@ -41,7 +41,7 @@ fn curve_curve_intersection_numerical_iteration(
     //     bounding_box_self.intersects(&bounding_box_other, 0.0)
     // );
 
-    if !bounding_box_self.intersects(&bounding_box_other, PRECISION / 10.0) {
+    if !bounding_box_self.intersects(&bounding_box_other, 0.0) {
         return Vec::new();
     }
 
