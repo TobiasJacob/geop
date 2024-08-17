@@ -9,7 +9,7 @@ use crate::{
 pub mod circle_circle;
 pub mod circle_line;
 pub mod curve_curve;
-pub mod ellipsis_ellipsis;
+pub mod ellipse_ellipse;
 pub mod line_line;
 
 const PRECISION: f64 = EQ_THRESHOLD / 100.0;

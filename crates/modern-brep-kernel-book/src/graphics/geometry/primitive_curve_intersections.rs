@@ -3,10 +3,10 @@ mod tests {
     use std::vec;
 
     use geop_booleans::intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection};
-    use geop_geometry::{curves::ellipsis::Ellipsis, points::point::Point};
+    use geop_geometry::{curves::ellipse::Ellipse, points::point::Point};
     use geop_topology::{
         primitive_objects::edges::{
-            circle::primitive_circle, ellipsis::primitive_ellipsis, line::primitive_infinite_line,
+            circle::primitive_circle, ellipse::primitive_ellipse, line::primitive_infinite_line,
         },
         topology::scene::{Color, Scene},
     };
@@ -164,13 +164,13 @@ mod tests {
 
     #[rstest]
     pub async fn ellipses_ellipses_intersection(#[future] renderer: Box<HeadlessRenderer>) {
-        let ellipsis1 = primitive_ellipsis(
+        let ellipse1 = primitive_ellipse(
             Point::new_zero(),
             Point::new_unit_y(),
             Point::new_unit_x() * 1.5,
             Point::new_unit_z() * 0.5,
         );
-        let ellipsis2 = primitive_ellipsis(
+        let ellipse2 = primitive_ellipse(
             Point::new(1.0, 0.0, 0.0),
             Point::new_unit_y(),
             Point::new_unit_x() * 0.5,
@@ -178,10 +178,10 @@ mod tests {
         );
 
         let mut scene = Scene::empty();
-        scene.edges.push((ellipsis1.clone(), Color::white()));
-        scene.edges.push((ellipsis2.clone(), Color::white()));
+        scene.edges.push((ellipse1.clone(), Color::white()));
+        scene.edges.push((ellipse2.clone(), Color::white()));
 
-        let intersections = edge_edge_intersection(&ellipsis1, &ellipsis2);
+        let intersections = edge_edge_intersection(&ellipse1, &ellipse2);
         match intersections {
             EdgeEdgeIntersection::Edges(edges) => {
                 panic!("Unexpected edges: {:?}", edges);

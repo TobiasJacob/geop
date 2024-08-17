@@ -6,7 +6,7 @@ pub mod curve;
 
 // Alphabetic order
 pub mod circle;
-pub mod ellipsis;
+pub mod ellipse;
 pub mod line;
 
 // CurveLike is a trait that all curves should implement.

@@ -4,7 +4,7 @@ use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transfo
 
 use super::{
     circle::{Circle, CircleTransform},
-    ellipsis::Ellipsis,
+    ellipse::Ellipse,
     line::Line,
     CurveLike,
 };
@@ -13,7 +13,7 @@ use super::{
 pub enum Curve {
     Line(Line),
     Circle(Circle),
-    Ellipsis(Ellipsis),
+    Ellipse(Ellipse),
 }
 
 // This represents a curve, which can be a line or a circle.
@@ -26,7 +26,7 @@ impl CurveLike for Curve {
                 CircleTransform::Circle(circle) => Curve::Circle(circle),
                 CircleTransform::Ellipse() => todo!("Implement this"),
             },
-            Curve::Ellipsis(ellipsis) => Curve::Ellipsis(ellipsis.transform(transform)),
+            Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.transform(transform)),
         }
     }
 
@@ -35,7 +35,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => Curve::Line(line.neg()),
             Curve::Circle(circle) => Curve::Circle(circle.neg()),
-            Curve::Ellipsis(ellipsis) => Curve::Ellipsis(ellipsis.neg()),
+            Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.neg()),
         }
     }
 
@@ -44,7 +44,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
-            Curve::Ellipsis(ellipsis) => ellipsis.tangent(p),
+            Curve::Ellipse(ellipse) => ellipse.tangent(p),
         }
     }
 
@@ -53,7 +53,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.on_curve(p),
             Curve::Circle(circle) => circle.on_curve(p),
-            Curve::Ellipsis(ellipsis) => ellipsis.on_curve(p),
+            Curve::Ellipse(ellipse) => ellipse.on_curve(p),
         }
     }
 
@@ -62,7 +62,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),
-            Curve::Ellipsis(ellipsis) => ellipsis.distance(x, y),
+            Curve::Ellipse(ellipse) => ellipse.distance(x, y),
         }
     }
 
@@ -71,7 +71,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
-            Curve::Ellipsis(ellipsis) => ellipsis.interpolate(start, end, t),
+            Curve::Ellipse(ellipse) => ellipse.interpolate(start, end, t),
         }
     }
 
@@ -80,7 +80,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
-            Curve::Ellipsis(ellipsis) => ellipsis.between(m, start, end),
+            Curve::Ellipse(ellipse) => ellipse.between(m, start, end),
         }
     }
 
@@ -91,7 +91,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
-            Curve::Ellipsis(ellipsis) => ellipsis.get_midpoint(start, end),
+            Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
         }
     }
 
@@ -100,7 +100,7 @@ impl CurveLike for Curve {
         match self {
             Curve::Line(line) => line.project(p),
             Curve::Circle(circle) => circle.project(p),
-            Curve::Ellipsis(ellipsis) => ellipsis.project(p),
+            Curve::Ellipse(ellipse) => ellipse.project(p),
         }
     }
 

@@ -5,7 +5,7 @@ A curve is something that could be thought of as a function that maps a number t
 ```rust
 let line = Line::new(
     Point3::new(0.0, 0.0, 0.0),
-    Vector3::new(1.0, 1.0, 1.0),
+    Point3::new(1.0, 1.0, 1.0),
 );
 ```
 
@@ -16,12 +16,26 @@ Next is a circle, defined by a center, a normal and a radius. The radius is a po
 ```rust
 let circle = Circle::new(
     Point3::new(0.0, 0.0, 0.0),
-    Vector3::new(0.0, 0.0, 1.0),
+    Point3::new(0.0, 0.0, 1.0),
     1.0,
 );
 ```
 
 ![Circle](./generated_images/geometry/primitive_circle.png)
+
+
+Last but not least, there is an ellipses.
+
+```rust
+let ellipses = Ellipses::new(
+    Point3::new(0.0, 0.0, 0.0),
+    Point3::new(0.0, 1.0, 0.0),
+    Point3::new(1.0, 0.0, 0.0),
+    Point3::new(0.0, 0.0, 1.0),
+);
+```
+
+![Circle](./generated_images/geometry/primitive_ellipse.png)
 
 ### Do not expose the parameters
 

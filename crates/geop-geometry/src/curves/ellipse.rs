@@ -3,15 +3,15 @@ use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transfo
 use super::{curve::Curve, CurveLike};
 
 #[derive(Debug, Clone)]
-pub struct Ellipsis {
+pub struct Ellipse {
     pub basis: Point,
     pub normal: Point,
     pub major_radius: Point,
     pub minor_radius: Point,
 }
 
-impl Ellipsis {
-    pub fn new(basis: Point, normal: Point, major_radius: Point, minor_radius: Point) -> Ellipsis {
+impl Ellipse {
+    pub fn new(basis: Point, normal: Point, major_radius: Point, minor_radius: Point) -> Ellipse {
         let normal = normal.normalize();
         assert!(
             normal.dot(major_radius).abs() < EQ_THRESHOLD,
@@ -25,7 +25,7 @@ impl Ellipsis {
             major_radius.dot(minor_radius).abs() < EQ_THRESHOLD,
             "Major and minor radii must be orthogonal"
         );
-        Ellipsis {
+        Ellipse {
             basis,
             normal,
             major_radius,
@@ -47,16 +47,16 @@ impl Ellipsis {
         p.x * self.major_radius + p.y * self.minor_radius + self.basis
     }
 
-    pub fn transform(&self, transform: Transform) -> Ellipsis {
+    pub fn transform(&self, transform: Transform) -> Ellipse {
         let basis = transform * self.basis;
         let normal = transform * (self.normal + self.basis) - basis;
         let major_radius = transform * (self.major_radius + self.basis) - basis;
         let minor_radius = transform * (self.minor_radius + self.basis) - basis;
-        Ellipsis::new(basis, normal, major_radius, minor_radius)
+        Ellipse::new(basis, normal, major_radius, minor_radius)
     }
 
-    pub fn neg(&self) -> Ellipsis {
-        Ellipsis::new(
+    pub fn neg(&self) -> Ellipse {
+        Ellipse::new(
             self.basis,
             -self.normal,
             self.major_radius,
@@ -92,20 +92,20 @@ impl Ellipsis {
             self.basis + disc_z,
             self.basis - disc_z,
         ]
-        .iter() // Filter nan. Nan means that the ellipsis is parallel to a plane, so there is no extremal point.
+        .iter() // Filter nan. Nan means that the ellipse is parallel to a plane, so there is no extremal point.
         .filter(|p| p.x.is_finite() && p.y.is_finite() && p.z.is_finite())
         .cloned()
         .collect()
     }
 }
 
-impl CurveLike for Ellipsis {
+impl CurveLike for Ellipse {
     fn transform(&self, transform: Transform) -> Curve {
-        Curve::Ellipsis(self.transform(transform))
+        Curve::Ellipse(self.transform(transform))
     }
 
     fn neg(&self) -> Curve {
-        Curve::Ellipsis(self.neg())
+        Curve::Ellipse(self.neg())
     }
 
     fn tangent(&self, p: Point) -> Point {
@@ -292,9 +292,9 @@ impl CurveLike for Ellipsis {
     }
 }
 
-// Implement partial equality for Ellipsis
-impl PartialEq for Ellipsis {
-    fn eq(&self, other: &Ellipsis) -> bool {
+// Implement partial equality for ellipse
+impl PartialEq for Ellipse {
+    fn eq(&self, other: &Ellipse) -> bool {
         self.basis == other.basis
             && self.normal == other.normal
             && self.major_radius == other.major_radius

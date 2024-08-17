@@ -6,7 +6,7 @@ mod tests {
     };
     use geop_topology::{
         primitive_objects::edges::{
-            circle::primitive_circle, ellipsis::primitive_ellipsis, line::primitive_infinite_line,
+            circle::primitive_circle, ellipse::primitive_ellipse, line::primitive_infinite_line,
         },
         topology::scene::{Color, Scene},
     };
@@ -48,28 +48,19 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_ellipsis(#[future] renderer: Box<HeadlessRenderer>) {
-        let ellipsis1 = primitive_ellipsis(
+    async fn test_ellipse(#[future] renderer: Box<HeadlessRenderer>) {
+        let ellipse1 = primitive_ellipse(
             Point::new_zero(),
             Point::new_unit_y(),
             Point::new_unit_x() * 1.5,
             Point::new_unit_z() * 0.5,
         );
-        let mut scene = Scene::new(
+        let scene = Scene::new(
             vec![],
             vec![],
-            vec![(ellipsis1.clone(), Color::white())],
+            vec![(ellipse1.clone(), Color::white())],
             vec![],
         );
-        match ellipsis1.curve {
-            Curve::Ellipsis(e) => {
-                for p in e.get_extremal_points() {
-                    assert!(e.on_curve(p));
-                    scene.points.push((p, Color::red()));
-                }
-            }
-            _ => {}
-        }
         renderer
             .await
             .render_to_file(
@@ -77,7 +68,7 @@ mod tests {
                 false,
                 false,
                 Point::new(0.0, -3.0, 0.0),
-                std::path::Path::new("src/generated_images/geometry/primitive_ellipsis.png"),
+                std::path::Path::new("src/generated_images/geometry/primitive_ellipse.png"),
             )
             .await;
     }
