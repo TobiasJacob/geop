@@ -132,5 +132,9 @@ The last case is the intersection of a line and a circle.
 
 ![Line Circle Intersections](./generated_images/geometry/circle_line_intersections.png)
 
+For ellipses, we use a numerical method to find the intersections.
+
+![Ellipse Intersections](./generated_images/geometry/ellipse_ellipse_intersection.png)
+
 > **Note**: Implementation detail. The individual cases are implemented as `circle_circle_intersection`, `circle_line_intersection` and `line_line_intersection`. They are not a part of class, since it would not be clear in which class they should reside. We list them in alphabetical order.
 > Then there is the `Curve` enum and a `curve_curve_intersection` function, which can be used for the general case. The `Curve` enum is used to represent the different cases of the intersection.

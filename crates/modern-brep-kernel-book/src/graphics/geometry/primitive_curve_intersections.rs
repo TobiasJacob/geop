@@ -163,7 +163,7 @@ mod tests {
     }
 
     #[rstest]
-    pub async fn ellipses_ellipses_intersection(#[future] renderer: Box<HeadlessRenderer>) {
+    pub async fn ellipse_ellipse_intersection(#[future] renderer: Box<HeadlessRenderer>) {
         let ellipse1 = primitive_ellipse(
             Point::new_zero(),
             Point::new_unit_y(),
@@ -203,7 +203,7 @@ mod tests {
                 false,
                 Point::new(0.0, -4.0, 0.0),
                 std::path::Path::new(
-                    "src/generated_images/geometry/ellipses_ellipses_intersection.png",
+                    "src/generated_images/geometry/ellipse_ellipse_intersection.png",
                 ),
             )
             .await;
