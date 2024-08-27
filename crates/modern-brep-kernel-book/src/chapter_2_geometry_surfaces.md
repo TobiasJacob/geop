@@ -18,6 +18,16 @@ let sphere = Sphere::new(basis, radius, true);
 
 ![Sphere](./generated_images/geometry/primitive_sphere.png)
 
+
+There is also a cylinder, which is defined by a basis, an extent direction, and a radius. The cylinder is infinite in the extent direction.
+
+```rust
+let cylinder = Cylinder::new(basis, extent, radius);
+```
+
+![Cylinder](./generated_images/geometry/primitive_cylinder.png)
+
+
 ## Interacting with Surfaces
 
 How do we interact with surfaces? We can do this by using the `Surface` trait. It implements the following methods:
@@ -89,5 +99,6 @@ Another feature we use very often are the exponential and logarithmic maps. Very
 
 Are you able to see how the green points on the sphere are mapped to the red points on a plane? The logarithmic map is the function that maps the red points back to the green points. The exponential map is the function that maps the green points to the red points. This is a very powerful tool to convert 3d problems into 2d problems.
 
+The logarithmic map is not always defined. For example, the logarithmic map is not defined at the opposite pole of a sphere. In this case, the logarithmic map returns `None`. However, in close proximity to the anchor, the logarithmic map is well defined. Here is one more example of the logarithmic map:
 
-The logarithmic map is not always defined. For example, the logarithmic map is not defined at the opposite pole of a sphere. In this case, the logarithmic map returns `None`. However, in close proximity to the anchor, the logarithmic map is well defined.
+![Logarithmic Map](./generated_images/geometry/log_exp_map2.png)
