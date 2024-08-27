@@ -59,10 +59,15 @@ impl Point {
         dot.abs() < EQ_THRESHOLD
     }
 
-    pub fn angle(&self, basis: Point) -> f64 {
-        let dot = self.dot(basis);
-        let norm = self.norm() * basis.norm();
-        (dot / norm).acos()
+    pub fn angle(&self, other: Point) -> f64 {
+        let dot = self.dot(other);
+        let norm = self.norm() * other.norm();
+        assert!(norm > EQ_THRESHOLD);
+        let dot_norm = dot / norm;
+        if dot_norm > 1.0 - EQ_THRESHOLD {
+            return 0.0;
+        }
+        dot_norm.acos()
     }
 
     pub fn new_zero() -> Point {

@@ -42,10 +42,9 @@ impl Cylinder {
     }
 
     pub fn normal(&self, p: Point) -> Point {
-        let p_project = p - self.basis;
-        let height_project = p_project.dot(self.extend_dir) * self.extend_dir;
-        let radius_project = p_project - height_project;
-        let normal = radius_project.normalize();
+        let p = p - self.basis;
+        let p = p - p.dot(self.extend_dir) * self.extend_dir;
+        let normal = p.normalize();
         if self.normal_outwards {
             normal
         } else {
@@ -117,13 +116,14 @@ impl Cylinder {
         }
 
         let dir = y - x.dot(y) * x;
+        assert!(dir.dot(self.extend_dir).abs() < EQ_THRESHOLD);
 
         // This means that we are on the opposite side of the cylinder
         if dir.norm() < EQ_THRESHOLD {
             return None;
         }
 
-        Some(height_diff * self.extend_dir + dir / dir.norm() * self.radius.norm() * angle)
+        Some(height_diff * self.extend_dir + dir / dir.norm() * angle)
     }
 
     pub fn parallel_transport(
@@ -135,21 +135,24 @@ impl Cylinder {
         todo!()
     }
 
-    pub fn geodesic(&self, _p: Point, _q: Point) -> Curve {
-        todo!()
+    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+        assert!(self.on_surface(p));
+        assert!(self.on_surface(q));
+        todo!("Return a helix curve")
     }
 
     pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
-        let n = (density + 1.1) as usize;
-        let mut points = Vec::new();
+        let n = (16.0 * density) as usize;
+        let m = (16.0 * density) as usize;
+        let mut points = Vec::with_capacity(n * m);
         for i in 0..n {
-            for j in 0..n {
-                let u = i as f64 / (n as f64 - 1.0);
-                let v = j as f64 / (n as f64 - 1.0);
+            for j in 0..m {
+                let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
+                let v = j as f64 / (m as f64 - 1.0);
                 let point = self.basis
-                    + (u - 0.5) * horizon_dist * self.extend_dir
-                    + (v - 0.5).cos() * self.radius
-                    + (v - 0.5).sin() * self.dir_cross;
+                    + (v - 0.5) * horizon_dist * self.extend_dir
+                    + theta.cos() * self.radius
+                    + theta.sin() * self.dir_cross;
                 points.push(point);
             }
         }

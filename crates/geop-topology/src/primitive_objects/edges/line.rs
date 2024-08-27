@@ -6,6 +6,7 @@ use geop_geometry::{
 use crate::topology::edge::Edge;
 
 pub fn primitive_line(start: Point, end: Point) -> Edge {
+    assert!(start != end);
     let l = Line::new(start, end - start);
     Edge::new(Some(start), Some(end), Curve::Line(l))
 }

@@ -114,7 +114,9 @@ pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTria
 
     let (v1, v2) = match (v1, v2) {
         (Some(v1), Some(v2)) => (v1, v2),
-        _ => return false,
+        _ => {
+            return false;
+        }
     };
 
     let normal = surface.normal(triangle.a.point());
@@ -377,6 +379,13 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     let mut processed_edges = Vec::<RenderEdge>::new();
     let mut counter = 0;
     while let Some(edge) = open_edges.pop_front() {
+        println!(
+            "Counter: {} Open edges: {} Result len: {} Processed edges: {}",
+            counter,
+            open_edges.len(),
+            triangles.len(),
+            processed_edges.len()
+        );
         if processed_edges.contains(&edge) {
             continue;
         }
@@ -386,12 +395,6 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
 
         processed_edges.push(edge);
 
-        println!(
-            "Counter: {} Open edges: {} Result len: {}",
-            counter,
-            open_edges.len(),
-            triangles.len()
-        );
         counter += 1;
         if counter > 1500 {
             break;
@@ -436,6 +439,8 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
                     }
                 }
             }
+        } else {
+            println!("No valid triangle found");
         }
     }
 
