@@ -77,6 +77,7 @@ impl Plane {
     }
 
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+        assert!(p != q);
         Curve::Line(Line::new(p, q - p))
     }
 

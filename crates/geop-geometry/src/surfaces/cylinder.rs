@@ -1,5 +1,5 @@
 use crate::{
-    curves::{curve::Curve, helix::Helix},
+    curves::{curve::Curve, helix::Helix, line::Line, CurveLike},
     points::point::Point,
     transforms::Transform,
     EQ_THRESHOLD,
@@ -143,14 +143,22 @@ impl Cylinder {
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
+        assert!(p != q);
         let p_height = p.dot(self.extend_dir);
         let q_height = q.dot(self.extend_dir);
         let angle = (p - self.extend_dir * p_height).angle(q - self.extend_dir * q_height);
+        if angle < EQ_THRESHOLD {
+            return Curve::Line(Line::new(p, q - p));
+        }
         let helix_basis = self.basis + p_height * self.extend_dir;
         let helix_radius = p - helix_basis;
         let helix_pitch =
             self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle;
-        Curve::Helix(Helix::new(helix_basis, helix_radius, helix_pitch))
+        let helix = Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, true));
+        if !helix.on_curve(q) {
+            return Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, false));
+        }
+        helix
     }
 
     pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {

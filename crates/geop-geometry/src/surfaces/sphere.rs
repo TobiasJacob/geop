@@ -132,6 +132,7 @@ impl Sphere {
     pub fn geodesic(&self, p: Point, q: Point) -> Curve {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
+        assert!(p != q);
         let normal = (p - self.basis).cross(q - self.basis).normalize();
         let circle = Circle::new(self.basis, normal, self.radius);
         Curve::Circle(circle)

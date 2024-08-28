@@ -10,10 +10,11 @@ pub struct Helix {
     pub pitch: Point,
     pub radius: Point,
     dir_cross: Point,
+    right_winding: bool,
 }
 
 impl Helix {
-    pub fn new(basis: Point, pitch: Point, radius: Point) -> Helix {
+    pub fn new(basis: Point, pitch: Point, radius: Point, right_winding: bool) -> Helix {
         assert!(
             pitch.dot(radius).abs() < EQ_THRESHOLD,
             "Radius and normal must be orthogonal"
@@ -22,7 +23,11 @@ impl Helix {
             basis,
             pitch,
             radius,
-            dir_cross: pitch.cross(radius),
+            dir_cross: match right_winding {
+                true => pitch.normalize().cross(radius),
+                false => -pitch.normalize().cross(radius),
+            },
+            right_winding,
         }
     }
 
@@ -30,11 +35,11 @@ impl Helix {
         let basis = transform * self.basis;
         let normal = transform * (self.pitch + self.basis) - basis;
         let radius = transform * (self.radius + self.basis) - basis;
-        Helix::new(basis, normal.normalize(), radius)
+        Helix::new(basis, normal.normalize(), radius, self.right_winding)
     }
 
     pub fn neg(&self) -> Helix {
-        Helix::new(self.basis, -self.pitch, self.radius)
+        Helix::new(self.basis, -self.pitch, self.radius, self.right_winding)
     }
 }
 

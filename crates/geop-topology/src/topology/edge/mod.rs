@@ -29,8 +29,8 @@ impl Edge {
         match start {
             Some(start) => match end {
                 Some(end) => {
-                    let start = curve.project(start);
-                    let end = curve.project(end);
+                    let start = start;
+                    let end = end;
                     match start == end {
                         true => Edge {
                             start: None,
@@ -45,7 +45,7 @@ impl Edge {
                     }
                 }
                 None => Edge {
-                    start: Some(curve.project(start)),
+                    start: Some(start),
                     end: None,
                     curve,
                 },
@@ -53,7 +53,7 @@ impl Edge {
             None => match end {
                 Some(end) => Edge {
                     start: None,
-                    end: Some(curve.project(end)),
+                    end: Some(end),
                     curve,
                 },
                 None => Edge {

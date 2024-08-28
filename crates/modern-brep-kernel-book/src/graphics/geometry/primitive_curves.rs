@@ -76,7 +76,12 @@ mod tests {
 
     #[rstest]
     async fn test_helix(#[future] renderer: Box<HeadlessRenderer>) {
-        let helix = primitive_helix(Point::new_zero(), Point::new_unit_z(), Point::new_unit_x());
+        let helix = primitive_helix(
+            Point::new_zero(),
+            Point::new_unit_z(),
+            Point::new_unit_x(),
+            true,
+        );
         let scene = Scene::new(
             vec![],
             vec![],

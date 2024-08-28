@@ -87,7 +87,11 @@ One very important function we need are geodesics. They are the shortest path be
 
 ![Geodesic](./generated_images/geometry/geodesics.png)
 
-Do you see how the lines connect the points in the shortest way possible while also following the surface exactly? Thats what geodesics are.
+Do you see how the lines connect the points in the shortest way possible while also following the surface exactly? Thats what geodesics are. They are supported for all surface types, take a look at the cylinder geodesic for example:
+
+![Cylinder Geodesic](./generated_images/geometry/geodesics2.png)
+
+The geodesic of a cylinder is a helix.
 
 ### Exponential and Logarithmic Maps
 

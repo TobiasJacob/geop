@@ -5,7 +5,7 @@ use geop_geometry::{
 
 use crate::topology::edge::Edge;
 
-pub fn primitive_helix(basis: Point, pitch: Point, radius: Point) -> Edge {
-    let h = Helix::new(basis, pitch, radius);
+pub fn primitive_helix(basis: Point, pitch: Point, radius: Point, right_winding: bool) -> Edge {
+    let h = Helix::new(basis, pitch, radius, right_winding);
     Edge::new(None, None, Curve::Helix(h))
 }
