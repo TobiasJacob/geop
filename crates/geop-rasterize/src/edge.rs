@@ -1,4 +1,4 @@
-use geop_geometry::curves::curve::Curve;
+use geop_geometry::{curves::curve::Curve, HORIZON_DIST};
 use geop_topology::topology::{edge::Edge, scene::Color};
 
 use crate::{
@@ -12,6 +12,7 @@ pub fn rasterize_edge_into_line_list(edge: &Edge, color: Color) -> EdgeBuffer {
         Curve::Line(_) => 10,
         Curve::Circle(_) => 32,
         Curve::Ellipse(_) => 32,
+        Curve::Helix(_) => 32 * HORIZON_DIST as usize,
     };
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {

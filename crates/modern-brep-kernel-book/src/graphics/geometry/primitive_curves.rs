@@ -6,7 +6,8 @@ mod tests {
     };
     use geop_topology::{
         primitive_objects::edges::{
-            circle::primitive_circle, ellipse::primitive_ellipse, line::primitive_infinite_line,
+            circle::primitive_circle, ellipse::primitive_ellipse, helix::primitive_helix,
+            line::primitive_infinite_line,
         },
         topology::scene::{Color, Scene},
     };
@@ -69,6 +70,27 @@ mod tests {
                 false,
                 Point::new(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_ellipse.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_helix(#[future] renderer: Box<HeadlessRenderer>) {
+        let helix = primitive_helix(Point::new_zero(), Point::new_unit_z(), Point::new_unit_x());
+        let scene = Scene::new(
+            vec![],
+            vec![],
+            vec![(helix.clone(), Color::white())],
+            vec![],
+        );
+        renderer
+            .await
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(0.0, -3.0, 0.0),
+                std::path::Path::new("src/generated_images/geometry/primitive_helix.png"),
             )
             .await;
     }

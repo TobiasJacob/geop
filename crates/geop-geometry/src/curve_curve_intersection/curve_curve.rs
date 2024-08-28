@@ -30,6 +30,7 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                 }
             },
             Curve::Ellipse(_) => todo!("Implement this"),
+            Curve::Helix(_) => todo!("Implement this"),
         },
         Curve::Circle(circle) => match edge_other {
             Curve::Line(other_line) => match circle_line_intersection(circle, other_line) {
@@ -50,6 +51,7 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                 }
             },
             Curve::Ellipse(_) => todo!("Implement this"),
+            Curve::Helix(_) => todo!("Implement this"),
         },
         Curve::Ellipse(ellipse) => match edge_other {
             Curve::Line(_) => todo!("Implement this"),
@@ -74,6 +76,8 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                     EllipseEllipseIntersection::None => CurveCurveIntersection::None,
                 }
             }
+            Curve::Helix(_) => todo!("Implement this"),
         },
+        Curve::Helix(_) => todo!("Implement this"),
     }
 }

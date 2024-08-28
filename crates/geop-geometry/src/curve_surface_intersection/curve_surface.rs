@@ -69,5 +69,6 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
             }
         },
         Curve::Ellipse(_) => todo!("Implement this"),
+        Curve::Helix(_) => todo!("Implement this"),
     }
 }

@@ -41,7 +41,7 @@ impl Circle {
         let normal = transform * (self.normal + self.basis) - basis;
         let radius = transform * (self.radius + self.basis) - basis;
         let scale_factor = radius.norm() / self.radius.norm();
-        assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipses.");
+        assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
         CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius.norm()))
     }
 
@@ -99,6 +99,7 @@ impl CurveLike for Circle {
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
             (Some(start), None) => {
+                assert!(self.on_curve(start));
                 let start = start - self.basis;
                 let x_start = self.radius.dot(start);
                 let y_start = self.dir_cross.dot(start);
@@ -107,6 +108,7 @@ impl CurveLike for Circle {
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
             (None, Some(end)) => {
+                assert!(self.on_curve(end));
                 let end = end - self.basis;
                 let x_end = self.radius.dot(end);
                 let y_end = self.dir_cross.dot(end);

@@ -5,6 +5,7 @@ use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transfo
 use super::{
     circle::{Circle, CircleTransform},
     ellipse::Ellipse,
+    helix::Helix,
     line::Line,
     CurveLike,
 };
@@ -14,6 +15,7 @@ pub enum Curve {
     Line(Line),
     Circle(Circle),
     Ellipse(Ellipse),
+    Helix(Helix),
 }
 
 // This represents a curve, which can be a line or a circle.
@@ -27,6 +29,7 @@ impl CurveLike for Curve {
                 CircleTransform::Ellipse() => todo!("Implement this"),
             },
             Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.transform(transform)),
+            Curve::Helix(helix) => Curve::Helix(helix.transform(transform)),
         }
     }
 
@@ -36,6 +39,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => Curve::Line(line.neg()),
             Curve::Circle(circle) => Curve::Circle(circle.neg()),
             Curve::Ellipse(ellipse) => Curve::Ellipse(ellipse.neg()),
+            Curve::Helix(helix) => Curve::Helix(helix.neg()),
         }
     }
 
@@ -45,6 +49,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
             Curve::Ellipse(ellipse) => ellipse.tangent(p),
+            Curve::Helix(helix) => helix.tangent(p),
         }
     }
 
@@ -54,6 +59,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.on_curve(p),
             Curve::Circle(circle) => circle.on_curve(p),
             Curve::Ellipse(ellipse) => ellipse.on_curve(p),
+            Curve::Helix(helix) => helix.on_curve(p),
         }
     }
 
@@ -63,6 +69,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),
             Curve::Ellipse(ellipse) => ellipse.distance(x, y),
+            Curve::Helix(helix) => helix.distance(x, y),
         }
     }
 
@@ -72,6 +79,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
             Curve::Ellipse(ellipse) => ellipse.interpolate(start, end, t),
+            Curve::Helix(helix) => helix.interpolate(start, end, t),
         }
     }
 
@@ -81,6 +89,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
             Curve::Ellipse(ellipse) => ellipse.between(m, start, end),
+            Curve::Helix(helix) => helix.between(m, start, end),
         }
     }
 
@@ -92,6 +101,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
             Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
+            Curve::Helix(helix) => helix.get_midpoint(start, end),
         }
     }
 
@@ -101,6 +111,7 @@ impl CurveLike for Curve {
             Curve::Line(line) => line.project(p),
             Curve::Circle(circle) => circle.project(p),
             Curve::Ellipse(ellipse) => ellipse.project(p),
+            Curve::Helix(helix) => helix.project(p),
         }
     }
 
@@ -109,6 +120,11 @@ impl CurveLike for Curve {
         interval_self: Option<Point>,
         midpoint_self: Option<Point>,
     ) -> BoundingBox {
-        todo!()
+        match self {
+            Curve::Line(line) => line.get_bounding_box(interval_self, midpoint_self),
+            Curve::Circle(circle) => circle.get_bounding_box(interval_self, midpoint_self),
+            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(interval_self, midpoint_self),
+            Curve::Helix(helix) => helix.get_bounding_box(interval_self, midpoint_self),
+        }
     }
 }

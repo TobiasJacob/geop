@@ -23,11 +23,10 @@ let circle = Circle::new(
 
 ![Circle](./generated_images/geometry/primitive_circle.png)
 
-
-Last but not least, there is an ellipses.
+There is an ellipsis.
 
 ```rust
-let ellipses = Ellipses::new(
+let ellipsis = Ellipsis::new(
     Point3::new(0.0, 0.0, 0.0),
     Point3::new(0.0, 1.0, 0.0),
     Point3::new(1.0, 0.0, 0.0),
@@ -35,7 +34,19 @@ let ellipses = Ellipses::new(
 );
 ```
 
-![Circle](./generated_images/geometry/primitive_ellipse.png)
+![Ellipsis](./generated_images/geometry/primitive_ellipse.png)
+
+There are also more interesting curves, like a Helix.
+
+```rust
+let helix = Helix::new(
+    Point3::new(0.0, 0.0, 0.0),
+    Point3::new(0.0, 0.0, 1.0),
+    Point3::new(1.0, 0.0, 0.0),
+);
+```
+
+![Helix](./generated_images/geometry/primitive_helix.png)
 
 ### Do not expose the parameters
 

@@ -61,36 +61,10 @@ impl CurveLike for Line {
                 start + (end - start) * t
             }
             (Some(start), None) => start + self.direction * t * HORIZON_DIST,
-            (None, Some(end)) => end - self.direction * t * HORIZON_DIST,
+            (None, Some(end)) => end - self.direction * (1.0 - t) * HORIZON_DIST,
             (None, None) => self.basis + self.direction * (t - 0.5) * 2.0 * HORIZON_DIST,
         }
     }
-
-    // fn metric(&self, x: Point, u: TangentParameter, v: TangentParameter) -> f64 {
-    //     u.0 * v.0
-    // }
-
-    // fn distance(&self, p1: Point, p2: Point) -> f64 {
-    //     return (p2 - p1).norm();
-    // }
-
-    // fn exp(&self, x: Point, u: TangentParameter) -> Point {
-    //     assert!(self.on_manifold(x), "x is not on the manifold");
-    //     x + self.direction * u.0
-    // }
-    // // Log of y at base x. Z coordinate is set to 0.
-    // fn log(&self, x: Point, y: Point) -> TangentParameter {
-    //     assert!(self.on_manifold(x), "x is not on the manifold");
-    //     assert!(self.on_manifold(y), "y is not on the manifold");
-    //     let v = y - x;
-    //     TangentParameter(self.direction.dot(v))
-    // }
-    // // Parallel transport of v from x to y.
-    // fn parallel_transport(&self, v: TangentParameter, x: Point, y: Point) -> TangentParameter {
-    //     assert!(self.on_manifold(x), "x is not on the manifold");
-    //     assert!(self.on_manifold(y), "y is not on the manifold");
-    //     v
-    // }
 
     // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {

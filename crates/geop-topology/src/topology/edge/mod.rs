@@ -121,6 +121,7 @@ impl Display for Edge {
             Curve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
             Curve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
             Curve::Ellipse(_) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
+            Curve::Helix(_) => write!(f, "Helix {:?} - {:?}", self.start, self.end),
         }
     }
 }
