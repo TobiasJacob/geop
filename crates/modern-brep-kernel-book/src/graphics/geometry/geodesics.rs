@@ -17,7 +17,7 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_sphere(Point::new_zero(), 1.0);
+        let face = primitive_sphere(Point::zero(), 1.0);
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
@@ -90,7 +90,7 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics2(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::new_zero(), Point::new_unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
@@ -169,7 +169,7 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics_debug(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::new_zero(), Point::new_unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 

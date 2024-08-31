@@ -221,9 +221,8 @@ impl CurveLike for Ellipse {
                 let mid = (start_rel + end_rel) / 2.0;
                 // println!("mid: {:?}", mid);
                 if mid.norm() < EQ_THRESHOLD {
-                    return self.transform_point_from_circle(
-                        Point::new_unit_z().cross(start_rel).normalize(),
-                    );
+                    return self
+                        .transform_point_from_circle(Point::unit_z().cross(start_rel).normalize());
                 }
                 let mid = mid.normalize();
                 // println!("mid: {:?}", mid);

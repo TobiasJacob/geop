@@ -80,7 +80,7 @@ impl Sphere {
         assert!(self.on_surface(y));
 
         if x == y {
-            return Some(Point::new_zero());
+            return Some(Point::zero());
         }
         let x2 = (x - self.basis) / self.radius;
         let y2 = (y - self.basis) / self.radius;

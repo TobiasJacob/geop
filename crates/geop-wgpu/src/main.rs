@@ -100,9 +100,9 @@ async fn run() {
 
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
-        let mut sphere = primitive_sphere(Point::new_zero(), 1.0);
+        let mut sphere = primitive_sphere(Point::zero(), 1.0);
         sphere.boundary = Some(Contour::new(vec![primitive_circle(
-            Point::new_zero(),
+            Point::zero(),
             Point::new(0.5, 0.5, 0.5),
             1.0,
         )]));

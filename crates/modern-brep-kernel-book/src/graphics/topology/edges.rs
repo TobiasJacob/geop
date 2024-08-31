@@ -20,9 +20,9 @@ mod tests {
             Point::new(1.0, 0.0, 0.0),
             Point::new(-1.0, 0.0, 0.0),
             3.0,
-            -Point::new_unit_y(),
+            -Point::unit_y(),
         );
-        let edge3 = primitive_circle(Point::new(0.0, 0.0, -1.0), -Point::new_unit_y(), 0.6);
+        let edge3 = primitive_circle(Point::new(0.0, 0.0, -1.0), -Point::unit_y(), 0.6);
         let mut scene = Scene::new(
             vec![],
             vec![],

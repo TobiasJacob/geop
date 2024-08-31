@@ -15,7 +15,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_plane(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_plane(Point::new_zero(), Point::new_unit_x(), Point::new_unit_z());
+        let face = primitive_plane(Point::zero(), Point::unit_x(), Point::unit_z());
         let triangles = rasterize_face_into_triangle_list(&face, Color::white());
         let scene = Scene::new(vec![], vec![(face, Color::white())], vec![], vec![]);
         for t in triangles.triangles.iter() {
@@ -35,7 +35,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_sphere(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_sphere(Point::new_zero(), 1.0);
+        let face = primitive_sphere(Point::zero(), 1.0);
         let scene = Scene::new(vec![], vec![(face, Color::light_gray())], vec![], vec![]);
         renderer
             .await
@@ -51,7 +51,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_cylinder(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::new_zero(), Point::new_unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
         let mut scene = Scene::new(
             vec![],
             vec![(face.clone(), Color::light_gray())],

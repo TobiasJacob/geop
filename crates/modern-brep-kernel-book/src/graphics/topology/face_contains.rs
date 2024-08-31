@@ -21,9 +21,9 @@ mod tests {
     async fn test_face_contains_sphere(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut face = primitive_sphere(Point::new_zero(), 1.0);
+        let mut face = primitive_sphere(Point::zero(), 1.0);
         face.boundary = Some(Contour::new(vec![primitive_circle(
-            Point::new_zero(),
+            Point::zero(),
             -Point::new(0.5, 0.5, 0.5),
             1.0,
         )]));
@@ -55,10 +55,9 @@ mod tests {
     async fn test_face_contains_rectangle(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut face =
-            primitive_rectangle(Point::new_zero(), Point::new_unit_x(), Point::new_unit_y());
+        let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
         face.holes.push(Contour::new(vec![primitive_circle(
-            Point::new_zero(),
+            Point::zero(),
             Point::new(0.0, 0.0, -1.0),
             0.5,
         )]));
@@ -99,17 +98,12 @@ mod tests {
     async fn test_face_contains_rectangle2(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut face =
-            primitive_rectangle(Point::new_zero(), Point::new_unit_x(), Point::new_unit_y());
+        let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
         face.holes.push(
-            primitive_rectangle(
-                Point::new_zero(),
-                Point::new_unit_x() / 2.0,
-                Point::new_unit_y() / 2.0,
-            )
-            .boundary
-            .unwrap()
-            .flip(),
+            primitive_rectangle(Point::zero(), Point::unit_x() / 2.0, Point::unit_y() / 2.0)
+                .boundary
+                .unwrap()
+                .flip(),
         );
 
         let plane = match &*face.surface {

@@ -19,11 +19,11 @@ pub struct Cylinder {
 impl Cylinder {
     pub fn new(basis: Point, extend_dir: Point, radius: f64, normal_outwards: bool) -> Cylinder {
         let extend_dir = extend_dir.normalize();
-        let radius = match Point::new_unit_x().cross(extend_dir).norm_sq()
-            > Point::new_unit_y().cross(extend_dir).norm_sq()
+        let radius = match Point::unit_x().cross(extend_dir).norm_sq()
+            > Point::unit_y().cross(extend_dir).norm_sq()
         {
-            true => Point::new_unit_x().cross(extend_dir).normalize() * radius,
-            false => Point::new_unit_y().cross(extend_dir).normalize() * radius,
+            true => Point::unit_x().cross(extend_dir).normalize() * radius,
+            false => Point::unit_y().cross(extend_dir).normalize() * radius,
         };
         Cylinder {
             basis,

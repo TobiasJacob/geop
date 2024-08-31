@@ -35,23 +35,23 @@ mod tests {
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
             edges.push(primitive_line(*p1, *p2));
         }
-        edges.push(primitive_arc(p4, p1, 1.6, -Point::new_unit_y()));
+        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
 
-        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::new_unit_y(), 0.3);
+        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
 
         let hole2 = primitive_rectangle_curve(
             Point::new(0.0, 0.0, -0.5),
-            Point::new_unit_x() * 0.5,
-            -Point::new_unit_z() * 0.1,
+            Point::unit_x() * 0.5,
+            -Point::unit_z() * 0.1,
         );
 
         let face1 = Face::new(
             Some(Contour::new(edges)),
             vec![Contour::new(vec![hole]), hole2],
             Rc::new(Surface::Plane(Plane::new(
-                Point::new_zero(),
-                Point::new_unit_x(),
-                Point::new_unit_z(),
+                Point::zero(),
+                Point::unit_x(),
+                Point::unit_z(),
             ))),
         );
 

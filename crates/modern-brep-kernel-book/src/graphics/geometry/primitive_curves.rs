@@ -34,7 +34,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_circle(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_circle(Point::new_zero(), Point::new_unit_y(), 1.0);
+        let edge = primitive_circle(Point::zero(), Point::unit_y(), 1.0);
         let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
@@ -51,10 +51,10 @@ mod tests {
     #[rstest]
     async fn test_ellipse(#[future] renderer: Box<HeadlessRenderer>) {
         let ellipse1 = primitive_ellipse(
-            Point::new_zero(),
-            Point::new_unit_y(),
-            Point::new_unit_x() * 1.5,
-            Point::new_unit_z() * 0.5,
+            Point::zero(),
+            Point::unit_y(),
+            Point::unit_x() * 1.5,
+            Point::unit_z() * 0.5,
         );
         let scene = Scene::new(
             vec![],
@@ -77,9 +77,9 @@ mod tests {
     #[rstest]
     async fn test_helix(#[future] renderer: Box<HeadlessRenderer>) {
         let helix = primitive_helix(
-            Point::new_zero(),
-            Point::new_unit_z(),
-            Point::new_unit_x(),
+            Point::zero(),
+            Point::unit_z(),
+            Point::unit_x(),
             true,
         );
         let scene = Scene::new(

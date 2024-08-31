@@ -64,9 +64,9 @@ mod tests {
 
     #[rstest]
     async fn test_circle_circle_intersections(#[future] renderer: Box<HeadlessRenderer>) {
-        let circle1 = primitive_circle(Point::new(0.7, 0.0, 0.3), Point::new_unit_y(), 0.3);
-        let circle2 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::new_unit_y(), 0.6);
-        let circle3 = primitive_circle(Point::new(-0.4, 0.0, 0.3), Point::new_unit_y(), 0.8);
+        let circle1 = primitive_circle(Point::new(0.7, 0.0, 0.3), Point::unit_y(), 0.3);
+        let circle2 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::unit_y(), 0.6);
+        let circle3 = primitive_circle(Point::new(-0.4, 0.0, 0.3), Point::unit_y(), 0.8);
 
         let mut scene_edges = vec![
             (circle1.clone(), Color::white()),
@@ -113,7 +113,7 @@ mod tests {
 
     #[rstest]
     async fn test_circle_line_intersection(#[future] renderer: Box<HeadlessRenderer>) {
-        let circle1 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::new_unit_y(), 0.6);
+        let circle1 = primitive_circle(Point::new(0.4, 0.0, 0.3), Point::unit_y(), 0.6);
         let line1 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.3), Point::new(1.0, 0.0, 0.3));
         let line2 = primitive_infinite_line(Point::new(-1.0, 0.0, -0.1), Point::new(1.0, 0.0, 0.1));
         let line3 = primitive_infinite_line(Point::new(-1.0, 0.0, 0.9), Point::new(1.0, 0.0, 0.9));
@@ -165,16 +165,16 @@ mod tests {
     #[rstest]
     pub async fn ellipse_ellipse_intersection(#[future] renderer: Box<HeadlessRenderer>) {
         let ellipse1 = primitive_ellipse(
-            Point::new_zero(),
-            Point::new_unit_y(),
-            Point::new_unit_x() * 1.5,
-            Point::new_unit_z() * 0.5,
+            Point::zero(),
+            Point::unit_y(),
+            Point::unit_x() * 1.5,
+            Point::unit_z() * 0.5,
         );
         let ellipse2 = primitive_ellipse(
             Point::new(1.0, 0.0, 0.0),
-            Point::new_unit_y(),
-            Point::new_unit_x() * 0.5,
-            Point::new_unit_z() * 1.5,
+            Point::unit_y(),
+            Point::unit_x() * 0.5,
+            Point::unit_z() * 1.5,
         );
 
         let mut scene = Scene::empty();

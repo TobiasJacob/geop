@@ -17,11 +17,11 @@ pub enum CircleTransform {
 
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
-        let radius = match Point::new_unit_x().cross(normal).norm_sq()
-            > Point::new_unit_y().cross(normal).norm_sq()
+        let radius = match Point::unit_x().cross(normal).norm_sq()
+            > Point::unit_y().cross(normal).norm_sq()
         {
-            true => Point::new_unit_x().cross(normal).normalize() * radius,
-            false => Point::new_unit_y().cross(normal).normalize() * radius,
+            true => Point::unit_x().cross(normal).normalize() * radius,
+            false => Point::unit_y().cross(normal).normalize() * radius,
         };
         let normal = normal.normalize();
         assert!(

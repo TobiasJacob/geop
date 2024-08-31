@@ -27,10 +27,9 @@ mod tests {
             scene.edges.push((primitive_line(*p1, *p2), Color::white()));
         }
 
-        scene.edges.push((
-            primitive_arc(p4, p1, 1.6, -Point::new_unit_y()),
-            Color::white(),
-        ));
+        scene
+            .edges
+            .push((primitive_arc(p4, p1, 1.6, -Point::unit_y()), Color::white()));
 
         renderer
             .await
