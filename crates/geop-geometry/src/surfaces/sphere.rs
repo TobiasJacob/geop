@@ -163,6 +163,16 @@ impl Sphere {
         }
         self.basis + diff * self.radius / dist
     }
+
+    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+        let diff = point - self.basis;
+        let diff_norm = diff.norm();
+        if diff_norm < EQ_THRESHOLD {
+            return None;
+        }
+        let dist = diff.norm() - self.radius;
+        Some(-(diff / diff_norm) * dist)
+    }
 }
 
 impl PartialEq for Sphere {

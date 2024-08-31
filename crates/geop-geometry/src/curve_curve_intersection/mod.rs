@@ -1,9 +1,4 @@
-use crate::{
-    bounding_box::BoundingBox,
-    curves::{curve::Curve, CurveLike},
-    points::point::Point,
-    EQ_THRESHOLD,
-};
+use crate::{bounding_box::BoundingBox, curves::CurveLike, points::point::Point, EQ_THRESHOLD};
 
 // Alphabetical order
 pub mod circle_circle;

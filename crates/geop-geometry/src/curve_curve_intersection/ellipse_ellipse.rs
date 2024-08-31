@@ -1,7 +1,4 @@
-use crate::{
-    curves::{curve::Curve, ellipse::Ellipse},
-    points::point::Point,
-};
+use crate::{curves::ellipse::Ellipse, points::point::Point};
 
 use super::curve_curve_intersection_numerical;
 

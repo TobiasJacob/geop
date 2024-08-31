@@ -102,6 +102,12 @@ impl Plane {
         let distance = (point - self.basis).dot(normal);
         point - distance * normal
     }
+
+    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Point {
+        let normal = self.normal();
+        let distance = (point - self.basis).dot(normal);
+        -normal * distance
+    }
 }
 
 impl PartialEq for Plane {

@@ -127,4 +127,23 @@ impl Surface {
             Surface::Cylinder(cylinder) => cylinder.project(point),
         }
     }
+    // Returns the signed distance field of the surface.
+    pub fn signed_distance_function(&self, point: Point) -> f64 {
+        todo!("Signed distance function")
+    }
+    pub fn signed_distance_function_gradient(&self, point: Point) -> Point {
+        todo!("Signed distance function gradient")
+    }
+
+    pub fn unsigned_l2_squared_distance(&self, point: Point) -> f64 {
+        todo!("Unsigned L2 squared distance")
+    }
+
+    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+        match self {
+            Surface::Plane(plane) => Some(plane.unsigned_l2_squared_distance_gradient(point)),
+            Surface::Sphere(sphere) => sphere.unsigned_l2_squared_distance_gradient(point),
+            Surface::Cylinder(cylinder) => cylinder.unsigned_l2_squared_distance_gradient(point),
+        }
+    }
 }

@@ -185,6 +185,18 @@ impl Cylinder {
         let point = point - height_diff;
         point.normalize() * self.radius.norm() + height_diff + self.basis
     }
+
+    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+        let point = point - self.basis;
+        let point = point - point.dot(self.extend_dir) * self.extend_dir;
+        let dist = point.norm();
+        if dist < EQ_THRESHOLD {
+            return None;
+        }
+        let normal = point / dist;
+        let grad = -normal * dist;
+        Some(grad)
+    }
 }
 
 impl PartialEq for Cylinder {
