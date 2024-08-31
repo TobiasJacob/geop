@@ -2,7 +2,10 @@
 mod tests {
     use std::borrow::Borrow;
 
-    use geop_geometry::{points::point::Point, surfaces::surface::Surface};
+    use geop_geometry::{
+        points::point::Point,
+        surfaces::{surface::Surface, SurfaceLike},
+    };
     use geop_topology::{
         primitive_objects::faces::{cylinder::primitive_cylinder, sphere::primitive_sphere},
         topology::{

@@ -1,8 +1,10 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curve_surface_intersection::curve_surface::curve_surface_intersection, points::point::Point,
-    surfaces::surface::Surface, transforms::Transform,
+    curve_surface_intersection::curve_surface::curve_surface_intersection,
+    points::point::Point,
+    surfaces::{surface::Surface, SurfaceLike},
+    transforms::Transform,
 };
 
 use crate::contains::{

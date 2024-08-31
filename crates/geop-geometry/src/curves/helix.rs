@@ -180,14 +180,14 @@ impl CurveLike for Helix {
         }
     }
 
-    fn project(&self, p: Point) -> Point {
+    fn project(&self, _p: Point) -> Point {
         todo!("Implement this")
     }
 
     fn get_bounding_box(
         &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
+        _interval_self: Option<Point>,
+        _midpoint_self: Option<Point>,
     ) -> crate::bounding_box::BoundingBox {
         todo!("Implement this")
     }

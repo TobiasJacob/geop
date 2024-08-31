@@ -1,6 +1,10 @@
 use std::collections::VecDeque;
 
-use geop_geometry::{points::point::Point, surfaces::surface::Surface, EQ_THRESHOLD};
+use geop_geometry::{
+    points::point::Point,
+    surfaces::{surface::Surface, SurfaceLike},
+    EQ_THRESHOLD,
+};
 use geop_topology::{
     contains::face_point::{face_point_contains, FacePointContains},
     topology::{face::Face, scene::Color},

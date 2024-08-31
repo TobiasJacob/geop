@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{points::point::Point, surfaces::surface::Surface};
+    use geop_geometry::{
+        points::point::Point,
+        surfaces::{surface::Surface, SurfaceLike},
+    };
     use geop_topology::{
         contains::face_point::{face_point_contains, FacePointContains},
         primitive_objects::{
@@ -71,7 +74,7 @@ mod tests {
             scene.edges.push((e, Color::white()));
         }
 
-        for p in plane.point_grid(30.0, 3.0) {
+        for p in plane.point_grid_dense(30.0, 3.0) {
             match face_point_contains(&face, p) {
                 FacePointContains::Inside => scene.points.push((p, Color::green())),
                 FacePointContains::OnEdge(_) => scene.points.push((p, Color::blue())),
@@ -115,7 +118,7 @@ mod tests {
             scene.edges.push((e, Color::white()));
         }
 
-        for p in plane.point_grid(30.0, 3.0) {
+        for p in plane.point_grid_dense(30.0, 3.0) {
             match face_point_contains(&face, p) {
                 FacePointContains::Inside => scene.points.push((p, Color::green())),
                 FacePointContains::OnEdge(_) => scene.points.push((p, Color::blue())),

@@ -2,10 +2,13 @@ use crate::{
     curves::{curve::Curve, helix::Helix, line::Line, CurveLike},
     points::point::Point,
     transforms::Transform,
-    EQ_THRESHOLD,
+    EQ_THRESHOLD, HORIZON_DIST,
 };
 
-use super::surface::TangentPoint;
+use super::{
+    surface::{Surface, TangentPoint},
+    SurfaceLike,
+};
 
 #[derive(Clone, Debug)]
 pub struct Cylinder {
@@ -33,8 +36,7 @@ impl Cylinder {
             dir_cross: extend_dir.normalize().cross(radius),
         }
     }
-
-    pub fn transform(&self, transform: Transform) -> Self {
+    fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let normal = transform * (self.extend_dir + self.basis) - basis;
         let radius = transform * (self.radius + self.basis) - basis;
@@ -46,7 +48,22 @@ impl Cylinder {
         )
     }
 
-    pub fn normal(&self, p: Point) -> Point {
+    fn neg(&self) -> Self {
+        Cylinder::new(
+            self.basis,
+            self.extend_dir,
+            self.radius.norm(),
+            !self.normal_outwards,
+        )
+    }
+}
+
+impl SurfaceLike for Cylinder {
+    fn transform(&self, transform: Transform) -> Surface {
+        Surface::Cylinder(self.transform(transform))
+    }
+
+    fn normal(&self, p: Point) -> Point {
         let p = p - self.basis;
         let p = p - p.dot(self.extend_dir) * self.extend_dir;
         let normal = p.normalize();
@@ -57,16 +74,11 @@ impl Cylinder {
         }
     }
 
-    pub fn neg(&self) -> Self {
-        Cylinder::new(
-            self.basis,
-            self.extend_dir,
-            self.radius.norm(),
-            !self.normal_outwards,
-        )
+    fn neg(&self) -> Surface {
+        Surface::Cylinder(self.neg())
     }
 
-    pub fn on_surface(&self, p: Point) -> bool {
+    fn on_surface(&self, p: Point) -> bool {
         let p_project = p - self.basis;
         let height_project = p_project.dot(self.extend_dir) * self.extend_dir;
         let radius_project = p_project - height_project;
@@ -74,11 +86,11 @@ impl Cylinder {
         (dist - self.radius.norm_sq()).abs() < EQ_THRESHOLD
     }
 
-    pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         u.dot(v)
     }
 
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let x = x - self.basis;
@@ -91,7 +103,7 @@ impl Cylinder {
         return (cylinder_dit * cylinder_dit + height_diff * height_diff).sqrt();
     }
 
-    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
+    fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
         let x = x - self.basis;
         let height_diff = u.dot(self.extend_dir);
@@ -107,7 +119,7 @@ impl Cylinder {
             + u_normalized * self.radius.norm() * u_norm.sin()
     }
 
-    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
+    fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let x = x - self.basis;
@@ -131,7 +143,7 @@ impl Cylinder {
         Some(height_diff * self.extend_dir + dir / dir.norm() * angle)
     }
 
-    pub fn parallel_transport(
+    fn parallel_transport(
         &self,
         _v: Option<TangentPoint>,
         _x: Point,
@@ -140,7 +152,7 @@ impl Cylinder {
         todo!()
     }
 
-    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+    fn geodesic(&self, p: Point, q: Point) -> Curve {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
         assert!(p != q);
@@ -161,7 +173,7 @@ impl Cylinder {
         helix
     }
 
-    pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
+    fn point_grid(&self, density: f64) -> Vec<Point> {
         let n = (16.0 * density) as usize;
         let m = (16.0 * density) as usize;
         let mut points = Vec::with_capacity(n * m);
@@ -170,7 +182,7 @@ impl Cylinder {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
                 let v = j as f64 / (m as f64 - 1.0);
                 let point = self.basis
-                    + (v - 0.5) * horizon_dist * self.extend_dir
+                    + (v - 0.5) * HORIZON_DIST * self.extend_dir
                     + theta.cos() * self.radius
                     + theta.sin() * self.dir_cross;
                 points.push(point);
@@ -179,14 +191,14 @@ impl Cylinder {
         points
     }
 
-    pub fn project(&self, point: Point) -> Point {
+    fn project(&self, point: Point) -> Point {
         let point = point - self.basis;
         let height_diff = point.dot(self.extend_dir) * self.extend_dir;
         let point = point - height_diff;
         point.normalize() * self.radius.norm() + height_diff + self.basis
     }
 
-    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+    fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
         let point = point - self.basis;
         let point = point - point.dot(self.extend_dir) * self.extend_dir;
         let dist = point.norm();

@@ -1,17 +1,8 @@
-use crate::{curves::curve::Curve, points::point::Point, transforms::Transform, HORIZON_DIST};
+use crate::{curves::curve::Curve, points::point::Point, transforms::Transform};
 
-use super::{
-    cylinder::Cylinder,
-    plane::Plane,
-    sphere::{Sphere, SphereTransform},
-};
+use super::{cylinder::Cylinder, plane::Plane, sphere::Sphere, SurfaceLike};
 
 pub type TangentPoint = Point;
-
-pub trait SurfaceLike {
-    // // Angle between a and b at x.
-    // fn angle(&self, x: Point, a: Point, b: Point) -> f64;
-}
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum Surface {
@@ -19,38 +10,36 @@ pub enum Surface {
     Sphere(Sphere),
     Cylinder(Cylinder),
 }
-impl Surface {
+
+impl SurfaceLike for Surface {
     // Transforms the surface by the given transform.
-    pub fn transform(&self, transform: Transform) -> Surface {
+    fn transform(&self, transform: Transform) -> Surface {
         match self {
-            Surface::Plane(plane) => Surface::Plane(plane.transform(transform)),
-            Surface::Sphere(sphere) => Surface::Sphere(match sphere.transform(transform) {
-                SphereTransform::Ellipsoid() => todo!("Ellipsoid not implemented"),
-                SphereTransform::Sphere(sphere) => sphere,
-            }),
-            Surface::Cylinder(cylinder) => Surface::Cylinder(cylinder.transform(transform)),
+            Surface::Plane(plane) => plane.transform(transform),
+            Surface::Sphere(sphere) => sphere.transform(transform),
+            Surface::Cylinder(cylinder) => cylinder.transform(transform),
         }
     }
 
     // Change normal direction of the surface.
-    pub fn neg(&self) -> Surface {
+    fn neg(&self) -> Surface {
         match self {
-            Surface::Plane(plane) => Surface::Plane(plane.neg()),
-            Surface::Sphere(sphere) => Surface::Sphere(sphere.neg()),
-            Surface::Cylinder(cylinder) => Surface::Cylinder(cylinder.neg()),
+            Surface::Plane(plane) => plane.neg(),
+            Surface::Sphere(sphere) => sphere.neg(),
+            Surface::Cylinder(cylinder) => cylinder.neg(),
         }
     }
 
     // Returns the normal of the surface at point p.
-    pub fn normal(&self, p: Point) -> Point {
+    fn normal(&self, p: Point) -> Point {
         match self {
-            Surface::Plane(plane) => plane.normal(),
+            Surface::Plane(plane) => plane.normal(p),
             Surface::Sphere(sphere) => sphere.normal(p),
             Surface::Cylinder(cylinder) => cylinder.normal(p),
         }
     }
     // Checks if the point p is on the surface.
-    pub fn on_surface(&self, p: Point) -> bool {
+    fn on_surface(&self, p: Point) -> bool {
         match self {
             Surface::Plane(plane) => plane.on_surface(p),
             Surface::Sphere(sphere) => sphere.on_surface(p),
@@ -59,7 +48,7 @@ impl Surface {
     }
 
     // Returns the Riemannian metric between u and v
-    pub fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         match self {
             Surface::Plane(plane) => plane.metric(x, u, v),
             Surface::Sphere(sphere) => sphere.metric(x, u, v),
@@ -67,7 +56,7 @@ impl Surface {
         }
     }
     // Returns the Riemannian distance between x and y.
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         match self {
             Surface::Plane(plane) => plane.distance(x, y),
             Surface::Sphere(sphere) => sphere.distance(x, y),
@@ -75,7 +64,7 @@ impl Surface {
         }
     }
     // Exponential of u at base x. u_z is ignored.
-    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
+    fn exp(&self, x: Point, u: TangentPoint) -> Point {
         match self {
             Surface::Plane(plane) => plane.exp(x, u),
             Surface::Sphere(sphere) => sphere.exp(x, u),
@@ -83,7 +72,7 @@ impl Surface {
         }
     }
     // Log of y at base x. Z coordinate is set to 0.
-    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
+    fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         match self {
             Surface::Plane(plane) => plane.log(x, y),
             Surface::Sphere(sphere) => sphere.log(x, y),
@@ -91,7 +80,7 @@ impl Surface {
         }
     }
     // Parallel transport of v from x to y.
-    pub fn parallel_transport(
+    fn parallel_transport(
         &self,
         v: Option<TangentPoint>,
         x: Point,
@@ -104,7 +93,7 @@ impl Surface {
         }
     }
     // Returns the geodesic between p and q.
-    pub fn geodesic(&self, x: Point, y: Point) -> Curve {
+    fn geodesic(&self, x: Point, y: Point) -> Curve {
         match self {
             Surface::Plane(plane) => plane.geodesic(x, y),
             Surface::Sphere(sphere) => sphere.geodesic(x, y),
@@ -112,36 +101,26 @@ impl Surface {
         }
     }
     // Returns a point grid on the surface, which can be used for visualization.
-    pub fn point_grid(&self, density: f64) -> Vec<Point> {
+    fn point_grid(&self, density: f64) -> Vec<Point> {
         match self {
-            Surface::Plane(plane) => plane.point_grid(density, HORIZON_DIST),
+            Surface::Plane(plane) => plane.point_grid(density),
             Surface::Sphere(sphere) => sphere.point_grid(density),
-            Surface::Cylinder(cylinder) => cylinder.point_grid(density, HORIZON_DIST),
+            Surface::Cylinder(cylinder) => cylinder.point_grid(density),
         }
     }
     // Finds the closest point on the surface to the given point.
-    pub fn project(&self, point: Point) -> Point {
+    fn project(&self, point: Point) -> Point {
         match self {
             Surface::Plane(plane) => plane.project(point),
             Surface::Sphere(sphere) => sphere.project(point),
             Surface::Cylinder(cylinder) => cylinder.project(point),
         }
     }
-    // Returns the signed distance field of the surface.
-    pub fn signed_distance_function(&self, point: Point) -> f64 {
-        todo!("Signed distance function")
-    }
-    pub fn signed_distance_function_gradient(&self, point: Point) -> Point {
-        todo!("Signed distance function gradient")
-    }
 
-    pub fn unsigned_l2_squared_distance(&self, point: Point) -> f64 {
-        todo!("Unsigned L2 squared distance")
-    }
-
-    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+    // Returns a gradient that leads to the surface.
+    fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
         match self {
-            Surface::Plane(plane) => Some(plane.unsigned_l2_squared_distance_gradient(point)),
+            Surface::Plane(plane) => plane.unsigned_l2_squared_distance_gradient(point),
             Surface::Sphere(sphere) => sphere.unsigned_l2_squared_distance_gradient(point),
             Surface::Cylinder(cylinder) => cylinder.unsigned_l2_squared_distance_gradient(point),
         }

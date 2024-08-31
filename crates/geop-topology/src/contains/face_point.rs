@@ -1,6 +1,7 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     points::point::Point,
+    surfaces::SurfaceLike,
 };
 
 use crate::topology::{edge::Edge, face::Face};

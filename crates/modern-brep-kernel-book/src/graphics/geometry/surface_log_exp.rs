@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{points::point::Point, EQ_THRESHOLD};
+    use geop_geometry::{points::point::Point, surfaces::SurfaceLike, EQ_THRESHOLD};
     use geop_topology::{
         primitive_objects::{
             edges::line::primitive_line,

@@ -1,4 +1,8 @@
-use crate::{curves::line::Line, points::point::Point, surfaces::plane::Plane};
+use crate::{
+    curves::line::Line,
+    points::point::Point,
+    surfaces::{plane::Plane, SurfaceLike},
+};
 
 pub enum LinePlaneIntersection {
     Line(Line),
@@ -7,7 +11,7 @@ pub enum LinePlaneIntersection {
 }
 
 pub fn line_plane_intersection(a: &Line, b: &Plane) -> LinePlaneIntersection {
-    let n = b.normal();
+    let n = b.normal(b.basis);
     let p = b.basis;
     let v = a.direction;
     let a = a.basis;

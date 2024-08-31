@@ -198,8 +198,8 @@ impl CurveLike for Circle {
 
     fn get_bounding_box(
         &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
+        _interval_self: Option<Point>,
+        _midpoint_self: Option<Point>,
     ) -> crate::bounding_box::BoundingBox {
         todo!("Implement this")
     }

@@ -1,9 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{
-        curves::{curve::Curve, CurveLike},
-        points::point::Point,
-    };
+    use geop_geometry::points::point::Point;
     use geop_topology::{
         primitive_objects::edges::{
             circle::primitive_circle, ellipse::primitive_ellipse, helix::primitive_helix,
@@ -76,12 +73,7 @@ mod tests {
 
     #[rstest]
     async fn test_helix(#[future] renderer: Box<HeadlessRenderer>) {
-        let helix = primitive_helix(
-            Point::zero(),
-            Point::unit_z(),
-            Point::unit_x(),
-            true,
-        );
+        let helix = primitive_helix(Point::zero(), Point::unit_z(), Point::unit_x(), true);
         let scene = Scene::new(
             vec![],
             vec![],

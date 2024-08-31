@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curves::{circle::Circle, curve::Curve, line::Line, CurveLike},
+    curves::{curve::Curve, line::Line, CurveLike},
     points::point::Point,
     surfaces::{cylinder::Cylinder, plane::Plane, surface::Surface},
     transforms::Transform,

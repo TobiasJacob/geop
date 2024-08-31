@@ -5,7 +5,10 @@ use crate::{
     EQ_THRESHOLD,
 };
 
-use super::surface::TangentPoint;
+use super::{
+    surface::{Surface, TangentPoint},
+    SurfaceLike,
+};
 
 #[derive(Clone, Debug)]
 pub struct Sphere {
@@ -28,13 +31,13 @@ impl Sphere {
         }
     }
 
-    pub fn transform(&self, transform: Transform) -> SphereTransform {
+    fn transform(&self, transform: Transform) -> SphereTransform {
         let basis = transform * self.basis;
         let radius = self.radius * transform.uniform_scale_factor();
         SphereTransform::Sphere(Sphere::new(basis, radius, self.normal_outwards))
     }
 
-    pub fn normal(&self, p: Point) -> Point {
+    fn normal(&self, p: Point) -> Point {
         assert!(self.on_surface(p));
         if self.normal_outwards {
             (p - self.basis).normalize()
@@ -43,28 +46,45 @@ impl Sphere {
         }
     }
 
-    pub fn neg(&self) -> Sphere {
+    fn neg(&self) -> Sphere {
         Sphere::new(self.basis, self.radius, !self.normal_outwards)
     }
+}
 
-    pub fn on_surface(&self, p: Point) -> bool {
+impl SurfaceLike for Sphere {
+    fn transform(&self, transform: Transform) -> Surface {
+        match self.transform(transform) {
+            SphereTransform::Sphere(sphere) => Surface::Sphere(sphere),
+            SphereTransform::Ellipsoid() => todo!("Implement this"),
+        }
+    }
+
+    fn normal(&self, p: Point) -> Point {
+        self.normal(p)
+    }
+
+    fn neg(&self) -> Surface {
+        Surface::Sphere(self.neg())
+    }
+
+    fn on_surface(&self, p: Point) -> bool {
         let diff = p - self.basis;
         let dist = diff.norm_sq();
         (dist - self.radius * self.radius).abs() < EQ_THRESHOLD
     }
 
-    pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
         u.dot(v)
     }
 
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let angle = (x - self.basis).angle(y - self.basis);
         self.radius * angle
     }
 
-    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
+    fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
 
         if u.norm() < EQ_THRESHOLD {
@@ -75,7 +95,7 @@ impl Sphere {
         x * u_norm.cos() + u_normalized * u_norm.sin() * self.radius + self.basis
     }
 
-    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
+    fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
 
@@ -93,7 +113,7 @@ impl Sphere {
         Some(self.distance(x, y) * dir / dir_norm)
     }
 
-    pub fn parallel_transport(
+    fn parallel_transport(
         &self,
         v: Option<TangentPoint>,
         x: Point,
@@ -129,7 +149,7 @@ impl Sphere {
         }
     }
 
-    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
+    fn geodesic(&self, p: Point, q: Point) -> Curve {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
         assert!(p != q);
@@ -138,7 +158,7 @@ impl Sphere {
         Curve::Circle(circle)
     }
 
-    pub fn point_grid(&self, density: f64) -> Vec<Point> {
+    fn point_grid(&self, density: f64) -> Vec<Point> {
         let n = (16.0 * density) as usize;
         let m = (16.0 * density) as usize;
         let mut points = Vec::with_capacity(n * m);
@@ -155,7 +175,7 @@ impl Sphere {
         points
     }
 
-    pub fn project(&self, point: Point) -> Point {
+    fn project(&self, point: Point) -> Point {
         let diff = point - self.basis;
         let dist = diff.norm();
         if dist < EQ_THRESHOLD {
@@ -164,7 +184,7 @@ impl Sphere {
         self.basis + diff * self.radius / dist
     }
 
-    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
+    fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
         let diff = point - self.basis;
         let diff_norm = diff.norm();
         if diff_norm < EQ_THRESHOLD {

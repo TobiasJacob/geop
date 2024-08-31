@@ -2,10 +2,13 @@ use crate::{
     curves::{curve::Curve, line::Line},
     points::point::Point,
     transforms::Transform,
-    EQ_THRESHOLD,
+    EQ_THRESHOLD, HORIZON_DIST,
 };
 
-use super::surface::TangentPoint;
+use super::{
+    surface::{Surface, TangentPoint},
+    SurfaceLike,
+};
 
 #[derive(Clone, Debug)]
 pub struct Plane {
@@ -24,64 +27,22 @@ impl Plane {
         }
     }
 
-    pub fn transform(&self, transform: Transform) -> Self {
+    fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let u_slope = transform * (self.u_slope + self.basis) - basis;
         let v_slope = transform * (self.v_slope + self.basis) - basis;
         Plane::new(basis, u_slope.normalize(), v_slope.normalize())
     }
 
-    pub fn normal(&self) -> Point {
+    fn normal(&self) -> Point {
         self.u_slope.cross(self.v_slope)
     }
 
-    pub fn neg(&self) -> Self {
+    fn neg(&self) -> Self {
         Plane::new(self.basis, self.u_slope, -self.v_slope)
     }
 
-    pub fn on_surface(&self, p: Point) -> bool {
-        let normal = self.normal();
-        let p_project = p.dot(normal);
-        let b_project = self.basis.dot(normal);
-        (p_project - b_project).abs() < EQ_THRESHOLD
-    }
-
-    pub fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
-        u.dot(v)
-    }
-
-    pub fn distance(&self, x: Point, y: Point) -> f64 {
-        (x - y).norm()
-    }
-
-    pub fn exp(&self, x: Point, u: TangentPoint) -> Point {
-        assert!(self.on_surface(x));
-        x + u
-    }
-
-    pub fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
-        assert!(self.on_surface(x));
-        assert!(self.on_surface(y));
-        Some(y - x)
-    }
-
-    pub fn parallel_transport(
-        &self,
-        v: Option<TangentPoint>,
-        x: Point,
-        y: Point,
-    ) -> Option<TangentPoint> {
-        assert!(self.on_surface(x));
-        assert!(self.on_surface(y));
-        v
-    }
-
-    pub fn geodesic(&self, p: Point, q: Point) -> Curve {
-        assert!(p != q);
-        Curve::Line(Line::new(p, q - p))
-    }
-
-    pub fn point_grid(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
+    pub fn point_grid_dense(&self, density: f64, horizon_dist: f64) -> Vec<Point> {
         let n = (density + 1.1) as usize;
         let mut points = Vec::new();
         for i in 0..n {
@@ -96,17 +57,78 @@ impl Plane {
         }
         points
     }
+}
 
-    pub fn project(&self, point: Point) -> Point {
+impl SurfaceLike for Plane {
+    fn transform(&self, transform: Transform) -> Surface {
+        Surface::Plane(self.transform(transform))
+    }
+
+    fn normal(&self, p: Point) -> Point {
+        assert!(self.on_surface(p));
+        self.normal()
+    }
+
+    fn neg(&self) -> Surface {
+        Surface::Plane(self.neg())
+    }
+
+    fn on_surface(&self, p: Point) -> bool {
+        let normal = self.normal();
+        let p_project = p.dot(normal);
+        let b_project = self.basis.dot(normal);
+        (p_project - b_project).abs() < EQ_THRESHOLD
+    }
+
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+        u.dot(v)
+    }
+
+    fn distance(&self, x: Point, y: Point) -> f64 {
+        (x - y).norm()
+    }
+
+    fn exp(&self, x: Point, u: TangentPoint) -> Point {
+        assert!(self.on_surface(x));
+        x + u
+    }
+
+    fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
+        assert!(self.on_surface(x));
+        assert!(self.on_surface(y));
+        Some(y - x)
+    }
+
+    fn parallel_transport(
+        &self,
+        v: Option<TangentPoint>,
+        x: Point,
+        y: Point,
+    ) -> Option<TangentPoint> {
+        assert!(self.on_surface(x));
+        assert!(self.on_surface(y));
+        v
+    }
+
+    fn geodesic(&self, p: Point, q: Point) -> Curve {
+        assert!(p != q);
+        Curve::Line(Line::new(p, q - p))
+    }
+
+    fn point_grid(&self, density: f64) -> Vec<Point> {
+        self.point_grid_dense(density, HORIZON_DIST)
+    }
+
+    fn project(&self, point: Point) -> Point {
         let normal = self.normal();
         let distance = (point - self.basis).dot(normal);
         point - distance * normal
     }
 
-    pub fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Point {
+    fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
         let normal = self.normal();
         let distance = (point - self.basis).dot(normal);
-        -normal * distance
+        Some(-normal * distance)
     }
 }
 

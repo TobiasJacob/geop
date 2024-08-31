@@ -52,7 +52,7 @@ mod tests {
     #[rstest]
     async fn test_primitive_cylinder(#[future] renderer: Box<HeadlessRenderer>) {
         let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
-        let mut scene = Scene::new(
+        let scene = Scene::new(
             vec![],
             vec![(face.clone(), Color::light_gray())],
             vec![],
