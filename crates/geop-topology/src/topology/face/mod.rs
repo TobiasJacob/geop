@@ -150,7 +150,7 @@ impl Face {
                 Some(boundary) => Some(boundary.flip()),
                 None => None,
             },
-            holes: self.holes.iter().rev().map(|l| l.flip()).collect(),
+            holes: self.holes.iter().map(|l| l.flip()).collect(),
             surface: Rc::new(self.surface.neg()),
         }
     }

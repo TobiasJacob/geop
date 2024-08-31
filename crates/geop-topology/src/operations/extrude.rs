@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curves::{curve::Curve, line::Line},
+    curves::{circle::Circle, curve::Curve, line::Line, CurveLike},
     points::point::Point,
-    surfaces::{plane::Plane, surface::Surface},
+    surfaces::{cylinder::Cylinder, plane::Plane, surface::Surface},
     transforms::Transform,
 };
 
@@ -16,12 +16,21 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
 
     let mut faces = Vec::<Face>::new();
     let all_edges = &start_face.all_edges();
+    let end_edges = &end_face.all_edges();
     let n = all_edges.len();
     for i in 0..n {
         match &all_edges[i].curve {
             Curve::Line(line) => {
                 let top = all_edges[i].flip();
-                let bottom = end_face.all_edges()[n - i - 1].flip();
+                let bottom = end_edges
+                    .iter()
+                    .find(|e| {
+                        **e == all_edges[i]
+                            .transform(Transform::from_translation(direction))
+                            .flip()
+                    })
+                    .unwrap()
+                    .flip();
 
                 let right = match (bottom.end, top.start) {
                     (Some(start), Some(end)) => Some(Edge::new(
@@ -51,9 +60,58 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                 let face = Face::new(Some(contour), vec![], Rc::new(plane));
                 faces.push(face);
             }
-            Curve::Circle(_) => panic!("Cannot extrude circular edges"),
+            Curve::Circle(circle) => {
+                let top = all_edges[i].flip();
+                let bottom = end_edges
+                    .iter()
+                    .find(|e| {
+                        **e == all_edges[i]
+                            .transform(Transform::from_translation(direction))
+                            .flip()
+                    })
+                    .unwrap()
+                    .flip();
+
+                let right = match (bottom.end, top.start) {
+                    (Some(start), Some(end)) => Some(Edge::new(
+                        Some(start),
+                        Some(end),
+                        Curve::Line(Line::new(start, end - start)),
+                    )),
+                    _ => None,
+                };
+                let left = match (top.end, bottom.start) {
+                    (Some(start), Some(end)) => Some(Edge::new(
+                        Some(start),
+                        Some(end),
+                        Curve::Line(Line::new(start, end - start)),
+                    )),
+                    _ => None,
+                };
+
+                let midpoint = circle.get_midpoint(top.start, top.end);
+                let inwards_direction = direction.cross(circle.tangent(midpoint));
+                let normal_outwards = inwards_direction.dot(midpoint - circle.basis) > 0.0;
+
+                let cylinder = Surface::Cylinder(Cylinder::new(
+                    circle.basis,
+                    circle.normal,
+                    circle.radius.norm(),
+                    normal_outwards,
+                ));
+
+                let contour = Contour::new(
+                    vec![right, Some(top), left, Some(bottom)]
+                        .drain(..)
+                        .filter_map(|f| f)
+                        .collect(),
+                );
+
+                let face = Face::new(Some(contour), vec![], Rc::new(cylinder));
+                faces.push(face);
+            }
             Curve::Ellipse(_) => todo!("Implement this"),
-            Curve::Helix(_) => todo!("Implement this"),
+            Curve::Helix(_) => panic!("Cannot extrude helix"),
         }
     }
     faces.push(start_face);
