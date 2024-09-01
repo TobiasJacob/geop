@@ -49,7 +49,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
             CurveSurfaceIntersection::Curve(_) => {
                 for edge in face.all_edges() {
                     match curve_curve_intersection(&geodesic.curve, &edge.curve) {
-                        CurveCurveIntersection::Points(points) => {
+                        CurveCurveIntersection::FinitePoints(points) => {
                             for point in points {
                                 if edge_point_contains(&geodesic, point)
                                     != EdgePointContains::Outside
@@ -58,6 +58,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
                                 }
                             }
                         }
+                        CurveCurveIntersection::InfiniteDiscretePoints(_) => todo!(),
                         CurveCurveIntersection::Curve(_) => {
                             if let Some(start) = edge.start {
                                 if edge_point_contains(&geodesic, start)

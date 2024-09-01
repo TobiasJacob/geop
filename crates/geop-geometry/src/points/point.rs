@@ -70,6 +70,16 @@ impl Point {
         dot_norm.acos()
     }
 
+    // Oriented angle between two vectors around a normal vector. Measured from self to other.
+    pub fn angle2(&self, other: Point, normal: Point) -> f64 {
+        let cross = self.cross(other);
+        let angle = self.angle(other);
+        if cross.dot(normal) < 0.0 {
+            return -angle;
+        }
+        angle
+    }
+
     pub fn zero() -> Point {
         Point::new(0.0, 0.0, 0.0)
     }

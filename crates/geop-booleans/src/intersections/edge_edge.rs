@@ -45,7 +45,7 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
 
             EdgeEdgeIntersection::Edges(edge_remesh(&edge_self.curve, intervals))
         }
-        CurveCurveIntersection::Points(mut points) => {
+        CurveCurveIntersection::FinitePoints(mut points) => {
             let intersections = points
                 .drain(..)
                 .filter(|p| {
@@ -54,6 +54,53 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
                 })
                 .collect();
             EdgeEdgeIntersection::Points(intersections)
+        }
+        CurveCurveIntersection::InfiniteDiscretePoints(point_array) => {
+            let mut min_i = None;
+            let mut max_i = None;
+            if let Some(self_start) = edge_self.start {
+                let i = (self_start - point_array.basis).dot(point_array.extend_dir);
+                min_i = Some(i);
+                max_i = Some(i);
+            }
+            if let Some(self_end) = edge_self.end {
+                let i = (self_end - point_array.basis).dot(point_array.extend_dir);
+                if min_i.is_none() || i < min_i.unwrap() {
+                    min_i = Some(i);
+                }
+                if max_i.is_none() || i > max_i.unwrap() {
+                    max_i = Some(i);
+                }
+            }
+            if let Some(other_start) = edge_other.start {
+                let i = (other_start - point_array.basis).dot(point_array.extend_dir);
+                if min_i.is_none() || i < min_i.unwrap() {
+                    min_i = Some(i);
+                }
+                if max_i.is_none() || i > max_i.unwrap() {
+                    max_i = Some(i);
+                }
+            }
+            if let Some(other_end) = edge_other.end {
+                let i = (other_end - point_array.basis).dot(point_array.extend_dir);
+                if min_i.is_none() || i < min_i.unwrap() {
+                    min_i = Some(i);
+                }
+                if max_i.is_none() || i > max_i.unwrap() {
+                    max_i = Some(i);
+                }
+            }
+
+            match (min_i, max_i) {
+                (Some(min_i), Some(max_i)) => {
+                    let mut intersections = Vec::new();
+                    for i in (min_i.ceil() as usize)..(max_i.floor() as usize) {
+                        intersections.push(point_array.basis + i as f64 * point_array.extend_dir);
+                    }
+                    EdgeEdgeIntersection::Points(intersections)
+                }
+                _ => todo!("This case should not happen with the current features, but it could happen if geop is extended to support more complex curves"),
+            }
         }
         CurveCurveIntersection::None => EdgeEdgeIntersection::None,
     }

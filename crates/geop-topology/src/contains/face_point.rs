@@ -1,5 +1,6 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
+    curves::curve::Curve,
     points::point::Point,
     surfaces::SurfaceLike,
 };
@@ -49,7 +50,7 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     let mut intersection_points = Vec::<Point>::new();
     for edge in face.all_edges() {
         match curve_curve_intersection(&edge.curve, &geodesic.curve) {
-            CurveCurveIntersection::Points(points) => {
+            CurveCurveIntersection::FinitePoints(points) => {
                 for p in points {
                     if edge_point_contains(&geodesic, p) != EdgePointContains::Outside {
                         if edge_point_contains(&edge, p) != EdgePointContains::Outside {
@@ -57,6 +58,21 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
                         }
                     }
                 }
+            }
+            CurveCurveIntersection::InfiniteDiscretePoints(point_array) => {
+                match geodesic.curve {
+                    Curve::Helix(_) => {}
+                    _ => {
+                        todo!("This case should only happen when the curve is a helix");
+                    }
+                }
+
+                let start_i = (point - point_array.basis).dot(point_array.extend_dir);
+                intersection_points.push(point_array.basis + start_i * point_array.extend_dir);
+                intersection_points
+                    .push(point_array.basis + (start_i + 1.0) * point_array.extend_dir);
+                intersection_points
+                    .push(point_array.basis + (start_i - 1.0) * point_array.extend_dir);
             }
             CurveCurveIntersection::Curve(_curve) => {
                 if let Some(start) = edge.start {

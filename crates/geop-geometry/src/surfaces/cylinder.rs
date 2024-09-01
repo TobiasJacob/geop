@@ -156,19 +156,26 @@ impl SurfaceLike for Cylinder {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
         assert!(p != q);
-        let p_height = p.dot(self.extend_dir);
-        let q_height = q.dot(self.extend_dir);
-        let angle = (p - self.extend_dir * p_height).angle(q - self.extend_dir * q_height);
+        let p_loc = p - self.basis;
+        let q_loc = q - self.basis;
+        let p_height = p_loc.dot(self.extend_dir);
+        let q_height = q_loc.dot(self.extend_dir);
+        let p_proj = p_loc - p_height * self.extend_dir;
+        let q_proj = q_loc - self.extend_dir * q_height;
+        let angle = p_proj.angle(q_proj);
         if angle < EQ_THRESHOLD {
             return Curve::Line(Line::new(p, q - p));
         }
         let helix_basis = self.basis + p_height * self.extend_dir;
-        let helix_radius = p - helix_basis;
+        let helix_radius = p_proj;
         let helix_pitch =
             self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle;
         let helix = Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, true));
+        assert!(helix.on_curve(p));
         if !helix.on_curve(q) {
-            return Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, false));
+            let helix = Helix::new(helix_basis, helix_pitch, helix_radius, false);
+            assert!(helix.on_curve(q));
+            return Curve::Helix(helix);
         }
         helix
     }

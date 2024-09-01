@@ -1,7 +1,9 @@
 use crate::{curves::curve::Curve, points::point::Point, surfaces::surface::Surface};
 
 use super::{
+    circle_cylinder::{circle_cylinder_intersection, CircleCylinderIntersection},
     circle_plane::{circle_plane_intersection, CirclePlaneIntersection},
+    line_cylinder::{line_cylinder_intersection, CylinderLineIntersection},
     line_plane::{line_plane_intersection, LinePlaneIntersection},
 };
 
@@ -49,9 +51,18 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
             Surface::Sphere(_sphere) => {
                 todo!("Implement line-sphere intersection.");
             }
-            Surface::Cylinder(_cylinder) => {
-                todo!("Implement line-cylinder intersection.");
-            }
+            Surface::Cylinder(cylinder) => match line_cylinder_intersection(line, cylinder) {
+                CylinderLineIntersection::Line(line) => {
+                    CurveSurfaceIntersection::Curve(Curve::Line(line))
+                }
+                CylinderLineIntersection::TwoPoints(point1, point2) => {
+                    CurveSurfaceIntersection::Points(vec![point1, point2])
+                }
+                CylinderLineIntersection::Point(point) => {
+                    CurveSurfaceIntersection::Points(vec![point])
+                }
+                CylinderLineIntersection::None => CurveSurfaceIntersection::None,
+            },
         },
         Curve::Circle(circle) => match surface {
             Surface::Plane(plane) => match circle_plane_intersection(circle, plane) {
@@ -64,9 +75,18 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
             Surface::Sphere(_sphere) => {
                 todo!("Implement circle-sphere intersection.");
             }
-            Surface::Cylinder(_cylinder) => {
-                todo!("Implement circle-cylinder intersection.");
-            }
+            Surface::Cylinder(cylinder) => match circle_cylinder_intersection(circle, cylinder) {
+                CircleCylinderIntersection::Circle(circle) => {
+                    CurveSurfaceIntersection::Curve(Curve::Circle(circle))
+                }
+                CircleCylinderIntersection::TwoPoints(point1, point2) => {
+                    CurveSurfaceIntersection::Points(vec![point1, point2])
+                }
+                CircleCylinderIntersection::OnePoint(point) => {
+                    CurveSurfaceIntersection::Points(vec![point])
+                }
+                CircleCylinderIntersection::None => CurveSurfaceIntersection::None,
+            },
         },
         Curve::Ellipse(_) => todo!("Implement this"),
         Curve::Helix(_) => todo!("Implement this"),
