@@ -9,3 +9,5 @@ pub struct Shell {
 ```
 
 ![Shell](./generated_images/topology/shell1.png)
+
+![Shell2](./generated_images/topology/shell2.png)

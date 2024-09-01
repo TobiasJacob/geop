@@ -131,6 +131,8 @@ impl SurfaceLike for Cylinder {
         if angle < EQ_THRESHOLD {
             return Some(height_diff * self.extend_dir);
         }
+        let x = x.normalize();
+        let y = y.normalize();
 
         let dir = y - x.dot(y) * x;
         assert!(dir.dot(self.extend_dir).abs() < EQ_THRESHOLD);

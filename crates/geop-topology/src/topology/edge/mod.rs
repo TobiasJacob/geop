@@ -119,7 +119,11 @@ impl Display for Edge {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match &self.curve {
             Curve::Line(_line) => write!(f, "Line {:?} - {:?}", self.start, self.end),
-            Curve::Circle(_circle) => write!(f, "Circle {:?} - {:?}", self.start, self.end),
+            Curve::Circle(circle) => write!(
+                f,
+                "Circle (at {:?} with normal {:?} and radius {:?}) {:?} - {:?}",
+                circle.basis, circle.normal, circle.radius, self.start, self.end
+            ),
             Curve::Ellipse(_) => write!(f, "Ellipse {:?} - {:?}", self.start, self.end),
             Curve::Helix(_) => write!(f, "Helix {:?} - {:?}", self.start, self.end),
         }

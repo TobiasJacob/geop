@@ -1,17 +1,19 @@
 #[cfg(test)]
 mod tests {
 
+    use core::f64;
     use std::rc::Rc;
 
     use geop_geometry::{
         points::point::Point,
-        surfaces::{plane::Plane, surface::Surface},
+        surfaces::{cylinder, plane::Plane, surface::Surface},
+        transforms::Transform,
     };
     use geop_topology::{
         primitive_objects::{
             curves::rectangle::primitive_rectangle_curve,
             edges::{arc::primitive_arc, circle::primitive_circle, line::primitive_line},
-            faces::sphere::primitive_sphere,
+            faces::{cylinder::primitive_cylinder, sphere::primitive_sphere},
         },
         topology::{
             contour::Contour,
@@ -69,6 +71,54 @@ mod tests {
         scene.faces.push((sphere, Color::light_gray()));
         scene
     }
+
+    fn cylinder_scene1() -> Scene {
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+
+        cylinder.boundary = Some(Contour::new(vec![primitive_circle(
+            Point::new(0.0, 0.0, -2.0),
+            Point::unit_z(),
+            1.0,
+        )]));
+
+        cylinder.holes.push(Contour::new(vec![primitive_circle(
+            Point::new(0.0, 0.0, 2.0),
+            -Point::unit_z(),
+            1.0,
+        )]));
+
+        scene.faces.push((cylinder, Color::light_gray()));
+        scene
+    }
+
+    fn cylinder_scene2() -> Scene {
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+
+        cylinder = cylinder.flip();
+        cylinder.boundary = Some(Contour::new(vec![primitive_circle(
+            Point::new(0.0, 0.0, -2.0),
+            -Point::unit_z(),
+            1.0,
+        )]));
+
+        cylinder.holes.push(Contour::new(vec![primitive_circle(
+            Point::new(0.0, 0.0, 2.0),
+            Point::unit_z(),
+            1.0,
+        )]));
+        cylinder = cylinder.transform(
+            Transform::from_translation(Point::new(0.3, -0.45, 0.12))
+                * Transform::from_euler_angles(-90.0 / 180.0 * f64::consts::PI, 0.0, 0.0), // * Transform::from_scale(Point::new(0.7, 0.7, 0.7)),
+        );
+
+        // cylinder = cylinder.transform(Transform::from_scale(Point::new(0.7, 0.7, 0.7)));
+
+        scene.faces.push((cylinder, Color::light_gray()));
+        scene
+    }
+
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
 
@@ -130,6 +180,66 @@ mod tests {
                 true,
                 Point::new(4.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face2wire.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face3(#[future] renderer: Box<HeadlessRenderer>) {
+        let scene = cylinder_scene1();
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(3.0, -3.0, 3.0),
+                std::path::Path::new("src/generated_images/topology/face3.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face3wire(#[future] renderer: Box<HeadlessRenderer>) {
+        let scene = cylinder_scene1();
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                true,
+                Point::new(3.0, -3.0, 3.0),
+                std::path::Path::new("src/generated_images/topology/face3wire.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face4(#[future] renderer: Box<HeadlessRenderer>) {
+        let scene = cylinder_scene2();
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(3.0, -3.0, 3.0),
+                std::path::Path::new("src/generated_images/topology/face4.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face4wire(#[future] renderer: Box<HeadlessRenderer>) {
+        let scene = cylinder_scene2();
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                true,
+                Point::new(3.0, -3.0, 3.0),
+                std::path::Path::new("src/generated_images/topology/face4wire.png"),
             )
             .await;
     }

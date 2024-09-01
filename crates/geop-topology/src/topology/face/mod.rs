@@ -169,7 +169,12 @@ impl std::fmt::Display for Face {
                     p.basis,
                     p.u_slope.cross(p.v_slope)
                 )?;
-                writeln!(f, "Boundary: {:?}", self.boundary)?;
+                if let Some(boundary) = &self.boundary {
+                    writeln!(f, "Boundary:")?;
+                    for edge in boundary.edges.iter() {
+                        writeln!(f, "  {}", edge)?;
+                    }
+                }
                 for contour in self.holes.iter() {
                     writeln!(f, "Hole:")?;
                     for edge in contour.edges.iter() {
@@ -180,8 +185,20 @@ impl std::fmt::Display for Face {
             Surface::Sphere(_s) => {
                 writeln!(f, "sphere is still todo")?;
             }
-            Surface::Cylinder(_c) => {
-                writeln!(f, "cylinder is still todo")?;
+            Surface::Cylinder(c) => {
+                writeln!(f, "Cylinder at bases = {:?} with extend_dir = {:?}, radius = {:?} and normal direction = {:?}", c.basis, c.extend_dir, c.radius, c.normal_outwards)?;
+                if let Some(boundary) = &self.boundary {
+                    writeln!(f, "Boundary:")?;
+                    for edge in boundary.edges.iter() {
+                        writeln!(f, "  {}", edge)?;
+                    }
+                }
+                for contour in self.holes.iter() {
+                    writeln!(f, "Hole:")?;
+                    for edge in contour.edges.iter() {
+                        writeln!(f, "  {}", edge)?;
+                    }
+                }
             }
         };
         Ok(())

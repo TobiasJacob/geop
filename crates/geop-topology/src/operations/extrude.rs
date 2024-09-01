@@ -100,15 +100,25 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     normal_outwards,
                 ));
 
-                let contour = Contour::new(
-                    vec![right, Some(top), left, Some(bottom)]
-                        .drain(..)
-                        .filter_map(|f| f)
-                        .collect(),
-                );
+                match (left, right) {
+                    (Some(left), Some(right)) => {
+                        let contour = Contour::new(vec![right, top, left, bottom]);
 
-                let face = Face::new(Some(contour), vec![], Rc::new(cylinder));
-                faces.push(face);
+                        let face = Face::new(Some(contour), vec![], Rc::new(cylinder));
+                        faces.push(face);
+                    }
+                    (None, None) => {
+                        let contour = Contour::new(vec![top]);
+
+                        let face = Face::new(
+                            Some(contour),
+                            vec![Contour::new(vec![bottom])],
+                            Rc::new(cylinder),
+                        );
+                        faces.push(face);
+                    }
+                    _ => todo!("Not implemented"),
+                }
             }
             Curve::Ellipse(_) => todo!("Implement this"),
             Curve::Helix(_) => panic!("Cannot extrude helix"),

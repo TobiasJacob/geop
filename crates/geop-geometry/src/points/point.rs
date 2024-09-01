@@ -67,6 +67,9 @@ impl Point {
         if dot_norm > 1.0 - EQ_THRESHOLD {
             return 0.0;
         }
+        if dot_norm < -1.0 + EQ_THRESHOLD {
+            return std::f64::consts::PI;
+        }
         dot_norm.acos()
     }
 

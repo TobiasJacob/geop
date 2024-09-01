@@ -17,7 +17,7 @@ impl Helix {
     pub fn new(basis: Point, pitch: Point, radius: Point, right_winding: bool) -> Helix {
         assert!(
             pitch.dot(radius).abs() < EQ_THRESHOLD,
-            "Radius and normal must be orthogonal"
+            "Radius and pitch must be orthogonal"
         );
         Helix {
             basis,
@@ -32,10 +32,11 @@ impl Helix {
     }
 
     pub fn transform(&self, transform: Transform) -> Self {
+        let basis_old = self.basis;
         let basis = transform * self.basis;
-        let normal = transform * (self.pitch + self.basis) - basis;
-        let radius = transform * (self.radius + self.basis) - basis;
-        Helix::new(basis, normal.normalize(), radius, self.right_winding)
+        let pitch = transform * (self.pitch + basis_old) - basis;
+        let radius = transform * (self.radius + basis_old) - basis;
+        Helix::new(basis, pitch, radius, self.right_winding)
     }
 
     pub fn neg(&self) -> Helix {

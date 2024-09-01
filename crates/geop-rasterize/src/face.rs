@@ -313,6 +313,7 @@ pub fn check_triangle(
 
 pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleBuffer {
     println!("/////////////////////////////////////////////////////////");
+    println!("Rasterizing face {}", face);
     // Now we have to divide the face into triangles. First rasterize the boundaries. This will give us a set of open edges to work with
     let mut contours = Vec::<EdgeBuffer>::new();
     if let Some(boundary) = &face.boundary {
@@ -388,13 +389,13 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     let mut processed_edges = Vec::<RenderEdge>::new();
     let mut counter = 0;
     while let Some(edge) = open_edges.pop_front() {
-        println!(
-            "Counter: {} Open edges: {} Result len: {} Processed edges: {}",
-            counter,
-            open_edges.len(),
-            triangles.len(),
-            processed_edges.len()
-        );
+        // println!(
+        //     "Counter: {} Open edges: {} Result len: {} Processed edges: {}",
+        //     counter,
+        //     open_edges.len(),
+        //     triangles.len(),
+        //     processed_edges.len()
+        // );
         if processed_edges.contains(&edge) {
             continue;
         }
