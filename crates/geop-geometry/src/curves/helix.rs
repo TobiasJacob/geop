@@ -41,6 +41,13 @@ impl Helix {
     pub fn neg(&self) -> Helix {
         Helix::new(self.basis, -self.pitch, self.radius, self.right_winding)
     }
+
+    pub fn point_at_pitch(&self, t: f64) -> Point {
+        self.basis
+            + t * self.pitch
+            + self.radius * (2.0 * f64::consts::PI * t).cos()
+            + self.dir_cross * (2.0 * f64::consts::PI * t).sin()
+    }
 }
 
 // Helix equation is r(t) = basis + t * pitch + cos(2pi * t) * radius + sin(2pi * t) * dir_cross

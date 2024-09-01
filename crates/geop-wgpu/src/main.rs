@@ -20,7 +20,10 @@ use geop_rasterize::{
         rasterize_volume_into_vertex_list,
     },
 };
+use geop_topology::primitive_objects::curves::rectangle::primitive_rectangle_curve;
+use geop_topology::primitive_objects::edges::arc::primitive_arc;
 use geop_topology::primitive_objects::edges::circle::primitive_circle;
+use geop_topology::primitive_objects::edges::line::primitive_line;
 use geop_topology::{
     debug_data::get_debug_data,
     operations::extrude::extrude,
@@ -107,20 +110,66 @@ async fn run() {
             1.0,
         )]));
 
+        let p1 = Point::new(-1.0, 0.0, 1.0);
+        let p2 = Point::new(-1.0, 0.0, -1.0);
+        let p3 = Point::new(1.0, 0.0, -1.0);
+        let p4 = Point::new(1.0, 0.0, 1.0);
+
+        let mut edges = Vec::new();
+        for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
+            edges.push(primitive_line(*p1, *p2));
+        }
+        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
+
+        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
+
+        let hole2 = primitive_rectangle_curve(
+            Point::new(0.0, 0.0, -0.5),
+            Point::unit_x() * 0.5,
+            -Point::unit_z() * 0.1,
+        );
+
+        let face1 = Face::new(
+            Some(Contour::new(edges)),
+            vec![Contour::new(vec![hole]), hole2],
+            Rc::new(Surface::Plane(Plane::new(
+                Point::zero(),
+                Point::unit_x(),
+                Point::unit_z(),
+            ))),
+        );
+
+        let shell = extrude(face1, Point::unit_y());
+
         let mut triangles = TriangleBuffer::empty();
-        triangles.join(&rasterize_volume_into_triangle_list(
-            &object,
-            Color::new(1.0, 1.0, 1.0, 1.0),
-        ));
         let mut lines = EdgeBuffer::empty();
+        let mut points = VertexBuffer::empty();
+
+        // triangles.join(&rasterize_volume_into_triangle_list(
+        //     &object,
+        //     Color::new(1.0, 1.0, 1.0, 1.0),
+        // ));
+        // lines.join(&rasterize_volume_into_line_list(
+        //     &object,
+        //     Color::from_brightness(0.3),
+        // ));
+        // points.join(&rasterize_volume_into_vertex_list(
+        //     &object,
+        //     Color::from_brightness(0.1),
+        // ));
+
+        // triangles.join(&rasterize_face_into_triangle_list(&sphere, Color::white()));
+
+        triangles.join(&rasterize_volume_into_triangle_list(
+            &shell,
+            Color::light_gray(),
+        ));
         lines.join(&rasterize_volume_into_line_list(
-            &object,
+            &shell,
             Color::from_brightness(0.3),
         ));
-        triangles.join(&rasterize_face_into_triangle_list(&sphere, Color::white()));
-        let mut points = VertexBuffer::empty();
         points.join(&rasterize_volume_into_vertex_list(
-            &object,
+            &shell,
             Color::from_brightness(0.1),
         ));
         return (points, lines, triangles);

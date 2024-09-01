@@ -11,6 +11,17 @@ pub enum CircleLineIntersection {
     None,
 }
 pub fn circle_line_intersection(circle: &Circle, line: &Line) -> CircleLineIntersection {
+    if circle.normal.is_parallel(line.direction) {
+        let diff = circle.basis - line.basis;
+        let distance = diff.dot(line.direction);
+        let projection = diff - distance * line.direction;
+        if (projection.norm() - circle.radius.norm()).abs() < EQ_THRESHOLD {
+            let point = line.basis + distance * line.direction;
+            return CircleLineIntersection::OnePoint(point);
+        }
+        return CircleLineIntersection::None;
+    }
+
     assert!(
         circle.normal.is_perpendicular(line.direction),
         "3D circle-line intersection is not implemented yet"

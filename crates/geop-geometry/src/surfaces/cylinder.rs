@@ -1,5 +1,5 @@
 use crate::{
-    curves::{curve::Curve, helix::Helix, line::Line, CurveLike},
+    curves::{circle::Circle, curve::Curve, helix::Helix, line::Line, CurveLike},
     points::point::Point,
     transforms::Transform,
     EQ_THRESHOLD, HORIZON_DIST,
@@ -82,8 +82,8 @@ impl SurfaceLike for Cylinder {
         let p_project = p - self.basis;
         let height_project = p_project.dot(self.extend_dir) * self.extend_dir;
         let radius_project = p_project - height_project;
-        let dist = radius_project.norm_sq();
-        (dist - self.radius.norm_sq()).abs() < EQ_THRESHOLD
+        let dist = radius_project.norm();
+        (dist - self.radius.norm()).abs() < EQ_THRESHOLD
     }
 
     fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
@@ -120,8 +120,8 @@ impl SurfaceLike for Cylinder {
     }
 
     fn log(&self, x: Point, y: Point) -> Option<TangentPoint> {
-        assert!(self.on_surface(x));
-        assert!(self.on_surface(y));
+        assert!(self.on_surface(x), "{:?} {:?}", x, y);
+        assert!(self.on_surface(y), "{:?} {:?}", x, y);
         let x = x - self.basis;
         let y = y - self.basis;
         let height_diff = y.dot(self.extend_dir) - x.dot(self.extend_dir);
@@ -170,6 +170,13 @@ impl SurfaceLike for Cylinder {
         let helix_radius = p_proj;
         let helix_pitch =
             self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle;
+        if helix_pitch.norm() < EQ_THRESHOLD {
+            return Curve::Circle(Circle::new(
+                self.basis + p_height * self.extend_dir,
+                self.extend_dir.normalize(),
+                helix_radius.norm(),
+            ));
+        }
         let helix = Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, true));
         assert!(helix.on_curve(p));
         if !helix.on_curve(q) {
@@ -192,6 +199,7 @@ impl SurfaceLike for Cylinder {
                     + (v - 0.5) * HORIZON_DIST * self.extend_dir
                     + theta.cos() * self.radius
                     + theta.sin() * self.dir_cross;
+                assert!(self.on_surface(point));
                 points.push(point);
             }
         }

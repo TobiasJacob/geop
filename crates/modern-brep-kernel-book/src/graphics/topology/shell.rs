@@ -72,7 +72,7 @@ mod tests {
             ))),
         );
 
-        let shell = extrude(face1, -Point::unit_y());
+        let shell = extrude(face1, Point::unit_y());
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
         scene.volumes.push((shell, Color::light_gray()));

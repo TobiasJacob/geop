@@ -61,6 +61,12 @@ pub fn circle_circle_intersection(
         }
     }
 
+    // Parallel but different planes
+    if n1.is_parallel(n2) {
+        return CircleCircleIntersection::None;
+    }
+
+    // Unparallel Normals but same origin and radius
     if p1 == p2 && (r1 - r2).abs() < EQ_THRESHOLD {
         // We already know that normals are different, so they will intersect in 2 points
         let n = n1.cross(n2).normalize();

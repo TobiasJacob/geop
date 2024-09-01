@@ -4,6 +4,7 @@ use super::{
     circle_circle::{circle_circle_intersection, CircleCircleIntersection},
     circle_line::{circle_line_intersection, CircleLineIntersection},
     ellipse_ellipse::{ellipse_ellipse_intersection, EllipseEllipseIntersection},
+    helix_circle::{helix_circle_intersection, HelixCircleIntersection},
     helix_line::{helix_line_intersection, HelixLineIntersection},
     line_line::{line_line_intersection, LineLineIntersection},
 };
@@ -73,7 +74,15 @@ pub fn curve_curve_intersection(edge_self: &Curve, edge_other: &Curve) -> CurveC
                 }
             },
             Curve::Ellipse(_) => todo!("Implement this"),
-            Curve::Helix(_) => todo!("Implement this"),
+            Curve::Helix(helix) => match helix_circle_intersection(helix, circle) {
+                HelixCircleIntersection::TwoPoints(p1, p2) => {
+                    CurveCurveIntersection::FinitePoints(vec![p1, p2])
+                }
+                HelixCircleIntersection::OnePoint(p) => {
+                    CurveCurveIntersection::FinitePoints(vec![p])
+                }
+                HelixCircleIntersection::None => CurveCurveIntersection::None,
+            },
         },
         Curve::Ellipse(ellipse) => match edge_other {
             Curve::Line(_) => todo!("Implement this"),

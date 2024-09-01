@@ -316,15 +316,20 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     // Now we have to divide the face into triangles. First rasterize the boundaries. This will give us a set of open edges to work with
     let mut contours = Vec::<EdgeBuffer>::new();
     if let Some(boundary) = &face.boundary {
-        contours.push(rasterize_contour_into_line_list(&boundary, color));
-    }
-    for contour in face.holes.iter() {
-        let points = rasterize_contour_into_line_list(contour, color);
-        for edge in points.edges.iter() {
+        let edge_buffer = rasterize_contour_into_line_list(&boundary, color);
+        for edge in edge_buffer.edges.iter() {
             assert!(face.surface.on_surface(edge.start.point()));
             assert!(face.surface.on_surface(edge.end.point()));
         }
-        contours.push(points);
+        contours.push(edge_buffer);
+    }
+    for contour in face.holes.iter() {
+        let edge_buffer = rasterize_contour_into_line_list(contour, color);
+        for edge in edge_buffer.edges.iter() {
+            assert!(face.surface.on_surface(edge.start.point()));
+            assert!(face.surface.on_surface(edge.end.point()));
+        }
+        contours.push(edge_buffer);
     }
 
     // Rasterize the edges first
