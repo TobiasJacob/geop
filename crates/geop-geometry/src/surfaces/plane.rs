@@ -57,6 +57,10 @@ impl Plane {
         }
         points
     }
+
+    pub fn is_parallel(&self, other: &Plane) -> bool {
+        self.normal().is_parallel(other.normal())
+    }
 }
 
 impl SurfaceLike for Plane {
