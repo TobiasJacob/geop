@@ -33,7 +33,7 @@ pub fn circle_sphere_intersection(circle: &Circle, sphere: &Sphere) -> CircleSph
                 CircleCircleIntersection::Circle(_) => {
                     return CircleSphereIntersection::Circle(circle.clone());
                 }
-                CircleCircleIntersection::TwoPoints(p1, p2) => {
+                CircleCircleIntersection::TwoPoint(p1, p2) => {
                     return CircleSphereIntersection::TwoPoints(p1, p2);
                 }
                 CircleCircleIntersection::OnePoint(p) => {
