@@ -5,6 +5,7 @@ use super::{
     circle_plane::{circle_plane_intersection, CirclePlaneIntersection},
     line_cylinder::{line_cylinder_intersection, CylinderLineIntersection},
     line_plane::{line_plane_intersection, LinePlaneIntersection},
+    line_sphere::{line_sphere_intersection, LineSphereIntersection},
 };
 
 pub enum CurveSurfaceIntersection {
@@ -48,9 +49,15 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
                 }
                 LinePlaneIntersection::None => CurveSurfaceIntersection::None,
             },
-            Surface::Sphere(_sphere) => {
-                todo!("Implement line-sphere intersection.");
-            }
+            Surface::Sphere(sphere) => match line_sphere_intersection(line, sphere) {
+                LineSphereIntersection::TwoPoints(point1, point2) => {
+                    CurveSurfaceIntersection::Points(vec![point1, point2])
+                }
+                LineSphereIntersection::OnePoint(point) => {
+                    CurveSurfaceIntersection::Points(vec![point])
+                }
+                LineSphereIntersection::None => CurveSurfaceIntersection::None,
+            },
             Surface::Cylinder(cylinder) => match line_cylinder_intersection(line, cylinder) {
                 CylinderLineIntersection::Line(line) => {
                     CurveSurfaceIntersection::Curve(Curve::Line(line))
