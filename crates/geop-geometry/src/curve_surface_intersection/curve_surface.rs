@@ -3,6 +3,7 @@ use crate::{curves::curve::Curve, points::point::Point, surfaces::surface::Surfa
 use super::{
     circle_cylinder::{circle_cylinder_intersection, CircleCylinderIntersection},
     circle_plane::{circle_plane_intersection, CirclePlaneIntersection},
+    circle_sphere::{circle_sphere_intersection, CircleSphereIntersection},
     line_cylinder::{line_cylinder_intersection, CylinderLineIntersection},
     line_plane::{line_plane_intersection, LinePlaneIntersection},
 };
@@ -72,9 +73,18 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
                     CurveSurfaceIntersection::Curve(Curve::Circle(circle))
                 }
             },
-            Surface::Sphere(_sphere) => {
-                todo!("Implement circle-sphere intersection.");
-            }
+            Surface::Sphere(sphere) => match circle_sphere_intersection(circle, sphere) {
+                CircleSphereIntersection::None => CurveSurfaceIntersection::None,
+                CircleSphereIntersection::OnePoint(point) => {
+                    CurveSurfaceIntersection::Points(vec![point])
+                }
+                CircleSphereIntersection::TwoPoints(point1, point2) => {
+                    CurveSurfaceIntersection::Points(vec![point1, point2])
+                }
+                CircleSphereIntersection::Circle(circle) => {
+                    CurveSurfaceIntersection::Curve(Curve::Circle(circle))
+                }
+            },
             Surface::Cylinder(cylinder) => match circle_cylinder_intersection(circle, cylinder) {
                 CircleCylinderIntersection::Circle(circle) => {
                     CurveSurfaceIntersection::Curve(Curve::Circle(circle))

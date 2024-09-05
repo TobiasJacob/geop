@@ -12,7 +12,7 @@ use crate::{
 
 pub enum CircleSphereIntersection {
     Circle(Circle),
-    TwoPoint(Point, Point),
+    TwoPoints(Point, Point),
     OnePoint(Point),
     None,
 }
@@ -33,8 +33,8 @@ pub fn circle_sphere_intersection(circle: &Circle, sphere: &Sphere) -> CircleSph
                 CircleCircleIntersection::Circle(_) => {
                     return CircleSphereIntersection::Circle(circle.clone());
                 }
-                CircleCircleIntersection::TwoPoint(p1, p2) => {
-                    return CircleSphereIntersection::TwoPoint(p1, p2);
+                CircleCircleIntersection::TwoPoints(p1, p2) => {
+                    return CircleSphereIntersection::TwoPoints(p1, p2);
                 }
                 CircleCircleIntersection::OnePoint(p) => {
                     return CircleSphereIntersection::OnePoint(p);
@@ -80,7 +80,7 @@ mod tests {
         let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
         let sphere = Sphere::new(Point::unit_x(), 1.0, true);
         match circle_sphere_intersection(&circle, &sphere) {
-            CircleSphereIntersection::TwoPoint(p1, p2) => {
+            CircleSphereIntersection::TwoPoints(p1, p2) => {
                 assert_eq!(p1, Point::new(0.5, -0.8660254037844386, 0.0));
                 assert_eq!(p2, Point::new(0.5, 0.8660254037844386, 0.0));
             }
