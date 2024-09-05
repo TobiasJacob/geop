@@ -2,6 +2,7 @@ use crate::{curves::CurveLike, points::point::Point, surfaces::SurfaceLike};
 
 pub mod circle_cylinder;
 pub mod circle_plane;
+pub mod circle_sphere;
 pub mod curve_surface;
 pub mod line_cylinder;
 pub mod line_plane;
