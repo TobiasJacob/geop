@@ -75,7 +75,10 @@ pub fn curve_surface_intersection(curve: &Curve, surface: &Surface) -> CurveSurf
         Curve::Circle(circle) => match surface {
             Surface::Plane(plane) => match circle_plane_intersection(circle, plane) {
                 CirclePlaneIntersection::None => CurveSurfaceIntersection::None,
-                CirclePlaneIntersection::Points(points) => CurveSurfaceIntersection::Points(points),
+                CirclePlaneIntersection::TwoPoints(p1, p2) => {
+                    CurveSurfaceIntersection::Points(vec![p1, p2])
+                }
+                CirclePlaneIntersection::OnePoint(p) => CurveSurfaceIntersection::Points(vec![p]),
                 CirclePlaneIntersection::Circle(circle) => {
                     CurveSurfaceIntersection::Curve(Curve::Circle(circle))
                 }

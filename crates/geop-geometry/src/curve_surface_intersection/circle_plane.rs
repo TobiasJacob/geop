@@ -8,7 +8,8 @@ use crate::{
 
 pub enum CirclePlaneIntersection {
     None,
-    Points(Vec<Point>),
+    TwoPoints(Point, Point),
+    OnePoint(Point),
     Circle(Circle),
 }
 
@@ -32,10 +33,10 @@ pub fn circle_plane_intersection(circle: &Circle, plane: &Plane) -> CirclePlaneI
             // If the planes intersect in a line, find the intersection of the circle with that line
             match circle_line_intersection(&circle, &line) {
                 CircleLineIntersection::TwoPoint(p1, p2) => {
-                    return CirclePlaneIntersection::Points(vec![p1, p2]);
+                    return CirclePlaneIntersection::TwoPoints(p1, p2);
                 }
                 CircleLineIntersection::OnePoint(p) => {
-                    return CirclePlaneIntersection::Points(vec![p]);
+                    return CirclePlaneIntersection::OnePoint(p);
                 }
                 CircleLineIntersection::None => return CirclePlaneIntersection::None,
             }
@@ -78,10 +79,8 @@ mod tests {
         );
 
         match circle_plane_intersection(&circle, &plane) {
-            CirclePlaneIntersection::Points(points) => {
-                println!("Points: {:?}", points);
-                assert_eq!(points.len(), 1);
-                assert_eq!(points[0], Point::new(0.0, 0.0, 0.0));
+            CirclePlaneIntersection::OnePoint(point) => {
+                assert_eq!(point, Point::new(0.0, 0.0, 0.0));
             }
             _ => panic!("Intersection should be a single point"),
         }

@@ -1,4 +1,12 @@
-use crate::{curves::circle::Circle, points::point::Point, EQ_THRESHOLD};
+use crate::{
+    curve_surface_intersection::circle_plane::{
+        circle_plane_intersection, CirclePlaneIntersection,
+    },
+    curves::{circle::Circle, CurveLike},
+    points::point::Point,
+    surfaces::plane::Plane,
+    EQ_THRESHOLD,
+};
 
 #[derive(Debug)]
 pub enum CircleCircleIntersection {
@@ -66,16 +74,41 @@ pub fn circle_circle_intersection(
         return CircleCircleIntersection::None;
     }
 
-    // Unparallel Normals but same origin and radius
-    if p1 == p2 && (r1 - r2).abs() < EQ_THRESHOLD {
-        // We already know that normals are different, so they will intersect in 2 points
-        let n = n1.cross(n2).normalize();
-        let p1 = p1 + n * r1;
-        let p2 = p1 - n * r1;
-        return CircleCircleIntersection::TwoPoint(p1, p2);
+    // Okay, the circles are on different planes. Do they intersect?
+    // First find the plane that contains the second circle
+    let circle_b_plane = Plane::new(
+        circle_b.basis,
+        circle_b.radius,
+        circle_b.normal.cross(circle_b.radius),
+    );
+    match circle_plane_intersection(&circle_a, &circle_b_plane) {
+        CirclePlaneIntersection::Circle(_) => {
+            panic!("This should not happen!");
+        }
+        CirclePlaneIntersection::None => {
+            return CircleCircleIntersection::None;
+        }
+        CirclePlaneIntersection::OnePoint(point) => {
+            if circle_b.on_curve(point) {
+                return CircleCircleIntersection::OnePoint(point);
+            } else {
+                return CircleCircleIntersection::None;
+            }
+        }
+        CirclePlaneIntersection::TwoPoints(p1, p2) => {
+            if circle_b.on_curve(p1) {
+                if circle_b.on_curve(p2) {
+                    return CircleCircleIntersection::TwoPoint(p1, p2);
+                } else {
+                    return CircleCircleIntersection::OnePoint(p1);
+                }
+            } else if circle_b.on_curve(p2) {
+                return CircleCircleIntersection::OnePoint(p2);
+            } else {
+                return CircleCircleIntersection::None;
+            }
+        }
     }
-    // Check if both circles are on different planes that intersect
-    todo!("Implement intersection for circles on different planes");
 }
 
 #[cfg(test)]
@@ -129,6 +162,35 @@ mod tests {
                 "Should be a circle but is {:?}",
                 circle_circle_intersection(&a, &a)
             ),
+        }
+    }
+
+    #[test]
+    fn test_circle_circle_intersection_not_coplanar() {
+        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
+        let b = Circle::new(Point::new(1.0, 0.0, 2.0), Point::new(-1.0, 0.0, 0.0), 1.0);
+        match circle_circle_intersection(&a, &b) {
+            CircleCircleIntersection::None => {}
+            _ => panic!("Should be None!"),
+        }
+
+        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
+        let b = Circle::new(Point::new(1.0, 0.0, 1.0), Point::new(-1.0, 0.0, 0.0), 1.0);
+        match circle_circle_intersection(&a, &b) {
+            CircleCircleIntersection::OnePoint(p) => {
+                assert_eq!(p, Point::new(1.0, 0.0, 0.0));
+            }
+            _ => panic!("Should be one point!"),
+        }
+
+        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 1.0);
+        let b = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(-1.0, 0.0, 0.0), 1.0);
+        match circle_circle_intersection(&a, &b) {
+            CircleCircleIntersection::TwoPoint(p1, p2) => {
+                assert_eq!(p1, Point::new(0.0, -1.0, 0.0));
+                assert_eq!(p2, Point::new(0.0, 1.0, 0.0));
+            }
+            _ => panic!("Should be two points!"),
         }
     }
 }
