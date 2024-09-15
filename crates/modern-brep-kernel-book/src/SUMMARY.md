@@ -16,3 +16,4 @@
 - [Boolean Operations](./chapter_5_topology_boolean.md)
     - [Boolean Face Operations](./chapter_5_topology_faces_boolean.md)
     - [Boolean Solid Operations](./chapter_5_topology_solids_boolean.md)
+- [FAQ](./chapter_6_faq.md)

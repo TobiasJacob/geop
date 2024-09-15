@@ -203,6 +203,10 @@ impl CurveLike for Circle {
     ) -> crate::bounding_box::BoundingBox {
         todo!("Implement this")
     }
+
+    fn sort(&self, _points: Vec<Option<Point>>) -> Vec<Option<Point>> {
+        todo!("Implement this")
+    }
 }
 
 // Implement partial eqality for Circle

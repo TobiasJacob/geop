@@ -59,6 +59,7 @@ pub enum FaceSplit {
 
 pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
     assert!(face_self.surface == face_other.surface);
+    println!("face_split");
     println!("Face_self {:}", face_self);
     println!("Face_other {:}", face_other);
 
@@ -97,25 +98,9 @@ pub fn face_split(face_self: &Face, face_other: &Face) -> Vec<FaceSplit> {
         )
         .collect();
 
-    // for edge in res.iter() {
-    //     println!("Edge: {:?}", edge);
-    //     match edge {
-    //         FaceSplit::AinB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Black),
-    //         FaceSplit::AonBSameSide(edge) => debug_data::add_edge((edge).clone(), DebugColor::Red),
-    //         FaceSplit::AonBOpSide(edge) => {
-    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-    //         }
-    //         FaceSplit::AoutB(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
-    //         FaceSplit::BinA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Yellow),
-    //         FaceSplit::BonASameSide(edge) => {
-    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-    //         }
-    //         FaceSplit::BonAOpSide(edge) => {
-    //             debug_data::add_edge((edge).clone(), DebugColor::Transparent)
-    //         }
-    //         FaceSplit::BoutA(edge) => debug_data::add_edge((edge).clone(), DebugColor::Transparent),
-    //     }
-    // }
+    for edge in res.iter() {
+        println!("Edge: {:?}", edge);
+    }
 
     res
 }

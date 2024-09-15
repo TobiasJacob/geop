@@ -112,6 +112,27 @@ impl CurveLike for Line {
     ) -> crate::bounding_box::BoundingBox {
         todo!()
     }
+
+    fn sort(&self, points: Vec<Option<Point>>) -> Vec<Option<Point>> {
+        let mut points = points;
+        points.sort_unstable_by(|a, b| {
+            if let Some(a) = a {
+                if let Some(b) = b {
+                    let v = *a - *b;
+                    v.dot(self.direction).partial_cmp(&0.0).unwrap()
+                } else {
+                    std::cmp::Ordering::Less
+                }
+            } else {
+                if let Some(_b) = b {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Equal
+                }
+            }
+        });
+        points
+    }
 }
 
 impl PartialEq for Line {

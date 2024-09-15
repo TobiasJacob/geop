@@ -46,4 +46,8 @@ pub trait CurveLike {
         interval_self: Option<Point>,
         midpoint_self: Option<Point>,
     ) -> BoundingBox;
+
+    // Sorts a list of point such that for three consecutive points (p1, p2, p3) p2 is between p1 and p3.
+    // For the first and last point, it is (p2, p3, ..., p1) and (p2, p1, ..., p3) respectively.
+    fn sort(&self, points: Vec<Option<Point>>) -> Vec<Option<Point>>;
 }

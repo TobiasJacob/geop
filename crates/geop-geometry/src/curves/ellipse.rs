@@ -289,6 +289,9 @@ impl CurveLike for Ellipse {
 
         bounding_box
     }
+    fn sort(&self, _points: Vec<Option<Point>>) -> Vec<Option<Point>> {
+        todo!("Implement this")
+    }
 }
 
 // Implement partial equality for ellipse

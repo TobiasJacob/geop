@@ -65,6 +65,10 @@ impl Edge {
         }
     }
 
+    pub fn from_curve(curve: Curve) -> Edge {
+        Edge::new(None, None, curve)
+    }
+
     pub fn neg(&self) -> Edge {
         Edge::new(self.end.clone(), self.start.clone(), self.curve.clone())
     }

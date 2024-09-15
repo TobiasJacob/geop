@@ -138,11 +138,7 @@ impl SurfaceLike for Plane {
 
 impl PartialEq for Plane {
     fn eq(&self, other: &Plane) -> bool {
-        self.u_slope.is_parallel(other.u_slope)
-            && self.v_slope.is_parallel(other.v_slope)
-            && (self.basis - other.basis)
-                .dot(self.u_slope.cross(other.u_slope))
-                .abs()
-                < EQ_THRESHOLD
+        self.normal() == other.normal()
+            && (self.basis - other.basis).dot(self.normal()).abs() < EQ_THRESHOLD
     }
 }

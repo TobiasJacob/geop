@@ -1,4 +1,6 @@
 use geop_geometry::{
+    curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
+    curve_surface_intersection::curve_surface::curve_surface_intersection,
     curves::curve::Curve,
     points::point::Point,
     surface_surface_intersection::surface_surface::{
@@ -45,9 +47,28 @@ pub enum FaceFaceIntersection {
     Faces(Vec<Face>),
 }
 
-fn curve_face_intersection_same_surface(_curve: Curve, _face: Face) -> Vec<Edge> {
-    todo!()
-}
+// Border is not considered part of the face
+// fn curve_face_intersection_same_surface(curve: &Curve, face: &Face) -> Vec<Edge> {
+//     assert!(curve_surface_intersection(curve, &*face.surface).is_curve());
+
+//     let points = Vec::<Point>::new();
+//     for edge in face.all_edges().iter() {
+//         match curve_curve_intersection(&curve, &edge.curve) {
+//             CurveCurveIntersection::Curve(curve) => {
+//                 points.push(edge.start);
+//                 points.push(edge.end);
+//             }
+//             CurveCurveIntersection::FinitePoints(points2) => {
+//                 points.extend(points2);
+//             }
+//             CurveCurveIntersection::InfiniteDiscretePoints(ps) => {
+//                 points.extend(ps);
+//             }
+//             CurveCurveIntersection::None => {}
+//         }
+
+//     todo!()
+// }
 
 pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIntersection {
     match surface_surface_intersection(&face_self.surface, &face_other.surface) {
@@ -56,27 +77,34 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIn
             let mut points = points
                 .iter()
                 .filter(|p| {
-                    face_point_contains(face_self, **p) != FacePointContains::Outside
-                        && face_point_contains(face_other, **p) != FacePointContains::Outside
+                    face_point_contains(face_self, **p) == FacePointContains::Inside
+                        && face_point_contains(face_other, **p) == FacePointContains::Inside
                 })
                 .cloned()
                 .collect::<Vec<Point>>();
 
-            let curves = curves
-                .iter()
-                .map(|curve| curve_face_intersection_same_surface(curve.clone(), face_self.clone()))
-                .flatten()
-                .map(|edge| face_edge_intersection(face_other, &edge))
-                .collect::<Vec<FaceEdgeIntersection>>();
-
             let mut edges = Vec::<Edge>::new();
             for curve in curves.iter() {
-                match curve {
+                match face_edge_intersection(face_self, &Edge::from_curve(curve.clone())) {
                     FaceEdgeIntersection::Points(ps) => {
-                        points.extend(ps);
+                        for p in ps.iter() {
+                            if face_point_contains(face_other, *p) == FacePointContains::Inside {
+                                points.push(*p);
+                            }
+                        }
                     }
                     FaceEdgeIntersection::Edges(es) => {
-                        edges.extend(es.clone());
+                        for e in es.iter() {
+                            match face_edge_intersection(face_other, e) {
+                                FaceEdgeIntersection::Points(ps) => {
+                                    points.extend(ps);
+                                }
+                                FaceEdgeIntersection::Edges(es) => {
+                                    edges.extend(es);
+                                }
+                                FaceEdgeIntersection::None => {}
+                            }
+                        }
                     }
                     FaceEdgeIntersection::None => {}
                 }
@@ -85,7 +113,16 @@ pub fn face_face_intersection(face_self: &Face, face_other: &Face) -> FaceFaceIn
             FaceFaceIntersection::EdgesAndPoints(points, edges)
         }
         FaceSurfaceIntersection::Surface(_surface) => {
-            FaceFaceIntersection::Faces(face_face_same_surface_intersection(face_self, face_other))
+            if face_self.surface == face_other.surface {
+                FaceFaceIntersection::Faces(face_face_same_surface_intersection(
+                    face_self, face_other,
+                ))
+            } else {
+                FaceFaceIntersection::Faces(face_face_same_surface_intersection(
+                    face_self,
+                    &face_other.flip(),
+                ))
+            }
         }
     }
 }

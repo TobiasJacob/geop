@@ -127,4 +127,15 @@ impl CurveLike for Curve {
             Curve::Helix(helix) => helix.get_bounding_box(interval_self, midpoint_self),
         }
     }
+
+    // Sorts a list of point such that for three consecutive points (p1, p2, p3) p2 is between p1 and p3.
+    // For the first and last point, it is (p2, p3, ..., p1) and (p2, p1, ..., p3) respectively.
+    fn sort(&self, points: Vec<Option<Point>>) -> Vec<Option<Point>> {
+        match self {
+            Curve::Line(line) => line.sort(points),
+            Curve::Circle(circle) => circle.sort(points),
+            Curve::Ellipse(ellipse) => ellipse.sort(points),
+            Curve::Helix(helix) => helix.sort(points),
+        }
+    }
 }
