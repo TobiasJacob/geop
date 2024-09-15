@@ -20,7 +20,7 @@ If you have an algorithm that is much faster with the half-edge data structure, 
 
 ## Why are faces constrained by 3d edges, not by 2d edges in parameter space?
 
-Two touching faces have to be bound by the same edge in 3d space. This is useful for watertight meshes. Geop generates watertight meshers, because first the edges are rasterized, then the inner parts of the faces, and then the gap is bridged.
+Two touching faces have to be bound by the same edge in 3d space. This is useful for watertight meshes. Geop generates watertight meshes, because first the edges are rasterized, then the inner parts of the faces, and then the gap is bridged.
 
 It becomes more interesting in cases, where the face boundaries can only be approximated. Doing this in parameter space might seem easier at first glance, but there will still be a point in time where the 3d edge has to be created, and projected back to the parameter space of the second face. So there is not really a performance gain.
 
@@ -32,7 +32,7 @@ Good question. In general, no. Even though this might be subject to change.
 
 So for example, the intersection of two touching faces is empty.
 
-The intersection of a line touching a face is 2 lines, which end and start at the touching point. This is useful for the boolean operations, as it creates a split point.
+The intersection of a line touching a face (from outside) is 2 lines, which end and start at the touching point. This is useful for the boolean operations, as it creates a split point.
 
 However, when checking if a point is inside a face or an edge, the function will tell you if it is actually inside, on the boundary, or outside.
 
