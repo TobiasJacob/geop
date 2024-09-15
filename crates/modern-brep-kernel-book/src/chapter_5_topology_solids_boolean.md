@@ -14,5 +14,4 @@ The next step is to split each face along all possible split edges. To do this, 
     - If only one lies on the boundary, the boundary is extended with a new path back and forth.
     - If both lie on the boundary, it depends.
         - If its the same boundary, split it into two faces.
-        - If its different boundaries, just connect them back and forth.
-
+        - If its different boundaries, connect them back and forth, and make them one boundary.
