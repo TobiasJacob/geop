@@ -28,7 +28,7 @@ pub enum CurveCurveIntersection {
     1. If they are equal, then `C1` and `C2` are the same curve.
     1. If they are not equal, then there is an infinitly small neighborhood around `P` where `C1` and `C2` are not equal, hence `P` is a discrete intersection point.
 
-Similar proofs can be made for surfaces etc.
+Similar proofs can be made for surfaces etc. You can look it up under [Bézout's theorem](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem).
 
 ## Curve-Surface Intersections
 
