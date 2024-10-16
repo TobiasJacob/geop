@@ -57,7 +57,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                         .collect(),
                 );
 
-                let face = Face::new(Some(contour), vec![], Rc::new(plane));
+                let face = Face::new(vec![contour], Rc::new(plane));
                 faces.push(face);
             }
             Curve::Circle(circle) => {
@@ -104,17 +104,14 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     (Some(left), Some(right)) => {
                         let contour = Contour::new(vec![right, top, left, bottom]);
 
-                        let face = Face::new(Some(contour), vec![], Rc::new(cylinder));
+                        let face = Face::new(vec![contour], Rc::new(cylinder));
                         faces.push(face);
                     }
                     (None, None) => {
                         let contour = Contour::new(vec![top]);
 
-                        let face = Face::new(
-                            Some(contour),
-                            vec![Contour::new(vec![bottom])],
-                            Rc::new(cylinder),
-                        );
+                        let face =
+                            Face::new(vec![contour, Contour::new(vec![bottom])], Rc::new(cylinder));
                         faces.push(face);
                     }
                     _ => todo!("Not implemented"),

@@ -23,13 +23,12 @@ pub fn primitive_cube(size_x: f64, size_y: f64, size_z: f64) -> Volume {
     let edge4 = primitive_line(p4, p1);
 
     let face = Face::new(
-        Some(Contour::new(vec![
+        vec![Contour::new(vec![
             edge1.clone(),
             edge2.clone(),
             edge3.clone(),
             edge4.clone(),
-        ])),
-        vec![],
+        ])],
         Rc::new(Surface::Plane(Plane::new(
             Point::new(0.0, 0.0, -size_z / 2.0),
             Point::new(1.0, 0.0, 0.0),

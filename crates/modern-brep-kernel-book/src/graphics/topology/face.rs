@@ -49,8 +49,7 @@ mod tests {
         );
 
         let face = Face::new(
-            Some(Contour::new(edges)),
-            vec![Contour::new(vec![hole]), hole2],
+            vec![Contour::new(edges), Contour::new(vec![hole]), hole2],
             Rc::new(Surface::Plane(Plane::new(
                 Point::zero(),
                 Point::unit_x(),
@@ -66,7 +65,7 @@ mod tests {
 
         let mut sphere = primitive_sphere(Point::zero(), 1.0);
         let edge = primitive_circle(Point::zero(), -Point::new(0.5, 3.0, 0.5).normalize(), 1.0);
-        sphere.boundary = Some(Contour::new(vec![edge.clone()]));
+        sphere.boundaries.push(Contour::new(vec![edge.clone()]));
 
         scene.faces.push((sphere, Color::light_gray()));
         scene
@@ -76,13 +75,13 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
         let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
 
-        cylinder.boundary = Some(Contour::new(vec![primitive_circle(
+        cylinder.boundaries.push(Contour::new(vec![primitive_circle(
             Point::new(0.0, 0.0, -2.0),
             Point::unit_z(),
             1.0,
         )]));
 
-        cylinder.holes.push(Contour::new(vec![primitive_circle(
+        cylinder.boundaries.push(Contour::new(vec![primitive_circle(
             Point::new(0.0, 0.0, 2.0),
             -Point::unit_z(),
             1.0,
@@ -97,13 +96,13 @@ mod tests {
         let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
 
         cylinder = cylinder.flip();
-        cylinder.boundary = Some(Contour::new(vec![primitive_circle(
+        cylinder.boundaries.push(Contour::new(vec![primitive_circle(
             Point::new(0.0, 0.0, -2.0),
             -Point::unit_z(),
             1.0,
         )]));
 
-        cylinder.holes.push(Contour::new(vec![primitive_circle(
+        cylinder.boundaries.push(Contour::new(vec![primitive_circle(
             Point::new(0.0, 0.0, 2.0),
             Point::unit_z(),
             1.0,

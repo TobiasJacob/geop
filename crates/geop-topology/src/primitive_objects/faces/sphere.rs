@@ -9,5 +9,5 @@ use crate::topology::face::Face;
 
 pub fn primitive_sphere(basis: Point, radius: f64) -> Face {
     let sphere = Sphere::new(basis, radius, true);
-    Face::new(None, vec![], Rc::new(Surface::Sphere(sphere)))
+    Face::new(vec![], Rc::new(Surface::Sphere(sphere)))
 }

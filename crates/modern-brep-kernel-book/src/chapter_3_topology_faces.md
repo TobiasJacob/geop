@@ -1,16 +1,15 @@
 # Faces
 
-Faces are defined by a surface, an optional boundary and a possible set of holes.
+Faces are defined by a surface, and some contours for boundaries.
 
 ```rust
 pub struct Face {
-    pub boundary: Option<Contour>, // Coutner-clockwise
-    pub holes: Vec<Contour>,       // Clockwise
+    pub boundaries: Vec<Contour>,
     pub surface: Rc<Surface>,
 }
 ```
 
-> TODO: Faces should have boundaries Vec<Contour>, because even a hole can be choosen as a boundary. The only thing that is important is that the face is one continous patch of space, not multiple. This is assumed in the following algorithms.
+> Wait a second... Shouldn't we have one outer boundary that is counter clockwise, and multiple holes that are clockwise. Yes, for simple shapes like planar cutouts this works, but it is in general not clear which ones of all the boundaries is the outer one. For example, if you have a cylinder, you can choose the top or the bottom as the outer boundary. This is why we have a list of boundaries, and the first one is the outer boundary. The only thing that is important is that the face is one continous patch of space, not multiple. This is assumed in the following algorithms.
 
 A face can look something like this:
 

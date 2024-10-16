@@ -174,7 +174,7 @@ impl ContourHierarchy {
     ) -> Option<Contour> {
         for child in self.children.iter_mut() {
             match face_contour_contains(
-                &Face::new(Some(child.contour.flip()), vec![], surface.clone()),
+                &Face::new(vec![child.contour.flip()], surface.clone()),
                 &contour,
             ) {
                 FaceContourContains::Inside => {
@@ -190,7 +190,7 @@ impl ContourHierarchy {
             }
         }
         if face_contour_contains(
-            &Face::new(Some(self.contour.clone()), vec![], surface.clone()),
+            &Face::new(vec![self.contour.clone()], surface.clone()),
             &contour,
         ) == FaceContourContains::Inside
         {
@@ -205,9 +205,9 @@ impl ContourHierarchy {
 
     pub fn as_faces(&self, surface: Rc<Surface>) -> Vec<Face> {
         let mut faces = Vec::<Face>::new();
-        let mut face = Face::new(Some(self.contour.clone()), vec![], surface.clone());
+        let mut face = Face::new(vec![self.contour.clone()], surface.clone());
         for child in self.children.iter() {
-            face.holes.push(child.contour.clone());
+            face.boundaries.push(child.contour.clone());
             for child2 in child.children.iter() {
                 faces.extend(child2.as_faces(surface.clone()));
             }

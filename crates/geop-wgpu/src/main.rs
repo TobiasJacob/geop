@@ -93,8 +93,7 @@ async fn run() {
         // Loop shifted by 0.1 in x and y direction
 
         let face1 = Face::new(
-            Some(contour.clone()),
-            vec![inner_contour.clone()],
+            vec![contour.clone(), inner_contour.clone()],
             surface.clone(),
         );
         let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.2, 0.0)));
@@ -104,7 +103,7 @@ async fn run() {
         let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
         let mut sphere = primitive_sphere(Point::zero(), 1.0);
-        sphere.boundary = Some(Contour::new(vec![primitive_circle(
+        sphere.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
             Point::new(0.5, 0.5, 0.5),
             1.0,
@@ -130,8 +129,7 @@ async fn run() {
         );
 
         let face1 = Face::new(
-            Some(Contour::new(edges)),
-            vec![Contour::new(vec![hole]), hole2],
+            vec![Contour::new(edges), Contour::new(vec![hole]), hole2],
             Rc::new(Surface::Plane(Plane::new(
                 Point::zero(),
                 Point::unit_x(),

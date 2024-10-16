@@ -63,8 +63,7 @@ mod tests {
         );
 
         let face1 = Face::new(
-            Some(Contour::new(edges)),
-            vec![Contour::new(vec![hole]), hole2],
+            vec![Contour::new(edges), Contour::new(vec![hole]), hole2],
             Rc::new(Surface::Plane(Plane::new(
                 Point::zero(),
                 Point::unit_x(),

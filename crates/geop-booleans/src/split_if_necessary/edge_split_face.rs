@@ -26,10 +26,7 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
 
             let split_points = vec![edge.start.unwrap(), edge.end.unwrap()];
 
-            let mut contours = face.holes.clone();
-            if let Some(boundary) = face.boundary.clone() {
-                contours.push(boundary);
-            }
+            let mut contours = face.boundaries.clone();
             let contours = split_contours_by_points_if_necessary(contours, &split_points);
             let start_contour =
                 contours

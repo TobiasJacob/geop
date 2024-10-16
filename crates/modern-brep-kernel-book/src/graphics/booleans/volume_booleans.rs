@@ -68,10 +68,10 @@ mod tests {
         let faces = split_faces_by_edges_if_necessary(volume1.all_faces(), &split_edges);
         for f in faces {
             let mut midpoint = Point::zero();
-            for e in f.boundary.clone().unwrap().edges.iter() {
+            for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundary.clone().unwrap().edges.len() as f64;
+            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
             scene.faces.push((f, Color::white()));
         }
@@ -79,10 +79,10 @@ mod tests {
         let faces = split_faces_by_edges_if_necessary(volume2.all_faces(), &split_edges);
         for f in faces {
             let mut midpoint = Point::zero();
-            for e in f.boundary.clone().unwrap().edges.iter() {
+            for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundary.clone().unwrap().edges.len() as f64;
+            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
             midpoint = midpoint + Point::new(0.5, 0.0, 0.0);
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
             scene.faces.push((f, Color::white()));

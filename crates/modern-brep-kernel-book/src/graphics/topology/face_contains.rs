@@ -25,7 +25,7 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         let mut face = primitive_sphere(Point::zero(), 1.0);
-        face.boundary = Some(Contour::new(vec![primitive_circle(
+        face.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
             -Point::new(0.5, 0.5, 0.5),
             1.0,
@@ -59,7 +59,7 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
-        face.holes.push(Contour::new(vec![primitive_circle(
+        face.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
             Point::new(0.0, 0.0, -1.0),
             0.5,
@@ -102,10 +102,9 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
-        face.holes.push(
+        face.boundaries.push(
             primitive_rectangle(Point::zero(), Point::unit_x() / 2.0, Point::unit_y() / 2.0)
-                .boundary
-                .unwrap()
+                .boundaries[0]
                 .flip(),
         );
 
