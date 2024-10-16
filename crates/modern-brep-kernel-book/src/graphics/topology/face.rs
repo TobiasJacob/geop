@@ -6,7 +6,7 @@ mod tests {
 
     use geop_geometry::{
         points::point::Point,
-        surfaces::{cylinder, plane::Plane, surface::Surface},
+        surfaces::{plane::Plane, surface::Surface},
         transforms::Transform,
     };
     use geop_topology::{

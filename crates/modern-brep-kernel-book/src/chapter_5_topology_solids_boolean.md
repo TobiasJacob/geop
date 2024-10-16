@@ -15,3 +15,9 @@ The next step is to split each face along all possible split edges. To do this, 
     - If both lie on the boundary, it depends.
         - If its the same boundary, split it into two faces.
         - If its different boundaries, connect them back and forth, and make them one boundary.
+
+This leads to the following result
+
+![Picture](./generated_images/booleans/face_subdivions.png)
+
+The next step is to use an inner point on the surface to determine if a face is inside, outside, equal with normals facing in the same direction, or equal with normals facing in the opposite direction. Determining if an point is inside, outside or on the face of a volume is a simple test which can be made using a ray casting algorithm.

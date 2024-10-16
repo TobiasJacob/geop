@@ -143,7 +143,7 @@ impl Contour {
             EdgeIndex::OnEdge(i) => i,
             EdgeIndex::OnCorner(_i1, i2) => i2,
         };
-        let end_i = match self.get_edge_index(end) {
+        let mut end_i = match self.get_edge_index(end) {
             EdgeIndex::OnEdge(i) => i,
             EdgeIndex::OnCorner(i1, _i2) => i1,
         };
@@ -161,6 +161,10 @@ impl Contour {
                 ));
                 return result;
             }
+        }
+
+        if end_i <= start_i {
+            end_i += self.edges.len();
         }
 
         let mut edge = &self.edges[start_i];

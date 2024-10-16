@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use geop_booleans::remesh::volume::volume_split_edges;
+    use geop_booleans::{
+        remesh::{face, volume::volume_split_edges},
+        split_if_necessary::edge_split_face::split_faces_by_edges_if_necessary,
+    };
     use geop_geometry::{points::point::Point, transforms::Transform};
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
@@ -50,6 +53,49 @@ mod tests {
                 true,
                 Point::new(2.0, -4.0, 2.0),
                 std::path::Path::new("src/generated_images/booleans/volume_split_edges.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_face_subdivision(#[future] renderer: Box<HeadlessRenderer>) {
+        let (volume1, volume2) = generate_secene_1();
+        let split_edges = volume_split_edges(&volume1, &volume2);
+        assert!(split_edges.len() == 4);
+
+        let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
+
+        let faces = split_faces_by_edges_if_necessary(volume1.all_faces(), &split_edges);
+        for f in faces {
+            let mut midpoint = Point::zero();
+            for e in f.boundary.clone().unwrap().edges.iter() {
+                midpoint = midpoint + e.get_midpoint();
+            }
+            midpoint = midpoint / f.boundary.clone().unwrap().edges.len() as f64;
+            let f = f.transform(Transform::from_translation(midpoint * 0.2));
+            scene.faces.push((f, Color::white()));
+        }
+
+        let faces = split_faces_by_edges_if_necessary(volume2.all_faces(), &split_edges);
+        for f in faces {
+            let mut midpoint = Point::zero();
+            for e in f.boundary.clone().unwrap().edges.iter() {
+                midpoint = midpoint + e.get_midpoint();
+            }
+            midpoint = midpoint / f.boundary.clone().unwrap().edges.len() as f64;
+            midpoint = midpoint + Point::new(0.5, 0.0, 0.0);
+            let f = f.transform(Transform::from_translation(midpoint * 0.2));
+            scene.faces.push((f, Color::white()));
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_to_file(
+                &scene,
+                false,
+                false,
+                Point::new(2.0, -4.0, 2.0),
+                std::path::Path::new("src/generated_images/booleans/face_subdivions.png"),
             )
             .await;
     }
