@@ -21,3 +21,24 @@ This leads to the following result
 ![Picture](./generated_images/booleans/face_subdivions.png)
 
 The next step is to use an inner point on the surface to determine if a face is inside, outside, equal with normals facing in the same direction, or equal with normals facing in the opposite direction. Determining if an point is inside, outside or on the face of a volume is a simple test which can be made using a ray casting algorithm.
+
+![Picture](./generated_images/booleans/face_classification.png)
+
+Now, depending on which class the faces fall into, we can determine the final result of the boolean operation. For example, for a union operation, we can use the following rules:
+
+```rust
+    VolumeSplit::AinB(_) => false,
+    VolumeSplit::AonBSameSide(_) => true,
+    VolumeSplit::AonBOpSide(_) => false,
+    VolumeSplit::AoutB(_) => true,
+    VolumeSplit::BinA(_) => false,
+    VolumeSplit::BonASameSide(_) => false,
+    VolumeSplit::BonAOpSide(_) => false,
+    VolumeSplit::BoutA(_) => true,
+```
+
+This results in
+
+![Picture](./generated_images/booleans/volume_union_splits.png)
+
+Now, the last step is to stich the faces back together to form shells, and then connect them back to a volume.

@@ -10,7 +10,7 @@ use geop_geometry::{
 use crate::contains::{
     contour_point::contour_point_contains,
     edge_point::EdgePointContains,
-    face_point::{face_point_contains, FacePointContains},
+    face_point::{self, face_point_contains, FacePointContains},
 };
 
 use super::{
@@ -70,7 +70,18 @@ impl Face {
     }
 
     pub fn inner_point(&self) -> Point {
-        todo!("Returns an inner point where normal vector is well defined.");
+        for e1 in self.boundaries[0].edges.iter() {
+            for e2 in self.boundaries[0].edges.iter() {
+                if e1 != e2 {
+                    let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
+                    let p = geodesic.get_midpoint();
+                    if face_point_contains(self, p) == FacePointContains::Inside {
+                        return p;
+                    }
+                }
+            }
+        }
+        panic!("No inner point found");
     }
 
     pub fn edge_from_to(&self, from: Point, to: Point) -> Edge {

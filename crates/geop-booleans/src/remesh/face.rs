@@ -4,15 +4,13 @@ use std::{
 };
 
 use geop_geometry::surfaces::surface::Surface;
-use geop_topology::{
+use geop_topology::topology::{contour::Contour, edge::Edge, face::Face};
+
+use crate::{
     contains::{
         face_contour::{face_contour_contains, FaceContourContains},
         face_edge::{face_edge_contains, FaceEdgeContains},
     },
-    topology::{contour::Contour, edge::Edge, face::Face},
-};
-
-use crate::{
     intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection},
     split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
 };

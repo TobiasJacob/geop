@@ -1,4 +1,8 @@
-use crate::intersections::face_face::{face_face_intersection, FaceFaceIntersection};
+use crate::{
+    contains::volume_face::{volume_face_contains, VolumeFaceContains},
+    intersections::face_face::{face_face_intersection, FaceFaceIntersection},
+    split_if_necessary::edge_split_face::split_faces_by_edges_if_necessary,
+};
 use geop_topology::topology::{edge::Edge, face::Face, volume::Volume};
 
 // Points are ignored for now.
@@ -34,31 +38,44 @@ pub enum VolumeSplit {
     BoutA(Face),
 }
 
-pub fn volume_split(_volume_self: &Volume, _volume_other: &Volume) -> Vec<VolumeSplit> {
-    todo!("Implement volume split");
-    // let mut intersections = volume_split_edges(volume_self, volume_other);
+impl VolumeSplit {
+    pub fn face(&self) -> &Face {
+        match self {
+            VolumeSplit::AinB(face) => face,
+            VolumeSplit::AonBSameSide(face) => face,
+            VolumeSplit::AonBOpSide(face) => face,
+            VolumeSplit::AoutB(face) => face,
+            VolumeSplit::BinA(face) => face,
+            VolumeSplit::BonASameSide(face) => face,
+            VolumeSplit::BonAOpSide(face) => face,
+            VolumeSplit::BoutA(face) => face,
+        }
+    }
+}
 
-    // let mut faces_self = split_faces_by_edges_if_necessary(volume_self.all_faces(), &intersections);
-    // let mut faces_other =
-    //     split_faces_by_edges_if_necessary(volume_other.all_faces(), &intersections);
+pub fn volume_split(volume_self: &Volume, volume_other: &Volume) -> Vec<VolumeSplit> {
+    let intersections = volume_split_edges(volume_self, volume_other);
 
-    // faces_self
-    //     .into_iter()
-    //     .map(|edge| match volume_contains_face(face_other, &edge) {
-    //         FaceContainsEdge::Inside => VolumeSplit::AinB(edge),
-    //         FaceContainsEdge::OnBorderSameDir => VolumeSplit::AonBSameSide(edge),
-    //         FaceContainsEdge::OnBorderOppositeDir => VolumeSplit::AonBOpSide(edge),
-    //         FaceContainsEdge::Outside => VolumeSplit::AoutB(edge),
-    //     })
-    //     .chain(
-    //         faces_other
-    //             .into_iter()
-    //             .map(|face| match volume_contains_face(face_self, &edge) {
-    //                 FaceContainsEdge::Inside => VolumeSplit::BinA(edge),
-    //                 FaceContainsEdge::OnBorderSameDir => VolumeSplit::BonASameSide(edge),
-    //                 FaceContainsEdge::OnBorderOppositeDir => VolumeSplit::BonAOpSide(edge),
-    //                 FaceContainsEdge::Outside => VolumeSplit::BoutA(edge),
-    //             }),
-    //     )
-    //     .collect()
+    let faces_self = split_faces_by_edges_if_necessary(volume_self.all_faces(), &intersections);
+    let faces_other = split_faces_by_edges_if_necessary(volume_other.all_faces(), &intersections);
+
+    faces_self
+        .into_iter()
+        .map(|face| match volume_face_contains(volume_other, &face) {
+            VolumeFaceContains::Inside => VolumeSplit::AinB(face),
+            VolumeFaceContains::BoundarySameNormals => VolumeSplit::AonBSameSide(face),
+            VolumeFaceContains::BoundaryDifferentNormals => VolumeSplit::AonBOpSide(face),
+            VolumeFaceContains::Outside => VolumeSplit::AoutB(face),
+        })
+        .chain(
+            faces_other
+                .into_iter()
+                .map(|face| match volume_face_contains(volume_self, &face) {
+                    VolumeFaceContains::Inside => VolumeSplit::BinA(face),
+                    VolumeFaceContains::BoundarySameNormals => VolumeSplit::BonASameSide(face),
+                    VolumeFaceContains::BoundaryDifferentNormals => VolumeSplit::BonAOpSide(face),
+                    VolumeFaceContains::Outside => VolumeSplit::BoutA(face),
+                }),
+        )
+        .collect()
 }

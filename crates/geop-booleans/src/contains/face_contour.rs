@@ -1,6 +1,6 @@
 use geop_geometry::curve_surface_intersection::curve_surface::curve_surface_intersection;
 
-use crate::topology::{contour::Contour, face::Face};
+use geop_topology::topology::{contour::Contour, face::Face};
 
 use super::face_edge::{face_edge_contains, FaceEdgeContains};
 
