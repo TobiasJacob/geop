@@ -9,10 +9,7 @@ use geop_geometry::{
 
 use crate::topology::{edge::Edge, face::Face, volume::Volume};
 
-use super::{
-    edge_point::{edge_point_contains, EdgePointContains},
-    face_point::{face_point_contains, FacePointContains},
-};
+use super::face_point::{face_point_contains, FacePointContains};
 
 pub enum VolumePointContains {
     Inside,
