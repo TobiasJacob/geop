@@ -24,7 +24,7 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
 
             let split_points = vec![edge.start.unwrap(), edge.end.unwrap()];
 
-            let mut contours = face.boundaries.clone();
+            let contours = face.boundaries.clone();
             let contours = split_contours_by_points_if_necessary(contours, &split_points);
             let start_contour =
                 contours
@@ -78,6 +78,14 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                             edges.extend(end_contour.get_subcurve_single_point(edge.end.unwrap()));
                             edges.push(edge.flip());
                             new_contours.push(Contour::new(edges));
+                            // Push the rest of the contours
+                            for contour in contours.iter() {
+                                if !std::ptr::eq(contour, start_contour)
+                                    && !std::ptr::eq(contour, end_contour)
+                                {
+                                    new_contours.push(contour.clone());
+                                }
+                            }
                         }
                     }
                     Option::None => {
@@ -87,20 +95,36 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                         edges.push(edge.clone());
                         edges.push(edge.flip());
                         new_contours.push(Contour::new(edges));
+                        // Push the rest of the contours
+                        for contour in contours.iter() {
+                            if !std::ptr::eq(contour, start_contour) {
+                                new_contours.push(contour.clone());
+                            }
+                        }
                     }
                 },
                 Option::None => match end_contour {
                     Option::Some(end_contour) => {
                         // Make it 1 contour
                         let mut edges = end_contour.get_subcurve_single_point(edge.end.unwrap());
-                        edges.push(edge.clone());
                         edges.push(edge.flip());
+                        edges.push(edge.clone());
                         new_contours.push(Contour::new(edges));
+                        // Push the rest of the contours
+                        for contour in contours.iter() {
+                            if !std::ptr::eq(contour, end_contour) {
+                                new_contours.push(contour.clone());
+                            }
+                        }
                     }
                     Option::None => {
                         // Make it 1 contour
                         let edges = vec![edge.clone(), edge.flip()];
                         new_contours.push(Contour::new(edges));
+                        // Push the rest of the contours
+                        for contour in contours.iter() {
+                            new_contours.push(contour.clone());
+                        }
                     }
                 },
             }

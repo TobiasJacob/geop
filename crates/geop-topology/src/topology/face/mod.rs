@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use geop_geometry::{
+    curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curve_surface_intersection::curve_surface::curve_surface_intersection,
     points::point::Point,
     surfaces::{surface::Surface, SurfaceLike},
@@ -9,7 +10,7 @@ use geop_geometry::{
 
 use crate::contains::{
     contour_point::contour_point_contains,
-    edge_point::EdgePointContains,
+    edge_point::{edge_point_contains, EdgePointContains},
     face_point::{self, face_point_contains, FacePointContains},
 };
 
@@ -35,10 +36,30 @@ impl Face {
                 assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
             }
         }
-        Face {
+
+        let f = Face {
             boundaries,
             surface,
+        };
+        f.inner_point(); // Check if inner point exists
+        f
+    }
+
+    pub fn try_new_face(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Option<Face> {
+        for contour in boundaries.iter() {
+            for edge in contour.edges.iter() {
+                assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
+            }
         }
+
+        let f = Face {
+            boundaries,
+            surface,
+        };
+        if f.try_inner_point().is_some() {
+            return Some(f);
+        }
+        None
     }
 
     pub fn transform(&self, transform: Transform) -> Face {
@@ -69,17 +90,46 @@ impl Face {
         return edges;
     }
 
-    pub fn inner_point(&self) -> Point {
+    pub fn try_inner_point(&self) -> Option<Point> {
         for e1 in self.boundaries[0].edges.iter() {
             for e2 in self.boundaries[0].edges.iter() {
                 if e1 != e2 {
                     let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
                     let p = geodesic.get_midpoint();
                     if face_point_contains(self, p) == FacePointContains::Inside {
-                        return p;
+                        return Some(p);
                     }
                 }
             }
+        }
+        None
+    }
+
+    pub fn inner_point(&self) -> Point {
+        let p = self.boundaries[0].edges[0].get_midpoint();
+        let dist = 0.01;
+        let normal = self.normal(p);
+        let tangent = self.boundary_tangent(p);
+        let extend_dir = normal.cross(*tangent.expect_on_edge()) * dist;
+        let inner_point = self.surface.exp(p, extend_dir);
+        if face_point_contains(self, inner_point) == FacePointContains::Inside {
+            return inner_point;
+        }
+        // for e1 in self.all_edges().iter() {
+        //     for e2 in self.all_edges().iter() {
+        //         if e1 != e2 {
+        //             let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
+        //             let p = geodesic.get_midpoint();
+        //             // println!("Checking {:?}", p);
+        //             if face_point_contains(self, p) == FacePointContains::Inside {
+        //                 return p;
+        //             }
+        //         }
+        //     }
+        // }
+        println!("Error creating face");
+        for c in self.boundaries.iter() {
+            println!("{}", c);
         }
         panic!("No inner point found");
     }

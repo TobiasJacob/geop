@@ -196,11 +196,13 @@ impl Contour {
             EdgeIndex::OnCorner(i, _) => i,
         };
         let mut result = Vec::<Edge>::new();
-        result.push(Edge::new(
-            Some(point.clone()),
-            self.edges[i].end.clone(),
-            self.edges[i].curve.clone(),
-        ));
+        if Some(point) != self.edges[i].end {
+            result.push(Edge::new(
+                Some(point.clone()),
+                self.edges[i].end.clone(),
+                self.edges[i].curve.clone(),
+            ));
+        }
         for j in 1..(self.edges.len() - 1) {
             let edge = self.edges[(i + j) % self.edges.len()].clone();
             if edge.end == Some(point) {
@@ -209,16 +211,17 @@ impl Contour {
             }
             result.push(edge);
         }
-        result.push(Edge::new(
-            self.edges[(i + self.edges.len() - 1) % self.edges.len()]
-                .start
-                .clone(),
-            Some(point.clone()),
-            self.edges[(i + self.edges.len() - 1) % self.edges.len()]
-                .curve
-                .clone(),
-        ));
-
+        if Some(point) != self.edges[(i + self.edges.len() - 1) % self.edges.len()].start {
+            result.push(Edge::new(
+                self.edges[(i + self.edges.len() - 1) % self.edges.len()]
+                    .start
+                    .clone(),
+                Some(point.clone()),
+                self.edges[(i + self.edges.len() - 1) % self.edges.len()]
+                    .curve
+                    .clone(),
+            ));
+        }
         result
     }
 }

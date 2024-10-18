@@ -12,6 +12,8 @@ pub enum VolumeFaceContains {
 
 pub fn volume_face_contains(volume: &Volume, face: &Face) -> VolumeFaceContains {
     let p = face.inner_point();
+    println!("Face {}", face);
+    println!("Point {:?}", p);
     match volume_point_contains(volume, p) {
         VolumePointContains::Inside => VolumeFaceContains::Inside,
         VolumePointContains::OnFace(face2) => {

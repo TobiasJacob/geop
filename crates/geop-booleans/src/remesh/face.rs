@@ -204,6 +204,7 @@ impl ContourHierarchy {
     pub fn as_faces(&self, surface: Rc<Surface>) -> Vec<Face> {
         let mut faces = Vec::<Face>::new();
         let mut face = Face::new(vec![self.contour.clone()], surface.clone());
+        // if let Some(mut face) = face {
         for child in self.children.iter() {
             face.boundaries.push(child.contour.clone());
             for child2 in child.children.iter() {
@@ -211,6 +212,7 @@ impl ContourHierarchy {
             }
         }
         faces.push(face);
+        // }
         faces
     }
 }
