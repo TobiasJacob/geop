@@ -106,6 +106,10 @@ impl Face {
     }
 
     pub fn inner_point(&self) -> Point {
+        if self.boundaries.len() == 0 {
+            return self.surface.point_grid(1.0)[0];
+        }
+
         let p = self.boundaries[0].edges[0].get_midpoint();
         let dist = 0.01;
         let normal = self.normal(p);
@@ -115,18 +119,18 @@ impl Face {
         if face_point_contains(self, inner_point) == FacePointContains::Inside {
             return inner_point;
         }
-        // for e1 in self.all_edges().iter() {
-        //     for e2 in self.all_edges().iter() {
-        //         if e1 != e2 {
-        //             let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
-        //             let p = geodesic.get_midpoint();
-        //             // println!("Checking {:?}", p);
-        //             if face_point_contains(self, p) == FacePointContains::Inside {
-        //                 return p;
-        //             }
-        //         }
-        //     }
-        // }
+        for e1 in self.all_edges().iter() {
+            for e2 in self.all_edges().iter() {
+                if e1 != e2 {
+                    let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
+                    let p = geodesic.get_midpoint();
+                    // println!("Checking {:?}", p);
+                    if face_point_contains(self, p) == FacePointContains::Inside {
+                        return p;
+                    }
+                }
+            }
+        }
         println!("Error creating face");
         for c in self.boundaries.iter() {
             println!("{}", c);
