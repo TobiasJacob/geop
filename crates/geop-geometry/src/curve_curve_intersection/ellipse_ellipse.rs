@@ -1,6 +1,6 @@
 use crate::{curves::ellipse::Ellipse, points::point::Point};
 
-use super::curve_curve_intersection_numerical;
+use super::numerical::curve_curve_intersection_numerical;
 
 pub enum EllipseEllipseIntersection {
     Ellipse(Ellipse),
