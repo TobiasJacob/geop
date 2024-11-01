@@ -30,6 +30,13 @@ impl EFloat64 {
         }
     }
 
+    pub fn pi() -> Self {
+        Self {
+            upper_bound: std::f64::consts::PI,
+            lower_bound: std::f64::consts::PI,
+        }
+    }
+
     pub fn two_pi() -> Self {
         Self {
             upper_bound: 2.0 * std::f64::consts::PI,
