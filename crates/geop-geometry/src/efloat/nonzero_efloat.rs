@@ -1,27 +1,42 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use float_next_after::NextAfter;
-
 use super::{efloat::EFloat64, positive_efloat::PositiveEFloat64};
 
 // Wrapper for EFloat64 that ensures that the value is larger than 0.
 #[derive(Debug, Clone, Copy)]
 pub struct NonzeroEFloat64 {
-    pub as_efloat: EFloat64,
+    value: EFloat64,
 }
 
 impl NonzeroEFloat64 {
+    pub fn expect_nonzero(value: EFloat64) -> Self {
+        assert!(!(value == 0.0));
+        Self { value }
+    }
+
     pub fn one() -> Self {
         Self {
-            as_efloat: EFloat64::one(),
+            value: EFloat64::one(),
         }
     }
 
     pub fn two_pi() -> Self {
         Self {
-            as_efloat: EFloat64::two_pi(),
+            value: EFloat64::two_pi(),
         }
     }
+
+    pub fn as_efloat(self) -> EFloat64 {
+        self.value
+    }
+
+    // pub fn expect_positive(self) -> PositiveEFloat64 {
+    //     PositiveEFloat64::expect_positive(self.value)
+    // }
+
+    // pub fn expect_semipositive(self) -> PositiveEFloat64 {
+    //     PositiveEFloat64::expect_positive(self.value)
+    // }
 
     // pub fn sin(&self) -> EFloat64 {
     //     self.value.sin()
@@ -41,9 +56,7 @@ impl NonzeroEFloat64 {
     // }
 
     pub fn square(&self) -> PositiveEFloat64 {
-        PositiveEFloat64 {
-            as_efloat: self.as_efloat * self.as_efloat,
-        }
+        (self.value * self.value).expect_positive()
     }
 
     // pub fn atan2(&self, x: EFloat64) -> EFloat64 {
@@ -62,9 +75,7 @@ impl Neg for NonzeroEFloat64 {
     type Output = NonzeroEFloat64;
 
     fn neg(self) -> NonzeroEFloat64 {
-        Self {
-            as_efloat: -self.as_efloat,
-        }
+        Self { value: -self.value }
     }
 }
 
@@ -72,7 +83,7 @@ impl Add for NonzeroEFloat64 {
     type Output = EFloat64;
 
     fn add(self, other: Self) -> EFloat64 {
-        self.as_efloat + other.as_efloat
+        self.value + other.value
     }
 }
 
@@ -80,7 +91,7 @@ impl Sub for NonzeroEFloat64 {
     type Output = EFloat64;
 
     fn sub(self, other: Self) -> EFloat64 {
-        self.as_efloat - other.as_efloat
+        self.value - other.value
     }
 }
 
@@ -89,7 +100,7 @@ impl Mul for NonzeroEFloat64 {
 
     fn mul(self, other: Self) -> Self {
         Self {
-            as_efloat: self.as_efloat * other.as_efloat,
+            value: self.value * other.value,
         }
     }
 }
@@ -100,7 +111,7 @@ impl Div<NonzeroEFloat64> for NonzeroEFloat64 {
     // Can only divide by positive numbers.
     fn div(self, other: NonzeroEFloat64) -> NonzeroEFloat64 {
         NonzeroEFloat64 {
-            as_efloat: self.as_efloat / other,
+            value: self.value / other,
         }
     }
 }
@@ -111,13 +122,13 @@ impl Div<PositiveEFloat64> for NonzeroEFloat64 {
     // Can only divide by positive numbers.
     fn div(self, other: PositiveEFloat64) -> NonzeroEFloat64 {
         NonzeroEFloat64 {
-            as_efloat: self.as_efloat / other,
+            value: self.value / other,
         }
     }
 }
 
 impl PartialEq<f64> for NonzeroEFloat64 {
     fn eq(&self, other: &f64) -> bool {
-        self.as_efloat == *other
+        self.value == *other
     }
 }

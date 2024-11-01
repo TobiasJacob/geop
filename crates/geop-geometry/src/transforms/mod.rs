@@ -39,9 +39,9 @@ impl Mul<Point> for Transform {
                 result[i] = result[i] + EFloat64::new(self.matrix[i][j]) * other[j];
             }
         }
-        result[0] = result[0] / result[3].expect_non_zero();
-        result[1] = result[1] / result[3].expect_non_zero();
-        result[2] = result[2] / result[3].expect_non_zero();
+        result[0] = result[0] / result[3].expect_nonzero();
+        result[1] = result[1] / result[3].expect_nonzero();
+        result[2] = result[2] / result[3].expect_nonzero();
         Point::from_efloat(result[0], result[1], result[2])
     }
 }

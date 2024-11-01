@@ -51,10 +51,12 @@ impl Point {
     }
 
     pub fn normalize(self) -> Option<NormalizedPoint> {
-        let norm = self.norm().as_efloat.as_positive()?;
-        Some(NormalizedPoint {
-            as_point: Point::from_efloat(self.x / norm, self.y / norm, self.z / norm),
-        })
+        let norm = self.norm().as_efloat().as_positive()?;
+        Some(NormalizedPoint::expect_normalized(Point::from_efloat(
+            self.x / norm,
+            self.y / norm,
+            self.z / norm,
+        )))
     }
 
     pub fn is_parallel(self, other: Point) -> bool {
@@ -70,7 +72,7 @@ impl Point {
     pub fn angle(&self, other: Point) -> Option<SemiPositiveEFloat64> {
         let other = other.into();
         let dot = self.dot(other);
-        let norm = (self.norm() * other.norm()).as_efloat.as_positive()?;
+        let norm = (self.norm() * other.norm()).as_efloat().as_positive()?;
         let dot_norm = dot / norm;
         if dot_norm >= 1.0 {
             return Some(EFloat64::new(0.0).expect_semi_positive());
@@ -87,9 +89,9 @@ impl Point {
         let cross = self.cross(other);
         let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
-            return Some(-angle.as_efloat);
+            return Some(-angle.as_efloat());
         }
-        Some(angle.as_efloat)
+        Some(angle.as_efloat())
     }
 
     pub fn zero() -> Point {
@@ -112,13 +114,13 @@ impl Point {
         if self.is_zero() {
             None
         } else {
-            Some(NonZeroPoint { as_point: self })
+            Some(NonZeroPoint::expect_nonzero(self))
         }
     }
 
     pub fn expect_non_zero(self) -> NonZeroPoint {
         assert!(!self.is_zero());
-        NonZeroPoint { as_point: self }
+        NonZeroPoint::expect_nonzero(self)
     }
 }
 

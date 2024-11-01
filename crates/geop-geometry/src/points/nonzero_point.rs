@@ -6,24 +6,33 @@ use super::{normalized_point::NormalizedPoint, point::Point};
 
 #[derive(Debug, Copy, Clone)]
 pub struct NonZeroPoint {
-    pub as_point: Point,
+    value: Point,
 }
 
 impl NonZeroPoint {
+    pub fn expect_nonzero(as_point: Point) -> Self {
+        assert!(!as_point.is_zero());
+        Self { value: as_point }
+    }
+
+    pub fn as_point(self) -> Point {
+        self.value
+    }
+
     pub fn normalize(self) -> NormalizedPoint {
-        self.as_point.normalize().unwrap()
+        self.value.normalize().unwrap()
     }
 
     pub fn norm_sq(self) -> PositiveEFloat64 {
-        self.as_point.norm_sq().as_efloat.expect_positive()
+        self.value.norm_sq().as_efloat().expect_positive()
     }
 
     pub fn norm(self) -> PositiveEFloat64 {
-        self.as_point.norm().as_efloat.expect_positive()
+        self.value.norm().as_efloat().expect_positive()
     }
 
     pub fn parallel_decomposition(self, other: Point) -> Point {
-        self.as_point.dot(other) / self.norm_sq() * self.as_point
+        self.value.dot(other) / self.norm_sq() * self.value
     }
 
     pub fn perpendicular_decomposition(self, other: Point) -> Point {
@@ -32,7 +41,7 @@ impl NonZeroPoint {
     }
 
     pub fn parallel_distance(self, other: Point) -> EFloat64 {
-        self.as_point.dot(other) / self.norm()
+        self.value.dot(other) / self.norm()
     }
 }
 
@@ -40,15 +49,13 @@ impl Neg for NonZeroPoint {
     type Output = Self;
 
     fn neg(self) -> Self {
-        Self {
-            as_point: -self.as_point,
-        }
+        Self { value: -self.value }
     }
 }
 
 impl PartialEq for NonZeroPoint {
     fn eq(&self, other: &NonZeroPoint) -> bool {
-        self.as_point == other.as_point
+        self.value == other.value
     }
 }
 
@@ -56,6 +63,6 @@ impl Mul<EFloat64> for NonZeroPoint {
     type Output = Point;
 
     fn mul(self, other: EFloat64) -> Point {
-        self.as_point * other
+        self.value * other
     }
 }
