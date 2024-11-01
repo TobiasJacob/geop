@@ -40,9 +40,9 @@ impl ContourTangent {
             ContourTangent::OnCorner(tangent1, tangent2) => (tangent1, tangent2),
         };
         // Check sign of det(tangent1 - curve_dir, tangent2 - curve_dir, normal - curve_dir)
-        let curve_dir = -curve_dir.normalize();
-        let tangent1 = -tangent1.normalize();
-        let tangent2 = tangent2.normalize();
+        let curve_dir = -curve_dir.normalize().unwrap();
+        let tangent1 = -tangent1.normalize().unwrap();
+        let tangent2 = tangent2.normalize().unwrap();
         let det = (tangent1 - curve_dir)
             .cross(tangent2 - curve_dir)
             .dot(normal - curve_dir);

@@ -22,10 +22,10 @@ pub fn line_cylinder_intersection(line: &Line, cylinder: &Cylinder) -> CylinderL
     // The math is easier if we translate everything so that the line passes through the origin
     // So we point b as the cylinder's basis, in the coordinate frame of the line
     let b = cylinder.basis - line.basis;
-    let a = cylinder.extend_dir.normalize();
+    let a = cylinder.extend_dir.normalize().unwrap();
     let r = cylinder.radius.norm();
 
-    let n = line.direction.clone().normalize();
+    let n = line.direction.clone().normalize().unwrap();
 
     let n_cross_a = n.cross(a);
     let left_term = n_cross_a.dot(b.cross(a));

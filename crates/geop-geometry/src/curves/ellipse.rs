@@ -12,7 +12,7 @@ pub struct Ellipse {
 
 impl Ellipse {
     pub fn new(basis: Point, normal: Point, major_radius: Point, minor_radius: Point) -> Ellipse {
-        let normal = normal.normalize();
+        assert!(normal.is_normalized());
         assert!(
             normal.dot(major_radius).abs() < EQ_THRESHOLD,
             "Major radius and normal must be orthogonal"
@@ -114,7 +114,7 @@ impl CurveLike for Ellipse {
         let x = self.major_radius.dot(p) / self.major_radius.norm();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm();
         let tangent = y * self.major_radius - x * self.minor_radius;
-        tangent.normalize()
+        tangent.normalize().unwrap()
     }
 
     fn on_curve(&self, p: Point) -> bool {
@@ -129,7 +129,7 @@ impl CurveLike for Ellipse {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
-        self.major_radius.norm() * angle
+        self.major_radius.norm() * angle.unwrap()
     }
 
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
@@ -221,10 +221,11 @@ impl CurveLike for Ellipse {
                 let mid = (start_rel + end_rel) / 2.0;
                 // println!("mid: {:?}", mid);
                 if mid.norm() < EQ_THRESHOLD {
-                    return self
-                        .transform_point_from_circle(Point::unit_z().cross(start_rel).normalize());
+                    return self.transform_point_from_circle(
+                        Point::unit_z().cross(start_rel).normalize().unwrap(),
+                    );
                 }
-                let mid = mid.normalize();
+                let mid = mid.normalize().unwrap();
                 // println!("mid: {:?}", mid);
                 let p1 = self.transform_point_from_circle(mid);
                 if self.between(p1, Some(start), Some(end)) {
@@ -250,7 +251,7 @@ impl CurveLike for Ellipse {
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         let v = v - self.normal * (v.dot(self.normal));
-        v.normalize() * self.major_radius.norm() + self.basis
+        v.normalize().unwrap() * self.major_radius.norm() + self.basis
     }
 
     fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox {

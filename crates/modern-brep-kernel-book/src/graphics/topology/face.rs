@@ -64,7 +64,11 @@ mod tests {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         let mut sphere = primitive_sphere(Point::zero(), 1.0);
-        let edge = primitive_circle(Point::zero(), -Point::new(0.5, 3.0, 0.5).normalize(), 1.0);
+        let edge = primitive_circle(
+            Point::zero(),
+            -Point::new(0.5, 3.0, 0.5).normalize().unwrap(),
+            1.0,
+        );
         sphere.boundaries.push(Contour::new(vec![edge.clone()]));
 
         scene.faces.push((sphere, Color::light_gray()));

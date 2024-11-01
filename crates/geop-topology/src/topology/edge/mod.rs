@@ -91,7 +91,7 @@ impl Edge {
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(edge_point_contains(self, p) != EdgePointContains::Outside);
-        self.curve.tangent(p).normalize()
+        self.curve.tangent(p).normalize().unwrap()
     }
 
     pub fn interpolate(&self, t: f64) -> Point {

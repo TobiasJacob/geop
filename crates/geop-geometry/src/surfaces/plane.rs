@@ -22,8 +22,8 @@ impl Plane {
         assert!(!u_slope.cross(v_slope).is_zero());
         Plane {
             basis,
-            u_slope: u_slope.normalize(),
-            v_slope: v_slope.normalize(),
+            u_slope: u_slope.normalize().unwrap(),
+            v_slope: v_slope.normalize().unwrap(),
         }
     }
 
@@ -31,7 +31,11 @@ impl Plane {
         let basis = transform * self.basis;
         let u_slope = transform * (self.u_slope + self.basis) - basis;
         let v_slope = transform * (self.v_slope + self.basis) - basis;
-        Plane::new(basis, u_slope.normalize(), v_slope.normalize())
+        Plane::new(
+            basis,
+            u_slope.normalize().unwrap(),
+            v_slope.normalize().unwrap(),
+        )
     }
 
     fn normal(&self) -> Point {

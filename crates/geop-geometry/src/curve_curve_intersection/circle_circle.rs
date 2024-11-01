@@ -43,15 +43,15 @@ pub fn circle_circle_intersection(
         }
         // Check if both circles intersect in one point from outside
         else if (d - r1 - r2).abs() < EQ_THRESHOLD {
-            let p = p1 + (p2 - p1).normalize() * r1;
+            let p = p1 + (p2 - p1).normalize().unwrap() * r1;
             return CircleCircleIntersection::OnePoint(p);
         }
         // Check if both circles intersect in one point from inside
         else if (r1 - d - r2).abs() < EQ_THRESHOLD {
-            let p = p1 + (p2 - p1).normalize() * r1;
+            let p = p1 + (p2 - p1).normalize().unwrap() * r1;
             return CircleCircleIntersection::OnePoint(p);
         } else if (r2 - d - r1).abs() < EQ_THRESHOLD {
-            let p = p2 + (p1 - p2).normalize() * r2;
+            let p = p2 + (p1 - p2).normalize().unwrap() * r2;
             return CircleCircleIntersection::OnePoint(p);
         }
         // Check if both circles are disjoint
@@ -60,9 +60,14 @@ pub fn circle_circle_intersection(
         }
         // Check if two point intersection
         else {
-            let p = p1 + (p2 - p1).normalize() * a;
+            let p = p1 + (p2 - p1).normalize().unwrap() * a;
             let h = (r1.powi(2) - a.powi(2)).sqrt();
-            let n = (p2 - p1).normalize().cross(n1).normalize();
+            let n = (p2 - p1)
+                .normalize()
+                .unwrap()
+                .cross(n1)
+                .normalize()
+                .unwrap();
             let p1 = p + n * h;
             let p2 = p - n * h;
             return CircleCircleIntersection::TwoPoint(p1, p2);
@@ -117,10 +122,26 @@ mod tests {
 
     #[test]
     fn test_circle_circle_intersection() {
-        let a = Circle::new(Point::new(0.0, 0.0, 0.0), Point::new(0.0, 0.0, 3.0), 2.0);
-        let b = Circle::new(Point::new(1.0, 0.0, 0.0), Point::new(0.0, 0.0, 1.0), 2.0);
-        let c: Circle = Circle::new(Point::new(4.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), 2.0);
-        let d = Circle::new(Point::new(6.0, 0.0, 0.0), Point::new(0.0, 0.0, 2.0), 2.0);
+        let a = Circle::new(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 3.0).normalize().unwrap(),
+            2.0,
+        );
+        let b = Circle::new(
+            Point::new(1.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 1.0).normalize().unwrap(),
+            2.0,
+        );
+        let c: Circle = Circle::new(
+            Point::new(4.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 2.0).normalize().unwrap(),
+            2.0,
+        );
+        let d = Circle::new(
+            Point::new(6.0, 0.0, 0.0),
+            Point::new(0.0, 0.0, 2.0).normalize().unwrap(),
+            2.0,
+        );
 
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::TwoPoint(p1, p2) => {

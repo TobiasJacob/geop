@@ -12,14 +12,14 @@ impl Line {
     pub fn new(basis: Point, direction: Point) -> Line {
         Line {
             basis,
-            direction: direction.normalize(),
+            direction: direction.normalize().unwrap(),
         }
     }
 
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let direction = transform * (self.direction + self.basis) - basis;
-        Line::new(basis, direction.normalize())
+        Line::new(basis, direction.normalize().unwrap())
     }
 
     pub fn neg(&self) -> Line {

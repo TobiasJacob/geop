@@ -31,7 +31,7 @@ mod tests {
         (v1, v2)
     }
 
-    fn generate_secene_3() -> (Volume, Volume) {
+    fn _generate_secene_3() -> (Volume, Volume) {
         let v1 = primitive_cube(2.0, 1.0, 1.0)
             .transform(Transform::from_translation(Point::new(-1.0, 0.0, 0.0)));
         let v2 = primitive_cube(1.0, 0.5, 0.5)

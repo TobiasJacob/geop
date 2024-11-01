@@ -28,7 +28,7 @@ pub fn circle_line_intersection(circle: &Circle, line: &Line) -> CircleLineInter
     );
 
     let v = circle.basis - line.basis;
-    let dir = line.direction.normalize();
+    let dir = line.direction.normalize().unwrap();
     let projection = v.dot(dir);
     let distance_sq = v.norm_sq() - projection * projection;
     let radius_sq = circle.radius.norm_sq();

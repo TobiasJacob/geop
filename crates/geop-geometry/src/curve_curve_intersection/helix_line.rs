@@ -21,7 +21,10 @@ pub fn helix_line_intersection(helix: &Helix, line: &Line) -> HelixLineIntersect
             let line_base_projected = line.basis - helix.basis;
             let line_base_projected =
                 line_base_projected - line_base_projected.dot(helix.pitch) * helix.pitch;
-            let angle = helix.radius.angle2(line_base_projected, helix.pitch);
+            let angle = helix
+                .radius
+                .angle2(line_base_projected, helix.pitch)
+                .unwrap();
             let first_point = helix.basis + helix.radius * angle.cos() + helix.pitch * angle.sin();
             assert!(helix.on_curve(first_point));
             assert!(line.on_curve(first_point));

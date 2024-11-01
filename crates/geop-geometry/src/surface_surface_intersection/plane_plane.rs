@@ -22,7 +22,7 @@ pub fn plane_plane_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection 
             PlanePlaneIntersection::None
         }
     } else {
-        let v = n_a.cross(n_b).normalize();
+        let v = n_a.cross(n_b).normalize().unwrap();
         let c = Line::new(b_b, v.cross(n_b));
 
         match line_plane_intersection(&c, &a) {

@@ -17,13 +17,13 @@ pub enum CircleTransform {
 
 impl Circle {
     pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
+        assert!(normal.is_normalized());
         let radius = match Point::unit_x().cross(normal).norm_sq()
             > Point::unit_y().cross(normal).norm_sq()
         {
-            true => Point::unit_x().cross(normal).normalize() * radius,
-            false => Point::unit_y().cross(normal).normalize() * radius,
+            true => Point::unit_x().cross(normal).normalize().unwrap() * radius,
+            false => Point::unit_y().cross(normal).normalize().unwrap() * radius,
         };
-        let normal = normal.normalize();
         assert!(
             normal.dot(radius).abs() < EQ_THRESHOLD,
             "Radius and normal must be orthogonal"
@@ -42,7 +42,11 @@ impl Circle {
         let radius = transform * (self.radius + self.basis) - basis;
         let scale_factor = radius.norm() / self.radius.norm();
         assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
-        CircleTransform::Circle(Circle::new(basis, normal.normalize(), radius.norm()))
+        CircleTransform::Circle(Circle::new(
+            basis,
+            normal.normalize().unwrap(),
+            radius.norm(),
+        ))
     }
 
     pub fn neg(&self) -> Circle {
@@ -64,7 +68,7 @@ impl CurveLike for Circle {
 
     fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        self.normal.cross(p - self.basis).normalize()
+        self.normal.cross(p - self.basis).normalize().unwrap()
     }
 
     fn on_curve(&self, p: Point) -> bool {
@@ -76,7 +80,7 @@ impl CurveLike for Circle {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
-        self.radius.norm() * angle
+        self.radius.norm() * angle.unwrap()
     }
 
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
@@ -165,10 +169,10 @@ impl CurveLike for Circle {
                 let end_rel = end - self.basis;
                 let mid = (start_rel + end_rel) / 2.0;
                 if mid.norm() < EQ_THRESHOLD {
-                    return self.normal.cross(start_rel).normalize() * self.radius.norm()
+                    return self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
                         + self.basis;
                 }
-                let mid = mid.normalize() * self.radius.norm();
+                let mid = mid.normalize().unwrap() * self.radius.norm();
                 let p1 = mid + self.basis;
                 if self.between(p1, Some(start), Some(end)) {
                     return p1;
@@ -193,7 +197,7 @@ impl CurveLike for Circle {
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         let v = v - self.normal * (v.dot(self.normal));
-        v.normalize() * self.radius.norm() + self.basis
+        v.normalize().unwrap() * self.radius.norm() + self.basis
     }
 
     fn get_bounding_box(

@@ -24,8 +24,8 @@ impl Helix {
             pitch,
             radius,
             dir_cross: match right_winding {
-                true => pitch.normalize().cross(radius),
-                false => -pitch.normalize().cross(radius),
+                true => pitch.normalize().unwrap().cross(radius),
+                false => -pitch.normalize().unwrap().cross(radius),
             },
             right_winding,
         }
@@ -63,8 +63,9 @@ impl CurveLike for Helix {
 
     fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        (self.pitch.cross(p - self.basis).normalize() + self.pitch / 2.0 / f64::consts::PI)
+        (self.pitch.cross(p - self.basis).normalize().unwrap() + self.pitch / 2.0 / f64::consts::PI)
             .normalize()
+            .unwrap()
     }
 
     fn on_curve(&self, p: Point) -> bool {

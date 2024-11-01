@@ -43,10 +43,12 @@ impl Point {
     }
 
     // TODO: This operation should return a Result, as the operation is not always possible. It fails when norm is zero. This is not as rare as it seems. It helps users to catch bugs.
-    pub fn normalize(self) -> Point {
+    pub fn normalize(self) -> Option<Point> {
         let norm = self.norm();
-        assert!(norm > EQ_THRESHOLD);
-        Point::new(self.x / norm, self.y / norm, self.z / norm)
+        if norm < EQ_THRESHOLD {
+            return None;
+        }
+        Some(Point::new(self.x / norm, self.y / norm, self.z / norm))
     }
 
     pub fn is_parallel(self, other: Point) -> bool {
@@ -59,28 +61,30 @@ impl Point {
         dot.abs() < EQ_THRESHOLD
     }
 
-    pub fn angle(&self, other: Point) -> f64 {
+    pub fn angle(&self, other: Point) -> Option<f64> {
         let dot = self.dot(other);
         let norm = self.norm() * other.norm();
-        assert!(norm > EQ_THRESHOLD);
+        if norm < EQ_THRESHOLD {
+            return None;
+        }
         let dot_norm = dot / norm;
         if dot_norm > 1.0 - EQ_THRESHOLD {
-            return 0.0;
+            return Some(0.0);
         }
         if dot_norm < -1.0 + EQ_THRESHOLD {
-            return std::f64::consts::PI;
+            return Some(std::f64::consts::PI);
         }
-        dot_norm.acos()
+        Some(dot_norm.acos())
     }
 
     // Oriented angle between two vectors around a normal vector. Measured from self to other.
-    pub fn angle2(&self, other: Point, normal: Point) -> f64 {
+    pub fn angle2(&self, other: Point, normal: Point) -> Option<f64> {
         let cross = self.cross(other);
-        let angle = self.angle(other);
+        let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
-            return -angle;
+            return Some(-angle);
         }
-        angle
+        Some(angle)
     }
 
     pub fn zero() -> Point {

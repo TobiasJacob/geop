@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curve_surface_intersection::curve_surface::curve_surface_intersection,
     point::Point,
     surfaces::{surface::Surface, SurfaceLike},
@@ -10,8 +9,8 @@ use geop_geometry::{
 
 use crate::contains::{
     contour_point::contour_point_contains,
-    edge_point::{edge_point_contains, EdgePointContains},
-    face_point::{self, face_point_contains, FacePointContains},
+    edge_point::EdgePointContains,
+    face_point::{face_point_contains, FacePointContains},
 };
 
 use super::{

@@ -19,7 +19,7 @@ mod tests {
         let face = primitive_sphere(Point::zero(), 1.0);
         scene.faces.push((face.clone(), Color::light_gray()));
 
-        let anchor = Point::new(-0.5, -1.3, 0.5).normalize();
+        let anchor = Point::new(-0.5, -1.3, 0.5).normalize().unwrap();
         scene.points.push((anchor, Color::blue()));
 
         for p in face.surface.point_grid(2.0) {
@@ -50,7 +50,7 @@ mod tests {
         let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
         scene.faces.push((face.clone(), Color::light_gray()));
 
-        let mut anchor = Point::new(-0.5, -1.3, 0.0).normalize();
+        let mut anchor = Point::new(-0.5, -1.3, 0.0).normalize().unwrap();
         anchor.z = -0.5;
         scene.points.push((anchor, Color::blue()));
 

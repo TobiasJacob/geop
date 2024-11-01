@@ -21,19 +21,19 @@ pub struct Cylinder {
 
 impl Cylinder {
     pub fn new(basis: Point, extend_dir: Point, radius: f64, normal_outwards: bool) -> Cylinder {
-        let extend_dir = extend_dir.normalize();
+        let extend_dir = extend_dir.normalize().unwrap();
         let radius = match Point::unit_x().cross(extend_dir).norm_sq()
             > Point::unit_y().cross(extend_dir).norm_sq()
         {
-            true => Point::unit_x().cross(extend_dir).normalize() * radius,
-            false => Point::unit_y().cross(extend_dir).normalize() * radius,
+            true => Point::unit_x().cross(extend_dir).normalize().unwrap() * radius,
+            false => Point::unit_y().cross(extend_dir).normalize().unwrap() * radius,
         };
         Cylinder {
             basis,
             extend_dir,
             radius,
             normal_outwards,
-            dir_cross: extend_dir.normalize().cross(radius),
+            dir_cross: extend_dir.normalize().unwrap().cross(radius),
         }
     }
     fn transform(&self, transform: Transform) -> Self {
@@ -42,7 +42,7 @@ impl Cylinder {
         let radius = transform * (self.radius + self.basis) - basis;
         Cylinder::new(
             basis,
-            normal.normalize(),
+            normal.normalize().unwrap(),
             radius.norm(),
             self.normal_outwards,
         )
@@ -66,7 +66,7 @@ impl SurfaceLike for Cylinder {
     fn normal(&self, p: Point) -> Point {
         let p = p - self.basis;
         let p = p - p.dot(self.extend_dir) * self.extend_dir;
-        let normal = p.normalize();
+        let normal = p.normalize().unwrap();
         if self.normal_outwards {
             normal
         } else {
@@ -98,7 +98,7 @@ impl SurfaceLike for Cylinder {
         let x = x - x.dot(self.extend_dir) * self.extend_dir;
         let y = y - self.basis;
         let y = y - y.dot(self.extend_dir) * self.extend_dir;
-        let angle = x.angle(y);
+        let angle = x.angle(y).unwrap();
         let cylinder_dit = self.radius.norm() * angle;
         return (cylinder_dit * cylinder_dit + height_diff * height_diff).sqrt();
     }
@@ -127,12 +127,12 @@ impl SurfaceLike for Cylinder {
         let height_diff = y.dot(self.extend_dir) - x.dot(self.extend_dir);
         let x = x - x.dot(self.extend_dir) * self.extend_dir;
         let y = y - y.dot(self.extend_dir) * self.extend_dir;
-        let angle = x.angle(y);
+        let angle = x.angle(y).unwrap();
         if angle < EQ_THRESHOLD {
             return Some(height_diff * self.extend_dir);
         }
-        let x = x.normalize();
-        let y = y.normalize();
+        let x = x.normalize().unwrap();
+        let y = y.normalize().unwrap();
 
         let dir = y - x.dot(y) * x;
         assert!(dir.dot(self.extend_dir).abs() < EQ_THRESHOLD);
@@ -164,7 +164,7 @@ impl SurfaceLike for Cylinder {
         let q_height = q_loc.dot(self.extend_dir);
         let p_proj = p_loc - p_height * self.extend_dir;
         let q_proj = q_loc - self.extend_dir * q_height;
-        let angle = p_proj.angle(q_proj);
+        let angle = p_proj.angle(q_proj).unwrap();
         if angle < EQ_THRESHOLD {
             return Curve::Line(Line::new(p, q - p));
         }
@@ -175,7 +175,7 @@ impl SurfaceLike for Cylinder {
         if helix_pitch.norm() < EQ_THRESHOLD {
             return Curve::Circle(Circle::new(
                 self.basis + p_height * self.extend_dir,
-                self.extend_dir.normalize(),
+                self.extend_dir.normalize().unwrap(),
                 helix_radius.norm(),
             ));
         }
@@ -212,7 +212,7 @@ impl SurfaceLike for Cylinder {
         let point = point - self.basis;
         let height_diff = point.dot(self.extend_dir) * self.extend_dir;
         let point = point - height_diff;
-        point.normalize() * self.radius.norm() + height_diff + self.basis
+        point.normalize().unwrap() * self.radius.norm() + height_diff + self.basis
     }
 
     fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {

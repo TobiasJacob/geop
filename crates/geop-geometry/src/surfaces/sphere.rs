@@ -40,9 +40,9 @@ impl Sphere {
     fn normal(&self, p: Point) -> Point {
         assert!(self.on_surface(p));
         if self.normal_outwards {
-            (p - self.basis).normalize()
+            (p - self.basis).normalize().unwrap()
         } else {
-            (self.basis - p).normalize()
+            (self.basis - p).normalize().unwrap()
         }
     }
 
@@ -80,7 +80,7 @@ impl SurfaceLike for Sphere {
     fn distance(&self, x: Point, y: Point) -> f64 {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
-        let angle = (x - self.basis).angle(y - self.basis);
+        let angle = (x - self.basis).angle(y - self.basis).unwrap();
         self.radius * angle
     }
 
@@ -153,7 +153,7 @@ impl SurfaceLike for Sphere {
         assert!(self.on_surface(p));
         assert!(self.on_surface(q));
         assert!(p != q);
-        let normal = (p - self.basis).cross(q - self.basis).normalize();
+        let normal = (p - self.basis).cross(q - self.basis).normalize().unwrap();
         let circle = Circle::new(self.basis, normal, self.radius);
         Curve::Circle(circle)
     }

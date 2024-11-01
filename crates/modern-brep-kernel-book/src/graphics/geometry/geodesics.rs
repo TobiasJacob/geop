@@ -34,7 +34,7 @@ mod tests {
             Point::new(-0.2, -1.4, 0.3),
         ]
         .iter()
-        .map(|p| p.normalize())
+        .map(|p| p.normalize().unwrap())
         .collect::<Vec<Point>>();
 
         for p in points.iter() {
@@ -110,7 +110,7 @@ mod tests {
         .map(|p| {
             let mut p2 = p.clone();
             p2.z = 0.0;
-            let mut p2 = p2.normalize();
+            let mut p2 = p2.normalize().unwrap();
             p2.z = p.z;
             p2
         })
@@ -189,7 +189,7 @@ mod tests {
         .map(|p| {
             let mut p2 = p.clone();
             p2.z = 0.0;
-            let mut p2 = p2.normalize();
+            let mut p2 = p2.normalize().unwrap();
             p2.z = p.z;
             p2
         })

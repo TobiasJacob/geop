@@ -21,10 +21,10 @@ impl ShellNormal {
             match self {
                 ShellNormal::OnFace(normal) => normal.dot(curve_dir) > 0.0,
                 ShellNormal::OnEdge(normal1, normal2, tangent1neg2) => {
-                    let face1dir = normal1.cross(*tangent1neg2).normalize();
-                    let face2dir = tangent1neg2.cross(*normal2).normalize();
+                    let face1dir = normal1.cross(*tangent1neg2).normalize().unwrap();
+                    let face2dir = tangent1neg2.cross(*normal2).normalize().unwrap();
                     // check determinant of the matrix [tangent1neg2, face1dir - curve_dir, face2dir - curve_dir]
-                    let curve_dir = -curve_dir.normalize();
+                    let curve_dir = -curve_dir.normalize().unwrap();
                     let det = (face1dir - curve_dir)
                         .cross(face2dir - curve_dir)
                         .dot(*tangent1neg2 - curve_dir);
@@ -32,11 +32,11 @@ impl ShellNormal {
                 }
                 ShellNormal::OnPoint(tangent1, tangent2, tangent3) => {
                     // check determinant of the matrix [tangent1, face1dir - curve_dir, face2dir - curve_dir]
-                    let tangent1 = tangent1.normalize();
-                    let tangent2 = tangent2.normalize();
-                    let tangent3 = tangent3.normalize();
-                    let curve_dir = -curve_dir.normalize();
-                    let curve_dir = -curve_dir.normalize();
+                    let tangent1 = tangent1.normalize().unwrap();
+                    let tangent2 = tangent2.normalize().unwrap();
+                    let tangent3 = tangent3.normalize().unwrap();
+                    let curve_dir = -curve_dir.normalize().unwrap();
+                    let curve_dir = -curve_dir.normalize().unwrap();
                     let det = (tangent1 - curve_dir)
                         .cross(tangent2 - curve_dir)
                         .dot(tangent3 - curve_dir);
@@ -90,7 +90,7 @@ impl Shell {
                 // Now we have to order it like right hand rule, such that the Shell is between the fingers.
                 // First face is between thumb and index finger
                 // Now figure out if the face between index and middle finger is the second or third face
-                match t1out.normalize() == t2in.normalize() {
+                match t1out.normalize().unwrap() == t2in.normalize().unwrap() {
                     true => ShellNormal::OnPoint(*t1out, *t2out, *t3out), // Retourn all outgoing tangents
                     false => ShellNormal::OnPoint(*t1out, *t3out, *t2out),
                 }

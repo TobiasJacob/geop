@@ -12,7 +12,7 @@ pub enum PlaneSphereIntersection {
 
 pub fn plane_sphere_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersection {
     // see https://math.stackexchange.com/questions/943383/determine-circle-of-intersection-of-plane-and-sphere
-    let n = b.normal(b.basis).normalize();
+    let n = b.normal(b.basis).normalize().unwrap();
     let rho = (a.basis - b.basis).dot(n);
     let r = a.radius;
 

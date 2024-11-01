@@ -100,7 +100,7 @@ async fn run() {
 
         let union_face = face_face_difference(&face2, &face1)[1].clone();
 
-        let object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
+        let _object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
 
         let mut sphere = primitive_sphere(Point::zero(), 1.0);
         sphere.boundaries.push(Contour::new(vec![primitive_circle(

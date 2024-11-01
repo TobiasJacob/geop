@@ -13,7 +13,7 @@ pub fn primitive_arc(from: Point, to: Point, radius: f64, normal: Point) -> Edge
     let h = (radius * radius - d.norm_sq() / 4.0).sqrt();
     assert!(h.is_finite());
     assert!(h > 0.0);
-    let center = midpoint + h * normal.cross(d).normalize();
+    let center = midpoint + h * normal.cross(d).normalize().unwrap();
 
     Edge::new(
         Some(from),
