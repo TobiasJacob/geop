@@ -1,6 +1,7 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curves::CurveLike,
+    efloat::EFloat64,
     point::Point,
 };
 
@@ -65,28 +66,28 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
             }
             if let Some(self_end) = edge_self.end {
                 let i = (self_end - point_array.basis).dot(point_array.extend_dir);
-                if min_i.is_none() || i < min_i.unwrap() {
+                if min_i.is_none() || i < min_i.unwrap().lower_bound {
                     min_i = Some(i);
                 }
-                if max_i.is_none() || i > max_i.unwrap() {
+                if max_i.is_none() || i > max_i.unwrap().lower_bound {
                     max_i = Some(i);
                 }
             }
             if let Some(other_start) = edge_other.start {
                 let i = (other_start - point_array.basis).dot(point_array.extend_dir);
-                if min_i.is_none() || i < min_i.unwrap() {
+                if min_i.is_none() || i < min_i.unwrap().lower_bound {
                     min_i = Some(i);
                 }
-                if max_i.is_none() || i > max_i.unwrap() {
+                if max_i.is_none() || i > max_i.unwrap().lower_bound {
                     max_i = Some(i);
                 }
             }
             if let Some(other_end) = edge_other.end {
                 let i = (other_end - point_array.basis).dot(point_array.extend_dir);
-                if min_i.is_none() || i < min_i.unwrap() {
+                if min_i.is_none() || i < min_i.unwrap().lower_bound {
                     min_i = Some(i);
                 }
-                if max_i.is_none() || i > max_i.unwrap() {
+                if max_i.is_none() || i > max_i.unwrap().lower_bound {
                     max_i = Some(i);
                 }
             }
@@ -95,7 +96,7 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
                 (Some(min_i), Some(max_i)) => {
                     let mut intersections = Vec::new();
                     for i in (min_i.ceil() as usize)..(max_i.floor() as usize) {
-                        intersections.push(point_array.basis + i as f64 * point_array.extend_dir);
+                        intersections.push(point_array.basis + EFloat64::new(i as f64) * point_array.extend_dir);
                     }
                     EdgeEdgeIntersection::Points(intersections)
                 }

@@ -11,7 +11,7 @@ pub mod window_state;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use geop_geometry::point::Point;
+    use geop_geometry::{efloat::EFloat64, point::Point};
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
         topology::scene::{Color, Scene},
@@ -21,7 +21,7 @@ mod tests {
 
     #[rstest]
     async fn test_headless_renderer_light(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(1.0, 1.0, 1.0);
+        let volume = primitive_cube(EFloat64::one(), EFloat64::one(), EFloat64::one());
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
@@ -29,7 +29,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::from_f64(0.0, -2.0, 1.0),
                 std::path::Path::new("test_light.png"),
             )
             .await;
@@ -37,7 +37,7 @@ mod tests {
 
     #[rstest]
     async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(1.0, 1.0, 1.0);
+        let volume = primitive_cube(EFloat64::one(), EFloat64::one(), EFloat64::one());
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
@@ -45,7 +45,7 @@ mod tests {
                 &scene,
                 true,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::from_f64(0.0, -2.0, 1.0),
                 std::path::Path::new("test_dark.png"),
             )
             .await;

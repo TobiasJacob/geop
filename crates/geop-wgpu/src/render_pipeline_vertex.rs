@@ -35,14 +35,14 @@ fn render_face(
 fn cube_vertex_buffer(size: f64, color: Color) -> VertexBuffer {
     // Simple 12 triangles to form a cube
     let size = size / 2.0;
-    let point1 = Point::new(size, size, -size);
-    let point2 = Point::new(size, -size, -size);
-    let point3 = Point::new(-size, -size, -size);
-    let point4 = Point::new(-size, size, -size);
-    let point5 = Point::new(size, size, size);
-    let point6 = Point::new(size, -size, size);
-    let point7 = Point::new(-size, -size, size);
-    let point8 = Point::new(-size, size, size);
+    let point1 = Point::from_f64(size, size, -size);
+    let point2 = Point::from_f64(size, -size, -size);
+    let point3 = Point::from_f64(-size, -size, -size);
+    let point4 = Point::from_f64(-size, size, -size);
+    let point5 = Point::from_f64(size, size, size);
+    let point6 = Point::from_f64(size, -size, size);
+    let point7 = Point::from_f64(-size, -size, size);
+    let point8 = Point::from_f64(-size, size, size);
 
     let mut result = VertexBuffer::empty();
     result.join(&render_face(point1, point2, point3, point4, color));

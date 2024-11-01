@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
-use crate::{efloat::EFloat64, EQ_THRESHOLD};
+use crate::efloat::EFloat64;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -12,6 +12,14 @@ pub struct Point {
 impl Point {
     pub fn new(x: EFloat64, y: EFloat64, z: EFloat64) -> Point {
         Point { x, y, z }
+    }
+
+    pub fn from_f64(x: f64, y: f64, z: f64) -> Point {
+        Point {
+            x: EFloat64::new(x),
+            y: EFloat64::new(y),
+            z: EFloat64::new(z),
+        }
     }
 
     pub fn norm_sq(self) -> EFloat64 {
@@ -65,10 +73,10 @@ impl Point {
         let dot = self.dot(other);
         let norm = self.norm() * other.norm();
         let dot_norm = (dot / norm)?;
-        if dot_norm > 1.0 - EQ_THRESHOLD {
+        if dot_norm >= 1.0 {
             return Some(EFloat64::zero());
         }
-        if dot_norm < -1.0 + EQ_THRESHOLD {
+        if dot_norm <= -1.0 {
             return Some(EFloat64::pi());
         }
         Some(dot_norm.acos())

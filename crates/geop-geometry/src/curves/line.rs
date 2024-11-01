@@ -1,4 +1,4 @@
-use crate::{point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
+use crate::{efloat::EFloat64, point::Point, transforms::Transform, HORIZON_DIST};
 
 use super::{curve::Curve, CurveLike};
 
@@ -43,10 +43,10 @@ impl CurveLike for Line {
     fn on_curve(&self, p: Point) -> bool {
         let v = p - self.basis;
         let v = v - self.direction * (v.dot(self.direction));
-        v.norm() < EQ_THRESHOLD
+        v.norm() == 0.0
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let v = x - y;
@@ -58,11 +58,13 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                start + (end - start) * t
+                start + (end - start) * EFloat64::new(t)
             }
-            (Some(start), None) => start + self.direction * t * HORIZON_DIST,
-            (None, Some(end)) => end - self.direction * (1.0 - t) * HORIZON_DIST,
-            (None, None) => self.basis + self.direction * (t - 0.5) * 2.0 * HORIZON_DIST,
+            (Some(start), None) => start + self.direction * EFloat64::new(t * HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::new((1.0 - t) * HORIZON_DIST),
+            (None, None) => {
+                self.basis + self.direction * EFloat64::new((t - 0.5) * 2.0 * HORIZON_DIST)
+            }
         }
     }
 
@@ -92,10 +94,10 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                ((start + end) / 2.0).unwrap()
+                ((start + end) / EFloat64::two()).unwrap()
             }
-            (Some(start), None) => start + self.direction * HORIZON_DIST,
-            (None, Some(end)) => end - self.direction * HORIZON_DIST,
+            (Some(start), None) => start + self.direction * EFloat64::new(HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::new(HORIZON_DIST),
             (None, None) => self.basis,
         }
     }

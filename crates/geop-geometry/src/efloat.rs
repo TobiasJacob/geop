@@ -10,6 +10,7 @@ pub struct EFloat64 {
 
 impl EFloat64 {
     pub fn new(value: f64) -> Self {
+        assert!(value.is_finite());
         Self {
             upper_bound: value,
             lower_bound: value,
@@ -27,6 +28,20 @@ impl EFloat64 {
         Self {
             upper_bound: 1.0,
             lower_bound: 1.0,
+        }
+    }
+
+    pub fn two() -> Self {
+        Self {
+            upper_bound: 2.0,
+            lower_bound: 2.0,
+        }
+    }
+
+    pub fn half_pi() -> Self {
+        Self {
+            upper_bound: std::f64::consts::FRAC_PI_2,
+            lower_bound: std::f64::consts::FRAC_PI_2,
         }
     }
 
@@ -99,6 +114,52 @@ impl EFloat64 {
             upper_bound: a1.max(a2).max(a3).max(a4).next_after(f64::INFINITY),
             lower_bound: a1.min(a2).min(a3).min(a4).next_after(f64::NEG_INFINITY),
         }
+    }
+
+    pub fn abs(&self) -> Self {
+        if self.lower_bound >= 0.0 {
+            return *self;
+        }
+        if self.upper_bound <= 0.0 {
+            return -*self;
+        }
+        Self {
+            upper_bound: (-self.lower_bound)
+                .max(self.upper_bound)
+                .next_after(f64::INFINITY),
+            lower_bound: 0.0,
+        }
+    }
+
+    pub fn powi(&self, n: i32) -> Self {
+        let s_u = self.upper_bound.powi(n);
+        let s_l = self.lower_bound.powi(n);
+        Self {
+            upper_bound: s_u.next_after(f64::INFINITY),
+            lower_bound: s_l.next_after(f64::NEG_INFINITY),
+        }
+    }
+
+    pub fn max(self, other: Self) -> Self {
+        Self {
+            upper_bound: self.upper_bound.max(other.upper_bound),
+            lower_bound: self.lower_bound.max(other.lower_bound),
+        }
+    }
+
+    pub fn min(self, other: Self) -> Self {
+        Self {
+            upper_bound: self.upper_bound.min(other.upper_bound),
+            lower_bound: self.lower_bound.min(other.lower_bound),
+        }
+    }
+
+    pub fn ceil(&self) -> usize {
+        self.upper_bound.ceil() as usize
+    }
+
+    pub fn floor(&self) -> usize {
+        self.lower_bound.floor() as usize
     }
 }
 

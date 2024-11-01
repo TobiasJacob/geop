@@ -1,9 +1,9 @@
 use std::collections::VecDeque;
 
 use geop_geometry::{
+    efloat::EFloat64,
     point::Point,
     surfaces::{surface::Surface, SurfaceLike},
-    EQ_THRESHOLD,
 };
 use geop_topology::{
     contains::face_point::{face_point_contains, FacePointContains},
@@ -44,7 +44,7 @@ use crate::{
 //         surface.log(ref_point.point(), mid_point)
 //     ];
 
-fn determinant(row0: Point, row1: Point, row2: Point) -> f64 {
+fn determinant(row0: Point, row1: Point, row2: Point) -> EFloat64 {
     // use rule of sarrus to calculate determinant
     row0.x * row1.y * row2.z - row0.z * row1.y * row2.x + row0.y * row1.z * row2.x
         - row0.y * row1.x * row2.z
@@ -100,10 +100,7 @@ pub fn inside_triangle_circumcircle(
     // Check if -determinant is < 0, which means it is inside the circumcircle
     // println!("Determinant: {}", det);
     // Check if determinant is nan
-    if det.is_nan() {
-        panic!("Determinant is nan");
-    }
-    det > EQ_THRESHOLD * 10.0 // Check this is -det < -0.0001, which means it is inside the circumcircle
+    det > 0.0 // Check this is -det < -0.0001, which means it is inside the circumcircle
 }
 
 pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTriangle) -> bool {
@@ -125,7 +122,7 @@ pub fn check_triangle_counter_clockwise(surface: &Surface, triangle: &RenderTria
 
     let normal = surface.normal(triangle.a.point());
     let det = determinant(v1, v2, normal);
-    return det > EQ_THRESHOLD; // Ignore if the triangle is colinear
+    return det > 0.0; // Ignore if the triangle is colinear
 }
 
 pub fn edge_will_be_blocked_by_contour(edge: &RenderEdge, contours: &[EdgeBuffer]) -> bool {
@@ -174,15 +171,15 @@ pub fn triangle_intersects_triangle(
     for edge in edges_triangle_1.iter().chain(edges_triangle_2.iter()) {
         let project_axis = surface.normal(reference_point).cross(edge.1 - edge.0);
         let norm = project_axis.norm();
-        if norm < EQ_THRESHOLD {
+        if norm <= 0.0 {
             continue;
         }
         let normal = (project_axis / norm).unwrap();
 
-        let mut min_1 = f64::INFINITY;
-        let mut max_1 = f64::NEG_INFINITY;
-        let mut min_2 = f64::INFINITY;
-        let mut max_2 = f64::NEG_INFINITY;
+        let mut min_1 = EFloat64::new(1000.0);
+        let mut max_1 = EFloat64::new(-1000.0);
+        let mut min_2 = EFloat64::new(1000.0);
+        let mut max_2 = EFloat64::new(-1000.0);
 
         for &point in [a1, b1, c1].iter() {
             let projected = normal.dot(point);
@@ -196,7 +193,7 @@ pub fn triangle_intersects_triangle(
         }
         // println!("Min 1: {}, Max 1: {}, Min 2: {}, Max 2: {}", min_1, max_1, min_2, max_2);
         // Proof that the triangles do not intersect
-        if max_1 <= min_2 + EQ_THRESHOLD || max_2 <= min_1 + EQ_THRESHOLD {
+        if max_1 <= min_2.lower_bound || max_2 <= min_1.lower_bound {
             return false;
         }
     }
@@ -212,16 +209,18 @@ pub fn render_edge_intersects_render_edge(edge1: &RenderEdge, edge2: &RenderEdge
     // Parallel lines are assumed to not intersect
     let cross = dir1.cross(dir2);
     let cross_normsq = cross.norm_sq();
-    if cross_normsq < EQ_THRESHOLD {
+    if cross_normsq <= 0.0 {
         return false;
     }
 
     let diff = edge2.start.point() - edge1.start.point();
     let t = diff.cross(dir2).dot(cross) / cross_normsq;
     let u = diff.cross(dir1).dot(cross) / cross_normsq;
+    let t = t.unwrap();
+    let u = u.unwrap();
 
     // Check if the intersection point is on the line segments
-    if t > EQ_THRESHOLD && t < 1.0 - EQ_THRESHOLD && u > EQ_THRESHOLD && u < 1.0 - EQ_THRESHOLD {
+    if t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0 {
         return true;
     }
     return false;
@@ -349,17 +348,17 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     // If the surface is unbounded, we have to find a valid edge to start with. From there we can build the triangles.
     if open_edges.is_empty() {
         // Find the two closest points
-        let mut min_distance = f64::INFINITY;
+        let mut min_distance = EFloat64::new(1000.0);
         let mut best_edge = None;
         for i in 0..connection_points.len() {
             for j in i + 1..connection_points.len() {
                 let distance = face
                     .surface
                     .distance(connection_points[i].point(), connection_points[j].point());
-                if distance < EQ_THRESHOLD {
+                if distance <= 0.0 {
                     continue;
                 }
-                if distance < min_distance {
+                if distance < min_distance.lower_bound {
                     min_distance = distance;
                     best_edge = Some(RenderEdge::new(
                         connection_points[i].into(),

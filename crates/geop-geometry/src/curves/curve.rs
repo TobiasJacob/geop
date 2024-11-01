@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
 
 use super::{
     circle::{Circle, CircleTransform},
@@ -64,7 +64,7 @@ impl CurveLike for Curve {
     }
 
     // Returns the distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         match self {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),

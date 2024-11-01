@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use geop_geometry::{
     curves::{curve::Curve, CurveLike},
+    efloat::EFloat64,
     point::Point,
     transforms::Transform,
 };
@@ -99,7 +100,7 @@ impl Edge {
         self.curve.interpolate(self.start, self.end, t)
     }
 
-    pub fn length(&self) -> Option<f64> {
+    pub fn length(&self) -> Option<EFloat64> {
         match (self.start, self.end) {
             (Some(start), Some(end)) => Some(self.curve.distance(start, end)),
             _ => None,

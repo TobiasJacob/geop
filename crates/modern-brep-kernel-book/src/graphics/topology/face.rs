@@ -5,6 +5,7 @@ mod tests {
     use std::rc::Rc;
 
     use geop_geometry::{
+        efloat::EFloat64,
         point::Point,
         surfaces::{plane::Plane, surface::Surface},
         transforms::Transform,
@@ -23,10 +24,10 @@ mod tests {
     };
 
     fn generate_scene() -> Scene {
-        let p1 = Point::new(-1.0, 0.0, 1.0);
-        let p2 = Point::new(-1.0, 0.0, -1.0);
-        let p3 = Point::new(1.0, 0.0, -1.0);
-        let p4 = Point::new(1.0, 0.0, 1.0);
+        let p1 = Point::from_f64(-1.0, 0.0, 1.0);
+        let p2 = Point::from_f64(-1.0, 0.0, -1.0);
+        let p3 = Point::from_f64(1.0, 0.0, -1.0);
+        let p4 = Point::from_f64(1.0, 0.0, 1.0);
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
@@ -38,14 +39,18 @@ mod tests {
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
             edges.push(primitive_line(*p1, *p2));
         }
-        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
+        edges.push(primitive_arc(p4, p1, EFloat64::new(1.6), -Point::unit_y()));
 
-        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
+        let hole = primitive_circle(
+            Point::from_f64(0.0, 0.0, 0.2),
+            Point::unit_y(),
+            EFloat64::new(0.3),
+        );
 
         let hole2 = primitive_rectangle_curve(
-            Point::new(0.0, 0.0, -0.5),
-            Point::unit_x() * 0.5,
-            -Point::unit_z() * 0.1,
+            Point::from_f64(0.0, 0.0, -0.5),
+            Point::unit_x() * EFloat64::new(0.5),
+            -Point::unit_z() * EFloat64::new(0.1),
         );
 
         let face = Face::new(
@@ -63,11 +68,11 @@ mod tests {
     fn half_sphere_scene() -> Scene {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut sphere = primitive_sphere(Point::zero(), 1.0);
+        let mut sphere = primitive_sphere(Point::zero(), EFloat64::new(1.0));
         let edge = primitive_circle(
             Point::zero(),
-            -Point::new(0.5, 3.0, 0.5).normalize().unwrap(),
-            1.0,
+            -Point::from_f64(0.5, 3.0, 0.5).normalize().unwrap(),
+            EFloat64::one(),
         );
         sphere.boundaries.push(Contour::new(vec![edge.clone()]));
 
@@ -77,18 +82,18 @@ mod tests {
 
     fn cylinder_scene1() -> Scene {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
-        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::one());
 
         cylinder.boundaries.push(Contour::new(vec![primitive_circle(
-            Point::new(0.0, 0.0, -2.0),
+            Point::from_f64(0.0, 0.0, -2.0),
             Point::unit_z(),
-            1.0,
+            EFloat64::one(),
         )]));
 
         cylinder.boundaries.push(Contour::new(vec![primitive_circle(
-            Point::new(0.0, 0.0, 2.0),
+            Point::from_f64(0.0, 0.0, 2.0),
             -Point::unit_z(),
-            1.0,
+            EFloat64::one(),
         )]));
 
         scene.faces.push((cylinder, Color::light_gray()));
@@ -97,26 +102,30 @@ mod tests {
 
     fn cylinder_scene2() -> Scene {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
-        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+        let mut cylinder = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::one());
 
         cylinder = cylinder.flip();
         cylinder.boundaries.push(Contour::new(vec![primitive_circle(
-            Point::new(0.0, 0.0, -2.0),
+            Point::from_f64(0.0, 0.0, -2.0),
             -Point::unit_z(),
-            1.0,
+            EFloat64::one(),
         )]));
 
         cylinder.boundaries.push(Contour::new(vec![primitive_circle(
-            Point::new(0.0, 0.0, 2.0),
+            Point::from_f64(0.0, 0.0, 2.0),
             Point::unit_z(),
-            1.0,
+            EFloat64::one(),
         )]));
         cylinder = cylinder.transform(
-            Transform::from_translation(Point::new(0.3, -0.45, 0.12))
-                * Transform::from_euler_angles(-90.0 / 180.0 * f64::consts::PI, 0.0, 0.0), // * Transform::from_scale(Point::new(0.7, 0.7, 0.7)),
+            Transform::from_translation(Point::from_f64(0.3, -0.45, 0.12))
+                * Transform::from_euler_angles(
+                    EFloat64::new(-90.0 / 180.0 * f64::consts::PI),
+                    EFloat64::zero(),
+                    EFloat64::zero(),
+                ), // * Transform::from_scale(Point::from_f64(0.7, 0.7, 0.7)),
         );
 
-        // cylinder = cylinder.transform(Transform::from_scale(Point::new(0.7, 0.7, 0.7)));
+        // cylinder = cylinder.transform(Transform::from_scale(Point::from_f64(0.7, 0.7, 0.7)));
 
         scene.faces.push((cylinder, Color::light_gray()));
         scene
@@ -136,7 +145,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face1.png"),
             )
             .await;
@@ -151,7 +160,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face1wire.png"),
             )
             .await;
@@ -166,7 +175,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(4.0, -4.0, 0.0),
+                Point::from_f64(4.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face2.png"),
             )
             .await;
@@ -181,7 +190,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(4.0, -4.0, 0.0),
+                Point::from_f64(4.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/face2wire.png"),
             )
             .await;
@@ -196,7 +205,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(3.0, -3.0, 3.0),
+                Point::from_f64(3.0, -3.0, 3.0),
                 std::path::Path::new("src/generated_images/topology/face3.png"),
             )
             .await;
@@ -211,7 +220,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(3.0, -3.0, 3.0),
+                Point::from_f64(3.0, -3.0, 3.0),
                 std::path::Path::new("src/generated_images/topology/face3wire.png"),
             )
             .await;
@@ -226,7 +235,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(3.0, -3.0, 3.0),
+                Point::from_f64(3.0, -3.0, 3.0),
                 std::path::Path::new("src/generated_images/topology/face4.png"),
             )
             .await;
@@ -241,7 +250,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(3.0, -3.0, 3.0),
+                Point::from_f64(3.0, -3.0, 3.0),
                 std::path::Path::new("src/generated_images/topology/face4wire.png"),
             )
             .await;

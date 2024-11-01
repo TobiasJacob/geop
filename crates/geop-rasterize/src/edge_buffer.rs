@@ -1,4 +1,4 @@
-use geop_geometry::point::Point;
+use geop_geometry::{efloat::EFloat64, point::Point};
 use geop_topology::topology::scene::Color;
 
 use crate::vertex_buffer::RenderVertex;
@@ -20,7 +20,7 @@ impl RenderEdge {
     }
 
     pub fn mid_point(&self) -> Point {
-        ((self.start.point() + self.end.point()) / 2.0).unwrap()
+        ((self.start.point() + self.end.point()) / EFloat64::two()).unwrap()
     }
 
     pub fn flip(&self) -> Self {

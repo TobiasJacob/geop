@@ -90,9 +90,9 @@ impl PipelineManager {
         queue: &wgpu::Queue,
         camera_pos: geop_geometry::point::Point,
     ) {
-        self.camera_pipeline.camera.eye.x = camera_pos.x as f32;
-        self.camera_pipeline.camera.eye.y = camera_pos.y as f32;
-        self.camera_pipeline.camera.eye.z = camera_pos.z as f32;
+        self.camera_pipeline.camera.eye.x = camera_pos.x.lower_bound as f32;
+        self.camera_pipeline.camera.eye.y = camera_pos.y.lower_bound as f32;
+        self.camera_pipeline.camera.eye.z = camera_pos.z.lower_bound as f32;
         self.camera_pipeline
             .camera_uniform
             .update_view_proj(&self.camera_pipeline.camera);

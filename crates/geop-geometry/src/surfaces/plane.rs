@@ -1,8 +1,9 @@
 use crate::{
     curves::{curve::Curve, line::Line},
+    efloat::EFloat64,
     point::Point,
     transforms::Transform,
-    EQ_THRESHOLD, HORIZON_DIST,
+    HORIZON_DIST,
 };
 
 use super::{
@@ -54,8 +55,8 @@ impl Plane {
                 let u = i as f64 / (n as f64 - 1.0);
                 let v = j as f64 / (n as f64 - 1.0);
                 let point = self.basis
-                    + (u - 0.5) * horizon_dist * self.u_slope
-                    + (v - 0.5) * horizon_dist * self.v_slope;
+                    + EFloat64::new((u - 0.5) * horizon_dist) * self.u_slope
+                    + EFloat64::new((v - 0.5) * horizon_dist) * self.v_slope;
                 points.push(point);
             }
         }
@@ -85,14 +86,14 @@ impl SurfaceLike for Plane {
         let normal = self.normal();
         let p_project = p.dot(normal);
         let b_project = self.basis.dot(normal);
-        (p_project - b_project).abs() < EQ_THRESHOLD
+        (p_project - b_project) == 0.0
     }
 
-    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> EFloat64 {
         u.dot(v)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         (x - y).norm()
     }
 
@@ -142,7 +143,6 @@ impl SurfaceLike for Plane {
 
 impl PartialEq for Plane {
     fn eq(&self, other: &Plane) -> bool {
-        self.normal() == other.normal()
-            && (self.basis - other.basis).dot(self.normal()).abs() < EQ_THRESHOLD
+        self.normal() == other.normal() && (self.basis - other.basis).dot(self.normal()) == 0.0
     }
 }

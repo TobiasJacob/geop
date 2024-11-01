@@ -1,4 +1,4 @@
-use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
 
 use super::{curve::Curve, CurveLike};
 
@@ -14,15 +14,15 @@ impl Ellipse {
     pub fn new(basis: Point, normal: Point, major_radius: Point, minor_radius: Point) -> Ellipse {
         assert!(normal.is_normalized());
         assert!(
-            normal.dot(major_radius).abs() < EQ_THRESHOLD,
+            normal.dot(major_radius) == 0.0,
             "Major radius and normal must be orthogonal"
         );
         assert!(
-            normal.dot(minor_radius).abs() < EQ_THRESHOLD,
+            normal.dot(minor_radius) == 0.0,
             "Minor radius and normal must be orthogonal"
         );
         assert!(
-            major_radius.dot(minor_radius).abs() < EQ_THRESHOLD,
+            major_radius.dot(minor_radius) == 0.0,
             "Major and minor radii must be orthogonal"
         );
         Ellipse {
@@ -38,11 +38,11 @@ impl Ellipse {
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm_sq();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm_sq();
-        Point::new(x, y, 0.0)
+        Point::new(x.unwrap(), y.unwrap(), EFloat64::zero())
     }
 
     fn transform_point_from_circle(&self, p: Point) -> Point {
-        assert!(p.z.abs() < EQ_THRESHOLD);
+        assert!(p.z == 0.0);
         assert!(p.is_normalized());
         p.x * self.major_radius + p.y * self.minor_radius + self.basis
     }
@@ -67,26 +67,29 @@ impl Ellipse {
     pub fn get_extremal_points(&self) -> Vec<Point> {
         let disc_x = (self.major_radius.x * self.major_radius.x
             + self.minor_radius.x * self.minor_radius.x)
-            .sqrt();
+            .sqrt()
+            .unwrap();
         let disc_x = (self.major_radius * self.major_radius.x
             + self.minor_radius * self.minor_radius.x)
             / disc_x;
         let disc_y = (self.major_radius.y * self.major_radius.y
             + self.minor_radius.y * self.minor_radius.y)
-            .sqrt();
+            .sqrt()
+            .unwrap();
         let disc_y = (self.major_radius * self.major_radius.y
             + self.minor_radius * self.minor_radius.y)
             / disc_y;
         let disc_z = (self.major_radius.z * self.major_radius.z
             + self.minor_radius.z * self.minor_radius.z)
-            .sqrt();
+            .sqrt()
+            .unwrap();
         let disc_z = (self.major_radius * self.major_radius.z
             + self.minor_radius * self.minor_radius.z)
             / disc_z;
 
-        let disc_x = disc_x.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
-        let disc_y = disc_y.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
-        let disc_z = disc_z.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
+        let disc_x = disc_x.unwrap_or(Point::zero());
+        let disc_y = disc_y.unwrap_or(Point::zero());
+        let disc_z = disc_z.unwrap_or(Point::zero());
 
         vec![
             self.basis + disc_x,
@@ -97,7 +100,6 @@ impl Ellipse {
             self.basis - disc_z,
         ]
         .iter() // Filter nan. Nan means that the ellipse is parallel to a plane, so there is no extremal point.
-        .filter(|p| p.x.is_finite() && p.y.is_finite() && p.z.is_finite())
         .cloned()
         .collect()
     }
@@ -117,7 +119,7 @@ impl CurveLike for Ellipse {
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm();
-        let tangent = y * self.major_radius - x * self.minor_radius;
+        let tangent = y.unwrap() * self.major_radius - x.unwrap() * self.minor_radius;
         tangent.normalize().unwrap()
     }
 
@@ -125,15 +127,16 @@ impl CurveLike for Ellipse {
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm_sq();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm_sq();
-        (p.dot(self.normal).abs() < EQ_THRESHOLD)
-            && ((x.powi(2) + y.powi(2) - 1.0).abs() < EQ_THRESHOLD)
+        let x = x.unwrap();
+        let y = y.unwrap();
+        (p.dot(self.normal) == 0.0) && (x * x + y * y == 1.0)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
-        let angle = (x - self.basis).angle(y - self.basis);
-        self.major_radius.norm() * angle.unwrap()
+        let angle = (x - self.basis).angle(y - self.basis).unwrap();
+        self.major_radius.norm() * angle
     }
 
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
@@ -149,10 +152,10 @@ impl CurveLike for Ellipse {
                 let y_end = self.minor_radius.dot(end);
                 let angle1 = y_start.atan2(x_start);
                 let mut angle2 = y_end.atan2(x_end);
-                if angle2 < angle1 {
-                    angle2 += 2.0 * std::f64::consts::PI;
+                if angle2.upper_bound < angle1.lower_bound {
+                    angle2 = EFloat64::two_pi();
                 }
-                let angle = angle1 + t * (angle2 - angle1);
+                let angle = angle1 + EFloat64::new(t) * (angle2 - angle1);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (Some(start), None) => {
@@ -160,7 +163,7 @@ impl CurveLike for Ellipse {
                 let x_start = self.major_radius.dot(start);
                 let y_start = self.minor_radius.dot(start);
                 let angle1 = y_start.atan2(x_start);
-                let angle = angle1 + t * std::f64::consts::PI * 2.0;
+                let angle = angle1 + EFloat64::new(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (None, Some(end)) => {
@@ -168,11 +171,11 @@ impl CurveLike for Ellipse {
                 let x_end = self.major_radius.dot(end);
                 let y_end = self.minor_radius.dot(end);
                 let angle2 = y_end.atan2(x_end);
-                let angle = angle2 + t * std::f64::consts::PI * 2.0;
+                let angle = angle2 + EFloat64::new(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (None, None) => {
-                let angle = t * std::f64::consts::PI * 2.0;
+                let angle = EFloat64::new(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
         }
@@ -193,13 +196,13 @@ impl CurveLike for Ellipse {
                     .atan2(self.major_radius.dot(start));
                 let mut angle_end = self.minor_radius.dot(end).atan2(self.major_radius.dot(end));
                 let mut angle_m = self.minor_radius.dot(m).atan2(self.major_radius.dot(m));
-                if angle_end < angle_start {
-                    angle_end += 2.0 * std::f64::consts::PI;
+                if angle_end.upper_bound < angle_start.lower_bound {
+                    angle_end = angle_end + EFloat64::two_pi();
                 }
-                if angle_m < angle_start {
-                    angle_m += 2.0 * std::f64::consts::PI;
+                if angle_m.upper_bound < angle_start.lower_bound {
+                    angle_m = angle_m + EFloat64::two_pi();
                 }
-                angle_start <= angle_m && angle_m <= angle_end
+                angle_start <= angle_m.upper_bound && angle_m <= angle_end.lower_bound
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
@@ -222,9 +225,9 @@ impl CurveLike for Ellipse {
                 let end_rel = self.transform_point_to_circle(end);
                 // println!("start_rel: {:?}", start_rel);
                 // println!("end_rel: {:?}", end_rel);
-                let mid = ((start_rel + end_rel) / 2.0).unwrap();
+                let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 // println!("mid: {:?}", mid);
-                if mid.norm() < EQ_THRESHOLD {
+                if mid.norm() == 0.0 {
                     return self.transform_point_from_circle(
                         Point::unit_z().cross(start_rel).normalize().unwrap(),
                     );

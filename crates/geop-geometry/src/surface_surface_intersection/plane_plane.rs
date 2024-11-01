@@ -44,20 +44,20 @@ mod tests {
     fn test_plane_plane_intersection_planes() {
         // Simplest case where the planes intersect in a line
         let top = Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 1.0, 0.0),
         );
 
         let askew = Plane::new(
-            Point::new(1.0, 1.0, 1.0),
-            Point::new(1.0, 0.0, -0.2),
-            Point::new(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 1.0, 1.0),
+            Point::from_f64(1.0, 0.0, -0.2),
+            Point::from_f64(0.0, 1.0, 0.0),
         );
 
         match plane_plane_intersection(&top, &askew) {
             PlanePlaneIntersection::Line(line) => {
-                assert_eq!(line.direction, Point::new(0.0, 1.0, 0.0));
+                assert_eq!(line.direction, Point::from_f64(0.0, 1.0, 0.0));
                 assert!(top.on_surface(line.basis));
                 assert!(askew.on_surface(line.basis));
             }
@@ -70,20 +70,20 @@ mod tests {
         // This tests the case where the planes intersect in a line
         // And the line passes through the basis of one of the planes
         let plane1 = Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
         );
 
         let plane2 = Plane::new(
-            Point::new(0.0, 0.0, -1.0),
-            Point::new(0.0, 1.0, 0.0),
-            Point::new(0.0, 0.0, 1.0),
+            Point::from_f64(0.0, 0.0, -1.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(0.0, 0.0, 1.0),
         );
 
         match plane_plane_intersection(&plane1, &plane2) {
             PlanePlaneIntersection::Line(line) => {
-                assert_eq!(line.direction, Point::new(0.0, -1.0, 0.0));
+                assert_eq!(line.direction, Point::from_f64(0.0, -1.0, 0.0));
                 assert!(plane1.on_surface(line.basis));
                 assert!(plane2.on_surface(line.basis));
             }
@@ -93,7 +93,7 @@ mod tests {
         match plane_plane_intersection(&plane2, &plane1) {
             PlanePlaneIntersection::Line(line) => {
                 // The direction of this line intersection is the opposite of the one above
-                assert_eq!(line.direction, Point::new(0.0, 1.0, 0.0));
+                assert_eq!(line.direction, Point::from_f64(0.0, 1.0, 0.0));
                 assert!(plane1.on_surface(line.basis));
                 assert!(plane2.on_surface(line.basis));
             }

@@ -4,6 +4,7 @@ mod tests {
 
     use crate::tests::renderer;
     use geop_geometry::{
+        efloat::EFloat64,
         point::Point,
         surfaces::{plane::Plane, surface::Surface},
     };
@@ -26,16 +27,17 @@ mod tests {
     #[rstest]
     async fn test_shell1(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
-        scene
-            .volumes
-            .push((primitive_cube(1.0, 1.0, 1.0), Color::light_gray()));
+        scene.volumes.push((
+            primitive_cube(EFloat64::one(), EFloat64::one(), EFloat64::one()),
+            Color::light_gray(),
+        ));
         let mut renderer = renderer.await;
         renderer
             .render_to_file(
                 &scene,
                 false,
                 false,
-                Point::new(2.0, -2.0, 2.0),
+                Point::from_f64(2.0, -2.0, 2.0),
                 std::path::Path::new("src/generated_images/topology/shell1.png"),
             )
             .await;
@@ -43,23 +45,27 @@ mod tests {
 
     #[rstest]
     async fn test_shell2(#[future] renderer: Box<HeadlessRenderer>) {
-        let p1 = Point::new(-1.0, 0.0, 1.0);
-        let p2 = Point::new(-1.0, 0.0, -1.0);
-        let p3 = Point::new(1.0, 0.0, -1.0);
-        let p4 = Point::new(1.0, 0.0, 1.0);
+        let p1 = Point::from_f64(-1.0, 0.0, 1.0);
+        let p2 = Point::from_f64(-1.0, 0.0, -1.0);
+        let p3 = Point::from_f64(1.0, 0.0, -1.0);
+        let p4 = Point::from_f64(1.0, 0.0, 1.0);
 
         let mut edges = Vec::new();
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
             edges.push(primitive_line(*p1, *p2));
         }
-        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
+        edges.push(primitive_arc(p4, p1, EFloat64::new(1.6), -Point::unit_y()));
 
-        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
+        let hole = primitive_circle(
+            Point::from_f64(0.0, 0.0, 0.2),
+            Point::unit_y(),
+            EFloat64::new(0.3),
+        );
 
         let hole2 = primitive_rectangle_curve(
-            Point::new(0.0, 0.0, -0.5),
-            Point::unit_x() * 0.5,
-            -Point::unit_z() * 0.1,
+            Point::from_f64(0.0, 0.0, -0.5),
+            Point::unit_x() * EFloat64::new(0.5),
+            -Point::unit_z() * EFloat64::new(0.1),
         );
 
         let face1 = Face::new(
@@ -81,7 +87,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(2.0, -2.0, 2.0),
+                Point::from_f64(2.0, -2.0, 2.0),
                 std::path::Path::new("src/generated_images/topology/shell2.png"),
             )
             .await;

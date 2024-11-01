@@ -46,17 +46,23 @@ pub fn circle_plane_intersection(circle: &Circle, plane: &Plane) -> CirclePlaneI
 
 #[cfg(test)]
 mod tests {
+    use crate::efloat::EFloat64;
+
     use super::*;
 
     #[test]
     fn test_circle_plane_intersection_complete() {
         // test the case where the circle lies completely on the plane
-        let circle = Circle::new(Point::new(0.5, 0.5, 0.0), Point::new(0.0, 0.0, 1.0), 2.0);
+        let circle = Circle::new(
+            Point::from_f64(0.5, 0.5, 0.0),
+            Point::from_f64(0.0, 0.0, 1.0),
+            EFloat64::two(),
+        );
 
         let plane = Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
         );
 
         match circle_plane_intersection(&circle, &plane) {
@@ -70,17 +76,21 @@ mod tests {
     #[test]
     fn test_circle_plane_intersection_tangent() {
         // test the case where the circle is tangent to the plane, so one intersection point
-        let circle = Circle::new(Point::new(0.0, 0.0, -1.0), Point::new(0.0, 1.0, 0.0), 1.0);
+        let circle = Circle::new(
+            Point::from_f64(0.0, 0.0, -1.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            EFloat64::one(),
+        );
 
         let plane = Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
         );
 
         match circle_plane_intersection(&circle, &plane) {
             CirclePlaneIntersection::OnePoint(point) => {
-                assert_eq!(point, Point::new(0.0, 0.0, 0.0));
+                assert_eq!(point, Point::from_f64(0.0, 0.0, 0.0));
             }
             _ => panic!("Intersection should be a single point"),
         }

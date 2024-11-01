@@ -12,7 +12,11 @@ pub struct RenderVertex {
 impl RenderVertex {
     pub fn new(p: Point, color: Color) -> Self {
         RenderVertex {
-            position: [p.x as f32, p.y as f32, p.z as f32],
+            position: [
+                p.x.lower_bound as f32,
+                p.y.lower_bound as f32,
+                p.z.lower_bound as f32,
+            ],
             color: [
                 color.r as f32,
                 color.g as f32,
@@ -23,7 +27,7 @@ impl RenderVertex {
     }
 
     pub fn point(&self) -> Point {
-        Point::new(
+        Point::from_f64(
             self.position[0] as f64,
             self.position[1] as f64,
             self.position[2] as f64,
@@ -33,11 +37,11 @@ impl RenderVertex {
 
 impl PartialEq for RenderVertex {
     fn eq(&self, other: &Self) -> bool {
-        Point::new(
+        Point::from_f64(
             self.position[0] as f64,
             self.position[1] as f64,
             self.position[2] as f64,
-        ) == Point::new(
+        ) == Point::from_f64(
             other.position[0] as f64,
             other.position[1] as f64,
             other.position[2] as f64,
@@ -48,7 +52,7 @@ impl PartialEq for RenderVertex {
 // Implement conversion to Point
 impl From<RenderVertex> for Point {
     fn from(v: RenderVertex) -> Self {
-        Point::new(
+        Point::from_f64(
             v.position[0] as f64,
             v.position[1] as f64,
             v.position[2] as f64,

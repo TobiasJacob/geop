@@ -1,6 +1,6 @@
 use curve::Curve;
 
-use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
 
 pub mod curve;
 
@@ -25,7 +25,7 @@ pub trait CurveLike {
     fn on_curve(&self, p: Point) -> bool;
 
     // Returns the distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64;
+    fn distance(&self, x: Point, y: Point) -> EFloat64;
 
     // Interpolate between start and end at t. t is between 0 and 1.
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point;

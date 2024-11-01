@@ -13,19 +13,27 @@ pub struct RenderNormalVertex {
 impl RenderNormalVertex {
     pub fn new(p: Point, color: Color, normal: Point) -> Self {
         RenderNormalVertex {
-            position: [p.x as f32, p.y as f32, p.z as f32],
+            position: [
+                p.x.lower_bound as f32,
+                p.y.lower_bound as f32,
+                p.z.lower_bound as f32,
+            ],
             color: [
                 color.r as f32,
                 color.g as f32,
                 color.b as f32,
                 color.a as f32,
             ],
-            normal: [normal.x as f32, normal.y as f32, normal.z as f32],
+            normal: [
+                normal.x.lower_bound as f32,
+                normal.y.lower_bound as f32,
+                normal.z.lower_bound as f32,
+            ],
         }
     }
 
     pub fn point(&self) -> Point {
-        Point::new(
+        Point::from_f64(
             self.position[0] as f64,
             self.position[1] as f64,
             self.position[2] as f64,
@@ -36,7 +44,7 @@ impl RenderNormalVertex {
 // Implement conversion to Point
 impl From<RenderNormalVertex> for Point {
     fn from(v: RenderNormalVertex) -> Self {
-        Point::new(
+        Point::from_f64(
             v.position[0] as f64,
             v.position[1] as f64,
             v.position[2] as f64,

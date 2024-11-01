@@ -17,7 +17,7 @@ pub fn helix_line_intersection(helix: &Helix, line: &Line) -> HelixLineIntersect
         let distance = line.basis - helix.basis;
         let distance = distance - distance.dot(helix.pitch) * helix.pitch;
         let radius = distance.norm();
-        if (radius - helix.radius.norm()).abs() < f64::EPSILON {
+        if (radius - helix.radius.norm()) == 0.0 {
             let line_base_projected = line.basis - helix.basis;
             let line_base_projected =
                 line_base_projected - line_base_projected.dot(helix.pitch) * helix.pitch;

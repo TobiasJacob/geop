@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use geop_geometry::{
+        efloat::EFloat64,
         point::Point,
         surfaces::{surface::Surface, SurfaceLike},
     };
@@ -24,11 +25,11 @@ mod tests {
     async fn test_face_contains_sphere(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut face = primitive_sphere(Point::zero(), 1.0);
+        let mut face = primitive_sphere(Point::zero(), EFloat64::one());
         face.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
-            -Point::new(0.5, 0.5, 0.5),
-            1.0,
+            -Point::from_f64(0.5, 0.5, 0.5),
+            EFloat64::one(),
         )]));
 
         for p in face.surface.point_grid(4.0) {
@@ -48,7 +49,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -2.0, 1.0),
+                Point::from_f64(0.0, -2.0, 1.0),
                 std::path::Path::new("src/generated_images/topology/face_contains.png"),
             )
             .await;
@@ -61,8 +62,8 @@ mod tests {
         let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
         face.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
-            Point::new(0.0, 0.0, -1.0),
-            0.5,
+            Point::from_f64(0.0, 0.0, -1.0),
+            EFloat64::new(0.5),
         )]));
 
         let plane = match &*face.surface {
@@ -91,7 +92,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, 0.1, 2.20),
+                Point::from_f64(0.0, 0.1, 2.20),
                 std::path::Path::new("src/generated_images/topology/face_contains_rectangle.png"),
             )
             .await;
@@ -105,8 +106,8 @@ mod tests {
         face.boundaries.push(
             primitive_rectangle(
                 Point::zero(),
-                (Point::unit_x() / 2.0).unwrap(),
-                (Point::unit_y() / 2.0).unwrap(),
+                (Point::unit_x() / EFloat64::two()).unwrap(),
+                (Point::unit_y() / EFloat64::two()).unwrap(),
             )
             .boundaries[0]
                 .flip(),
@@ -138,7 +139,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, 0.1, 2.20),
+                Point::from_f64(0.0, 0.1, 2.20),
                 std::path::Path::new("src/generated_images/topology/face_contains_rectangle2.png"),
             )
             .await;

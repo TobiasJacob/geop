@@ -9,6 +9,7 @@ mod tests {
         union::face::face_face_union,
     };
     use geop_geometry::{
+        efloat::EFloat64,
         point::Point,
         surfaces::{plane::Plane, surface::Surface},
         transforms::Transform,
@@ -26,23 +27,27 @@ mod tests {
     };
 
     fn generate_scene() -> (Face, Face) {
-        let p1 = Point::new(-1.0, 0.0, 1.0);
-        let p2 = Point::new(-1.0, 0.0, -1.0);
-        let p3 = Point::new(1.0, 0.0, -1.0);
-        let p4 = Point::new(1.0, 0.0, 1.0);
+        let p1 = Point::from_f64(-1.0, 0.0, 1.0);
+        let p2 = Point::from_f64(-1.0, 0.0, -1.0);
+        let p3 = Point::from_f64(1.0, 0.0, -1.0);
+        let p4 = Point::from_f64(1.0, 0.0, 1.0);
 
         let mut edges = Vec::new();
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
             edges.push(primitive_line(*p1, *p2));
         }
-        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
+        edges.push(primitive_arc(p4, p1, EFloat64::new(1.6), -Point::unit_y()));
 
-        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
+        let hole = primitive_circle(
+            Point::from_f64(0.0, 0.0, 0.2),
+            Point::unit_y(),
+            EFloat64::new(0.3),
+        );
 
         let hole2 = primitive_rectangle_curve(
-            Point::new(0.0, 0.0, -0.5),
-            Point::unit_x() * 0.5,
-            -Point::unit_z() * 0.1,
+            Point::from_f64(0.0, 0.0, -0.5),
+            Point::unit_x() * EFloat64::new(0.5),
+            -Point::unit_z() * EFloat64::new(0.1),
         );
 
         let face1 = Face::new(
@@ -54,7 +59,7 @@ mod tests {
             ))),
         );
 
-        let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.0, 0.0)));
+        let face2 = face1.transform(Transform::from_translation(Point::from_f64(0.2, 0.0, 0.0)));
 
         (face1, face2)
     }
@@ -86,7 +91,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_split_points.png"),
             )
             .await;
@@ -110,7 +115,7 @@ mod tests {
                 FaceSplit::BoutA(edge) => (edge, Color::ten_different_colors(7)),
             };
             let midpoint = edge.get_midpoint();
-            let edge = edge.transform(Transform::from_translation(midpoint * 0.1));
+            let edge = edge.transform(Transform::from_translation(midpoint * EFloat64::new(0.1)));
             scene.edges.push((edge, color));
         }
 
@@ -120,7 +125,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_splits.png"),
             )
             .await;
@@ -147,8 +152,9 @@ mod tests {
 
         let contours = face_remesh(edges);
         for contour in contours {
-            let contour =
-                contour.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+            let contour = contour.transform(Transform::from_translation(Point::from_f64(
+                0.0, 0.001, 0.0,
+            )));
             for edge in contour.edges {
                 scene.edges.push((edge.clone(), Color::red()));
             }
@@ -160,7 +166,7 @@ mod tests {
                 &scene,
                 false,
                 true,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_splits_remesh.png"),
             )
             .await;
@@ -183,8 +189,9 @@ mod tests {
             FaceFaceIntersection::Faces(faces) => {
                 assert!(faces.len() == 1);
                 for face in faces {
-                    let face =
-                        face.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+                    let face = face.transform(Transform::from_translation(Point::from_f64(
+                        0.0, 0.001, 0.0,
+                    )));
                     for edge in face.all_edges() {
                         scene.edges.push((edge.clone(), Color::red()));
                     }
@@ -202,7 +209,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_intersection.png"),
             )
             .await;
@@ -222,7 +229,9 @@ mod tests {
 
         let faces = face_face_difference(&face1, &face2);
         for face in faces {
-            let face = face.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+            let face = face.transform(Transform::from_translation(Point::from_f64(
+                0.0, 0.001, 0.0,
+            )));
             for edge in face.all_edges() {
                 scene.edges.push((edge.clone(), Color::red()));
             }
@@ -235,7 +244,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_difference.png"),
             )
             .await;
@@ -255,7 +264,9 @@ mod tests {
 
         let faces = face_face_union(&face1, &face2);
         for face in faces {
-            let face = face.transform(Transform::from_translation(Point::new(0.0, 0.001, 0.0)));
+            let face = face.transform(Transform::from_translation(Point::from_f64(
+                0.0, 0.001, 0.0,
+            )));
             for edge in face.all_edges() {
                 scene.edges.push((edge.clone(), Color::red()));
             }
@@ -268,7 +279,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -4.0, 0.0),
+                Point::from_f64(0.0, -4.0, 0.0),
                 std::path::Path::new("src/generated_images/booleans/face_union.png"),
             )
             .await;

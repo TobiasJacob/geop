@@ -1,4 +1,4 @@
-use crate::{curves::curve::Curve, point::Point, transforms::Transform};
+use crate::{curves::curve::Curve, efloat::EFloat64, point::Point, transforms::Transform};
 
 use super::{cylinder::Cylinder, plane::Plane, sphere::Sphere, SurfaceLike};
 
@@ -48,7 +48,7 @@ impl SurfaceLike for Surface {
     }
 
     // Returns the Riemannian metric between u and v
-    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> EFloat64 {
         match self {
             Surface::Plane(plane) => plane.metric(x, u, v),
             Surface::Sphere(sphere) => sphere.metric(x, u, v),
@@ -56,7 +56,7 @@ impl SurfaceLike for Surface {
         }
     }
     // Returns the Riemannian distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         match self {
             Surface::Plane(plane) => plane.distance(x, y),
             Surface::Sphere(sphere) => sphere.distance(x, y),

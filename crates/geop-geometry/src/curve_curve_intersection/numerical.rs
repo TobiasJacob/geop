@@ -1,6 +1,4 @@
-use crate::{bounding_box::BoundingBox, curves::CurveLike, point::Point, EQ_THRESHOLD};
-
-use super::PRECISION;
+use crate::{bounding_box::BoundingBox, curves::CurveLike, point::Point};
 
 fn curve_curve_intersection_numerical_iteration(
     edge_self: &dyn CurveLike,
@@ -12,11 +10,11 @@ fn curve_curve_intersection_numerical_iteration(
     // println!("interval_self: {:?}", interval_self);
     // println!("interval_other: {:?}", interval_other);
     // For enhanced numerical stability, for small intervals, we approximate the curve as a line.
-    let bounding_box_self = match (interval_self.0 - interval_self.1).norm_sq() < EQ_THRESHOLD {
+    let bounding_box_self = match (interval_self.0 - interval_self.1).norm_sq() <= 0.0 {
         true => BoundingBox::with_2_points(interval_self.0, interval_self.1),
         false => edge_self.get_bounding_box(Some(interval_self.0), Some(interval_self.1)),
     };
-    let bounding_box_other = match (interval_other.0 - interval_other.1).norm_sq() < EQ_THRESHOLD {
+    let bounding_box_other = match (interval_other.0 - interval_other.1).norm_sq() <= 0.0 {
         true => BoundingBox::with_2_points(interval_other.0, interval_other.1),
         false => edge_other.get_bounding_box(Some(interval_other.0), Some(interval_other.1)),
     };
@@ -29,19 +27,19 @@ fn curve_curve_intersection_numerical_iteration(
     //     bounding_box_self.intersects(&bounding_box_other, 0.0)
     // );
 
-    if !bounding_box_self.intersects(&bounding_box_other, 0.0) {
+    if !bounding_box_self.intersects(&bounding_box_other) {
         return Vec::new();
     }
 
     let midpoint_self = edge_self.get_midpoint(Some(interval_self.0), Some(interval_self.1));
     // println!("midpoint self: {:?}", midpoint_self);
-    if bounding_box_self.max_size() < PRECISION {
+    if bounding_box_self.max_size() <= 0.0 {
         return vec![midpoint_self];
     }
 
     let midpoint_other = edge_other.get_midpoint(Some(interval_other.0), Some(interval_other.1));
     // println!("midpoint other: {:?}", midpoint_other);
-    if bounding_box_other.max_size() < PRECISION {
+    if bounding_box_other.max_size() <= 0.0 {
         return vec![midpoint_other];
     }
 
@@ -115,7 +113,7 @@ pub fn curve_curve_intersection_numerical(
     for p in result {
         if !unique_points.iter().any(|x| {
             let diff: Point = p - *x;
-            diff.norm() < PRECISION * 10000.0
+            diff.norm() <= 0.0
         }) {
             unique_points.push(p);
         }
