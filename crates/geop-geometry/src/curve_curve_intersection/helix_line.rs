@@ -1,6 +1,6 @@
 use crate::{
     curves::{helix::Helix, line::Line, CurveLike},
-    points::point::Point,
+    point::Point,
 };
 
 use super::curve_curve::PointArray;

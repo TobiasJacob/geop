@@ -1,4 +1,4 @@
-use crate::geometry::{surfaces::sphere::Sphere, curves::circle::Circle, points::point::Point};
+use crate::geometry::{surfaces::sphere::Sphere, curves::circle::Circle, point::Point};
 
 pub enum SphereSphereIntersection {
     Sphere(Sphere),

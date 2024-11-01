@@ -1,4 +1,4 @@
-use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
+use crate::{point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
 
 use super::{curve::Curve, CurveLike};
 

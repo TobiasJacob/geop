@@ -15,7 +15,7 @@ use crate::{
     split_if_necessary::point_split_edge::split_edges_by_points_if_necessary,
 };
 
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 
 pub fn face_split_points(face_self: &Face, face_other: &Face) -> Vec<Point> {
     let mut intersections = Vec::<Point>::new();

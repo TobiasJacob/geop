@@ -1,6 +1,6 @@
 use crate::{
     curves::{circle::Circle, helix::Helix},
-    points::point::Point,
+    point::Point,
     EQ_THRESHOLD,
 };
 

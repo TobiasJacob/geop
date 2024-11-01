@@ -1,6 +1,6 @@
 use crate::{
     curves::{circle::Circle, curve::Curve, helix::Helix, line::Line, CurveLike},
-    points::point::Point,
+    point::Point,
     transforms::Transform,
     EQ_THRESHOLD, HORIZON_DIST,
 };

@@ -36,7 +36,7 @@ pub fn plane_plane_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection 
 
 #[cfg(test)]
 mod tests {
-    use crate::points::point::Point;
+    use crate::point::Point;
 
     use super::*;
 

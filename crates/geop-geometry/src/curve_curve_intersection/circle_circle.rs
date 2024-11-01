@@ -3,7 +3,7 @@ use crate::{
         circle_plane_intersection, CirclePlaneIntersection,
     },
     curves::{circle::Circle, CurveLike},
-    points::point::Point,
+    point::Point,
     surfaces::plane::Plane,
     EQ_THRESHOLD,
 };

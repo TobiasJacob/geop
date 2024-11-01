@@ -3,7 +3,7 @@ mod tests {
     use std::vec;
 
     use geop_booleans::intersections::edge_edge::{edge_edge_intersection, EdgeEdgeIntersection};
-    use geop_geometry::points::point::Point;
+    use geop_geometry::point::Point;
     use geop_topology::{
         primitive_objects::edges::{
             circle::primitive_circle, ellipse::primitive_ellipse, line::primitive_infinite_line,

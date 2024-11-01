@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 
 use super::{edge::Edge, face::Face, volume::Volume};
 

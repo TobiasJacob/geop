@@ -1,4 +1,4 @@
-use geop_geometry::{curves::CurveLike, points::point::Point};
+use geop_geometry::{curves::CurveLike, point::Point};
 
 use crate::topology::edge::Edge;
 
@@ -29,7 +29,7 @@ mod tests {
     // use crate::topology::scene::Scene;
 
     use super::*;
-    use geop_geometry::points::point::Point;
+    use geop_geometry::point::Point;
 
     #[test]
     fn test_edge_point_contains() {

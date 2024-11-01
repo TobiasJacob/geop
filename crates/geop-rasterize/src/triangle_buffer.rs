@@ -1,4 +1,4 @@
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 use geop_topology::topology::scene::Color;
 
 use crate::{

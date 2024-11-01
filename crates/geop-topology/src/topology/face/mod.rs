@@ -3,7 +3,7 @@ use std::rc::Rc;
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curve_surface_intersection::curve_surface::curve_surface_intersection,
-    points::point::Point,
+    point::Point,
     surfaces::{surface::Surface, SurfaceLike},
     transforms::Transform,
 };

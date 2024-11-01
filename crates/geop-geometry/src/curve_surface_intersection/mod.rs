@@ -1,4 +1,4 @@
-use crate::{curves::CurveLike, points::point::Point, surfaces::SurfaceLike};
+use crate::{curves::CurveLike, point::Point, surfaces::SurfaceLike};
 
 pub mod circle_cylinder;
 pub mod circle_plane;

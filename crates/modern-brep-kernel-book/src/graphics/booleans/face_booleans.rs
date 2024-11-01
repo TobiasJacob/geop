@@ -9,7 +9,7 @@ mod tests {
         union::face::face_face_union,
     };
     use geop_geometry::{
-        points::point::Point,
+        point::Point,
         surfaces::{plane::Plane, surface::Surface},
         transforms::Transform,
     };

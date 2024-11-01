@@ -1,6 +1,4 @@
-use crate::{
-    curves::circle::Circle, points::point::Point, surfaces::cylinder::Cylinder, EQ_THRESHOLD,
-};
+use crate::{curves::circle::Circle, point::Point, surfaces::cylinder::Cylinder, EQ_THRESHOLD};
 
 pub enum CircleCylinderIntersection {
     Circle(Circle),

@@ -1,4 +1,4 @@
-use crate::{curves::curve::Curve, points::point::Point, surfaces::surface::Surface};
+use crate::{curves::curve::Curve, point::Point, surfaces::surface::Surface};
 
 use super::plane_plane::{plane_plane_intersection, PlanePlaneIntersection};
 

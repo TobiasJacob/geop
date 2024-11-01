@@ -1,4 +1,4 @@
-use crate::{curves::curve::Curve, points::point::Point};
+use crate::{curves::curve::Curve, point::Point};
 
 use super::{
     circle_circle::{circle_circle_intersection, CircleCircleIntersection},

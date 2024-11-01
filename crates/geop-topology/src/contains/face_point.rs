@@ -1,7 +1,7 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curves::curve::Curve,
-    points::point::Point,
+    point::Point,
     surfaces::SurfaceLike,
 };
 

@@ -4,7 +4,7 @@ mod tests {
 
     use crate::tests::renderer;
     use geop_geometry::{
-        points::point::Point,
+        point::Point,
         surfaces::{plane::Plane, surface::Surface},
     };
     use geop_topology::{

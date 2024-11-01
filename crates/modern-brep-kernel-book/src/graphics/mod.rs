@@ -4,7 +4,7 @@ pub mod topology;
 
 #[cfg(test)]
 mod tests {
-    use geop_geometry::points::point::Point;
+    use geop_geometry::point::Point;
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
         topology::scene::{Color, Scene},

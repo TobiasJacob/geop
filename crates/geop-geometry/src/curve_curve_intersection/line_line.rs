@@ -1,4 +1,4 @@
-use crate::{curves::line::Line, points::point::Point};
+use crate::{curves::line::Line, point::Point};
 
 #[derive(Debug)]
 pub enum LineLineIntersection {

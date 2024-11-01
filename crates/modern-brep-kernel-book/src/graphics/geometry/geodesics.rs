@@ -3,7 +3,7 @@ mod tests {
     use std::borrow::Borrow;
 
     use geop_geometry::{
-        points::point::Point,
+        point::Point,
         surfaces::{surface::Surface, SurfaceLike},
     };
     use geop_topology::{

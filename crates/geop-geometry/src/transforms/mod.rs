@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use crate::{points::point::Point, EQ_THRESHOLD};
+use crate::{point::Point, EQ_THRESHOLD};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {

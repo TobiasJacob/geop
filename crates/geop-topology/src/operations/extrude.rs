@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     curves::{curve::Curve, line::Line, CurveLike},
-    points::point::Point,
+    point::Point,
     surfaces::{cylinder::Cylinder, plane::Plane, surface::Surface},
     transforms::Transform,
 };

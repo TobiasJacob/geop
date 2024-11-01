@@ -1,4 +1,4 @@
-use geop_geometry::{points::point::Point, transforms::Transform};
+use geop_geometry::{point::Point, transforms::Transform};
 
 use crate::contains::{face_point::FacePointContains, shell_point::shell_point_contains};
 

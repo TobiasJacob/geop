@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform};
 
 use super::{
     circle::{Circle, CircleTransform},

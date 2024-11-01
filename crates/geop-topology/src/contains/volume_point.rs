@@ -4,7 +4,7 @@ use geop_geometry::{
         curve_surface_intersection, CurveSurfaceIntersection,
     },
     curves::{curve::Curve, line::Line, CurveLike},
-    points::point::Point,
+    point::Point,
 };
 
 use crate::topology::{edge::Edge, face::Face, volume::Volume};

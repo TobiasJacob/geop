@@ -1,6 +1,6 @@
 use geop_geometry::{
     curves::{curve::Curve, CurveLike},
-    points::point::Point,
+    point::Point,
 };
 use geop_topology::{
     contains::edge_point::{edge_point_contains, EdgePointContains},

@@ -1,7 +1,7 @@
 use std::{rc::Rc, vec};
 
 use geop_geometry::{
-    points::point::Point,
+    point::Point,
     surfaces::{plane::Plane, surface::Surface},
 };
 

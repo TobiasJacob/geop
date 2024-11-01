@@ -1,4 +1,4 @@
-use crate::{curves::line::Line, points::point::Point, surfaces::sphere::Sphere, EQ_THRESHOLD};
+use crate::{curves::line::Line, point::Point, surfaces::sphere::Sphere, EQ_THRESHOLD};
 
 pub enum LineSphereIntersection {
     TwoPoints(Point, Point),
@@ -30,7 +30,7 @@ pub fn line_sphere_intersection(line: &Line, sphere: &Sphere) -> LineSphereInter
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{curves::line::Line, points::point::Point, surfaces::sphere::Sphere};
+    use crate::{curves::line::Line, point::Point, surfaces::sphere::Sphere};
 
     #[test]
     fn test_line_sphere_intersection_two_points() {

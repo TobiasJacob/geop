@@ -1,7 +1,7 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curves::CurveLike,
-    points::point::Point,
+    point::Point,
 };
 
 use crate::remesh::edge::{edge_remesh, edge_split, EdgeRemesh};

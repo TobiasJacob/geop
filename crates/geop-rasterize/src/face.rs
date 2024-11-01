@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use geop_geometry::{
-    points::point::Point,
+    point::Point,
     surfaces::{surface::Surface, SurfaceLike},
     EQ_THRESHOLD,
 };

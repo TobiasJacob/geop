@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use geop_geometry::{
     curves::{curve::Curve, CurveLike},
-    points::point::Point,
+    point::Point,
     transforms::Transform,
 };
 

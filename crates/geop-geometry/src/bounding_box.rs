@@ -1,4 +1,4 @@
-use crate::points::point::Point;
+use crate::point::Point;
 
 #[derive(Debug, Clone)]
 pub struct BoundingBox {

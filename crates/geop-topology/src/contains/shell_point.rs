@@ -1,4 +1,4 @@
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 
 use crate::topology::shell::Shell;
 

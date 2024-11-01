@@ -5,7 +5,7 @@ mod tests {
     use std::rc::Rc;
 
     use geop_geometry::{
-        points::point::Point,
+        point::Point,
         surfaces::{plane::Plane, surface::Surface},
         transforms::Transform,
     };

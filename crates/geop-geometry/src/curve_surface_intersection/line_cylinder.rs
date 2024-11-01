@@ -1,4 +1,4 @@
-use crate::{curves::line::Line, points::point::Point, surfaces::cylinder::Cylinder, EQ_THRESHOLD};
+use crate::{curves::line::Line, point::Point, surfaces::cylinder::Cylinder, EQ_THRESHOLD};
 
 pub enum CylinderLineIntersection {
     Line(Line),
@@ -54,7 +54,7 @@ pub fn line_cylinder_intersection(line: &Line, cylinder: &Cylinder) -> CylinderL
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{curves::line::Line, points::point::Point, surfaces::cylinder::Cylinder};
+    use crate::{curves::line::Line, point::Point, surfaces::cylinder::Cylinder};
 
     #[test]
     fn test_line_cylinder_intersection_line() {

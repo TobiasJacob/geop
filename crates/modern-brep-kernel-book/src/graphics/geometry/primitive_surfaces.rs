@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::points::point::Point;
+    use geop_geometry::point::Point;
     use geop_rasterize::face::rasterize_face_into_triangle_list;
     use geop_topology::{
         primitive_objects::faces::{

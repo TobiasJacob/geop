@@ -1,4 +1,4 @@
-use crate::{bounding_box::BoundingBox, curves::CurveLike, points::point::Point, EQ_THRESHOLD};
+use crate::{bounding_box::BoundingBox, curves::CurveLike, point::Point, EQ_THRESHOLD};
 
 use super::PRECISION;
 

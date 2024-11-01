@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use geop_geometry::{
-        points::point::Point,
+        point::Point,
         surfaces::{surface::Surface, SurfaceLike},
     };
     use geop_topology::{

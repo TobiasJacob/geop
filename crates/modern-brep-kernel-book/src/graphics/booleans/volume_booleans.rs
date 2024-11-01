@@ -4,7 +4,7 @@ mod tests {
         remesh::volume::{volume_split, volume_split_edges, VolumeSplit},
         split_if_necessary::edge_split_face::split_faces_by_edges_if_necessary,
     };
-    use geop_geometry::{points::point::Point, transforms::Transform};
+    use geop_geometry::{point::Point, transforms::Transform};
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,
         topology::{

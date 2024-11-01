@@ -4,7 +4,7 @@ use std::{panic, vec};
 use geop_booleans::difference::face_face::face_face_difference;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
-    points::point::Point,
+    point::Point,
     surfaces::{plane::Plane, surface::Surface},
     transforms::Transform,
     EQ_THRESHOLD,

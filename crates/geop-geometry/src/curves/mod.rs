@@ -1,6 +1,6 @@
 use curve::Curve;
 
-use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform};
 
 pub mod curve;
 

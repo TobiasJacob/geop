@@ -1,7 +1,7 @@
 use crate::{
     curve_curve_intersection::circle_line::{circle_line_intersection, CircleLineIntersection},
     curves::circle::Circle,
-    points::point::Point,
+    point::Point,
     surface_surface_intersection::plane_plane::{plane_plane_intersection, PlanePlaneIntersection},
     surfaces::plane::Plane,
 };

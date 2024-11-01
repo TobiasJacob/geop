@@ -1,6 +1,6 @@
 use geop_geometry::{
     curves::{curve::Curve, ellipse::Ellipse},
-    points::point::Point,
+    point::Point,
 };
 
 use crate::topology::edge::Edge;

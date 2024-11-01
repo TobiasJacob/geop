@@ -1,6 +1,6 @@
 use surface::{Surface, TangentPoint};
 
-use crate::{curves::curve::Curve, points::point::Point, transforms::Transform};
+use crate::{curves::curve::Curve, point::Point, transforms::Transform};
 
 pub mod cylinder;
 pub mod plane;

@@ -1,6 +1,6 @@
 use crate::{
     curves::circle::Circle,
-    points::point::Point,
+    point::Point,
     surfaces::{plane::Plane, sphere::Sphere, SurfaceLike},
 };
 

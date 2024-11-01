@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use geop_geometry::{curves::CurveLike, points::point::Point, transforms::Transform};
+use geop_geometry::{curves::CurveLike, point::Point, transforms::Transform};
 
 use crate::contains::{
     contour_point::contour_point_contains,

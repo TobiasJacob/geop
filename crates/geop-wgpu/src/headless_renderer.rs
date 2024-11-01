@@ -1,4 +1,4 @@
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 use geop_rasterize::{
     edge::rasterize_edge_into_line_list,
     edge_buffer::EdgeBuffer,

@@ -3,7 +3,7 @@ use crate::{
         circle_circle_intersection, CircleCircleIntersection,
     },
     curves::{circle::Circle, CurveLike},
-    points::point::Point,
+    point::Point,
     surface_surface_intersection::plane_sphere::{
         plane_sphere_intersection, PlaneSphereIntersection,
     },
@@ -59,7 +59,7 @@ pub fn circle_sphere_intersection(circle: &Circle, sphere: &Sphere) -> CircleSph
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{curves::circle::Circle, points::point::Point, surfaces::sphere::Sphere};
+    use crate::{curves::circle::Circle, point::Point, surfaces::sphere::Sphere};
 
     #[test]
     fn test_circle_sphere_intersection() {

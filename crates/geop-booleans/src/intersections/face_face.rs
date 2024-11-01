@@ -2,7 +2,7 @@ use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curve_surface_intersection::curve_surface::curve_surface_intersection,
     curves::curve::Curve,
-    points::point::Point,
+    point::Point,
     surface_surface_intersection::surface_surface::{
         surface_surface_intersection, FaceSurfaceIntersection,
     },

@@ -1,4 +1,4 @@
-use geop_geometry::points::point::Point;
+use geop_geometry::point::Point;
 use geop_rasterize::vertex_buffer::{RenderVertex, VertexBuffer};
 use geop_topology::topology::scene::Color;
 use wgpu::{util::DeviceExt, TextureFormat};

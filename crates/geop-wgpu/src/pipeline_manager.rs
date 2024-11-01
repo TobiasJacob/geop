@@ -88,7 +88,7 @@ impl PipelineManager {
     pub fn update_camera_pos(
         &mut self,
         queue: &wgpu::Queue,
-        camera_pos: geop_geometry::points::point::Point,
+        camera_pos: geop_geometry::point::Point,
     ) {
         self.camera_pipeline.camera.eye.x = camera_pos.x as f32;
         self.camera_pipeline.camera.eye.y = camera_pos.y as f32;
