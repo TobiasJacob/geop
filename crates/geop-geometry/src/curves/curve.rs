@@ -1,6 +1,11 @@
 use std::fmt::Debug;
 
-use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform};
+use crate::{
+    bounding_box::BoundingBox,
+    efloat::SemiPositiveEFloat64,
+    points::point::{NormalizedPoint, Point},
+    transforms::Transform,
+};
 
 use super::{
     circle::{Circle, CircleTransform},
@@ -44,7 +49,7 @@ impl CurveLike for Curve {
     }
 
     // Normalized Tangent / Direction of the curve at the given point.
-    fn tangent(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> NormalizedPoint {
         match self {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
@@ -64,7 +69,7 @@ impl CurveLike for Curve {
     }
 
     // Returns the distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> SemiPositiveEFloat64 {
         match self {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),

@@ -1,25 +1,27 @@
-use crate::{points::point::Point, transforms::Transform, EQ_THRESHOLD, HORIZON_DIST};
+use crate::{
+    efloat::{efloat::EFloat64, semi_positive_efloat::SemiPositiveEFloat64},
+    points::{normalized_point::NormalizedPoint, point::Point},
+    transforms::Transform,
+    HORIZON_DIST,
+};
 
 use super::{curve::Curve, CurveLike};
 
 #[derive(Debug, Clone)]
 pub struct Line {
     pub basis: Point,
-    pub direction: Point,
+    pub direction: NormalizedPoint,
 }
 
 impl Line {
-    pub fn new(basis: Point, direction: Point) -> Line {
-        Line {
-            basis,
-            direction: direction.normalize(),
-        }
+    pub fn new(basis: Point, direction: NormalizedPoint) -> Line {
+        Line { basis, direction }
     }
 
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
-        let direction = transform * (self.direction + self.basis) - basis;
-        Line::new(basis, direction.normalize())
+        let direction = transform.transform_normalizedpoint_with_base(self.direction, basis);
+        Line::new(basis, direction)
     }
 
     pub fn neg(&self) -> Line {
@@ -36,17 +38,19 @@ impl CurveLike for Line {
         Curve::Line(self.neg())
     }
 
-    fn tangent(&self, _p: Point) -> Point {
+    fn tangent(&self, _p: Point) -> NormalizedPoint {
         self.direction.clone()
     }
 
     fn on_curve(&self, p: Point) -> bool {
-        let v = p - self.basis;
-        let v = v - self.direction * (v.dot(self.direction));
-        v.norm() < EQ_THRESHOLD
+        self.direction
+            .perpendicular_decomposition(p - self.basis)
+            .norm_sq()
+            .value
+            == 0.0
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> SemiPositiveEFloat64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let v = x - y;
@@ -58,11 +62,13 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                start + (end - start) * t
+                start + (end - start) * EFloat64::new(t)
             }
-            (Some(start), None) => start + self.direction * t * HORIZON_DIST,
-            (None, Some(end)) => end - self.direction * (1.0 - t) * HORIZON_DIST,
-            (None, None) => self.basis + self.direction * (t - 0.5) * 2.0 * HORIZON_DIST,
+            (Some(start), None) => start + self.direction * EFloat64::new(t * HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::new((1.0 - t) * HORIZON_DIST),
+            (None, None) => {
+                self.basis + self.direction * EFloat64::new((t - 0.5) * 2.0 * HORIZON_DIST)
+            }
         }
     }
 
@@ -73,15 +79,16 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
+                (m - start).dot(self.direction.value) >= 0.0
+                    && (m - end).dot(self.direction.value) <= 0.0
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                (m - start).dot(self.direction) >= 0.0
+                (m - start).dot(self.direction.value) >= 0.0
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                (m - end).dot(self.direction) <= 0.0
+                (m - end).dot(self.direction.value) <= 0.0
             }
             (None, None) => true,
         }
@@ -92,17 +99,17 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (start + end) / 2.0
+                (start + end) / EFloat64::new(2.0).expect_positive()
             }
-            (Some(start), None) => start + self.direction * HORIZON_DIST,
-            (None, Some(end)) => end - self.direction * HORIZON_DIST,
+            (Some(start), None) => start + self.direction.value * EFloat64::new(HORIZON_DIST),
+            (None, Some(end)) => end - self.direction.value * EFloat64::new(HORIZON_DIST),
             (None, None) => self.basis,
         }
     }
 
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
-        self.basis + self.direction * v.dot(self.direction)
+        self.basis + self.direction.value * v.dot(self.direction.value)
     }
 
     fn get_bounding_box(
@@ -119,7 +126,7 @@ impl CurveLike for Line {
             if let Some(a) = a {
                 if let Some(b) = b {
                     let v = *a - *b;
-                    v.dot(self.direction).partial_cmp(&0.0).unwrap()
+                    v.dot(self.direction.value).partial_cmp(&0.0).unwrap()
                 } else {
                     std::cmp::Ordering::Less
                 }
@@ -137,6 +144,7 @@ impl CurveLike for Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.direction == other.direction && (self.basis - other.basis).is_parallel(self.direction)
+        self.direction == other.direction
+            && (self.basis - other.basis).is_parallel(self.direction.value)
     }
 }

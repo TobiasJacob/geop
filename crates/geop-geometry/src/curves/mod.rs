@@ -1,6 +1,11 @@
 use curve::Curve;
 
-use crate::{bounding_box::BoundingBox, points::point::Point, transforms::Transform};
+use crate::{
+    bounding_box::BoundingBox,
+    efloat::SemiPositiveEFloat64,
+    points::point::{NormalizedPoint, Point},
+    transforms::Transform,
+};
 
 pub mod curve;
 
@@ -19,13 +24,13 @@ pub trait CurveLike {
     fn neg(&self) -> Curve;
 
     // Normalized Tangent / Direction of the curve at the given point.
-    fn tangent(&self, p: Point) -> Point;
+    fn tangent(&self, p: Point) -> NormalizedPoint;
 
     // Checks if point is on the curve.
     fn on_curve(&self, p: Point) -> bool;
 
     // Returns the distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64;
+    fn distance(&self, x: Point, y: Point) -> SemiPositiveEFloat64;
 
     // Interpolate between start and end at t. t is between 0 and 1.
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point;

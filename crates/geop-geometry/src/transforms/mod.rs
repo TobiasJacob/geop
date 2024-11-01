@@ -1,6 +1,10 @@
 use std::ops::Mul;
 
-use crate::{points::point::Point, EQ_THRESHOLD};
+use crate::{
+    efloat::efloat::EFloat64,
+    points::{nonzero_point::NonZeroPoint, normalized_point::NormalizedPoint, point::Point},
+    EQ_THRESHOLD,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {
@@ -28,18 +32,17 @@ impl Mul<Point> for Transform {
     type Output = Point;
 
     fn mul(self, other: Point) -> Point {
-        let other = [other.x, other.y, other.z, 1.0];
-        let mut result = [0.0; 4];
+        let other = [other.x, other.y, other.z, EFloat64::one()];
+        let mut result = [EFloat64::zero(); 4];
         for i in 0..4 {
-            result[i] = 0.0;
             for j in 0..4 {
-                result[i] += self.matrix[i][j] * other[j];
+                result[i] = result[i] + EFloat64::new(self.matrix[i][j]) * other[j];
             }
         }
-        result[0] /= result[3];
-        result[1] /= result[3];
-        result[2] /= result[3];
-        Point::new(result[0], result[1], result[2])
+        result[0] = result[0] / result[3].expect_non_zero();
+        result[1] = result[1] / result[3].expect_non_zero();
+        result[2] = result[2] / result[3].expect_non_zero();
+        Point::from_efloat(result[0], result[1], result[2])
     }
 }
 
@@ -55,15 +58,15 @@ impl Mul<Option<Point>> for Transform {
 }
 
 impl Transform {
-    pub fn from_translation(point: Point) -> Transform {
+    pub fn from_translation(x: f64, y: f64, z: f64) -> Transform {
         let mut matrix = [[0.0; 4]; 4];
         matrix[0][0] = 1.0;
         matrix[1][1] = 1.0;
         matrix[2][2] = 1.0;
         matrix[3][3] = 1.0;
-        matrix[0][3] = point.x;
-        matrix[1][3] = point.y;
-        matrix[2][3] = point.z;
+        matrix[0][3] = x;
+        matrix[1][3] = y;
+        matrix[2][3] = z;
         Transform { matrix }
     }
 
@@ -85,11 +88,12 @@ impl Transform {
         Transform { matrix }
     }
 
-    pub fn from_scale(scale: Point) -> Transform {
+    pub fn from_scale(x: f64, y: f64, z: f64) -> Transform {
+        assert!(x > 0.0 && y > 0.0 && z > 0.0, "Scale must be positive");
         let mut matrix = [[0.0; 4]; 4];
-        matrix[0][0] = scale.x;
-        matrix[1][1] = scale.y;
-        matrix[2][2] = scale.z;
+        matrix[0][0] = x;
+        matrix[1][1] = y;
+        matrix[2][2] = z;
         matrix[3][3] = 1.0;
         Transform { matrix }
     }
@@ -108,6 +112,28 @@ impl Transform {
         );
         return scale_x;
     }
+
+    pub fn transform_nonzeropoint_with_base(
+        &self,
+        point: NonZeroPoint,
+        basis: Point,
+    ) -> NonZeroPoint {
+        let point = point.value + basis;
+        let point = *self * point;
+        let point = point - basis;
+        point.expect_non_zero()
+    }
+
+    pub fn transform_normalizedpoint_with_base(
+        &self,
+        point: NormalizedPoint,
+        basis: Point,
+    ) -> NormalizedPoint {
+        let point = point.value + basis;
+        let point = *self * point;
+        let point = point - basis;
+        point.normalize().unwrap()
+    }
 }
 
 #[cfg(test)]
@@ -116,8 +142,8 @@ mod tests {
 
     #[test]
     fn test_translation() {
-        let t1 = Transform::from_translation(Point::new(1.0, 2.0, 3.0));
-        let t2 = Transform::from_translation(Point::new(4.0, 5.0, 6.0));
+        let t1 = Transform::from_translation(1.0, 2.0, 3.0);
+        let t2 = Transform::from_translation(4.0, 5.0, 6.0);
         let t3 = t1 * t2;
         assert_eq!(t3 * Point::new(0.0, 0.0, 0.0), Point::new(5.0, 7.0, 9.0));
     }
