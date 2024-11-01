@@ -2,8 +2,8 @@ use curve::Curve;
 
 use crate::{
     bounding_box::BoundingBox,
-    efloat::SemiPositiveEFloat64,
-    points::point::{NormalizedPoint, Point},
+    efloat::semi_positive_efloat::SemiPositiveEFloat64,
+    points::{normalized_point::NormalizedPoint, point::Point},
     transforms::Transform,
 };
 

@@ -38,11 +38,13 @@ impl Point {
         self.x == 0.0 && self.y == 0.0 && self.z == 0.0
     }
 
-    pub fn dot(self, other: Point) -> EFloat64 {
+    pub fn dot(self, other: impl Into<Point>) -> EFloat64 {
+        let other = other.into();
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn cross(self, other: Point) -> Point {
+    pub fn cross(self, other: impl Into<Point>) -> Point {
+        let other = other.into();
         Point::from_efloat(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
@@ -52,25 +54,26 @@ impl Point {
 
     // TODO: This operation should return a Result, as the operation is not always possible. It fails when norm is zero. This is not as rare as it seems. It helps users to catch bugs.
     pub fn normalize(self) -> Option<NormalizedPoint> {
-        let norm = self.norm().value.as_positive()?;
+        let norm = self.norm().as_float.as_positive()?;
         Some(NormalizedPoint {
             value: Point::from_efloat(self.x / norm, self.y / norm, self.z / norm),
         })
     }
 
-    pub fn is_parallel(self, other: Point) -> bool {
+    pub fn is_parallel(self, other: impl Into<Point>) -> bool {
         let cross = self.cross(other);
         cross.is_zero()
     }
 
-    pub fn is_perpendicular(self, other: Point) -> bool {
+    pub fn is_perpendicular(self, other: impl Into<Point>) -> bool {
         let dot = self.dot(other);
         dot == 0.0
     }
 
-    pub fn angle(&self, other: Point) -> Option<SemiPositiveEFloat64> {
+    pub fn angle(&self, other: impl Into<Point>) -> Option<SemiPositiveEFloat64> {
+        let other = other.into();
         let dot = self.dot(other);
-        let norm = (self.norm() * other.norm()).value.as_positive()?;
+        let norm = (self.norm() * other.norm()).as_float.as_positive()?;
         let dot_norm = dot / norm;
         if dot_norm >= 1.0 {
             return Some(EFloat64::new(0.0).expect_semi_positive());
@@ -82,13 +85,14 @@ impl Point {
     }
 
     // Oriented angle between two vectors around a normal vector. Measured from self to other.
-    pub fn angle2(&self, other: Point, normal: Point) -> Option<EFloat64> {
+    pub fn angle2(&self, other: impl Into<Point>, normal: impl Into<Point>) -> Option<EFloat64> {
+        let other = other.into();
         let cross = self.cross(other);
         let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
-            return Some(-angle.value);
+            return Some(-angle.as_float);
         }
-        Some(angle.value)
+        Some(angle.as_float)
     }
 
     pub fn zero() -> Point {
@@ -111,13 +115,13 @@ impl Point {
         if self.is_zero() {
             None
         } else {
-            Some(NonZeroPoint { value: self })
+            Some(NonZeroPoint { as_point: self })
         }
     }
 
     pub fn expect_non_zero(self) -> NonZeroPoint {
         assert!(!self.is_zero());
-        NonZeroPoint { value: self }
+        NonZeroPoint { as_point: self }
     }
 }
 
@@ -125,6 +129,7 @@ impl Add for Point {
     type Output = Self;
 
     fn add(self, other: Point) -> Point {
+        let other: Point = other.into();
         Point::from_efloat(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
@@ -133,15 +138,8 @@ impl Sub for Point {
     type Output = Self;
 
     fn sub(self, other: Point) -> Point {
+        let other: Point = other.into();
         Point::from_efloat(self.x - other.x, self.y - other.y, self.z - other.z)
-    }
-}
-
-impl Add<EFloat64> for Point {
-    type Output = Self;
-
-    fn add(self, other: EFloat64) -> Point {
-        Point::from_efloat(self.x + other, self.y + other, self.z + other)
     }
 }
 
@@ -150,6 +148,15 @@ impl Sub<EFloat64> for Point {
 
     fn sub(self, other: EFloat64) -> Point {
         Point::from_efloat(self.x - other, self.y - other, self.z - other)
+    }
+}
+
+impl Add<EFloat64> for Point {
+    type Output = Self;
+
+    fn add(self, other: EFloat64) -> Point {
+        let other: EFloat64 = other.into();
+        Point::from_efloat(self.x + other, self.y + other, self.z + other)
     }
 }
 

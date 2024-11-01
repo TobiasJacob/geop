@@ -73,7 +73,7 @@ impl EFloat64 {
         let s_u = self.upper_bound * self.upper_bound;
         let s_l = self.lower_bound * self.lower_bound;
         SemiPositiveEFloat64 {
-            value: EFloat64 {
+            as_float: EFloat64 {
                 upper_bound: s_u.next_after(f64::INFINITY),
                 lower_bound: s_l.next_after(f64::NEG_INFINITY),
             },
@@ -81,7 +81,7 @@ impl EFloat64 {
     }
 
     pub fn as_non_zero(&self) -> Option<NonzeroEFloat64> {
-        if self.is_zero() {
+        if *self == 0.0 {
             None
         } else {
             Some(NonzeroEFloat64 { value: *self })
@@ -89,7 +89,7 @@ impl EFloat64 {
     }
 
     pub fn expect_non_zero(&self) -> NonzeroEFloat64 {
-        assert!(!self.is_zero());
+        assert!(!(*self == 0.0));
         NonzeroEFloat64 { value: *self }
     }
 
@@ -108,7 +108,7 @@ impl EFloat64 {
 
     pub fn as_semi_positive(&self) -> Option<SemiPositiveEFloat64> {
         if self.lower_bound >= 0.0 {
-            Some(SemiPositiveEFloat64 { value: *self })
+            Some(SemiPositiveEFloat64 { as_float: *self })
         } else {
             None
         }
@@ -116,11 +116,7 @@ impl EFloat64 {
 
     pub fn expect_semi_positive(&self) -> SemiPositiveEFloat64 {
         assert!(self.lower_bound >= 0.0);
-        SemiPositiveEFloat64 { value: *self }
-    }
-
-    pub fn is_zero(&self) -> bool {
-        *self == 0.0
+        SemiPositiveEFloat64 { as_float: *self }
     }
 
     pub fn atan2(&self, x: EFloat64) -> EFloat64 {
@@ -251,6 +247,6 @@ mod tests {
     fn test_efloat_add_f64() {
         let a = EFloat64::new(2.0).expect_semi_positive();
         let b = EFloat64::new(8.0).expect_semi_positive();
-        assert!((b.sqrt().value * a.sqrt().value) == 4.0);
+        assert!((b.sqrt().as_float * a.sqrt().as_float) == 4.0);
     }
 }

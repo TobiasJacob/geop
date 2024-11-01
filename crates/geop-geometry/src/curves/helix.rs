@@ -1,8 +1,7 @@
 use core::f64;
 
 use crate::{
-    efloat::EFloat64,
-    points::point::{NonZeroPoint, NormalizedPoint, Point},
+    points::{nonzero_point::NonZeroPoint, point::Point},
     transforms::Transform,
     HORIZON_DIST,
 };
@@ -26,7 +25,7 @@ impl Helix {
         right_winding: bool,
     ) -> Helix {
         assert!(
-            pitch.value.is_perpendicular(radius.value),
+            pitch.as_point.is_perpendicular(radius.as_point),
             "Radius and pitch must be orthogonal"
         );
         Helix {
@@ -37,10 +36,10 @@ impl Helix {
                 true => pitch
                     .normalize()
                     .value
-                    .cross(radius.value)
+                    .cross(radius.as_point)
                     .expect_non_zero(),
                 false => {
-                    (-pitch.value.normalize().unwrap().value.cross(radius.value)).expect_non_zero()
+                    (-pitch.as_point.normalize().unwrap().value.cross(radius.as_point)).expect_non_zero()
                 }
             },
             right_winding,
@@ -50,8 +49,8 @@ impl Helix {
     pub fn transform(&self, transform: Transform) -> Self {
         let basis_old = self.basis;
         let basis = transform * self.basis;
-        let pitch = transform * (self.pitch.value + basis_old) - basis;
-        let radius = transform * (self.radius.value + basis_old) - basis;
+        let pitch = transform * (self.pitch.as_point + basis_old) - basis;
+        let radius = transform * (self.radius.as_point + basis_old) - basis;
         Helix::new(
             basis,
             pitch.expect_non_zero(),
@@ -63,7 +62,7 @@ impl Helix {
     pub fn neg(&self) -> Helix {
         Helix::new(
             self.basis,
-            (-self.pitch.value).expect_non_zero(),
+            (-self.pitch.as_point).expect_non_zero(),
             self.radius,
             self.right_winding,
         )
@@ -71,9 +70,9 @@ impl Helix {
 
     pub fn point_at_pitch(&self, t: f64) -> Point {
         self.basis
-            + EFloat64::new(t) * self.pitch.value
-            + self.radius.value * EFloat64::new((2.0 * f64::consts::PI * t).cos())
-            + self.dir_cross.value * EFloat64::new((2.0 * f64::consts::PI * t).sin())
+            + EFloat64::new(t) * self.pitch.as_point
+            + self.radius.as_point * EFloat64::new((2.0 * f64::consts::PI * t).cos())
+            + self.dir_cross.as_point * EFloat64::new((2.0 * f64::consts::PI * t).sin())
     }
 }
 
@@ -90,7 +89,7 @@ impl CurveLike for Helix {
     fn tangent(&self, p: Point) -> NormalizedPoint {
         assert!(self.on_curve(p));
         (*self.pitch.cross(p - self.basis).normalize().unwrap()
-            + self.pitch.value / EFloat64::two_pi().expect_positive())
+            + self.pitch.as_point / EFloat64::two_pi().expect_positive())
         .normalize()
         .unwrap()
     }

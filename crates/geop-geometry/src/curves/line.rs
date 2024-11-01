@@ -46,7 +46,6 @@ impl CurveLike for Line {
         self.direction
             .perpendicular_decomposition(p - self.basis)
             .norm_sq()
-            .value
             == 0.0
     }
 
@@ -79,16 +78,16 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (m - start).dot(self.direction.value) >= 0.0
-                    && (m - end).dot(self.direction.value) <= 0.0
+                self.direction.parallel_distance(m - start) >= 0.0
+                    && self.direction.parallel_distance(m - end) <= 0.0
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                (m - start).dot(self.direction.value) >= 0.0
+                self.direction.parallel_distance(m - start) >= 0.0
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                (m - end).dot(self.direction.value) <= 0.0
+                self.direction.parallel_distance(m - end) <= 0.0
             }
             (None, None) => true,
         }
@@ -101,15 +100,15 @@ impl CurveLike for Line {
                 assert!(self.on_curve(end));
                 (start + end) / EFloat64::new(2.0).expect_positive()
             }
-            (Some(start), None) => start + self.direction.value * EFloat64::new(HORIZON_DIST),
-            (None, Some(end)) => end - self.direction.value * EFloat64::new(HORIZON_DIST),
+            (Some(start), None) => start + self.direction * EFloat64::new(HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::new(HORIZON_DIST),
             (None, None) => self.basis,
         }
     }
 
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
-        self.basis + self.direction.value * v.dot(self.direction.value)
+        self.basis + self.direction.parallel_decomposition(v)
     }
 
     fn get_bounding_box(
@@ -126,7 +125,10 @@ impl CurveLike for Line {
             if let Some(a) = a {
                 if let Some(b) = b {
                     let v = *a - *b;
-                    v.dot(self.direction.value).partial_cmp(&0.0).unwrap()
+                    self.direction
+                        .parallel_distance(v)
+                        .partial_cmp(&0.0)
+                        .unwrap()
                 } else {
                     std::cmp::Ordering::Less
                 }
@@ -144,7 +146,6 @@ impl CurveLike for Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.direction == other.direction
-            && (self.basis - other.basis).is_parallel(self.direction.value)
+        self.direction == other.direction && (self.basis - other.basis).is_parallel(self.direction)
     }
 }

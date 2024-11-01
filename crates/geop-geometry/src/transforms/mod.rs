@@ -118,7 +118,7 @@ impl Transform {
         point: NonZeroPoint,
         basis: Point,
     ) -> NonZeroPoint {
-        let point = point.value + basis;
+        let point = point.as_point + basis;
         let point = *self * point;
         let point = point - basis;
         point.expect_non_zero()
