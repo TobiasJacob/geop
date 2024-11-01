@@ -92,7 +92,7 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (start + end) / 2.0
+                ((start + end) / 2.0).unwrap()
             }
             (Some(start), None) => start + self.direction * HORIZON_DIST,
             (None, Some(end)) => end - self.direction * HORIZON_DIST,

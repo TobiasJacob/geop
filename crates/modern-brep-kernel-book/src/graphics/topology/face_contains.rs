@@ -103,8 +103,12 @@ mod tests {
 
         let mut face = primitive_rectangle(Point::zero(), Point::unit_x(), Point::unit_y());
         face.boundaries.push(
-            primitive_rectangle(Point::zero(), Point::unit_x() / 2.0, Point::unit_y() / 2.0)
-                .boundaries[0]
+            primitive_rectangle(
+                Point::zero(),
+                (Point::unit_x() / 2.0).unwrap(),
+                (Point::unit_y() / 2.0).unwrap(),
+            )
+            .boundaries[0]
                 .flip(),
         );
 

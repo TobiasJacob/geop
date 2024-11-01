@@ -63,9 +63,10 @@ impl CurveLike for Helix {
 
     fn tangent(&self, p: Point) -> Point {
         assert!(self.on_curve(p));
-        (self.pitch.cross(p - self.basis).normalize().unwrap() + self.pitch / 2.0 / f64::consts::PI)
-            .normalize()
-            .unwrap()
+        (self.pitch.cross(p - self.basis).normalize().unwrap()
+            + (self.pitch / (2.0 * f64::consts::PI)).unwrap())
+        .normalize()
+        .unwrap()
     }
 
     fn on_curve(&self, p: Point) -> bool {

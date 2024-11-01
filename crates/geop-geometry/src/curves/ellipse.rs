@@ -84,6 +84,10 @@ impl Ellipse {
             + self.minor_radius * self.minor_radius.z)
             / disc_z;
 
+        let disc_x = disc_x.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
+        let disc_y = disc_y.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
+        let disc_z = disc_z.unwrap_or(Point::new(f64::NAN, f64::NAN, f64::NAN));
+
         vec![
             self.basis + disc_x,
             self.basis - disc_x,
@@ -218,7 +222,7 @@ impl CurveLike for Ellipse {
                 let end_rel = self.transform_point_to_circle(end);
                 // println!("start_rel: {:?}", start_rel);
                 // println!("end_rel: {:?}", end_rel);
-                let mid = (start_rel + end_rel) / 2.0;
+                let mid = ((start_rel + end_rel) / 2.0).unwrap();
                 // println!("mid: {:?}", mid);
                 if mid.norm() < EQ_THRESHOLD {
                     return self.transform_point_from_circle(

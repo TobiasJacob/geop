@@ -20,7 +20,7 @@ impl RenderEdge {
     }
 
     pub fn mid_point(&self) -> Point {
-        (self.start.point() + self.end.point()) / 2.0
+        ((self.start.point() + self.end.point()) / 2.0).unwrap()
     }
 
     pub fn flip(&self) -> Self {

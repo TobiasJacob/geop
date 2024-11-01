@@ -167,7 +167,7 @@ impl CurveLike for Circle {
                 assert!(self.on_curve(end));
                 let start_rel = start - self.basis;
                 let end_rel = end - self.basis;
-                let mid = (start_rel + end_rel) / 2.0;
+                let mid = ((start_rel + end_rel) / 2.0).unwrap();
                 if mid.norm() < EQ_THRESHOLD {
                     return self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
                         + self.basis;

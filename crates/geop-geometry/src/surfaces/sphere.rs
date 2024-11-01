@@ -91,7 +91,7 @@ impl SurfaceLike for Sphere {
             return x;
         }
         let u_norm = u.norm();
-        let u_normalized = u / u_norm;
+        let u_normalized = (u / u_norm).unwrap();
         x * u_norm.cos() + u_normalized * u_norm.sin() * self.radius + self.basis
     }
 
@@ -102,15 +102,15 @@ impl SurfaceLike for Sphere {
         if x == y {
             return Some(Point::zero());
         }
-        let x2 = (x - self.basis) / self.radius;
-        let y2 = (y - self.basis) / self.radius;
+        let x2 = ((x - self.basis) / self.radius).unwrap();
+        let y2 = ((y - self.basis) / self.radius).unwrap();
         let dir = y2 - x2.dot(y2) * x2;
         let dir_norm = dir.norm();
         // For the case that we are on the opposite side of the sphere
         if dir_norm < EQ_THRESHOLD {
             return None;
         }
-        Some(self.distance(x, y) * dir / dir_norm)
+        Some(self.distance(x, y) * (dir / dir_norm).unwrap())
     }
 
     fn parallel_transport(
@@ -126,8 +126,8 @@ impl SurfaceLike for Sphere {
                 return None;
             }
             Some(v) => {
-                let x = (x - self.basis) / self.radius;
-                let y = (y - self.basis) / self.radius;
+                let x = ((x - self.basis) / self.radius).unwrap();
+                let y = ((y - self.basis) / self.radius).unwrap();
                 let u = self.log(x, y);
                 match u {
                     None => return Some(-y),
@@ -136,7 +136,7 @@ impl SurfaceLike for Sphere {
                         if u_norm < EQ_THRESHOLD {
                             return Some(v);
                         }
-                        let u_normalized = u / u_norm;
+                        let u_normalized = (u / u_norm).unwrap();
                         Some(
                             -x * u_norm.sin() * u_normalized.dot(v)
                                 + u_normalized * u_norm.cos() * u_normalized.dot(v)
@@ -181,7 +181,7 @@ impl SurfaceLike for Sphere {
         if dist < EQ_THRESHOLD {
             return self.basis;
         }
-        self.basis + diff * self.radius / dist
+        self.basis + diff * (self.radius / dist)
     }
 
     fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
@@ -191,7 +191,7 @@ impl SurfaceLike for Sphere {
             return None;
         }
         let dist = diff.norm() - self.radius;
-        Some(-(diff / diff_norm) * dist)
+        Some(-(diff / diff_norm).unwrap() * dist)
     }
 }
 

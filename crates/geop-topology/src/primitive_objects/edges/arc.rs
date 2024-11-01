@@ -6,7 +6,7 @@ use geop_geometry::{
 use crate::topology::edge::Edge;
 
 pub fn primitive_arc(from: Point, to: Point, radius: f64, normal: Point) -> Edge {
-    let midpoint = (from + to) / 2.0;
+    let midpoint = ((from + to) / 2.0).unwrap();
 
     let d = to - from;
 

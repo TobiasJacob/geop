@@ -89,7 +89,7 @@ mod tests {
             for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
+            midpoint = (midpoint / f.boundaries[0].clone().edges.len() as f64).unwrap();
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
             scene.faces.push((f, Color::white()));
         }
@@ -100,7 +100,7 @@ mod tests {
             for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
+            midpoint = (midpoint / f.boundaries[0].clone().edges.len() as f64).unwrap();
             midpoint = midpoint + Point::new(0.5, 0.0, 0.0);
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
             scene.faces.push((f, Color::white()));
@@ -133,7 +133,7 @@ mod tests {
             for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
+            midpoint = (midpoint / f.boundaries[0].clone().edges.len() as f64).unwrap();
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
 
             let color = match split {
@@ -187,7 +187,7 @@ mod tests {
             for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
+            midpoint = (midpoint / f.boundaries[0].clone().edges.len() as f64).unwrap();
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
 
             let color = match split {
@@ -241,7 +241,7 @@ mod tests {
             for e in f.boundaries[0].clone().edges.iter() {
                 midpoint = midpoint + e.get_midpoint();
             }
-            midpoint = midpoint / f.boundaries[0].clone().edges.len() as f64;
+            midpoint = (midpoint / f.boundaries[0].clone().edges.len() as f64).unwrap();
             let f = f.transform(Transform::from_translation(midpoint * 0.2));
 
             let color = match split {

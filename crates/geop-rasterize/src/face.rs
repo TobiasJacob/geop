@@ -177,7 +177,7 @@ pub fn triangle_intersects_triangle(
         if norm < EQ_THRESHOLD {
             continue;
         }
-        let normal = project_axis / norm;
+        let normal = (project_axis / norm).unwrap();
 
         let mut min_1 = f64::INFINITY;
         let mut max_1 = f64::NEG_INFINITY;

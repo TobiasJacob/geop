@@ -112,7 +112,7 @@ impl SurfaceLike for Cylinder {
         if u_norm < EQ_THRESHOLD {
             return x + height_diff * self.extend_dir;
         }
-        let u_normalized = u / u_norm;
+        let u_normalized = (u / u_norm).unwrap();
         self.basis
             + self.extend_dir * height_diff
             + x * u_norm.cos()
@@ -142,7 +142,7 @@ impl SurfaceLike for Cylinder {
             return None;
         }
 
-        Some(height_diff * self.extend_dir + dir / dir.norm() * angle)
+        Some(height_diff * self.extend_dir + (dir / dir.norm()).unwrap() * angle)
     }
 
     fn parallel_transport(
@@ -171,7 +171,7 @@ impl SurfaceLike for Cylinder {
         let helix_basis = self.basis + p_height * self.extend_dir;
         let helix_radius = p_proj;
         let helix_pitch =
-            self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle;
+            (self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle).unwrap();
         if helix_pitch.norm() < EQ_THRESHOLD {
             return Curve::Circle(Circle::new(
                 self.basis + p_height * self.extend_dir,
@@ -223,7 +223,7 @@ impl SurfaceLike for Cylinder {
             return None;
         }
         let normal = point / dist;
-        let grad = -normal * dist;
+        let grad = -normal.unwrap() * dist;
         Some(grad)
     }
 }

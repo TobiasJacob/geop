@@ -153,10 +153,13 @@ impl Mul<Point> for f64 {
 }
 
 impl Div<f64> for Point {
-    type Output = Self;
+    type Output = Option<Point>;
 
-    fn div(self, other: f64) -> Point {
-        Point::new(self.x / other, self.y / other, self.z / other)
+    fn div(self, other: f64) -> Option<Point> {
+        if other.abs() <= EQ_THRESHOLD {
+            return None;
+        }
+        Some(Point::new(self.x / other, self.y / other, self.z / other))
     }
 }
 
