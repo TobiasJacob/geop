@@ -25,41 +25,49 @@ pub enum CircleTransform {
 
 impl Circle {
     pub fn new(basis: Point, normal: NormalizedPoint, radius: PositiveEFloat64) -> Circle {
-        let radius = match Point::unit_x().cross(normal).norm_sq().as_float.lower_bound
-            > Point::unit_y().cross(normal).norm_sq().as_float.lower_bound
+        let radius = match Point::unit_x()
+            .cross(normal.as_point)
+            .norm_sq()
+            .as_efloat
+            .lower_bound
+            > Point::unit_y()
+                .cross(normal.as_point)
+                .norm_sq()
+                .as_efloat
+                .lower_bound
         {
-            true => Point::unit_x().cross(normal).normalize().unwrap() * radius.value,
+            true => Point::unit_x().cross(normal.as_point).normalize().unwrap() * radius.as_efloat,
             false => {
                 Point::unit_y()
-                    .cross(normal.value)
+                    .cross(normal.as_point)
                     .normalize()
                     .unwrap()
-                    .value
-                    * radius.value
+                    .as_point
+                    * radius.as_efloat
             }
         };
         assert!(
-            normal.value.is_perpendicular(radius),
+            normal.as_point.is_perpendicular(radius),
             "Radius and normal must be orthogonal"
         );
         Circle {
             basis,
             normal,
             radius: radius.expect_non_zero(),
-            dir_cross: normal.value.cross(radius).expect_non_zero(),
+            dir_cross: normal.as_point.cross(radius).expect_non_zero(),
         }
     }
 
     pub fn transform(&self, transform: Transform) -> CircleTransform {
         let basis = transform * self.basis;
-        let normal = transform * (self.normal.value + self.basis) - basis;
+        let normal = transform * (self.normal.as_point + self.basis) - basis;
         let radius = transform * (self.radius.as_point + self.basis) - basis;
-        let scale_factor = radius.norm().as_float / self.radius.norm();
-        assert!((normal.norm().as_float - scale_factor * self.normal.value.norm().as_float) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
+        let scale_factor = radius.norm() / self.radius.norm();
+        assert!((normal.norm().as_efloat - scale_factor.as_efloat * self.normal.as_point.norm().as_efloat) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
         CircleTransform::Circle(Circle::new(
             basis,
             normal.normalize().unwrap(),
-            radius.norm().as_float.expect_positive(),
+            radius.norm().as_efloat.expect_positive(),
         ))
     }
 
@@ -82,19 +90,23 @@ impl CurveLike for Circle {
 
     fn tangent(&self, p: Point) -> NormalizedPoint {
         assert!(self.on_curve(p));
-        self.normal.value.cross(p - self.basis).normalize().unwrap()
+        self.normal
+            .as_point
+            .cross(p - self.basis)
+            .normalize()
+            .unwrap()
     }
 
     fn on_curve(&self, p: Point) -> bool {
-        (p - self.basis).is_perpendicular(self.normal.value)
-            && ((p - self.basis).norm().as_float - self.radius.norm().value) == 0.0
+        (p - self.basis).is_perpendicular(self.normal.as_point)
+            && ((p - self.basis).norm().as_efloat - self.radius.norm().as_efloat) == 0.0
     }
 
     fn distance(&self, x: Point, y: Point) -> SemiPositiveEFloat64 {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis).unwrap();
-        (self.radius.norm().value * angle.as_float).expect_semi_positive()
+        (self.radius.norm().as_efloat * angle.as_efloat).expect_semi_positive()
     }
 
     fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
@@ -205,15 +217,15 @@ impl CurveLike for Circle {
                 let mid = (start_rel + end_rel) / EFloat64::new(2.0).expect_positive();
                 match mid.normalize() {
                     Some(mid) => {
-                        let p1 = mid.value * self.radius.norm().value + self.basis;
+                        let p1 = mid.as_point * self.radius.norm().as_efloat + self.basis;
                         if self.between(p1, Some(start), Some(end)) {
                             return p1;
                         } else {
-                            return -mid.value * self.radius.norm().value + self.basis;
+                            return -mid.as_point * self.radius.norm().as_efloat + self.basis;
                         }
                     }
                     None => {
-                        return self.normal.value.cross(start_rel) + self.basis;
+                        return self.normal.as_point.cross(start_rel) + self.basis;
                     }
                 }
             }
@@ -233,8 +245,8 @@ impl CurveLike for Circle {
 
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
-        let v = v - self.normal.value * (v.dot(self.normal.value));
-        v.normalize().unwrap().value * self.radius.norm().value + self.basis
+        let v = v - self.normal.as_point * (v.dot(self.normal.as_point));
+        v.normalize().unwrap().as_point * self.radius.norm().as_efloat + self.basis
     }
 
     fn get_bounding_box(

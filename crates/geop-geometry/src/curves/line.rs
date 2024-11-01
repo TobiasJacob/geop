@@ -146,6 +146,7 @@ impl CurveLike for Line {
 
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
-        self.direction == other.direction && (self.basis - other.basis).is_parallel(self.direction)
+        self.direction == other.direction
+            && (self.basis - other.basis).is_parallel(self.direction.as_point)
     }
 }

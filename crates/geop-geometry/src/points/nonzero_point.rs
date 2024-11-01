@@ -15,23 +15,23 @@ impl NonZeroPoint {
     }
 
     pub fn norm_sq(self) -> PositiveEFloat64 {
-        self.as_point.norm_sq().as_float.expect_positive()
+        self.as_point.norm_sq().as_efloat.expect_positive()
     }
 
     pub fn norm(self) -> PositiveEFloat64 {
-        self.as_point.norm().as_float.expect_positive()
+        self.as_point.norm().as_efloat.expect_positive()
     }
 
-    pub fn parallel_decomposition(self, other: impl Into<Point>) -> Point {
+    pub fn parallel_decomposition(self, other: Point) -> Point {
         self.as_point.dot(other) / self.norm_sq() * self.as_point
     }
 
-    pub fn perpendicular_decomposition(self, other: impl Into<Point>) -> Point {
+    pub fn perpendicular_decomposition(self, other: Point) -> Point {
         let other = other.into();
         other - self.parallel_decomposition(other)
     }
 
-    pub fn parallel_distance(self, other: impl Into<Point>) -> EFloat64 {
+    pub fn parallel_distance(self, other: Point) -> EFloat64 {
         self.as_point.dot(other) / self.norm()
     }
 }

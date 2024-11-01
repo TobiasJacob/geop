@@ -38,13 +38,11 @@ impl Point {
         self.x == 0.0 && self.y == 0.0 && self.z == 0.0
     }
 
-    pub fn dot(self, other: impl Into<Point>) -> EFloat64 {
-        let other = other.into();
+    pub fn dot(self, other: Point) -> EFloat64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn cross(self, other: impl Into<Point>) -> Point {
-        let other = other.into();
+    pub fn cross(self, other: Point) -> Point {
         Point::from_efloat(
             self.y * other.z - self.z * other.y,
             self.z * other.x - self.x * other.z,
@@ -52,28 +50,27 @@ impl Point {
         )
     }
 
-    // TODO: This operation should return a Result, as the operation is not always possible. It fails when norm is zero. This is not as rare as it seems. It helps users to catch bugs.
     pub fn normalize(self) -> Option<NormalizedPoint> {
-        let norm = self.norm().as_float.as_positive()?;
+        let norm = self.norm().as_efloat.as_positive()?;
         Some(NormalizedPoint {
-            value: Point::from_efloat(self.x / norm, self.y / norm, self.z / norm),
+            as_point: Point::from_efloat(self.x / norm, self.y / norm, self.z / norm),
         })
     }
 
-    pub fn is_parallel(self, other: impl Into<Point>) -> bool {
+    pub fn is_parallel(self, other: Point) -> bool {
         let cross = self.cross(other);
         cross.is_zero()
     }
 
-    pub fn is_perpendicular(self, other: impl Into<Point>) -> bool {
+    pub fn is_perpendicular(self, other: Point) -> bool {
         let dot = self.dot(other);
         dot == 0.0
     }
 
-    pub fn angle(&self, other: impl Into<Point>) -> Option<SemiPositiveEFloat64> {
+    pub fn angle(&self, other: Point) -> Option<SemiPositiveEFloat64> {
         let other = other.into();
         let dot = self.dot(other);
-        let norm = (self.norm() * other.norm()).as_float.as_positive()?;
+        let norm = (self.norm() * other.norm()).as_efloat.as_positive()?;
         let dot_norm = dot / norm;
         if dot_norm >= 1.0 {
             return Some(EFloat64::new(0.0).expect_semi_positive());
@@ -85,14 +82,14 @@ impl Point {
     }
 
     // Oriented angle between two vectors around a normal vector. Measured from self to other.
-    pub fn angle2(&self, other: impl Into<Point>, normal: impl Into<Point>) -> Option<EFloat64> {
+    pub fn angle2(&self, other: Point, normal: Point) -> Option<EFloat64> {
         let other = other.into();
         let cross = self.cross(other);
         let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
-            return Some(-angle.as_float);
+            return Some(-angle.as_efloat);
         }
-        Some(angle.as_float)
+        Some(angle.as_efloat)
     }
 
     pub fn zero() -> Point {

@@ -129,7 +129,7 @@ impl Transform {
         point: NormalizedPoint,
         basis: Point,
     ) -> NormalizedPoint {
-        let point = point.value + basis;
+        let point = point.as_point + basis;
         let point = *self * point;
         let point = point - basis;
         point.normalize().unwrap()

@@ -13,6 +13,17 @@ pub struct EFloat64 {
     pub lower_bound: f64,
 }
 
+pub trait SemiPositive {
+    fn sqrt(&self) -> Self;
+}
+
+pub fn test(a: impl SemiPositive) {
+    let a = EFloat64::new(0.1);
+    let b = EFloat64::new(0.2);
+    let c = a + b;
+    println!("c: {:?}", c);
+}
+
 impl EFloat64 {
     pub fn new(value: f64) -> Self {
         Self {
@@ -73,7 +84,7 @@ impl EFloat64 {
         let s_u = self.upper_bound * self.upper_bound;
         let s_l = self.lower_bound * self.lower_bound;
         SemiPositiveEFloat64 {
-            as_float: EFloat64 {
+            as_efloat: EFloat64 {
                 upper_bound: s_u.next_after(f64::INFINITY),
                 lower_bound: s_l.next_after(f64::NEG_INFINITY),
             },
@@ -84,18 +95,18 @@ impl EFloat64 {
         if *self == 0.0 {
             None
         } else {
-            Some(NonzeroEFloat64 { value: *self })
+            Some(NonzeroEFloat64 { as_efloat: *self })
         }
     }
 
     pub fn expect_non_zero(&self) -> NonzeroEFloat64 {
         assert!(!(*self == 0.0));
-        NonzeroEFloat64 { value: *self }
+        NonzeroEFloat64 { as_efloat: *self }
     }
 
     pub fn as_positive(&self) -> Option<PositiveEFloat64> {
         if self.lower_bound > 0.0 {
-            Some(PositiveEFloat64 { value: *self })
+            Some(PositiveEFloat64 { as_efloat: *self })
         } else {
             None
         }
@@ -103,12 +114,12 @@ impl EFloat64 {
 
     pub fn expect_positive(&self) -> PositiveEFloat64 {
         assert!(self.lower_bound > 0.0);
-        PositiveEFloat64 { value: *self }
+        PositiveEFloat64 { as_efloat: *self }
     }
 
     pub fn as_semi_positive(&self) -> Option<SemiPositiveEFloat64> {
         if self.lower_bound >= 0.0 {
-            Some(SemiPositiveEFloat64 { as_float: *self })
+            Some(SemiPositiveEFloat64 { as_efloat: *self })
         } else {
             None
         }
@@ -116,7 +127,7 @@ impl EFloat64 {
 
     pub fn expect_semi_positive(&self) -> SemiPositiveEFloat64 {
         assert!(self.lower_bound >= 0.0);
-        SemiPositiveEFloat64 { as_float: *self }
+        SemiPositiveEFloat64 { as_efloat: *self }
     }
 
     pub fn atan2(&self, x: EFloat64) -> EFloat64 {
@@ -184,10 +195,10 @@ impl Div<NonzeroEFloat64> for EFloat64 {
 
     // Can only divide by positive numbers.
     fn div(self, other: NonzeroEFloat64) -> EFloat64 {
-        let d1 = self.lower_bound / other.value.lower_bound;
-        let d2 = self.lower_bound / other.value.upper_bound;
-        let d3 = self.upper_bound / other.value.lower_bound;
-        let d4 = self.upper_bound / other.value.upper_bound;
+        let d1 = self.lower_bound / other.as_efloat.lower_bound;
+        let d2 = self.lower_bound / other.as_efloat.upper_bound;
+        let d3 = self.upper_bound / other.as_efloat.lower_bound;
+        let d4 = self.upper_bound / other.as_efloat.upper_bound;
         Self {
             upper_bound: d1.max(d2).max(d3).max(d4).next_after(f64::INFINITY),
             lower_bound: d1.min(d2).min(d3).min(d4).next_after(f64::NEG_INFINITY),
@@ -200,10 +211,10 @@ impl Div<PositiveEFloat64> for EFloat64 {
 
     // Can only divide by positive numbers.
     fn div(self, other: PositiveEFloat64) -> EFloat64 {
-        let d1 = self.lower_bound / other.value.lower_bound;
-        let d2 = self.lower_bound / other.value.upper_bound;
-        let d3 = self.upper_bound / other.value.lower_bound;
-        let d4 = self.upper_bound / other.value.upper_bound;
+        let d1 = self.lower_bound / other.as_efloat.lower_bound;
+        let d2 = self.lower_bound / other.as_efloat.upper_bound;
+        let d3 = self.upper_bound / other.as_efloat.lower_bound;
+        let d4 = self.upper_bound / other.as_efloat.upper_bound;
         Self {
             upper_bound: d1.max(d2).max(d3).max(d4).next_after(f64::INFINITY),
             lower_bound: d1.min(d2).min(d3).min(d4).next_after(f64::NEG_INFINITY),
@@ -247,6 +258,6 @@ mod tests {
     fn test_efloat_add_f64() {
         let a = EFloat64::new(2.0).expect_semi_positive();
         let b = EFloat64::new(8.0).expect_semi_positive();
-        assert!((b.sqrt().as_float * a.sqrt().as_float) == 4.0);
+        assert!((b.sqrt().as_efloat * a.sqrt().as_efloat) == 4.0);
     }
 }

@@ -35,11 +35,11 @@ impl Helix {
             dir_cross: match right_winding {
                 true => pitch
                     .normalize()
-                    .value
+                    .as_point
                     .cross(radius.as_point)
                     .expect_non_zero(),
                 false => {
-                    (-pitch.as_point.normalize().unwrap().value.cross(radius.as_point)).expect_non_zero()
+                    (-pitch.as_point.normalize().unwrap().as_point.cross(radius.as_point)).expect_non_zero()
                 }
             },
             right_winding,
