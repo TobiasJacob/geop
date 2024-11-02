@@ -74,8 +74,8 @@ impl CurveLike for Helix {
         let t = t.unwrap();
         let p_expected = self.basis
             + t * self.pitch
-            + self.radius * EFloat64::two_pi() * t.cos()
-            + self.dir_cross * EFloat64::two_pi() * t.sin();
+            + self.radius * (EFloat64::two_pi() * t).cos()
+            + self.dir_cross * (EFloat64::two_pi() * t).sin();
         p == p_expected
     }
 
