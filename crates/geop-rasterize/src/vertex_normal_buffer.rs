@@ -1,3 +1,4 @@
+use float_next_after::NextAfter;
 use geop_geometry::{efloat::EFloat64, point::Point};
 use geop_topology::topology::scene::Color;
 
@@ -41,9 +42,18 @@ impl RenderNormalVertex {
 
     pub fn point(&self) -> Point {
         Point::new(
-            EFloat64::new(self.max_position[0] as f64, self.min_position[0] as f64),
-            EFloat64::new(self.max_position[1] as f64, self.min_position[1] as f64),
-            EFloat64::new(self.max_position[2] as f64, self.min_position[2] as f64),
+            EFloat64::new(
+                (self.max_position[0]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[0]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
+            EFloat64::new(
+                (self.max_position[1]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[1]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
+            EFloat64::new(
+                (self.max_position[2]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[2]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
         )
     }
 }

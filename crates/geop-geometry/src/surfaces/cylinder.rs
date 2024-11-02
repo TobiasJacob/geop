@@ -97,8 +97,9 @@ impl SurfaceLike for Cylinder {
     }
 
     fn distance(&self, x: Point, y: Point) -> EFloat64 {
-        assert!(self.on_surface(x));
-        assert!(self.on_surface(y));
+        assert!(self.on_surface(x), "{:?} has to be on {:?}", x, self);
+        assert!(self.on_surface(y), "{:?} has to be on {:?}", y, self);
+        println!("x: {:?} y: {:?}", x, y);
         let x = x - self.basis;
         let height_diff = (y - x).dot(self.extend_dir);
         let x = x - x.dot(self.extend_dir) * self.extend_dir;

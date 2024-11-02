@@ -17,6 +17,14 @@ const TWO_PI: f64 = 2.0 * PI;
 impl EFloat64 {
     pub fn new(upper_bound: f64, lower_bound: f64) -> Self {
         assert!(upper_bound >= lower_bound);
+        assert!(
+            upper_bound - lower_bound <= 1E-3,
+            "upper: {}, lower: {}",
+            upper_bound,
+            lower_bound
+        );
+        assert!(upper_bound.is_finite());
+        assert!(lower_bound.is_finite());
         Self {
             upper_bound,
             lower_bound,
@@ -57,11 +65,8 @@ impl EFloat64 {
             return None;
         }
         Some(EFloat64::new(
-            self.upper_bound.sqrt().next_after(f64::INFINITY),
-            self.lower_bound
-                .max(0.0)
-                .sqrt()
-                .next_after(f64::NEG_INFINITY),
+            self.upper_bound.sqrt() + 1E-15,
+            self.lower_bound.max(0.0).sqrt() - 1E-15,
         ))
     }
 
@@ -76,7 +81,7 @@ impl EFloat64 {
         let s_l = self.lower_bound.sin();
 
         // Check if PI/2 and -PI/2 are in the range.
-        if lower_bound <= PI / 2.0 && upper_bound >= PI / 2.0 {
+        if lower_bound <= -PI / 2.0 && upper_bound >= PI / 2.0 {
             return EFloat64::new(1.0, -1.0);
         }
 
