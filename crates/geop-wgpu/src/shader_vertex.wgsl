@@ -39,7 +39,7 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
 
-    out.position = camera.view_proj * vec4<f32>((in.min_position + in.max_position) / 2.0 + (instance.min_instance_position + instance.max_instance_position), 1.0);
+    out.position = camera.view_proj * vec4<f32>((in.min_position + in.max_position) / 2.0 + (instance.min_instance_position + instance.max_instance_position) / 2.0, 1.0);
     out.color = in.color * instance.instance_color;
     
     return out;
