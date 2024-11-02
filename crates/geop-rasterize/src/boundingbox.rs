@@ -1,10 +1,5 @@
 use geop_geometry::{bounding_box::BoundingBox, point::Point};
-use geop_topology::{
-    primitive_objects::edges::line::primitive_line,
-    topology::{edge::Edge, scene::Color},
-};
-
-use crate::edge_buffer::{EdgeBuffer, RenderEdge};
+use geop_topology::{primitive_objects::edges::line::primitive_line, topology::edge::Edge};
 
 pub fn rasterize_boundingbox_into_edges(bounding_box: BoundingBox) -> Vec<Edge> {
     let mut result = Vec::new();
