@@ -111,7 +111,7 @@ impl Face {
         }
 
         let p = self.boundaries[0].edges[0].get_midpoint();
-        let dist = EFloat64::new(0.01);
+        let dist = EFloat64::from(0.01);
         let normal = self.normal(p);
         let tangent = self.boundary_tangent(p);
         let extend_dir = normal.cross(*tangent.expect_on_edge()) * dist;

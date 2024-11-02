@@ -11,7 +11,7 @@ pub fn primitive_arc(from: Point, to: Point, radius: EFloat64, normal: Point) ->
 
     let d = to - from;
 
-    let h = (radius * radius - (d.norm_sq() / EFloat64::new(4.0)).unwrap())
+    let h = (radius * radius - (d.norm_sq() / EFloat64::from(4.0)).unwrap())
         .sqrt()
         .unwrap();
     assert!(h > 0.0);

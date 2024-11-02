@@ -65,7 +65,7 @@ mod tests {
         let cylinder = Cylinder::new(
             Point::from_f64(10.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
-            EFloat64::new(10.0),
+            EFloat64::from(10.0),
             true,
         );
         match line_cylinder_intersection(&line, &cylinder) {
@@ -119,7 +119,7 @@ mod tests {
         let cylinder = Cylinder::new(
             Point::from_f64(10.0, 0.0, 0.0),
             Point::from_f64(-1.0, 0.0, 0.0),
-            EFloat64::new(1.5),
+            EFloat64::from(1.5),
             true,
         );
         match line_cylinder_intersection(&line, &cylinder) {

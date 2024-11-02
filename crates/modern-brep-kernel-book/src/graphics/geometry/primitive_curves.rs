@@ -34,7 +34,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_circle(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_circle(Point::zero(), Point::unit_y(), EFloat64::new(1.0));
+        let edge = primitive_circle(Point::zero(), Point::unit_y(), EFloat64::from(1.0));
         let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
@@ -53,8 +53,8 @@ mod tests {
         let ellipse1 = primitive_ellipse(
             Point::zero(),
             Point::unit_y(),
-            Point::unit_x() * EFloat64::new(1.5),
-            Point::unit_z() * EFloat64::new(0.5),
+            Point::unit_x() * EFloat64::from(1.5),
+            Point::unit_z() * EFloat64::from(0.5),
         );
         let scene = Scene::new(
             vec![],

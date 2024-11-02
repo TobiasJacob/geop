@@ -1,10 +1,22 @@
-use std::ops::Mul;
+use std::{fmt::Display, ops::Mul};
 
 use crate::{efloat::EFloat64, point::Point};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {
     pub matrix: [[EFloat64; 4]; 4],
+}
+
+impl Display for Transform {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for i in 0..4 {
+            for j in 0..4 {
+                write!(f, "{} ", self.matrix[i][j])?;
+            }
+            write!(f, "\n")?;
+        }
+        Ok(())
+    }
 }
 
 impl Mul for Transform {
@@ -70,6 +82,7 @@ impl Transform {
         let (sin_x, cos_x) = (roll.sin(), roll.cos());
         let (sin_y, cos_y) = (pitch.sin(), pitch.cos());
         let (sin_z, cos_z) = (yaw.sin(), yaw.cos());
+        println!("{}, {}, {}", cos_y, cos_z, cos_y * cos_z);
         matrix[0][0] = cos_y * cos_z;
         matrix[0][1] = -cos_y * sin_z;
         matrix[0][2] = sin_y;
@@ -121,6 +134,7 @@ mod tests {
     fn test_rotation() {
         let t1 =
             Transform::from_euler_angles(EFloat64::zero(), EFloat64::zero(), EFloat64::half_pi());
+        println!("{}", t1);
         let t2 =
             Transform::from_euler_angles(EFloat64::half_pi(), EFloat64::zero(), EFloat64::zero());
         let t3 = t2 * t1.clone();

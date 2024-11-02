@@ -96,7 +96,7 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
                 (Some(min_i), Some(max_i)) => {
                     let mut intersections = Vec::new();
                     for i in (min_i.ceil() as usize)..(max_i.floor() as usize) {
-                        intersections.push(point_array.basis + EFloat64::new(i as f64) * point_array.extend_dir);
+                        intersections.push(point_array.basis + EFloat64::from(i as f64) * point_array.extend_dir);
                     }
                     EdgeEdgeIntersection::Points(intersections)
                 }

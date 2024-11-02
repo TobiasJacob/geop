@@ -16,9 +16,9 @@ impl Point {
 
     pub fn from_f64(x: f64, y: f64, z: f64) -> Point {
         Point {
-            x: EFloat64::new(x),
-            y: EFloat64::new(y),
-            z: EFloat64::new(z),
+            x: EFloat64::from(x),
+            y: EFloat64::from(y),
+            z: EFloat64::from(z),
         }
     }
 

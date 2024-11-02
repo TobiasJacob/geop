@@ -58,12 +58,12 @@ impl CurveLike for Line {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                start + (end - start) * EFloat64::new(t)
+                start + (end - start) * EFloat64::from(t)
             }
-            (Some(start), None) => start + self.direction * EFloat64::new(t * HORIZON_DIST),
-            (None, Some(end)) => end - self.direction * EFloat64::new((1.0 - t) * HORIZON_DIST),
+            (Some(start), None) => start + self.direction * EFloat64::from(t * HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::from((1.0 - t) * HORIZON_DIST),
             (None, None) => {
-                self.basis + self.direction * EFloat64::new((t - 0.5) * 2.0 * HORIZON_DIST)
+                self.basis + self.direction * EFloat64::from((t - 0.5) * 2.0 * HORIZON_DIST)
             }
         }
     }
@@ -96,8 +96,8 @@ impl CurveLike for Line {
                 assert!(self.on_curve(end));
                 ((start + end) / EFloat64::two()).unwrap()
             }
-            (Some(start), None) => start + self.direction * EFloat64::new(HORIZON_DIST),
-            (None, Some(end)) => end - self.direction * EFloat64::new(HORIZON_DIST),
+            (Some(start), None) => start + self.direction * EFloat64::from(HORIZON_DIST),
+            (None, Some(end)) => end - self.direction * EFloat64::from(HORIZON_DIST),
             (None, None) => self.basis,
         }
     }

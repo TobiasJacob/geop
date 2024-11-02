@@ -155,7 +155,7 @@ impl CurveLike for Ellipse {
                 if angle2.upper_bound < angle1.lower_bound {
                     angle2 = EFloat64::two_pi();
                 }
-                let angle = angle1 + EFloat64::new(t) * (angle2 - angle1);
+                let angle = angle1 + EFloat64::from(t) * (angle2 - angle1);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (Some(start), None) => {
@@ -163,7 +163,7 @@ impl CurveLike for Ellipse {
                 let x_start = self.major_radius.dot(start);
                 let y_start = self.minor_radius.dot(start);
                 let angle1 = y_start.atan2(x_start);
-                let angle = angle1 + EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = angle1 + EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (None, Some(end)) => {
@@ -171,11 +171,11 @@ impl CurveLike for Ellipse {
                 let x_end = self.major_radius.dot(end);
                 let y_end = self.minor_radius.dot(end);
                 let angle2 = y_end.atan2(x_end);
-                let angle = angle2 + EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = angle2 + EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
             (None, None) => {
-                let angle = EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
             }
         }

@@ -14,28 +14,52 @@ mod tests {
     };
 
     fn generate_secene_1() -> (Volume, Volume) {
-        let v1 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(1.0))
-            .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
-        let v2 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(0.5))
-            .transform(Transform::from_translation(Point::from_f64(1.0, 0.0, 0.0)));
+        let v1 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(1.0),
+        )
+        .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
+        let v2 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(0.5),
+        )
+        .transform(Transform::from_translation(Point::from_f64(1.0, 0.0, 0.0)));
 
         (v1, v2)
     }
 
     fn generate_secene_2() -> (Volume, Volume) {
-        let v1 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(1.0))
-            .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
-        let v2 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(0.5))
-            .transform(Transform::from_translation(Point::from_f64(1.0, 0.0, 0.0)));
+        let v1 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(1.0),
+        )
+        .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
+        let v2 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(0.5),
+        )
+        .transform(Transform::from_translation(Point::from_f64(1.0, 0.0, 0.0)));
 
         (v1, v2)
     }
 
     fn _generate_secene_3() -> (Volume, Volume) {
-        let v1 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(1.0))
-            .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
-        let v2 = primitive_cube(EFloat64::new(2.0), EFloat64::new(1.0), EFloat64::new(0.5))
-            .transform(Transform::from_translation(Point::from_f64(0.5, 0.0, 0.0)));
+        let v1 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(1.0),
+        )
+        .transform(Transform::from_translation(Point::from_f64(-1.0, 0.0, 0.0)));
+        let v2 = primitive_cube(
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(0.5),
+        )
+        .transform(Transform::from_translation(Point::from_f64(0.5, 0.0, 0.0)));
 
         (v1, v2)
     }
@@ -60,7 +84,7 @@ mod tests {
 
         for e in split_edges {
             let e = e.transform(Transform::from_translation(
-                e.get_midpoint() * EFloat64::new(0.01),
+                e.get_midpoint() * EFloat64::from(0.01),
             ));
             scene.edges.push((e, Color::red()));
         }
@@ -92,8 +116,8 @@ mod tests {
                 midpoint = midpoint + e.get_midpoint();
             }
             midpoint =
-                (midpoint / EFloat64::new(f.boundaries[0].clone().edges.len() as f64)).unwrap();
-            let f = f.transform(Transform::from_translation(midpoint * EFloat64::new(0.2)));
+                (midpoint / EFloat64::from(f.boundaries[0].clone().edges.len() as f64)).unwrap();
+            let f = f.transform(Transform::from_translation(midpoint * EFloat64::from(0.2)));
             scene.faces.push((f, Color::white()));
         }
 
@@ -104,9 +128,9 @@ mod tests {
                 midpoint = midpoint + e.get_midpoint();
             }
             midpoint =
-                (midpoint / EFloat64::new(f.boundaries[0].clone().edges.len() as f64)).unwrap();
+                (midpoint / EFloat64::from(f.boundaries[0].clone().edges.len() as f64)).unwrap();
             midpoint = midpoint + Point::from_f64(0.5, 0.0, 0.0);
-            let f = f.transform(Transform::from_translation(midpoint * EFloat64::new(0.2)));
+            let f = f.transform(Transform::from_translation(midpoint * EFloat64::from(0.2)));
             scene.faces.push((f, Color::white()));
         }
 
@@ -138,8 +162,8 @@ mod tests {
                 midpoint = midpoint + e.get_midpoint();
             }
             midpoint =
-                (midpoint / EFloat64::new(f.boundaries[0].clone().edges.len() as f64)).unwrap();
-            let f = f.transform(Transform::from_translation(midpoint * EFloat64::new(0.2)));
+                (midpoint / EFloat64::from(f.boundaries[0].clone().edges.len() as f64)).unwrap();
+            let f = f.transform(Transform::from_translation(midpoint * EFloat64::from(0.2)));
 
             let color = match split {
                 VolumeSplit::AinB(_) => Color::ten_different_colors(0),
@@ -193,8 +217,8 @@ mod tests {
                 midpoint = midpoint + e.get_midpoint();
             }
             midpoint =
-                (midpoint / EFloat64::new(f.boundaries[0].clone().edges.len() as f64)).unwrap();
-            let f = f.transform(Transform::from_translation(midpoint * EFloat64::new(0.2)));
+                (midpoint / EFloat64::from(f.boundaries[0].clone().edges.len() as f64)).unwrap();
+            let f = f.transform(Transform::from_translation(midpoint * EFloat64::from(0.2)));
 
             let color = match split {
                 VolumeSplit::AinB(_) => Color::ten_different_colors(0),
@@ -248,8 +272,8 @@ mod tests {
                 midpoint = midpoint + e.get_midpoint();
             }
             midpoint =
-                (midpoint / EFloat64::new(f.boundaries[0].clone().edges.len() as f64)).unwrap();
-            let f = f.transform(Transform::from_translation(midpoint * EFloat64::new(0.2)));
+                (midpoint / EFloat64::from(f.boundaries[0].clone().edges.len() as f64)).unwrap();
+            let f = f.transform(Transform::from_translation(midpoint * EFloat64::from(0.2)));
 
             let color = match split {
                 VolumeSplit::AinB(_) => Color::ten_different_colors(0),

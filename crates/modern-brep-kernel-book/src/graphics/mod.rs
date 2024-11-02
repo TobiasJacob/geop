@@ -16,7 +16,7 @@ mod tests {
 
     #[rstest]
     async fn test_headless_renderer_light(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(EFloat64::new(1.0), EFloat64::new(1.0), EFloat64::new(1.0));
+        let volume = primitive_cube(EFloat64::from(1.0), EFloat64::from(1.0), EFloat64::from(1.0));
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await
@@ -32,7 +32,7 @@ mod tests {
 
     #[rstest]
     async fn test_headless_renderer_dark(#[future] renderer: Box<HeadlessRenderer>) {
-        let volume = primitive_cube(EFloat64::new(1.0), EFloat64::new(1.0), EFloat64::new(1.0));
+        let volume = primitive_cube(EFloat64::from(1.0), EFloat64::from(1.0), EFloat64::from(1.0));
         let scene = Scene::new(vec![(volume, Color::white())], vec![], vec![], vec![]);
         renderer
             .await

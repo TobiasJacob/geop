@@ -63,7 +63,7 @@ mod tests {
         face.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
             Point::from_f64(0.0, 0.0, -1.0),
-            EFloat64::new(0.5),
+            EFloat64::from(0.5),
         )]));
 
         let plane = match &*face.surface {

@@ -12,8 +12,8 @@ pub fn line_sphere_intersection(line: &Line, sphere: &Sphere) -> LineSphereInter
     let a: Point = line.basis;
     let v: Point = line.direction;
 
-    let discriminant = EFloat64::new(4.0) * (v.dot(a - b)).powi(2)
-        - EFloat64::new(4.0) * (v.norm().powi(2)) * ((a - b).norm().powi(2) - r.powi(2));
+    let discriminant = EFloat64::from(4.0) * (v.dot(a - b)).powi(2)
+        - EFloat64::from(4.0) * (v.norm().powi(2)) * ((a - b).norm().powi(2) - r.powi(2));
 
     if discriminant >= 0.0 {
         let t1 = (-EFloat64::two() * v.dot(a - b) + discriminant.sqrt().unwrap())
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn test_line_sphere_intersection_two_points() {
         let line = Line::new(Point::zero(), Point::from_f64(0.0, 0.0, 1.0));
-        let sphere = Sphere::new(Point::zero(), EFloat64::new(3.0), true);
+        let sphere = Sphere::new(Point::zero(), EFloat64::from(3.0), true);
         match line_sphere_intersection(&line, &sphere) {
             LineSphereIntersection::TwoPoints(p1, p2) => {
                 assert_eq!(p1, Point::from_f64(0.0, 0.0, 3.0));

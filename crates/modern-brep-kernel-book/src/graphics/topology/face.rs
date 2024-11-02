@@ -39,18 +39,18 @@ mod tests {
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
             edges.push(primitive_line(*p1, *p2));
         }
-        edges.push(primitive_arc(p4, p1, EFloat64::new(1.6), -Point::unit_y()));
+        edges.push(primitive_arc(p4, p1, EFloat64::from(1.6), -Point::unit_y()));
 
         let hole = primitive_circle(
             Point::from_f64(0.0, 0.0, 0.2),
             Point::unit_y(),
-            EFloat64::new(0.3),
+            EFloat64::from(0.3),
         );
 
         let hole2 = primitive_rectangle_curve(
             Point::from_f64(0.0, 0.0, -0.5),
-            Point::unit_x() * EFloat64::new(0.5),
-            -Point::unit_z() * EFloat64::new(0.1),
+            Point::unit_x() * EFloat64::from(0.5),
+            -Point::unit_z() * EFloat64::from(0.1),
         );
 
         let face = Face::new(
@@ -68,7 +68,7 @@ mod tests {
     fn half_sphere_scene() -> Scene {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
-        let mut sphere = primitive_sphere(Point::zero(), EFloat64::new(1.0));
+        let mut sphere = primitive_sphere(Point::zero(), EFloat64::from(1.0));
         let edge = primitive_circle(
             Point::zero(),
             -Point::from_f64(0.5, 3.0, 0.5).normalize().unwrap(),
@@ -119,7 +119,7 @@ mod tests {
         cylinder = cylinder.transform(
             Transform::from_translation(Point::from_f64(0.3, -0.45, 0.12))
                 * Transform::from_euler_angles(
-                    EFloat64::new(-90.0 / 180.0 * f64::consts::PI),
+                    EFloat64::from(-90.0 / 180.0 * f64::consts::PI),
                     EFloat64::zero(),
                     EFloat64::zero(),
                 ), // * Transform::from_scale(Point::from_f64(0.7, 0.7, 0.7)),

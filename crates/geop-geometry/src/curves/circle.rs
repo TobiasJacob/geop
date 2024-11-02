@@ -98,7 +98,7 @@ impl CurveLike for Circle {
                 if angle2.upper_bound < angle1.lower_bound {
                     angle2 = angle2 + EFloat64::two_pi();
                 }
-                let angle = angle1 + EFloat64::new(t) * (angle2 - angle1);
+                let angle = angle1 + EFloat64::from(t) * (angle2 - angle1);
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
             (Some(start), None) => {
@@ -107,7 +107,7 @@ impl CurveLike for Circle {
                 let x_start = self.radius.dot(start);
                 let y_start = self.dir_cross.dot(start);
                 let angle1 = y_start.atan2(x_start);
-                let angle = angle1 + EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = angle1 + EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
             (None, Some(end)) => {
@@ -116,11 +116,11 @@ impl CurveLike for Circle {
                 let x_end = self.radius.dot(end);
                 let y_end = self.dir_cross.dot(end);
                 let angle2 = y_end.atan2(x_end);
-                let angle = angle2 + EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = angle2 + EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
             (None, None) => {
-                let angle = EFloat64::new(t * std::f64::consts::PI * 2.0);
+                let angle = EFloat64::from(t * std::f64::consts::PI * 2.0);
                 angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
             }
         }

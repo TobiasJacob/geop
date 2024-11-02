@@ -98,7 +98,7 @@ impl CurveLike for Helix {
                 let t_end = (end - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_start = t_start.unwrap();
                 let t_end = t_end.unwrap();
-                let t = t_start + EFloat64::new(t) * (t_end - t_start);
+                let t = t_start + EFloat64::from(t) * (t_end - t_start);
                 return self.basis
                     + self.pitch * t
                     + self.radius * (EFloat64::two_pi() * t).cos()
@@ -107,7 +107,7 @@ impl CurveLike for Helix {
             (Some(start), None) => {
                 let t_start = (start - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_start = t_start.unwrap();
-                let t = t_start + EFloat64::new(t * HORIZON_DIST);
+                let t = t_start + EFloat64::from(t * HORIZON_DIST);
                 return self.basis
                     + self.pitch * t
                     + self.radius * (EFloat64::two_pi() * t).cos()
@@ -116,7 +116,7 @@ impl CurveLike for Helix {
             (None, Some(end)) => {
                 let t_end = (end - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_end = t_end.unwrap();
-                let t = t_end - EFloat64::new((1.0 - t) * HORIZON_DIST);
+                let t = t_end - EFloat64::from((1.0 - t) * HORIZON_DIST);
                 return self.basis
                     + self.pitch * t
                     + self.radius * (EFloat64::two_pi() * t).cos()
@@ -125,9 +125,9 @@ impl CurveLike for Helix {
             (None, None) => {
                 let t = (t - 0.5) * HORIZON_DIST;
                 return self.basis
-                    + self.pitch * EFloat64::new(t)
-                    + self.radius * EFloat64::new(t * 2.0 * f64::consts::PI).cos()
-                    + self.dir_cross * EFloat64::new(t * 2.0 * f64::consts::PI).sin();
+                    + self.pitch * EFloat64::from(t)
+                    + self.radius * EFloat64::from(t * 2.0 * f64::consts::PI).cos()
+                    + self.dir_cross * EFloat64::from(t * 2.0 * f64::consts::PI).sin();
             }
         }
     }
@@ -176,7 +176,7 @@ impl CurveLike for Helix {
                 let t_end = (end - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_start = t_start.unwrap();
                 let t_end = t_end.unwrap();
-                let t = (t_start + t_end) / EFloat64::new(2.0);
+                let t = (t_start + t_end) / EFloat64::from(2.0);
                 let t = t.unwrap();
                 return self.basis
                     + self.pitch * t
@@ -187,7 +187,7 @@ impl CurveLike for Helix {
                 assert!(self.on_curve(start));
                 let t_start = (start - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_start = t_start.unwrap();
-                let t = t_start + EFloat64::new(HORIZON_DIST);
+                let t = t_start + EFloat64::from(HORIZON_DIST);
                 return self.basis
                     + self.pitch * t
                     + self.radius * (EFloat64::two_pi() * t).cos()
@@ -197,7 +197,7 @@ impl CurveLike for Helix {
                 assert!(self.on_curve(end));
                 let t_end = (end - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_end = t_end.unwrap();
-                let t = t_end - EFloat64::new(HORIZON_DIST);
+                let t = t_end - EFloat64::from(HORIZON_DIST);
                 return self.basis
                     + self.pitch * t
                     + self.radius * (EFloat64::two_pi() * t).cos()

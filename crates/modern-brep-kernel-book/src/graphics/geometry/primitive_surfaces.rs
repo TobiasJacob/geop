@@ -35,7 +35,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_sphere(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_sphere(Point::zero(), EFloat64::new(1.0));
+        let face = primitive_sphere(Point::zero(), EFloat64::from(1.0));
         let scene = Scene::new(vec![], vec![(face, Color::light_gray())], vec![], vec![]);
         renderer
             .await
@@ -51,7 +51,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_cylinder(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::new(1.0));
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::from(1.0));
         let scene = Scene::new(
             vec![],
             vec![(face.clone(), Color::light_gray())],

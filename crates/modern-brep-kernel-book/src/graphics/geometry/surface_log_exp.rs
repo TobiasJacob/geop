@@ -16,7 +16,7 @@ mod tests {
     #[rstest]
     async fn test_surface_log_operation_unit_x(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
-        let face = primitive_sphere(Point::zero(), EFloat64::new(1.0));
+        let face = primitive_sphere(Point::zero(), EFloat64::from(1.0));
         scene.faces.push((face.clone(), Color::light_gray()));
 
         let anchor = Point::from_f64(-0.5, -1.3, 0.5).normalize().unwrap();
@@ -47,11 +47,11 @@ mod tests {
     #[rstest]
     async fn test_surface_log_operation_2(#[future] renderer: Box<HeadlessRenderer>) {
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
-        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::new(1.0));
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::from(1.0));
         scene.faces.push((face.clone(), Color::light_gray()));
 
         let mut anchor = Point::from_f64(-0.5, -1.3, 0.0).normalize().unwrap();
-        anchor.z = EFloat64::new(-0.5);
+        anchor.z = EFloat64::from(-0.5);
         scene.points.push((anchor, Color::blue()));
 
         for p in face.surface.point_grid(2.0) {

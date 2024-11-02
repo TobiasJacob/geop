@@ -28,7 +28,7 @@ mod tests {
         }
 
         scene.edges.push((
-            primitive_arc(p4, p1, EFloat64::new(1.6), -Point::unit_y()),
+            primitive_arc(p4, p1, EFloat64::from(1.6), -Point::unit_y()),
             Color::white(),
         ));
 

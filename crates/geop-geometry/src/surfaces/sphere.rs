@@ -165,9 +165,9 @@ impl SurfaceLike for Sphere {
         for i in 0..n {
             for j in 0..m {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
-                let theta = EFloat64::new(theta);
+                let theta = EFloat64::from(theta);
                 let phi = std::f64::consts::PI * j as f64 / (m - 1) as f64;
-                let phi = EFloat64::new(phi);
+                let phi = EFloat64::from(phi);
                 let x = self.basis.x + self.radius * theta.cos() * phi.sin();
                 let y = self.basis.y + self.radius * theta.sin() * phi.sin();
                 let z = self.basis.z + self.radius * phi.cos();

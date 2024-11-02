@@ -204,10 +204,10 @@ impl SurfaceLike for Cylinder {
         for i in 0..n {
             for j in 0..m {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
-                let theta = EFloat64::new(theta);
+                let theta = EFloat64::from(theta);
                 let v = j as f64 / (m as f64 - 1.0);
                 let point = self.basis
-                    + EFloat64::new((v - 0.5) * HORIZON_DIST) * self.extend_dir
+                    + EFloat64::from((v - 0.5) * HORIZON_DIST) * self.extend_dir
                     + theta.cos() * self.radius
                     + theta.sin() * self.dir_cross;
                 assert!(self.on_surface(point));

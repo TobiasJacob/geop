@@ -176,10 +176,10 @@ pub fn triangle_intersects_triangle(
         }
         let normal = (project_axis / norm).unwrap();
 
-        let mut min_1 = EFloat64::new(1000.0);
-        let mut max_1 = EFloat64::new(-1000.0);
-        let mut min_2 = EFloat64::new(1000.0);
-        let mut max_2 = EFloat64::new(-1000.0);
+        let mut min_1 = EFloat64::from(1000.0);
+        let mut max_1 = EFloat64::from(-1000.0);
+        let mut min_2 = EFloat64::from(1000.0);
+        let mut max_2 = EFloat64::from(-1000.0);
 
         for &point in [a1, b1, c1].iter() {
             let projected = normal.dot(point);
@@ -348,7 +348,7 @@ pub fn rasterize_face_into_triangle_list(face: &Face, color: Color) -> TriangleB
     // If the surface is unbounded, we have to find a valid edge to start with. From there we can build the triangles.
     if open_edges.is_empty() {
         // Find the two closest points
-        let mut min_distance = EFloat64::new(1000.0);
+        let mut min_distance = EFloat64::from(1000.0);
         let mut best_edge = None;
         for i in 0..connection_points.len() {
             for j in i + 1..connection_points.len() {

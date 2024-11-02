@@ -75,17 +75,17 @@ mod tests {
         let circle1 = primitive_circle(
             Point::from_f64(0.7, 0.0, 0.3),
             Point::unit_y(),
-            EFloat64::new(0.3),
+            EFloat64::from(0.3),
         );
         let circle2 = primitive_circle(
             Point::from_f64(0.4, 0.0, 0.3),
             Point::unit_y(),
-            EFloat64::new(0.6),
+            EFloat64::from(0.6),
         );
         let circle3 = primitive_circle(
             Point::from_f64(-0.4, 0.0, 0.3),
             Point::unit_y(),
-            EFloat64::new(0.8),
+            EFloat64::from(0.8),
         );
 
         let mut scene_edges = vec![
@@ -136,7 +136,7 @@ mod tests {
         let circle1 = primitive_circle(
             Point::from_f64(0.4, 0.0, 0.3),
             Point::unit_y(),
-            EFloat64::new(0.6),
+            EFloat64::from(0.6),
         );
         let line1 = primitive_infinite_line(
             Point::from_f64(-1.0, 0.0, 0.3),
@@ -203,14 +203,14 @@ mod tests {
         let ellipse1 = primitive_ellipse(
             Point::zero(),
             Point::unit_y(),
-            Point::unit_x() * EFloat64::new(1.5),
-            Point::unit_z() * EFloat64::new(0.5),
+            Point::unit_x() * EFloat64::from(1.5),
+            Point::unit_z() * EFloat64::from(0.5),
         );
         let ellipse2 = primitive_ellipse(
             Point::from_f64(1.0, 0.0, 0.0),
             Point::unit_y(),
-            Point::unit_x() * EFloat64::new(0.5),
-            Point::unit_z() * EFloat64::new(1.5),
+            Point::unit_x() * EFloat64::from(0.5),
+            Point::unit_z() * EFloat64::from(1.5),
         );
 
         let mut scene = Scene::empty();

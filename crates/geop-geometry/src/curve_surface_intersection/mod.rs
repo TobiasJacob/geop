@@ -21,7 +21,7 @@ pub fn curve_surface_intersection_numerical(
         for _ in 0..100 {
             let grad = surface.unsigned_l2_squared_distance_gradient(initial_guess);
             let tangent = curve.tangent(initial_guess);
-            initial_guess = initial_guess + tangent * EFloat64::new(step_size);
+            initial_guess = initial_guess + tangent * EFloat64::from(step_size);
             initial_guess = curve.project(initial_guess);
 
             if grad.is_none() {

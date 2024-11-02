@@ -22,13 +22,13 @@ mod tests {
         let edge2 = primitive_arc(
             Point::from_f64(1.0, 0.0, 0.0),
             Point::from_f64(-1.0, 0.0, 0.0),
-            EFloat64::new(3.0),
+            EFloat64::from(3.0),
             -Point::unit_y(),
         );
         let edge3 = primitive_circle(
             Point::from_f64(0.0, 0.0, -1.0),
             -Point::unit_y(),
-            EFloat64::new(0.6),
+            EFloat64::from(0.6),
         );
         let mut scene = Scene::new(
             vec![],

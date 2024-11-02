@@ -55,8 +55,8 @@ impl Plane {
                 let u = i as f64 / (n as f64 - 1.0);
                 let v = j as f64 / (n as f64 - 1.0);
                 let point = self.basis
-                    + EFloat64::new((u - 0.5) * horizon_dist) * self.u_slope
-                    + EFloat64::new((v - 0.5) * horizon_dist) * self.v_slope;
+                    + EFloat64::from((u - 0.5) * horizon_dist) * self.u_slope
+                    + EFloat64::from((v - 0.5) * horizon_dist) * self.v_slope;
                 points.push(point);
             }
         }
