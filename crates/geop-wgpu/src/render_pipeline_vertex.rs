@@ -100,8 +100,13 @@ impl RenderPipelineVertex {
                                 format: wgpu::VertexFormat::Float32x3,
                             },
                             wgpu::VertexAttribute {
-                                offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                                offset: 12,
                                 shader_location: 1,
+                                format: wgpu::VertexFormat::Float32x3,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: 24,
+                                shader_location: 2,
                                 format: wgpu::VertexFormat::Float32x4,
                             },
                         ],
@@ -112,12 +117,17 @@ impl RenderPipelineVertex {
                         attributes: &[
                             wgpu::VertexAttribute {
                                 offset: 0,
-                                shader_location: 2,
+                                shader_location: 3,
                                 format: wgpu::VertexFormat::Float32x3,
                             },
                             wgpu::VertexAttribute {
-                                offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
-                                shader_location: 3,
+                                offset: 12,
+                                shader_location: 4,
+                                format: wgpu::VertexFormat::Float32x3,
+                            },
+                            wgpu::VertexAttribute {
+                                offset: 24,
+                                shader_location: 5,
                                 format: wgpu::VertexFormat::Float32x4,
                             },
                         ],

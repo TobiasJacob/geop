@@ -1,5 +1,4 @@
 use std::{
-    f32::consts::E,
     f64::consts::PI,
     fmt::Display,
     ops::{Add, Div, Mul, Neg, Sub},
