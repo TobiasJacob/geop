@@ -162,6 +162,7 @@ impl CurveLike for Ellipse {
                 let y_end = self.minor_radius.dot(end);
                 let angle1 = y_start.atan2(x_start);
                 let mut angle2 = y_end.atan2(x_end);
+                assert!(angle2 != angle1);
                 if angle2.upper_bound < angle1.lower_bound {
                     angle2 = EFloat64::two_pi();
                 }
@@ -192,6 +193,7 @@ impl CurveLike for Ellipse {
     }
 
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+        assert!(start != end);
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -206,6 +208,7 @@ impl CurveLike for Ellipse {
                     .atan2(self.major_radius.dot(start));
                 let mut angle_end = self.minor_radius.dot(end).atan2(self.major_radius.dot(end));
                 let mut angle_m = self.minor_radius.dot(m).atan2(self.major_radius.dot(m));
+                assert!(angle_end != angle_start);
                 if angle_end.upper_bound < angle_start.lower_bound {
                     angle_end = angle_end + EFloat64::two_pi();
                 }
@@ -227,6 +230,7 @@ impl CurveLike for Ellipse {
     }
 
     fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+        assert!(start != end);
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));

@@ -159,10 +159,24 @@ impl EFloat64 {
         let a2 = self.lower_bound.atan2(x.upper_bound);
         let a3 = self.upper_bound.atan2(x.lower_bound);
         let a4 = self.upper_bound.atan2(x.upper_bound);
-        EFloat64 {
-            upper_bound: a1.max(a2).max(a3).max(a4).next_after(f64::INFINITY),
-            lower_bound: a1.min(a2).min(a3).min(a4).next_after(f64::NEG_INFINITY),
+
+        let upper_bound = a1.max(a2).max(a3).max(a4);
+        let lower_bound = a1.min(a2).min(a3).min(a4);
+
+        // This is for the case that atan2 wraps around.
+        if upper_bound - lower_bound <= PI {
+            return EFloat64::new(upper_bound, lower_bound);
         }
+
+        let a1 = (a1 + TWO_PI) % TWO_PI;
+        let a2 = (a2 + TWO_PI) % TWO_PI;
+        let a3 = (a3 + TWO_PI) % TWO_PI;
+        let a4 = (a4 + TWO_PI) % TWO_PI;
+
+        EFloat64::new(
+            a1.max(a2).max(a3).max(a4) + 1E-15,
+            a1.min(a2).min(a3).min(a4) - 1E-15,
+        )
     }
 
     pub fn abs(&self) -> Self {
