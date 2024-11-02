@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{efloat::EFloat64, point::Point};
 
 #[derive(Debug, Clone)]
@@ -47,5 +49,13 @@ impl BoundingBox {
         let mut bounding_box = BoundingBox::new(interval_self_1, interval_self_1);
         bounding_box.add_point(interval_self_2);
         bounding_box
+    }
+}
+
+impl Display for BoundingBox {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Bounding Box:")?;
+        writeln!(f, "Min: {}", self.min)?;
+        writeln!(f, "Max: {}", self.max)
     }
 }

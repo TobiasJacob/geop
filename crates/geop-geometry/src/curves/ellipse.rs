@@ -87,21 +87,31 @@ impl Ellipse {
             + self.minor_radius * self.minor_radius.z)
             / disc_z;
 
-        let disc_x = disc_x.unwrap_or(Point::zero());
-        let disc_y = disc_y.unwrap_or(Point::zero());
-        let disc_z = disc_z.unwrap_or(Point::zero());
-
-        vec![
-            self.basis + disc_x,
-            self.basis - disc_x,
-            self.basis + disc_y,
-            self.basis - disc_y,
-            self.basis + disc_z,
-            self.basis - disc_z,
-        ]
-        .iter() // Filter nan. Nan means that the ellipse is parallel to a plane, so there is no extremal point.
-        .cloned()
-        .collect()
+        // vec![
+        //     self.basis + disc_x,
+        //     self.basis - disc_x,
+        //     self.basis + disc_y,
+        //     self.basis - disc_y,
+        //     self.basis + disc_z,
+        //     self.basis - disc_z,
+        // ]
+        // .iter() // Filter nan. Nan means that the ellipse is parallel to a plane, so there is no extremal point.
+        // .cloned()
+        // .collect()
+        let mut points = Vec::with_capacity(6);
+        if let Some(disc_x) = disc_x {
+            points.push(self.basis + disc_x);
+            points.push(self.basis - disc_x);
+        }
+        if let Some(disc_y) = disc_y {
+            points.push(self.basis + disc_y);
+            points.push(self.basis - disc_y);
+        }
+        if let Some(disc_z) = disc_z {
+            points.push(self.basis + disc_z);
+            points.push(self.basis - disc_z);
+        }
+        points
     }
 }
 
@@ -258,7 +268,19 @@ impl CurveLike for Ellipse {
     fn project(&self, p: Point) -> Point {
         let v = p - self.basis;
         let v = v - self.normal * (v.dot(self.normal));
-        v.normalize().unwrap() * self.major_radius.norm() + self.basis
+        let x = self.major_radius.dot(v) / self.major_radius.norm_sq();
+        let y = self.minor_radius.dot(v) / self.minor_radius.norm_sq();
+        let x = x.unwrap();
+        let y = y.unwrap();
+        let norm = (x * x + y * y).sqrt().unwrap();
+        if norm == 0.0 {
+            return self.basis + self.major_radius;
+        }
+        let x = x / norm;
+        let y = y / norm;
+        let x = x.unwrap();
+        let y = y.unwrap();
+        self.basis + x * self.major_radius + y * self.minor_radius
     }
 
     fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox {

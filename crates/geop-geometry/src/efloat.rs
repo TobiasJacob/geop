@@ -307,7 +307,12 @@ impl PartialOrd<f64> for EFloat64 {
 impl Display for EFloat64 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Write Scientific notation
-        write!(f, "[{:.2e} to {:.2e}]", self.lower_bound, self.upper_bound)
+        write!(
+            f,
+            "[{:.2e} +- {:.2e}]",
+            (self.upper_bound + self.lower_bound) / 2.0,
+            (self.upper_bound - self.lower_bound) / 2.0
+        )
     }
 }
 

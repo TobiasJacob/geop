@@ -1,3 +1,4 @@
+pub mod boundingbox;
 pub mod contour;
 pub mod edge;
 pub mod edge_buffer;

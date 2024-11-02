@@ -1,4 +1,7 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::{
+    fmt::Display,
+    ops::{Add, Div, Mul, Neg, Sub},
+};
 
 use crate::efloat::EFloat64;
 
@@ -180,5 +183,11 @@ impl Neg for Point {
 impl PartialEq for Point {
     fn eq(&self, other: &Point) -> bool {
         (self.x - other.x) == 0.0 && (self.y - other.y) == 0.0 && (self.z - other.z) == 0.0
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Point({}, {}, {})", self.x, self.y, self.z)
     }
 }
