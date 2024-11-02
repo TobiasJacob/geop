@@ -10,9 +10,9 @@ fn curve_curve_intersection_numerical_iteration(
     deepness: u32,
 ) -> Vec<Point> {
     println!("deepness: {}", deepness);
-    if deepness > 3 {
-        return Vec::new();
-    }
+    // if deepness > 3 {
+    //     return Vec::new();
+    // }
     // println!("curve_curve_intersection_numerical_iteration");
     // println!("interval_self: {:?}", interval_self);
     // println!("interval_other: {:?}", interval_other);
@@ -54,7 +54,6 @@ fn curve_curve_intersection_numerical_iteration(
         (interval_other.0, midpoint_other),
         deepness + 1,
     ));
-    return result;
     result.extend(curve_curve_intersection_numerical_iteration(
         edge_self,
         edge_other,
@@ -120,7 +119,6 @@ pub fn curve_curve_intersection_numerical(
         (other_p1, other_p0),
         0,
     ));
-    assert!(false);
     // Filter out duplicate points
     let mut unique_points = Vec::new();
     for p in result {

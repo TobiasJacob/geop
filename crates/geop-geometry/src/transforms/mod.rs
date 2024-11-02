@@ -82,7 +82,6 @@ impl Transform {
         let (sin_x, cos_x) = (roll.sin(), roll.cos());
         let (sin_y, cos_y) = (pitch.sin(), pitch.cos());
         let (sin_z, cos_z) = (yaw.sin(), yaw.cos());
-        println!("{}, {}, {}", cos_y, cos_z, cos_y * cos_z);
         matrix[0][0] = cos_y * cos_z;
         matrix[0][1] = -cos_y * sin_z;
         matrix[0][2] = sin_y;
@@ -93,6 +92,7 @@ impl Transform {
         matrix[2][1] = cos_x * sin_y * sin_z + sin_x * cos_z;
         matrix[2][2] = cos_x * cos_y;
         matrix[3][3] = EFloat64::one();
+        println!("{}", Transform { matrix });
         Transform { matrix }
     }
 
@@ -109,8 +109,14 @@ impl Transform {
         let scale_x = self.matrix[0][0] + self.matrix[0][1] + self.matrix[0][2];
         let scale_y = self.matrix[1][0] + self.matrix[1][1] + self.matrix[1][2];
         let scale_z = self.matrix[2][0] + self.matrix[2][1] + self.matrix[2][2];
-        assert!((scale_x - scale_y) == 0.0, "Scale must be uniform");
-        assert!((scale_x - scale_z) == 0.0, "Scale must be uniform");
+        assert!(
+            (scale_x.abs() - scale_y.abs()) == 0.0,
+            "Scale must be uniform"
+        );
+        assert!(
+            (scale_x.abs() - scale_z.abs()) == 0.0,
+            "Scale must be uniform"
+        );
         return scale_x;
     }
 }

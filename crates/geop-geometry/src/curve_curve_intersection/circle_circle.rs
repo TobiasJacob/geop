@@ -63,16 +63,19 @@ pub fn circle_circle_intersection(
             let a = a.unwrap();
             let p = p1 + (p2 - p1).normalize().unwrap() * a;
             let h = (r1 * r1 - a * a).sqrt();
-            let h = h.unwrap();
-            let n = (p2 - p1)
-                .normalize()
-                .unwrap()
-                .cross(n1)
-                .normalize()
-                .unwrap();
-            let p1 = p + n * h;
-            let p2 = p - n * h;
-            return CircleCircleIntersection::TwoPoint(p1, p2);
+            if let Some(h) = h {
+                let n = (p2 - p1)
+                    .normalize()
+                    .unwrap()
+                    .cross(n1)
+                    .normalize()
+                    .unwrap();
+                let p1 = p + n * h;
+                let p2 = p - n * h;
+                return CircleCircleIntersection::TwoPoint(p1, p2);
+            } else {
+                return CircleCircleIntersection::OnePoint(p);
+            }
         }
     }
 

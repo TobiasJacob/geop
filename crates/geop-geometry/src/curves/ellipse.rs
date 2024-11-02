@@ -228,7 +228,6 @@ impl CurveLike for Ellipse {
     }
 
     fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
-        assert!(start != end);
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));

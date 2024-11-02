@@ -17,12 +17,12 @@ const TWO_PI: f64 = 2.0 * PI;
 impl EFloat64 {
     pub fn new(upper_bound: f64, lower_bound: f64) -> Self {
         assert!(upper_bound >= lower_bound);
-        assert!(
-            upper_bound - lower_bound <= 1E-3,
-            "upper: {}, lower: {}",
-            upper_bound,
-            lower_bound
-        );
+        // assert!(
+        //     upper_bound - lower_bound <= 1E-3,
+        //     "upper: {}, lower: {}",
+        //     upper_bound,
+        //     lower_bound
+        // );
         assert!(upper_bound.is_finite());
         assert!(lower_bound.is_finite());
         Self {
