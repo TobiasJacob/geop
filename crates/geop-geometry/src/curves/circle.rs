@@ -127,10 +127,10 @@ impl CurveLike for Circle {
         }
     }
 
+    // TODO: Assert start != end
     // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         assert!(self.on_curve(m));
-        assert!(start != end);
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -141,7 +141,6 @@ impl CurveLike for Circle {
                 let angle_start = self.dir_cross.dot(start).atan2(self.radius.dot(start));
                 let mut angle_end = self.dir_cross.dot(end).atan2(self.radius.dot(end));
                 let mut angle_m = self.dir_cross.dot(m).atan2(self.radius.dot(m));
-                assert!(angle_end != angle_start);
                 if angle_end.upper_bound < angle_start.lower_bound {
                     angle_end = angle_end + EFloat64::two_pi();
                 }
@@ -163,7 +162,6 @@ impl CurveLike for Circle {
     }
 
     fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
-        assert!(start != end);
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));

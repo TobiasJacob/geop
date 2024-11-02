@@ -189,7 +189,7 @@ mod tests {
         .iter()
         .map(|p| {
             let mut p2 = p.clone();
-            p2.z = EFloat64::one();
+            p2.z = EFloat64::zero();
             let mut p2 = p2.normalize().unwrap();
             p2.z = p.z;
             p2
