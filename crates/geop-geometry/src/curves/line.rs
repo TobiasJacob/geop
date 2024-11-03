@@ -108,7 +108,7 @@ impl CurveLike for Line {
                 GeometryScene {
                     points: vec![
                         (start, Category10Color::Orange),
-                        (end, Category10Color::Orange),
+                        (end, Category10Color::Blue),
                     ]
                     .into_iter()
                     .filter_map(|(p, c)| p.map(|p| (p, c)))
@@ -145,19 +145,41 @@ impl CurveLike for Line {
 
     // Checks if m is between x and y. m==x and m==y are true.
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
-        assert!(self.on_curve(m));
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!("Checking if {} is between {:?} and {:?}", m, start, end),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Blue),
+                        (Some(m), Category10Color::Green),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
+        self.assert_on_curve(m, "m").with_context(&error_context)?;
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok((m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0)
             }
             (Some(start), None) => {
-                assert!(self.on_curve(start));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
                 Ok((m - start).dot(self.direction) >= 0.0)
             }
             (None, Some(end)) => {
-                assert!(self.on_curve(end));
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok((m - end).dot(self.direction) <= 0.0)
             }
             (None, None) => Ok(true),
@@ -165,14 +187,47 @@ impl CurveLike for Line {
     }
 
     fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!("Midpoint between {:?} and {:?}", start, end),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Blue),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
+                if start == end {
+                    return Err(error_context(GeometryError::new(
+                        "Start and end are the same".to_string(),
+                    )));
+                }
+
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok(((start + end) / EFloat64::two()).unwrap())
             }
-            (Some(start), None) => Ok(start + self.direction * EFloat64::from(HORIZON_DIST)),
-            (None, Some(end)) => Ok(end - self.direction * EFloat64::from(HORIZON_DIST)),
+            (Some(start), None) => {
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                Ok(start + self.direction * EFloat64::from(HORIZON_DIST))
+            }
+            (None, Some(end)) => {
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
+                Ok(end - self.direction * EFloat64::from(HORIZON_DIST))
+            }
             (None, None) => Ok(self.basis),
         }
     }
