@@ -14,7 +14,7 @@ pub fn primitive_rectangle_curve(center: Point, u_dir: Point, v_dir: Point) -> C
 
     let mut edges = Vec::<Edge>::new();
     for i in 0..points.len() {
-        edges.push(primitive_line(points[i], points[(i + 1) % points.len()]));
+        edges.push(primitive_line(points[i], points[(i + 1) % points.len()]).unwrap());
     }
 
     Contour::new(edges)

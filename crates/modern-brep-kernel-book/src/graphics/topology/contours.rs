@@ -24,7 +24,9 @@ mod tests {
         }
 
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
-            scene.edges.push((primitive_line(*p1, *p2), Color::white()));
+            scene
+                .edges
+                .push((primitive_line(*p1, *p2).unwrap(), Color::white()));
         }
 
         scene.edges.push((

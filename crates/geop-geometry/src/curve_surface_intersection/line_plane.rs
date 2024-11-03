@@ -18,7 +18,7 @@ pub fn line_plane_intersection(a: &Line, b: &Plane) -> LinePlaneIntersection {
 
     if (n.dot(v)).abs() <= 0.0 {
         if (n.dot(a) - n.dot(p)).abs() <= 0.0 {
-            return LinePlaneIntersection::Line(Line::new(a, v));
+            return LinePlaneIntersection::Line(Line::new(a, v).unwrap());
         } else {
             return LinePlaneIntersection::None;
         }
@@ -38,7 +38,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )
+        .unwrap();
         let plane = Plane::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
@@ -59,7 +60,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )
+        .unwrap();
         let plane = Plane::new(
             Point::from_f64(0.0, 0.0, 1.0),
             Point::from_f64(0.0, 1.0, 0.0),

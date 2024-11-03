@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_line_sphere_intersection_two_points() {
-        let line = Line::new(Point::zero(), Point::from_f64(0.0, 0.0, 1.0));
+        let line = Line::new(Point::zero(), Point::from_f64(0.0, 0.0, 1.0)).unwrap();
         let sphere = Sphere::new(Point::zero(), EFloat64::from(3.0), true);
         match line_sphere_intersection(&line, &sphere) {
             LineSphereIntersection::TwoPoints(p1, p2) => {
@@ -54,7 +54,8 @@ mod tests {
         let line_2 = Line::new(
             Point::from_f64(0.5, 0.5, 0.5),
             Point::from_f64(0.0, 0.0, 1.0),
-        );
+        )
+        .unwrap();
         match line_sphere_intersection(&line_2, &sphere) {
             LineSphereIntersection::TwoPoints(p1, p2) => {
                 assert_eq!(p1, Point::from_f64(0.5, 0.5, 2.9154759474226504));
@@ -68,7 +69,8 @@ mod tests {
         let line_3 = Line::new(
             Point::from_f64(0.5, -10.0, 0.5),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         match line_sphere_intersection(&line_3, &sphere) {
             LineSphereIntersection::TwoPoints(p1, p2) => {
                 assert_eq!(p1, Point::from_f64(0.5, 2.9154759474226504, 0.5));
@@ -85,7 +87,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(1.0, 0.0, 0.0),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         let sphere = Sphere::new(Point::zero(), EFloat64::from(1.0), true);
         match line_sphere_intersection(&line, &sphere) {
             LineSphereIntersection::OnePoint(p1) => {
@@ -98,8 +101,9 @@ mod tests {
 
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 1.0),
-            Point::from_f64(1.0, 1.0, 0.0),
-        );
+            Point::from_f64(1.0, 1.0, 0.0).normalize().unwrap(),
+        )
+        .unwrap();
         let sphere = Sphere::new(Point::zero(), EFloat64::one(), true);
         match line_sphere_intersection(&line, &sphere) {
             LineSphereIntersection::OnePoint(p1) => {
@@ -115,8 +119,9 @@ mod tests {
     fn test_line_sphere_intersection_none() {
         let line = Line::new(
             Point::from_f64(10.0, 10.0, 0.0),
-            Point::from_f64(1.0, 1.0, 1.0),
-        );
+            Point::from_f64(1.0, 1.0, 1.0).normalize().unwrap(),
+        )
+        .unwrap();
         let sphere = Sphere::new(Point::zero(), EFloat64::one(), true);
         match line_sphere_intersection(&line, &sphere) {
             LineSphereIntersection::None => {}

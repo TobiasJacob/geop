@@ -175,7 +175,7 @@ impl SurfaceLike for Cylinder {
         let q_proj = q_loc - self.extend_dir * q_height;
         let angle = p_proj.angle(q_proj).unwrap();
         if angle <= 0.0 {
-            return Curve::Line(Line::new(p, q - p));
+            return Curve::Line(Line::new(p, (q - p).normalize().unwrap()).unwrap());
         }
         let helix_basis = self.basis + p_height * self.extend_dir;
         let helix_radius = p_proj;

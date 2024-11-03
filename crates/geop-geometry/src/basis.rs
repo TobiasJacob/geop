@@ -16,15 +16,18 @@ pub struct Basis {
 impl Basis {
     pub fn from_points(basis: Point, x: Point, y: Point, z: Point) -> GeometryResult<Basis> {
         if !x.is_perpendicular(y) || !x.is_perpendicular(z) || !y.is_perpendicular(z) {
-            return Err(GeometryError::new(
-                "The basis vectors are not orthogonal.".to_string(),
-                GeometryScene::with_points(vec![
-                    (basis, Category10Color::Gray),
-                    (x, Category10Color::Red),
-                    (y, Category10Color::Blue),
-                    (z, Category10Color::Green),
-                ]),
-            ));
+            return Err(
+                GeometryError::new("The basis vectors are not orthogonal.".to_string())
+                    .with_context_scene(
+                        "Trying to create a basis at grey point with xyz in RGB color.".to_string(),
+                        GeometryScene::with_points(vec![
+                            (basis, Category10Color::Gray),
+                            (x, Category10Color::Red),
+                            (y, Category10Color::Blue),
+                            (z, Category10Color::Green),
+                        ]),
+                    ),
+            );
         }
         Ok(Basis { basis, x, y, z })
     }

@@ -36,7 +36,11 @@ use winit::{event_loop::EventLoop, window::WindowBuilder};
 pub fn linear_edge(s: Point, e: Point) -> Edge {
     let p1 = s;
     let p2 = e;
-    Edge::new(Some(s), Some(e), Curve::Line(Line::new(p1, p2 - p1)))
+    Edge::new(
+        Some(s),
+        Some(e),
+        Curve::Line(Line::new(p1, (p2 - p1).normalize().unwrap()).unwrap()),
+    )
 }
 
 pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
@@ -116,7 +120,7 @@ async fn run() {
 
         let mut edges = Vec::new();
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
-            edges.push(primitive_line(*p1, *p2));
+            edges.push(primitive_line(*p1, *p2).unwrap());
         }
         edges.push(primitive_arc(p4, p1, EFloat64::from(1.6), -Point::unit_y()));
 

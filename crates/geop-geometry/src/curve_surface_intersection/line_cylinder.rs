@@ -61,7 +61,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
-        );
+        )
+        .unwrap();
         let cylinder = Cylinder::new(
             Point::from_f64(10.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
@@ -84,7 +85,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
-        );
+        )
+        .unwrap();
         let cylinder = Cylinder::new(
             Point::from_f64(10.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
@@ -100,8 +102,9 @@ mod tests {
 
         let line_2 = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
-            Point::from_f64(1.0, 1.0, 1.0),
-        );
+            Point::from_f64(1.0, 1.0, 1.0).normalize().unwrap(),
+        )
+        .unwrap();
         match line_cylinder_intersection(&line_2, &cylinder) {
             CylinderLineIntersection::None => {}
             _ => {
@@ -115,7 +118,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
-        );
+        )
+        .unwrap();
         let cylinder = Cylinder::new(
             Point::from_f64(10.0, 0.0, 0.0),
             Point::from_f64(-1.0, 0.0, 0.0),
@@ -144,7 +148,8 @@ mod tests {
         let line = Line::new(
             Point::from_f64(1.0, 0.0, 1.0),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         match line_cylinder_intersection(&line, &cylinder) {
             CylinderLineIntersection::Point(p) => {
                 assert_eq!(p, Point::from_f64(1.0, 0.0, 1.0));

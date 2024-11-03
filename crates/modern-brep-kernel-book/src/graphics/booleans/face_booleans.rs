@@ -34,7 +34,7 @@ mod tests {
 
         let mut edges = Vec::new();
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
-            edges.push(primitive_line(*p1, *p2));
+            edges.push(primitive_line(*p1, *p2).unwrap());
         }
         edges.push(primitive_arc(p4, p1, EFloat64::from(1.6), -Point::unit_y()));
 

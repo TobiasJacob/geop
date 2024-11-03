@@ -121,7 +121,7 @@ impl SurfaceLike for Plane {
 
     fn geodesic(&self, p: Point, q: Point) -> Curve {
         assert!(p != q);
-        Curve::Line(Line::new(p, q - p))
+        Curve::Line(Line::new(p, (q - p).normalize().unwrap()).unwrap())
     }
 
     fn point_grid(&self, density: f64) -> Vec<Point> {

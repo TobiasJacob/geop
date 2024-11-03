@@ -36,7 +36,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
     let geodesic = Edge::new(
         Some(other.clone()),
         Some(q.clone()),
-        Curve::Line(Line::new(other, q - other)),
+        Curve::Line(Line::new(other, (q - other).normalize().unwrap()).unwrap()),
     );
 
     let mut intersection_points = Vec::<Point>::new();

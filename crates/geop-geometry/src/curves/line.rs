@@ -1,4 +1,12 @@
-use crate::{efloat::EFloat64, point::Point, transforms::Transform, HORIZON_DIST};
+use crate::{
+    color::Category10Color,
+    efloat::EFloat64,
+    geometry_error::{GeometryError, GeometryResult},
+    geometry_scene::GeometryScene,
+    point::Point,
+    transforms::Transform,
+    HORIZON_DIST,
+};
 
 use super::{curve::Curve, CurveLike};
 
@@ -9,21 +17,29 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(basis: Point, direction: Point) -> Line {
-        Line {
-            basis,
-            direction: direction.normalize().unwrap(),
+    pub fn new(basis: Point, direction: Point) -> GeometryResult<Line> {
+        if !direction.is_normalized() {
+            return Err(
+                GeometryError::new("Direction must be normalized".to_string()).with_context_scene(
+                    format!("Create a line at {} with direction {}.", basis, direction),
+                    GeometryScene::with_points(vec![
+                        (basis, Category10Color::Orange),
+                        (basis + direction, Category10Color::Green),
+                    ]),
+                ),
+            );
         }
+        Ok(Line { basis, direction })
     }
 
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let direction = transform * (self.direction + self.basis) - basis;
-        Line::new(basis, direction.normalize().unwrap())
+        Line::new(basis, direction.normalize().unwrap()).expect("Direction must be normalized")
     }
 
     pub fn neg(&self) -> Line {
-        Line::new(self.basis, -self.direction)
+        Line::new(self.basis, -self.direction).expect("Direction is already normalized")
     }
 }
 
@@ -117,9 +133,9 @@ impl CurveLike for Line {
 
     fn shrink_bounding_box(
         &self,
-        start: Option<Point>,
-        end: Option<Point>,
-        bounding_box: crate::bounding_box::BoundingBox,
+        _start: Option<Point>,
+        _end: Option<Point>,
+        _bounding_box: crate::bounding_box::BoundingBox,
     ) -> crate::bounding_box::BoundingBox {
         todo!()
     }

@@ -36,7 +36,8 @@ mod tests {
         let edge = primitive_line(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )
+        .unwrap();
         assert_eq!(
             edge_point_contains(&edge, Point::from_f64(0.5, 0.0, 0.0)),
             EdgePointContains::Inside

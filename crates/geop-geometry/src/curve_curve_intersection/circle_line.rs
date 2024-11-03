@@ -61,7 +61,8 @@ mod tests {
         let l = Line::new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )
+        .unwrap();
         let i = circle_line_intersection(&c, &l);
         match i {
             CircleLineIntersection::TwoPoint(p1, p2) => {

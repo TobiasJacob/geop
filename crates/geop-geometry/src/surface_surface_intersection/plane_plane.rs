@@ -23,11 +23,11 @@ pub fn plane_plane_intersection(a: &Plane, b: &Plane) -> PlanePlaneIntersection 
         }
     } else {
         let v = n_a.cross(n_b).normalize().unwrap();
-        let c = Line::new(b_b, v.cross(n_b));
+        let c = Line::new(b_b, v.cross(n_b).normalize().unwrap()).unwrap();
 
         match line_plane_intersection(&c, &a) {
             LinePlaneIntersection::Point(p) => {
-                return PlanePlaneIntersection::Line(Line::new(p, v));
+                return PlanePlaneIntersection::Line(Line::new(p, v.normalize().unwrap()).unwrap());
             }
             _ => panic!("Line plane intersection should return a point!"),
         }

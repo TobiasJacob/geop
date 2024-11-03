@@ -27,7 +27,9 @@ mod tests {
             if face.edge_from_to(anchor, p).length().unwrap() < 1.0 {
                 scene.points.push((p, Color::green()));
                 let log = face.surface.log(anchor, p).unwrap() + anchor;
-                scene.edges.push((primitive_line(log, p), Color::white()));
+                scene
+                    .edges
+                    .push((primitive_line(log, p).unwrap(), Color::white()));
                 scene.points.push((log, Color::red()));
             }
         }
@@ -60,7 +62,9 @@ mod tests {
                 scene.points.push((p, Color::green()));
                 let log = face.surface.log(anchor, p).unwrap() + anchor;
                 if (log - p).norm() >= 0.0 {
-                    scene.edges.push((primitive_line(log, p), Color::white()));
+                    scene
+                        .edges
+                        .push((primitive_line(log, p).unwrap(), Color::white()));
                 }
                 scene.points.push((log, Color::red()));
             }

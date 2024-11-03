@@ -213,9 +213,9 @@ impl CurveLike for Circle {
 
     fn shrink_bounding_box(
         &self,
-        start: Option<Point>,
-        end: Option<Point>,
-        bounding_box: BoundingBox,
+        _start: Option<Point>,
+        _end: Option<Point>,
+        _bounding_box: BoundingBox,
     ) -> BoundingBox {
         todo!("Implement this")
     }

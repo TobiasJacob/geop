@@ -4,6 +4,8 @@ pub mod topology;
 pub mod contains;
 pub mod operations;
 pub mod primitive_objects;
+pub mod topology_error;
+pub mod topology_scene;
 
 // use topology::scene::Scene;
 

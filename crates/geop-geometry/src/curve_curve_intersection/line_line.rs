@@ -15,7 +15,7 @@ pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
 
     if v1.is_parallel(v2) {
         if (p1 - p2).is_parallel(v1) {
-            return LineLineIntersection::Line(Line::new(p1, v1));
+            return LineLineIntersection::Line(Line::new(p1, v1).unwrap());
         } else {
             return LineLineIntersection::None;
         }
@@ -42,11 +42,13 @@ mod tests {
         let l1 = Line::new(
             Point::from_f64(-2.0, 1.0, 4.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )
+        .unwrap();
         let l2 = Line::new(
             Point::from_f64(-2.0, 1.0, 4.0),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         let i = line_line_intersection(&l1, &l2);
         match i {
             LineLineIntersection::Point(p) => {
@@ -57,8 +59,9 @@ mod tests {
 
         let l3 = Line::new(
             Point::from_f64(0.0, 1.0, 4.0),
-            Point::from_f64(2.0, 0.0, 0.0),
-        );
+            Point::from_f64(2.0, 0.0, 0.0).normalize().unwrap(),
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l3) {
             LineLineIntersection::Line(l) => {
                 assert_eq!(
@@ -67,6 +70,7 @@ mod tests {
                         Point::from_f64(-2.0, 1.0, 4.0),
                         Point::from_f64(1.0, 0.0, 0.0)
                     )
+                    .unwrap()
                 );
             }
             _ => panic!("Expected line intersection"),
@@ -75,7 +79,8 @@ mod tests {
         let l4 = Line::new(
             Point::from_f64(0.0, -1.0, 4.0),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l4) {
             LineLineIntersection::Point(p) => {
                 assert_eq!(p, Point::from_f64(0.0, 1.0, 4.0));
@@ -86,7 +91,8 @@ mod tests {
         let l5 = Line::new(
             Point::from_f64(0.0, 1.0, 3.0),
             Point::from_f64(0.0, 1.0, 0.0),
-        );
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l5) {
             LineLineIntersection::None => {}
             _ => panic!("Expected no intersection"),

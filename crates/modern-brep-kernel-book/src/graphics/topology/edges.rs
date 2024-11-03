@@ -18,7 +18,8 @@ mod tests {
         let edge = primitive_line(
             Point::from_f64(-1.0, 0.0, 1.0),
             Point::from_f64(1.0, 0.0, 1.0),
-        );
+        )
+        .unwrap();
         let edge2 = primitive_arc(
             Point::from_f64(1.0, 0.0, 0.0),
             Point::from_f64(-1.0, 0.0, 0.0),
