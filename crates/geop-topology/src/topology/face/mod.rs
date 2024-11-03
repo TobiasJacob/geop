@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     curve_surface_intersection::curve_surface::curve_surface_intersection,
+    curves::bounds::Bounds,
     efloat::EFloat64,
     point::Point,
     surfaces::{surface::Surface, SurfaceLike},
@@ -31,11 +32,11 @@ pub struct Face {
 // The contours are not allowed to intersect in any way. Keep in mind that a point is not considered an intersection, hence it is allowed that the contours touch each other at points.
 impl Face {
     pub fn new(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Face {
-        for contour in boundaries.iter() {
-            for edge in contour.edges.iter() {
-                assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
-            }
-        }
+        // for contour in boundaries.iter() {
+        //     for edge in contour.edges.iter() {
+        //         assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
+        //     }
+        // }
 
         let f = Face {
             boundaries,
@@ -46,11 +47,11 @@ impl Face {
     }
 
     pub fn try_new_face(boundaries: Vec<Contour>, surface: Rc<Surface>) -> Option<Face> {
-        for contour in boundaries.iter() {
-            for edge in contour.edges.iter() {
-                assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
-            }
-        }
+        // for contour in boundaries.iter() {
+        //     for edge in contour.edges.iter() {
+        //         assert!(curve_surface_intersection(&edge.curve, &*surface).is_curve());
+        //     }
+        // }
 
         let f = Face {
             boundaries,
@@ -80,27 +81,19 @@ impl Face {
         return points;
     }
 
-    pub fn all_edges(&self) -> Vec<Edge> {
-        let mut edges = Vec::<Edge>::new();
-        for contour in self.boundaries.iter() {
-            for edge in contour.edges.iter() {
-                edges.push(edge.clone());
-            }
-        }
-        return edges;
-    }
-
     pub fn try_inner_point(&self) -> Option<Point> {
-        for e1 in self.boundaries[0].edges.iter() {
-            for e2 in self.boundaries[0].edges.iter() {
-                if e1 != e2 {
-                    let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
-                    let p = geodesic.get_midpoint();
-                    if face_point_contains(self, p) == FacePointContains::Inside {
-                        return Some(p);
-                    }
-                }
-            }
+        if self.boundaries.len() == 0 {
+            return Some(self.surface.point_grid(1.0)[0]);
+        }
+
+        let p = self.boundaries[0].get_midpoint();
+        let dist = EFloat64::from(0.01);
+        let normal = self.normal(p);
+        let tangent = self.boundary_tangent(p);
+        let extend_dir = normal.cross(*tangent.expect_on_edge()) * dist;
+        let inner_point = self.surface.exp(p, extend_dir);
+        if face_point_contains(self, inner_point).is_inside() {
+            return Some(inner_point);
         }
         None
     }
@@ -110,45 +103,44 @@ impl Face {
             return self.surface.point_grid(1.0)[0];
         }
 
-        let p = self.boundaries[0].edges[0].get_midpoint();
+        let p = self.boundaries[0].get_midpoint();
         let dist = EFloat64::from(0.01);
         let normal = self.normal(p);
         let tangent = self.boundary_tangent(p);
         let extend_dir = normal.cross(*tangent.expect_on_edge()) * dist;
         let inner_point = self.surface.exp(p, extend_dir);
-        if face_point_contains(self, inner_point) == FacePointContains::Inside {
+        if face_point_contains(self, inner_point).is_inside() {
             return inner_point;
         }
-        for e1 in self.all_edges().iter() {
-            for e2 in self.all_edges().iter() {
-                if e1 != e2 {
-                    let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
-                    let p = geodesic.get_midpoint();
-                    // println!("Checking {:?}", p);
-                    if face_point_contains(self, p) == FacePointContains::Inside {
-                        return p;
-                    }
-                }
-            }
-        }
-        println!("Error creating face");
-        for c in self.boundaries.iter() {
-            println!("{}", c);
-        }
+        // for e1 in self.all_edges().iter() {
+        //     for e2 in self.all_edges().iter() {
+        //         if e1 != e2 {
+        //             let geodesic = self.edge_from_to(e1.get_midpoint(), e2.get_midpoint());
+        //             let p = geodesic.get_midpoint();
+        //             // println!("Checking {:?}", p);
+        //             if face_point_contains(self, p) == FacePointContains::Inside {
+        //                 return p;
+        //             }
+        //         }
+        //     }
+        // }
+        // println!("Error creating face");
+        // for c in self.boundaries.iter() {
+        //     println!("{}", c);
+        // }
         panic!("No inner point found");
     }
 
     pub fn edge_from_to(&self, from: Point, to: Point) -> Edge {
         Edge::new(
-            Some(from.clone()),
-            Some(to.clone()),
+            Bounds::new(from.clone(), to.clone()).unwrap(),
             self.surface.geodesic(from, to),
         )
     }
 
     pub fn get_boundary_point(&self) -> Option<Point> {
         if self.boundaries.len() > 0 {
-            return Some(self.boundaries[0].edges[0].get_midpoint());
+            return Some(self.boundaries[0].get_midpoint());
         }
         None
     }
@@ -180,7 +172,7 @@ impl Face {
 
     pub fn flip(&self) -> Face {
         Face {
-            boundaries: self.boundaries.iter().map(|l| l.flip()).collect(),
+            boundaries: self.boundaries.iter().rev().map(|l| l.flip()).collect(),
             surface: Rc::new(self.surface.neg()),
         }
     }
@@ -199,9 +191,7 @@ impl std::fmt::Display for Face {
                 )?;
                 for contour in self.boundaries.iter() {
                     writeln!(f, "Boundary:")?;
-                    for edge in contour.edges.iter() {
-                        writeln!(f, "  {}", edge)?;
-                    }
+                    writeln!(f, "  {}", contour)?;
                 }
             }
             Surface::Sphere(_s) => {
@@ -211,9 +201,7 @@ impl std::fmt::Display for Face {
                 writeln!(f, "Cylinder at bases = {:?} with extend_dir = {:?}, radius = {:?} and normal direction = {:?}", c.basis, c.extend_dir, c.radius, c.normal_outwards)?;
                 for contour in self.boundaries.iter() {
                     writeln!(f, "Boundary:")?;
-                    for edge in contour.edges.iter() {
-                        writeln!(f, "  {}", edge)?;
-                    }
+                    writeln!(f, "  {}", contour)?;
                 }
             }
         };

@@ -3,17 +3,23 @@ use geop_geometry::{
     curve_surface_intersection::curve_surface::{
         curve_surface_intersection, CurveSurfaceIntersection,
     },
-    curves::{curve::Curve, line::Line, CurveLike},
+    curves::{bounds::Bounds, curve::Curve, line::Line, CurveLike},
     point::Point,
 };
 
-use crate::topology::{edge::Edge, face::Face, volume::Volume};
+use crate::topology::{
+    contour::{curve_contour::CurveContour, Contour},
+    edge::Edge,
+    face::Face,
+    volume::Volume,
+};
 
 use super::face_point::{face_point_contains, FacePointContains};
 
 pub enum VolumePointContains {
     Inside,
     OnFace(Face),
+    OnCurveContour(CurveContour),
     OnEdge(Edge),
     OnPoint(Point),
     Outside,
@@ -24,6 +30,9 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
     for face in volume.all_faces().iter() {
         match face_point_contains(face, other) {
             FacePointContains::Inside => return VolumePointContains::OnFace(face.clone()),
+            FacePointContains::OnCurveContour(curve) => {
+                return VolumePointContains::OnCurveContour(curve)
+            }
             FacePointContains::OnEdge(edge) => return VolumePointContains::OnEdge(edge),
             FacePointContains::OnPoint(point) => return VolumePointContains::OnPoint(point),
             FacePointContains::Outside => {}
@@ -34,8 +43,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
     // choose a random point on a face
     let q = volume.all_faces()[0].inner_point();
     let geodesic = Edge::new(
-        Some(other.clone()),
-        Some(q.clone()),
+        Bounds::new(other.clone(), q.clone()).unwrap(),
         Curve::Line(Line::new(other, (q - other).normalize().unwrap()).unwrap()),
     );
 
@@ -44,29 +52,48 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
         let intersections = curve_surface_intersection(&geodesic.curve, &*face.surface);
         match intersections {
             CurveSurfaceIntersection::Curve(_) => {
-                for edge in face.all_edges() {
-                    match curve_curve_intersection(&geodesic.curve, &edge.curve) {
-                        CurveCurveIntersection::FinitePoints(points) => {
-                            for point in points {
-                                if face_point_contains(&face, point) != FacePointContains::Outside {
-                                    intersection_points.push(point)
+                for contour in face.boundaries.iter() {
+                    match contour {
+                        Contour::ConnectedEdge(contour) => {
+                            for edge in contour.edges.iter() {
+                                match curve_curve_intersection(&geodesic.curve, &edge.curve) {
+                                    CurveCurveIntersection::FinitePoints(points) => {
+                                        for point in points {
+                                            if face_point_contains(&face, point).not_outside() {
+                                                intersection_points.push(point)
+                                            }
+                                        }
+                                    }
+                                    CurveCurveIntersection::InfiniteDiscretePoints(_) => todo!(),
+                                    CurveCurveIntersection::Curve(_) => {
+                                        if face_point_contains(&face, edge.bounds.start)
+                                            .not_outside()
+                                        {
+                                            intersection_points.push(edge.bounds.start)
+                                        }
+                                        if face_point_contains(&face, edge.bounds.end).not_outside()
+                                        {
+                                            intersection_points.push(edge.bounds.end)
+                                        }
+                                    }
+                                    CurveCurveIntersection::None => {}
                                 }
                             }
                         }
-                        CurveCurveIntersection::InfiniteDiscretePoints(_) => todo!(),
-                        CurveCurveIntersection::Curve(_) => {
-                            if let Some(start) = edge.start {
-                                if face_point_contains(&face, start) != FacePointContains::Outside {
-                                    intersection_points.push(start)
+                        Contour::Curve(curve) => {
+                            match curve_curve_intersection(&geodesic.curve, &curve.curve) {
+                                CurveCurveIntersection::FinitePoints(points) => {
+                                    for point in points {
+                                        if face_point_contains(&face, point).not_outside() {
+                                            intersection_points.push(point)
+                                        }
+                                    }
                                 }
-                            }
-                            if let Some(end) = edge.end {
-                                if face_point_contains(&face, end) != FacePointContains::Outside {
-                                    intersection_points.push(end)
-                                }
+                                CurveCurveIntersection::InfiniteDiscretePoints(_) => todo!(),
+                                CurveCurveIntersection::Curve(_) => {}
+                                CurveCurveIntersection::None => {}
                             }
                         }
-                        CurveCurveIntersection::None => {}
                     }
                 }
             }
@@ -74,6 +101,9 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
                 for point in points {
                     match face_point_contains(&face, point) {
                         FacePointContains::Inside => intersection_points.push(point),
+                        FacePointContains::OnCurveContour(_) => {
+                            intersection_points.push(point);
+                        }
                         FacePointContains::OnEdge(_) => {
                             intersection_points.push(point);
                         }

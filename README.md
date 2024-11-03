@@ -71,3 +71,10 @@ A crate that uses wgpu to render the topological structures.
 A crate used to render the graphics for the book, and contains the book.
 
 
+### Todoes
+
+- [ ] Make all_points, all_edges method use iterators instead of vectors.
+- [ ] Make the folders with just one mod file in geop topology just a file (e.g. edge.rs instead of edge/mod.rs)
+- [ ] Remove interpolate function from core
+- [ ] Implement numerical boundingbox checking and remove all intersection methods from geop geometry
+

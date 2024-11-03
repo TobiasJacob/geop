@@ -3,7 +3,7 @@ use crate::{
     transforms::Transform,
 };
 
-use super::{curve::Curve, CurveLike};
+use super::{bounds::Bounds, curve::Curve, CurveLike};
 
 #[derive(Debug, Clone)]
 pub struct Circle {
@@ -137,41 +137,32 @@ impl CurveLike for Circle {
 
     // TODO: Assert start != end
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
+    fn between(&self, m: Point, bounds: &Bounds) -> GeometryResult<bool> {
+        let start = bounds.start;
+        let end = bounds.end;
         assert!(self.on_curve(m));
-        match (start, end) {
-            (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
-                let start = start - self.basis;
-                let end = end - self.basis;
-                let m = m - self.basis;
-                let angle_start = self.dir_cross.dot(start).atan2(self.radius.dot(start));
-                let mut angle_end = self.dir_cross.dot(end).atan2(self.radius.dot(end));
-                let mut angle_m = self.dir_cross.dot(m).atan2(self.radius.dot(m));
-                if angle_end.upper_bound < angle_start.lower_bound {
-                    angle_end = angle_end + EFloat64::two_pi();
-                }
-                if angle_m.upper_bound < angle_start.lower_bound {
-                    angle_m = angle_m + EFloat64::two_pi();
-                }
-                Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.upper_bound)
-            }
-            (Some(start), None) => {
-                assert!(self.on_curve(start));
-                Ok(true)
-            }
-            (None, Some(end)) => {
-                assert!(self.on_curve(end));
-                Ok(true)
-            }
-            (None, None) => Ok(true),
+        assert!(self.on_curve(start));
+        assert!(self.on_curve(end));
+        let start = start - self.basis;
+        let end = end - self.basis;
+        let m = m - self.basis;
+        let angle_start = self.dir_cross.dot(start).atan2(self.radius.dot(start));
+        let mut angle_end = self.dir_cross.dot(end).atan2(self.radius.dot(end));
+        let mut angle_m = self.dir_cross.dot(m).atan2(self.radius.dot(m));
+        if angle_end.upper_bound < angle_start.lower_bound {
+            angle_end = angle_end + EFloat64::two_pi();
         }
+        if angle_m.upper_bound < angle_start.lower_bound {
+            angle_m = angle_m + EFloat64::two_pi();
+        }
+        Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.upper_bound)
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
-        match (start, end) {
-            (Some(start), Some(end)) => {
+    fn get_midpoint(&self, bounds: Option<&Bounds>) -> GeometryResult<Point> {
+        match bounds {
+            Some(bounds) => {
+                let start = bounds.start;
+                let end = bounds.end;
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
                 let start_rel = start - self.basis;
@@ -184,21 +175,13 @@ impl CurveLike for Circle {
                 }
                 let mid = mid.normalize().unwrap() * self.radius.norm();
                 let p1 = mid + self.basis;
-                if self.between(p1, Some(start), Some(end)).unwrap() {
+                if self.between(p1, bounds).unwrap() {
                     return Ok(p1);
                 } else {
                     return Ok(-mid + self.basis);
                 }
             }
-            (Some(start), None) => {
-                assert!(self.on_curve(start));
-                return Ok(self.basis - (start - self.basis));
-            }
-            (None, Some(end)) => {
-                assert!(self.on_curve(end));
-                return Ok(self.basis - (end - self.basis));
-            }
-            (None, None) => {
+            None => {
                 return Ok(self.basis + self.radius);
             }
         }
@@ -210,18 +193,13 @@ impl CurveLike for Circle {
         v.normalize().unwrap() * self.radius.norm() + self.basis
     }
 
-    fn get_bounding_box(
-        &self,
-        _interval_self: Option<Point>,
-        _midpoint_self: Option<Point>,
-    ) -> GeometryResult<BoundingBox> {
+    fn get_bounding_box(&self, _bounds: &Bounds) -> GeometryResult<BoundingBox> {
         todo!("Implement this")
     }
 
     fn shrink_bounding_box(
         &self,
-        _start: Option<Point>,
-        _end: Option<Point>,
+        _bounds: &Bounds,
         _bounding_box: BoundingBox,
     ) -> GeometryResult<BoundingBox> {
         todo!("Implement this")

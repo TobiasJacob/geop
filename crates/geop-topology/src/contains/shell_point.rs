@@ -8,6 +8,9 @@ pub fn shell_point_contains(shell: &Shell, point: Point) -> FacePointContains {
     for face in shell.faces.iter() {
         let contains: FacePointContains = face_point_contains(face, point);
         match contains {
+            FacePointContains::OnCurveContour(curve_contour) => {
+                return FacePointContains::OnCurveContour(curve_contour);
+            }
             FacePointContains::OnEdge(edge) => {
                 return FacePointContains::OnEdge(edge);
             }

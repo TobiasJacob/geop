@@ -90,3 +90,10 @@ impl<T> WithContext<T> for GeometryResult<T> {
         }
     }
 }
+
+// From String
+impl From<String> for GeometryError {
+    fn from(message: String) -> Self {
+        GeometryError::new(message)
+    }
+}

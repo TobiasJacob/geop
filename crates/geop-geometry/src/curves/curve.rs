@@ -6,6 +6,7 @@ use crate::{
 };
 
 use super::{
+    bounds::Bounds,
     circle::{Circle, CircleTransform},
     ellipse::Ellipse,
     helix::Helix,
@@ -92,12 +93,12 @@ impl CurveLike for Curve {
     }
 
     // Checks if m is between x and y. m==x and m==y are true. start == end is allowed.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
+    fn between(&self, m: Point, bounds: &Bounds) -> GeometryResult<bool> {
         match self {
-            Curve::Line(line) => line.between(m, start, end),
-            Curve::Circle(circle) => circle.between(m, start, end),
-            Curve::Ellipse(ellipse) => ellipse.between(m, start, end),
-            Curve::Helix(helix) => helix.between(m, start, end),
+            Curve::Line(line) => line.between(m, bounds),
+            Curve::Circle(circle) => circle.between(m, bounds),
+            Curve::Ellipse(ellipse) => ellipse.between(m, bounds),
+            Curve::Helix(helix) => helix.between(m, bounds),
         }
     }
 
@@ -105,12 +106,12 @@ impl CurveLike for Curve {
     // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
     // This operation will fail if start == end.
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
+    fn get_midpoint(&self, bounds: Option<&Bounds>) -> GeometryResult<Point> {
         match self {
-            Curve::Line(line) => line.get_midpoint(start, end),
-            Curve::Circle(circle) => circle.get_midpoint(start, end),
-            Curve::Ellipse(ellipse) => ellipse.get_midpoint(start, end),
-            Curve::Helix(helix) => helix.get_midpoint(start, end),
+            Curve::Line(line) => line.get_midpoint(bounds),
+            Curve::Circle(circle) => circle.get_midpoint(bounds),
+            Curve::Ellipse(ellipse) => ellipse.get_midpoint(bounds),
+            Curve::Helix(helix) => helix.get_midpoint(bounds),
         }
     }
 
@@ -125,31 +126,26 @@ impl CurveLike for Curve {
     }
 
     // Returns a bounding box that contains the curve.
-    fn get_bounding_box(
-        &self,
-        start: Option<Point>,
-        end: Option<Point>,
-    ) -> GeometryResult<BoundingBox> {
+    fn get_bounding_box(&self, bounds: &Bounds) -> GeometryResult<BoundingBox> {
         match self {
-            Curve::Line(line) => line.get_bounding_box(start, end),
-            Curve::Circle(circle) => circle.get_bounding_box(start, end),
-            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(start, end),
-            Curve::Helix(helix) => helix.get_bounding_box(start, end),
+            Curve::Line(line) => line.get_bounding_box(bounds),
+            Curve::Circle(circle) => circle.get_bounding_box(bounds),
+            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(bounds),
+            Curve::Helix(helix) => helix.get_bounding_box(bounds),
         }
     }
 
     // Shrinks a bounding box to the smallest box that contains still the same part of the curve. The new box is <= the old box.
     fn shrink_bounding_box(
         &self,
-        start: Option<Point>,
-        end: Option<Point>,
+        bounds: &Bounds,
         bounding_box: BoundingBox,
     ) -> GeometryResult<BoundingBox> {
         match self {
-            Curve::Line(line) => line.shrink_bounding_box(start, end, bounding_box),
-            Curve::Circle(circle) => circle.shrink_bounding_box(start, end, bounding_box),
-            Curve::Ellipse(ellipse) => ellipse.shrink_bounding_box(start, end, bounding_box),
-            Curve::Helix(helix) => helix.shrink_bounding_box(start, end, bounding_box),
+            Curve::Line(line) => line.shrink_bounding_box(bounds, bounding_box),
+            Curve::Circle(circle) => circle.shrink_bounding_box(bounds, bounding_box),
+            Curve::Ellipse(ellipse) => ellipse.shrink_bounding_box(bounds, bounding_box),
+            Curve::Helix(helix) => helix.shrink_bounding_box(bounds, bounding_box),
         }
     }
 

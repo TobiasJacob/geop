@@ -40,11 +40,11 @@ impl Volume {
     }
 
     pub fn boundary_normal(&self, p: Point) -> ShellNormal {
-        if shell_point_contains(&self.boundary, p) != FacePointContains::Outside {
+        if shell_point_contains(&self.boundary, p).not_outside() {
             return self.boundary.normal(p);
         }
         for hole in self.cavities.iter() {
-            if shell_point_contains(hole, p) != FacePointContains::Outside {
+            if shell_point_contains(hole, p).not_outside() {
                 return hole.normal(p);
             }
         }

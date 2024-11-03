@@ -1,3 +1,4 @@
+use bounds::Bounds;
 use curve::Curve;
 
 use crate::{
@@ -8,6 +9,7 @@ use crate::{
 pub mod curve;
 
 // Alphabetic order
+pub mod bounds;
 pub mod circle;
 pub mod ellipse;
 pub mod helix;
@@ -39,29 +41,22 @@ pub trait CurveLike {
     ) -> GeometryResult<Point>;
 
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool>;
+    fn between(&self, m: Point, bounds: &Bounds) -> GeometryResult<bool>;
 
-    // Get the midpoint between start and end.
+    // Get the midpoint between start and end or a random point on the curve if bounds is None.
     // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
-    // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
-    // This operation will fail if start == end.
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point>;
+    fn get_midpoint(&self, bounds: Option<&Bounds>) -> GeometryResult<Point>;
 
     // Finds the closest point on the curve to the given point.
     fn project(&self, p: Point) -> Point;
 
     // Returns a bounding box that contains the curve.
-    fn get_bounding_box(
-        &self,
-        start: Option<Point>,
-        end: Option<Point>,
-    ) -> GeometryResult<BoundingBox>;
+    fn get_bounding_box(&self, bounds: &Bounds) -> GeometryResult<BoundingBox>;
 
     // Shrinks a bounding box to the smallest box that contains still the same part of the curve. The new box is <= the old box.
     fn shrink_bounding_box(
         &self,
-        start: Option<Point>,
-        end: Option<Point>,
+        bounds: &Bounds,
         bounding_box: BoundingBox,
     ) -> GeometryResult<BoundingBox>;
 

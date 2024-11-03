@@ -64,6 +64,7 @@ impl Shell {
         for face in self.faces.iter() {
             match face_point_contains(face, point) {
                 FacePointContains::Inside
+                | FacePointContains::OnCurveContour(_)
                 | FacePointContains::OnEdge(_)
                 | FacePointContains::OnPoint(_) => {
                     relevant_faces.push(face);

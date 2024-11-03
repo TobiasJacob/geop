@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::Mul};
 
-use crate::{efloat::EFloat64, point::Point};
+use crate::{curves::bounds::Bounds, efloat::EFloat64, point::Point};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {
@@ -61,6 +61,14 @@ impl Mul<Option<Point>> for Transform {
             Some(point) => Some(self * point),
             None => None,
         }
+    }
+}
+
+impl Mul<Bounds> for Transform {
+    type Output = Bounds;
+
+    fn mul(self, other: Bounds) -> Bounds {
+        Bounds::new(self * other.start, self * other.end).unwrap()
     }
 }
 

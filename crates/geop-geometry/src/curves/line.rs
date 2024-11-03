@@ -11,7 +11,7 @@ use crate::{
     HORIZON_DIST,
 };
 
-use super::{curve::Curve, CurveLike};
+use super::{bounds::Bounds, curve::Curve, CurveLike};
 
 #[derive(Debug, Clone)]
 pub struct Line {
@@ -144,91 +144,71 @@ impl CurveLike for Line {
     }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
+    fn between(&self, m: Point, bounds: &Bounds) -> GeometryResult<bool> {
         let error_context = |err: GeometryError| {
             err.with_context_scene(
-                format!("Checking if {} is between {:?} and {:?}", m, start, end),
+                format!(
+                    "Checking if {} is between {} and {}",
+                    m, bounds.start, bounds.end
+                )
+                .to_string(),
                 GeometryScene {
                     points: vec![
-                        (start, Category10Color::Orange),
-                        (end, Category10Color::Blue),
-                        (Some(m), Category10Color::Green),
-                    ]
-                    .into_iter()
-                    .filter_map(|(p, c)| p.map(|p| (p, c)))
-                    .collect(),
+                        (bounds.start, Category10Color::Orange),
+                        (bounds.end, Category10Color::Blue),
+                        (m, Category10Color::Green),
+                    ],
                     curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
                     surfaces: vec![],
                 },
             )
         };
 
+        let start = bounds.start;
+        let end = bounds.end;
         self.assert_on_curve(m, "m").with_context(&error_context)?;
-        match (start, end) {
-            (Some(start), Some(end)) => {
-                self.assert_on_curve(start, "start")
-                    .with_context(&error_context)?;
-                self.assert_on_curve(end, "end")
-                    .with_context(&error_context)?;
-                Ok((m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0)
-            }
-            (Some(start), None) => {
-                self.assert_on_curve(start, "start")
-                    .with_context(&error_context)?;
-                Ok((m - start).dot(self.direction) >= 0.0)
-            }
-            (None, Some(end)) => {
-                self.assert_on_curve(end, "end")
-                    .with_context(&error_context)?;
-                Ok((m - end).dot(self.direction) <= 0.0)
-            }
-            (None, None) => Ok(true),
-        }
+        self.assert_on_curve(start, "start")
+            .with_context(&error_context)?;
+        self.assert_on_curve(end, "end")
+            .with_context(&error_context)?;
+        Ok((m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0)
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
-        let error_context = |err: GeometryError| {
-            err.with_context_scene(
-                format!("Midpoint between {:?} and {:?}", start, end),
+    fn get_midpoint(&self, bounds: Option<&Bounds>) -> GeometryResult<Point> {
+        let error_context = |err: GeometryError| match bounds.clone() {
+            Some(bounds) => err.with_context_scene(
+                format!(
+                    "Midpoint on line {} between {:?} and {:?}",
+                    self, bounds.start, bounds.end
+                ),
                 GeometryScene {
                     points: vec![
-                        (start, Category10Color::Orange),
-                        (end, Category10Color::Blue),
-                    ]
-                    .into_iter()
-                    .filter_map(|(p, c)| p.map(|p| (p, c)))
-                    .collect(),
+                        (bounds.start, Category10Color::Orange),
+                        (bounds.end, Category10Color::Blue),
+                    ],
                     curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
                     surfaces: vec![],
                 },
-            )
+            ),
+            None => err.with_context_scene(
+                format!("Midpoint on line {}.", self),
+                GeometryScene {
+                    points: vec![],
+                    curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            ),
         };
 
-        match (start, end) {
-            (Some(start), Some(end)) => {
-                if start == end {
-                    return Err(error_context(GeometryError::new(
-                        "Start and end are the same".to_string(),
-                    )));
-                }
-
-                self.assert_on_curve(start, "start")
+        match bounds {
+            Some(bounds) => {
+                self.assert_on_curve(bounds.start, "start")
                     .with_context(&error_context)?;
-                self.assert_on_curve(end, "end")
+                self.assert_on_curve(bounds.end, "end")
                     .with_context(&error_context)?;
-                Ok(((start + end) / EFloat64::two()).unwrap())
+                Ok(((bounds.start + bounds.end) / EFloat64::two()).unwrap())
             }
-            (Some(start), None) => {
-                self.assert_on_curve(start, "start")
-                    .with_context(&error_context)?;
-                Ok(start + self.direction * EFloat64::from(HORIZON_DIST))
-            }
-            (None, Some(end)) => {
-                self.assert_on_curve(end, "end")
-                    .with_context(&error_context)?;
-                Ok(end - self.direction * EFloat64::from(HORIZON_DIST))
-            }
-            (None, None) => Ok(self.basis),
+            None => Ok(self.basis),
         }
     }
 
@@ -237,18 +217,13 @@ impl CurveLike for Line {
         self.basis + self.direction * v.dot(self.direction)
     }
 
-    fn get_bounding_box(
-        &self,
-        _interval_self: Option<Point>,
-        _midpoint_self: Option<Point>,
-    ) -> GeometryResult<BoundingBox> {
+    fn get_bounding_box(&self, _bounds: &Bounds) -> GeometryResult<BoundingBox> {
         todo!()
     }
 
     fn shrink_bounding_box(
         &self,
-        _start: Option<Point>,
-        _end: Option<Point>,
+        _bounds: &Bounds,
         _bounding_box: BoundingBox,
     ) -> GeometryResult<BoundingBox> {
         todo!()
