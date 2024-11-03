@@ -89,7 +89,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     _ => None,
                 };
 
-                let midpoint = circle.get_midpoint(top.start, top.end);
+                let midpoint = circle.get_midpoint(top.start, top.end).unwrap();
                 let inwards_direction = direction.cross(circle.tangent(midpoint));
                 let normal_outwards = inwards_direction.dot(midpoint - circle.basis) > 0.0;
 

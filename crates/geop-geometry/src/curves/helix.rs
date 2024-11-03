@@ -1,6 +1,8 @@
 use core::f64;
 
-use crate::{efloat::EFloat64, point::Point, transforms::Transform, HORIZON_DIST};
+use crate::{
+    bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform, HORIZON_DIST,
+};
 
 use super::{curve::Curve, CurveLike};
 
@@ -167,7 +169,7 @@ impl CurveLike for Helix {
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -178,33 +180,39 @@ impl CurveLike for Helix {
                 let t_end = t_end.unwrap();
                 let t = (t_start + t_end) / EFloat64::from(2.0);
                 let t = t.unwrap();
-                return self.basis
-                    + self.pitch * t
-                    + self.radius * (EFloat64::two_pi() * t).cos()
-                    + self.dir_cross * (EFloat64::two_pi() * t).sin();
+                return Some(
+                    self.basis
+                        + self.pitch * t
+                        + self.radius * (EFloat64::two_pi() * t).cos()
+                        + self.dir_cross * (EFloat64::two_pi() * t).sin(),
+                );
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
                 let t_start = (start - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_start = t_start.unwrap();
                 let t = t_start + EFloat64::from(HORIZON_DIST);
-                return self.basis
-                    + self.pitch * t
-                    + self.radius * (EFloat64::two_pi() * t).cos()
-                    + self.dir_cross * (EFloat64::two_pi() * t).sin();
+                return Some(
+                    self.basis
+                        + self.pitch * t
+                        + self.radius * (EFloat64::two_pi() * t).cos()
+                        + self.dir_cross * (EFloat64::two_pi() * t).sin(),
+                );
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
                 let t_end = (end - self.basis).dot(self.pitch) / self.pitch.norm_sq();
                 let t_end = t_end.unwrap();
                 let t = t_end - EFloat64::from(HORIZON_DIST);
-                return self.basis
-                    + self.pitch * t
-                    + self.radius * (EFloat64::two_pi() * t).cos()
-                    + self.dir_cross * (EFloat64::two_pi() * t).sin();
+                return Some(
+                    self.basis
+                        + self.pitch * t
+                        + self.radius * (EFloat64::two_pi() * t).cos()
+                        + self.dir_cross * (EFloat64::two_pi() * t).sin(),
+                );
             }
             (None, None) => {
-                return self.basis + self.radius;
+                return Some(self.basis + self.radius);
             }
         }
     }
@@ -217,9 +225,19 @@ impl CurveLike for Helix {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
-    ) -> crate::bounding_box::BoundingBox {
+    ) -> BoundingBox {
         todo!("Implement this")
     }
+
+    fn shrink_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
+    ) -> BoundingBox {
+        todo!("Implement this")
+    }
+
     fn sort(&self, _points: Vec<Option<Point>>) -> Vec<Option<Point>> {
         todo!("Implement this")
     }

@@ -1,4 +1,4 @@
-use crate::{efloat::EFloat64, point::Point, transforms::Transform};
+use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
 
 use super::{curve::Curve, CurveLike};
 
@@ -161,7 +161,7 @@ impl CurveLike for Circle {
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -170,27 +170,29 @@ impl CurveLike for Circle {
                 let end_rel = end - self.basis;
                 let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 if mid.norm() == 0.0 {
-                    return self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
-                        + self.basis;
+                    return Some(
+                        self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
+                            + self.basis,
+                    );
                 }
                 let mid = mid.normalize().unwrap() * self.radius.norm();
                 let p1 = mid + self.basis;
                 if self.between(p1, Some(start), Some(end)) {
-                    return p1;
+                    return Some(p1);
                 } else {
-                    return -mid + self.basis;
+                    return Some(-mid + self.basis);
                 }
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                return self.basis - (start - self.basis);
+                return Some(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                return self.basis - (end - self.basis);
+                return Some(self.basis - (end - self.basis));
             }
             (None, None) => {
-                return self.basis + self.radius;
+                return Some(self.basis + self.radius);
             }
         }
     }
@@ -205,7 +207,16 @@ impl CurveLike for Circle {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
-    ) -> crate::bounding_box::BoundingBox {
+    ) -> BoundingBox {
+        todo!("Implement this")
+    }
+
+    fn shrink_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
+    ) -> BoundingBox {
         todo!("Implement this")
     }
 

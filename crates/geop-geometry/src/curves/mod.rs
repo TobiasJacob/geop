@@ -36,15 +36,21 @@ pub trait CurveLike {
     // Get the midpoint between start and end.
     // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point;
+    // This operation will fail if start == end.
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point>;
 
     // Finds the closest point on the curve to the given point.
     fn project(&self, p: Point) -> Point;
 
-    fn get_bounding_box(
+    // Returns a bounding box that contains the curve.
+    fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox;
+
+    // Shrinks a bounding box to the smallest box that contains still the same part of the curve. The new box is <= the old box.
+    fn shrink_bounding_box(
         &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
     ) -> BoundingBox;
 
     // Sorts a list of point such that for three consecutive points (p1, p2, p3) p2 is between p1 and p3.

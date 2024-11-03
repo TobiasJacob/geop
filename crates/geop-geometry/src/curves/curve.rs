@@ -83,7 +83,7 @@ impl CurveLike for Curve {
         }
     }
 
-    // Checks if m is between x and y. m==x and m==y are true.
+    // Checks if m is between x and y. m==x and m==y are true. start == end is allowed.
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
         match self {
             Curve::Line(line) => line.between(m, start, end),
@@ -96,7 +96,8 @@ impl CurveLike for Curve {
     // Get the midpoint between start and end.
     // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    // This operation will fail if start == end.
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
@@ -115,16 +116,28 @@ impl CurveLike for Curve {
         }
     }
 
-    fn get_bounding_box(
+    // Returns a bounding box that contains the curve.
+    fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox {
+        match self {
+            Curve::Line(line) => line.get_bounding_box(start, end),
+            Curve::Circle(circle) => circle.get_bounding_box(start, end),
+            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(start, end),
+            Curve::Helix(helix) => helix.get_bounding_box(start, end),
+        }
+    }
+
+    // Shrinks a bounding box to the smallest box that contains still the same part of the curve. The new box is <= the old box.
+    fn shrink_bounding_box(
         &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
     ) -> BoundingBox {
         match self {
-            Curve::Line(line) => line.get_bounding_box(interval_self, midpoint_self),
-            Curve::Circle(circle) => circle.get_bounding_box(interval_self, midpoint_self),
-            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(interval_self, midpoint_self),
-            Curve::Helix(helix) => helix.get_bounding_box(interval_self, midpoint_self),
+            Curve::Line(line) => line.shrink_bounding_box(start, end, bounding_box),
+            Curve::Circle(circle) => circle.shrink_bounding_box(start, end, bounding_box),
+            Curve::Ellipse(ellipse) => ellipse.shrink_bounding_box(start, end, bounding_box),
+            Curve::Helix(helix) => helix.shrink_bounding_box(start, end, bounding_box),
         }
     }
 

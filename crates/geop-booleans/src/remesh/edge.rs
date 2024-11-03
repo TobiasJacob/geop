@@ -52,7 +52,7 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
 
     let mut result = Vec::<EdgeRemesh>::new();
     for a in edges_a.drain(..) {
-        let mid_point = a.curve.get_midpoint(a.start, a.end);
+        let mid_point = a.curve.get_midpoint(a.start, a.end).unwrap();
         match edge_point_contains(edge_b, mid_point) {
             EdgePointContains::Inside => {
                 result.push(EdgeRemesh::AinB(a));
@@ -67,7 +67,7 @@ pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
     }
 
     for b in edges_b.drain(..) {
-        let mid_point = b.curve.get_midpoint(b.start, b.end);
+        let mid_point = b.curve.get_midpoint(b.start, b.end).unwrap();
         match edge_point_contains(edge_a, mid_point) {
             EdgePointContains::Inside => {
                 result.push(EdgeRemesh::BinA(b));

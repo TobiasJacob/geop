@@ -227,7 +227,10 @@ impl CurveLike for Ellipse {
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
+        if start == end {
+            return None;
+        }
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -239,29 +242,29 @@ impl CurveLike for Ellipse {
                 let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 // println!("mid: {:?}", mid);
                 if mid.norm() == 0.0 {
-                    return self.transform_point_from_circle(
+                    return Some(self.transform_point_from_circle(
                         Point::unit_z().cross(start_rel).normalize().unwrap(),
-                    );
+                    ));
                 }
                 let mid = mid.normalize().unwrap();
                 // println!("mid: {:?}", mid);
                 let p1 = self.transform_point_from_circle(mid);
                 if self.between(p1, Some(start), Some(end)) {
-                    return p1;
+                    return Some(p1);
                 } else {
-                    return -mid + self.basis;
+                    return Some(-mid + self.basis);
                 }
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                return self.basis - (start - self.basis);
+                return Some(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                return self.basis - (end - self.basis);
+                return Some(self.basis - (end - self.basis));
             }
             (None, None) => {
-                return self.basis + self.major_radius;
+                return Some(self.basis + self.major_radius);
             }
         }
     }
@@ -300,7 +303,7 @@ impl CurveLike for Ellipse {
             _ => {}
         }
 
-        let mid_point = self.get_midpoint(start, end);
+        let mid_point = self.get_midpoint(start, end).unwrap();
         let mut bounding_box = BoundingBox::new(mid_point, mid_point);
         if let Some(start) = start {
             bounding_box.add_point(start);
@@ -320,6 +323,16 @@ impl CurveLike for Ellipse {
 
         bounding_box
     }
+
+    fn shrink_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
+    ) -> BoundingBox {
+        todo!("Implement this")
+    }
+
     fn sort(&self, _points: Vec<Option<Point>>) -> Vec<Option<Point>> {
         todo!("Implement this")
     }

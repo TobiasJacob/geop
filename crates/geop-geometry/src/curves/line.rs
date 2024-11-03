@@ -89,16 +89,16 @@ impl CurveLike for Line {
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                ((start + end) / EFloat64::two()).unwrap()
+                (start + end) / EFloat64::two()
             }
-            (Some(start), None) => start + self.direction * EFloat64::from(HORIZON_DIST),
-            (None, Some(end)) => end - self.direction * EFloat64::from(HORIZON_DIST),
-            (None, None) => self.basis,
+            (Some(start), None) => Some(start + self.direction * EFloat64::from(HORIZON_DIST)),
+            (None, Some(end)) => Some(end - self.direction * EFloat64::from(HORIZON_DIST)),
+            (None, None) => Some(self.basis),
         }
     }
 
@@ -111,6 +111,15 @@ impl CurveLike for Line {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
+    ) -> crate::bounding_box::BoundingBox {
+        todo!()
+    }
+
+    fn shrink_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: crate::bounding_box::BoundingBox,
     ) -> crate::bounding_box::BoundingBox {
         todo!()
     }

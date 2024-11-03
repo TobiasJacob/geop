@@ -34,13 +34,17 @@ fn curve_curve_intersection_numerical_iteration(
         return Vec::new();
     }
 
-    let midpoint_self = edge_self.get_midpoint(Some(interval_self.0), Some(interval_self.1));
+    let midpoint_self = edge_self
+        .get_midpoint(Some(interval_self.0), Some(interval_self.1))
+        .unwrap();
     println!("midpoint self: {}", midpoint_self);
     if bounding_box_self.max_size() <= PRECISION {
         return vec![midpoint_self];
     }
 
-    let midpoint_other = edge_other.get_midpoint(Some(interval_other.0), Some(interval_other.1));
+    let midpoint_other = edge_other
+        .get_midpoint(Some(interval_other.0), Some(interval_other.1))
+        .unwrap();
     println!("midpoint other: {}", midpoint_other);
     if bounding_box_other.max_size() <= PRECISION {
         return vec![midpoint_other];
@@ -86,10 +90,10 @@ pub fn curve_curve_intersection_numerical(
     edge_self: &dyn CurveLike,
     edge_other: &dyn CurveLike,
 ) -> Vec<Point> {
-    let self_p0 = edge_self.get_midpoint(None, None);
-    let self_p1 = edge_self.get_midpoint(Some(self_p0), None);
-    let other_p0 = edge_other.get_midpoint(None, None);
-    let other_p1 = edge_other.get_midpoint(Some(other_p0), None);
+    let self_p0 = edge_self.get_midpoint(None, None).unwrap();
+    let self_p1 = edge_self.get_midpoint(Some(self_p0), None).unwrap();
+    let other_p0 = edge_other.get_midpoint(None, None).unwrap();
+    let other_p1 = edge_other.get_midpoint(Some(other_p0), None).unwrap();
     let mut result = Vec::new();
     result.extend(curve_curve_intersection_numerical_iteration(
         edge_self,

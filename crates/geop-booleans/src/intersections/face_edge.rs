@@ -56,7 +56,7 @@ pub fn face_edge_intersection(face: &Face, edge: &Edge) -> FaceEdgeIntersection 
 
             let mut edges = Vec::<Edge>::new();
             for (p1, p2) in points.iter().zip(points.iter().skip(1)) {
-                let m = curve.get_midpoint(*p1, *p2);
+                let m = curve.get_midpoint(*p1, *p2).unwrap();
                 if face_point_contains(face, m) == FacePointContains::Inside {
                     edges.push(Edge::new(*p1, *p2, curve.clone()));
                 }

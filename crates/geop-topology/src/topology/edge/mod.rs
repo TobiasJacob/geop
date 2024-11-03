@@ -87,7 +87,7 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self) -> Point {
-        self.curve.get_midpoint(self.start, self.end)
+        self.curve.get_midpoint(self.start, self.end).unwrap()
     }
 
     pub fn tangent(&self, p: Point) -> Point {
