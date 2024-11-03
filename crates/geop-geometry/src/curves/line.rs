@@ -1,4 +1,5 @@
 use crate::{
+    bounding_box::BoundingBox,
     color::Category10Color,
     efloat::EFloat64,
     geometry_error::{GeometryError, GeometryResult},
@@ -52,8 +53,8 @@ impl CurveLike for Line {
         Curve::Line(self.neg())
     }
 
-    fn tangent(&self, _p: Point) -> Point {
-        self.direction.clone()
+    fn tangent(&self, _p: Point) -> GeometryResult<Point> {
+        Ok(self.direction.clone())
     }
 
     fn on_curve(&self, p: Point) -> bool {
@@ -62,59 +63,86 @@ impl CurveLike for Line {
         v.norm() == 0.0
     }
 
-    fn distance(&self, x: Point, y: Point) -> EFloat64 {
-        assert!(self.on_curve(x));
-        assert!(self.on_curve(y));
+    fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
+        if !self.on_curve(x) {
+            return Err(GeometryError::new(format!("Point x {} is not on line", x))
+                .with_context_scene(
+                    format!("Calculate the distance between {} and {}.", x, y),
+                    GeometryScene {
+                        points: vec![(x, Category10Color::Orange)],
+                        curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                        surfaces: vec![],
+                    },
+                ));
+        };
+        if !self.on_curve(y) {
+            return Err(GeometryError::new(format!("Point y {} is not on line", y))
+                .with_context_scene(
+                    format!("Calculate the distance between {} and {}.", x, y),
+                    GeometryScene {
+                        points: vec![(y, Category10Color::Orange)],
+                        curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                        surfaces: vec![],
+                    },
+                ));
+        };
         let v = x - y;
-        v.norm()
+        Ok(v.norm())
     }
 
-    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        t: f64,
+    ) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                start + (end - start) * EFloat64::from(t)
+                Ok(start + (end - start) * EFloat64::from(t))
             }
-            (Some(start), None) => start + self.direction * EFloat64::from(t * HORIZON_DIST),
-            (None, Some(end)) => end - self.direction * EFloat64::from((1.0 - t) * HORIZON_DIST),
+            (Some(start), None) => Ok(start + self.direction * EFloat64::from(t * HORIZON_DIST)),
+            (None, Some(end)) => {
+                Ok(end - self.direction * EFloat64::from((1.0 - t) * HORIZON_DIST))
+            }
             (None, None) => {
-                self.basis + self.direction * EFloat64::from((t - 0.5) * 2.0 * HORIZON_DIST)
+                Ok(self.basis + self.direction * EFloat64::from((t - 0.5) * 2.0 * HORIZON_DIST))
             }
         }
     }
 
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0
+                Ok((m - start).dot(self.direction) >= 0.0 && (m - end).dot(self.direction) <= 0.0)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                (m - start).dot(self.direction) >= 0.0
+                Ok((m - start).dot(self.direction) >= 0.0)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                (m - end).dot(self.direction) <= 0.0
+                Ok((m - end).dot(self.direction) <= 0.0)
             }
-            (None, None) => true,
+            (None, None) => Ok(true),
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
-                (start + end) / EFloat64::two()
+                Ok(((start + end) / EFloat64::two()).unwrap())
             }
-            (Some(start), None) => Some(start + self.direction * EFloat64::from(HORIZON_DIST)),
-            (None, Some(end)) => Some(end - self.direction * EFloat64::from(HORIZON_DIST)),
-            (None, None) => Some(self.basis),
+            (Some(start), None) => Ok(start + self.direction * EFloat64::from(HORIZON_DIST)),
+            (None, Some(end)) => Ok(end - self.direction * EFloat64::from(HORIZON_DIST)),
+            (None, None) => Ok(self.basis),
         }
     }
 
@@ -127,7 +155,7 @@ impl CurveLike for Line {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
-    ) -> crate::bounding_box::BoundingBox {
+    ) -> GeometryResult<BoundingBox> {
         todo!()
     }
 
@@ -135,8 +163,8 @@ impl CurveLike for Line {
         &self,
         _start: Option<Point>,
         _end: Option<Point>,
-        _bounding_box: crate::bounding_box::BoundingBox,
-    ) -> crate::bounding_box::BoundingBox {
+        _bounding_box: BoundingBox,
+    ) -> GeometryResult<BoundingBox> {
         todo!()
     }
 

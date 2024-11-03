@@ -16,7 +16,7 @@ pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     if Some(point) == edge.start || Some(point) == edge.end {
         return EdgePointContains::OnPoint(point);
     }
-    if edge.curve.between(point, edge.start, edge.end) {
+    if edge.curve.between(point, edge.start, edge.end).unwrap() {
         return EdgePointContains::Inside;
     }
     EdgePointContains::Outside

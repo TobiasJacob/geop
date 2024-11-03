@@ -1,4 +1,7 @@
-use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
+use crate::{
+    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
+    transforms::Transform,
+};
 
 use super::{curve::Curve, CurveLike};
 
@@ -65,9 +68,9 @@ impl CurveLike for Circle {
         Curve::Circle(self.neg())
     }
 
-    fn tangent(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> GeometryResult<Point> {
         assert!(self.on_curve(p));
-        self.normal.cross(p - self.basis).normalize().unwrap()
+        Ok(self.normal.cross(p - self.basis).normalize().unwrap())
     }
 
     fn on_curve(&self, p: Point) -> bool {
@@ -75,14 +78,19 @@ impl CurveLike for Circle {
             && ((p - self.basis).norm() - self.radius.norm()) == 0.0
     }
 
-    fn distance(&self, x: Point, y: Point) -> EFloat64 {
+    fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
-        self.radius.norm() * angle.unwrap()
+        Ok(self.radius.norm() * angle.unwrap())
     }
 
-    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        t: f64,
+    ) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -100,7 +108,7 @@ impl CurveLike for Circle {
                     angle2 = angle2 + EFloat64::two_pi();
                 }
                 let angle = angle1 + EFloat64::from(t) * (angle2 - angle1);
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
@@ -109,7 +117,7 @@ impl CurveLike for Circle {
                 let y_start = self.dir_cross.dot(start);
                 let angle1 = y_start.atan2(x_start);
                 let angle = angle1 + EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
@@ -118,18 +126,18 @@ impl CurveLike for Circle {
                 let y_end = self.dir_cross.dot(end);
                 let angle2 = y_end.atan2(x_end);
                 let angle = angle2 + EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (None, None) => {
                 let angle = EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
         }
     }
 
     // TODO: Assert start != end
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -147,21 +155,21 @@ impl CurveLike for Circle {
                 if angle_m.upper_bound < angle_start.lower_bound {
                     angle_m = angle_m + EFloat64::two_pi();
                 }
-                angle_start <= angle_m.upper_bound && angle_m <= angle_end.upper_bound
+                Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.upper_bound)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                true
+                Ok(true)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                true
+                Ok(true)
             }
-            (None, None) => true,
+            (None, None) => Ok(true),
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -170,29 +178,28 @@ impl CurveLike for Circle {
                 let end_rel = end - self.basis;
                 let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 if mid.norm() == 0.0 {
-                    return Some(
-                        self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
-                            + self.basis,
-                    );
+                    return Ok(self.normal.cross(start_rel).normalize().unwrap()
+                        * self.radius.norm()
+                        + self.basis);
                 }
                 let mid = mid.normalize().unwrap() * self.radius.norm();
                 let p1 = mid + self.basis;
-                if self.between(p1, Some(start), Some(end)) {
-                    return Some(p1);
+                if self.between(p1, Some(start), Some(end)).unwrap() {
+                    return Ok(p1);
                 } else {
-                    return Some(-mid + self.basis);
+                    return Ok(-mid + self.basis);
                 }
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                return Some(self.basis - (start - self.basis));
+                return Ok(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                return Some(self.basis - (end - self.basis));
+                return Ok(self.basis - (end - self.basis));
             }
             (None, None) => {
-                return Some(self.basis + self.radius);
+                return Ok(self.basis + self.radius);
             }
         }
     }
@@ -207,7 +214,7 @@ impl CurveLike for Circle {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
-    ) -> BoundingBox {
+    ) -> GeometryResult<BoundingBox> {
         todo!("Implement this")
     }
 
@@ -216,7 +223,7 @@ impl CurveLike for Circle {
         _start: Option<Point>,
         _end: Option<Point>,
         _bounding_box: BoundingBox,
-    ) -> BoundingBox {
+    ) -> GeometryResult<BoundingBox> {
         todo!("Implement this")
     }
 

@@ -1,4 +1,7 @@
-use crate::{bounding_box::BoundingBox, efloat::EFloat64, point::Point, transforms::Transform};
+use crate::{
+    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
+    transforms::Transform,
+};
 
 use super::{curve::Curve, CurveLike};
 
@@ -124,13 +127,13 @@ impl CurveLike for Ellipse {
         Curve::Ellipse(self.neg())
     }
 
-    fn tangent(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> GeometryResult<Point> {
         assert!(self.on_curve(p));
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm();
         let tangent = y.unwrap() * self.major_radius - x.unwrap() * self.minor_radius;
-        tangent.normalize().unwrap()
+        Ok(tangent.normalize().unwrap())
     }
 
     fn on_curve(&self, p: Point) -> bool {
@@ -142,14 +145,19 @@ impl CurveLike for Ellipse {
         (p.dot(self.normal) == 0.0) && (x * x + y * y == 1.0)
     }
 
-    fn distance(&self, x: Point, y: Point) -> EFloat64 {
+    fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis).unwrap();
-        self.major_radius.norm() * angle
+        Ok(self.major_radius.norm() * angle)
     }
 
-    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        t: f64,
+    ) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -167,7 +175,7 @@ impl CurveLike for Ellipse {
                     angle2 = EFloat64::two_pi();
                 }
                 let angle = angle1 + EFloat64::from(t) * (angle2 - angle1);
-                angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
+                Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
             (Some(start), None) => {
                 let start = start - self.basis;
@@ -175,7 +183,7 @@ impl CurveLike for Ellipse {
                 let y_start = self.minor_radius.dot(start);
                 let angle1 = y_start.atan2(x_start);
                 let angle = angle1 + EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
+                Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
             (None, Some(end)) => {
                 let end = end - self.basis;
@@ -183,16 +191,16 @@ impl CurveLike for Ellipse {
                 let y_end = self.minor_radius.dot(end);
                 let angle2 = y_end.atan2(x_end);
                 let angle = angle2 + EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
+                Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
             (None, None) => {
                 let angle = EFloat64::from(t * std::f64::consts::PI * 2.0);
-                angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis
+                Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
         }
     }
 
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -213,24 +221,22 @@ impl CurveLike for Ellipse {
                 if angle_m.upper_bound < angle_start.lower_bound {
                     angle_m = angle_m + EFloat64::two_pi();
                 }
-                angle_start <= angle_m.upper_bound && angle_m <= angle_end.lower_bound
+                Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.lower_bound)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                true
+                Ok(true)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                true
+                Ok(true)
             }
-            (None, None) => true,
+            (None, None) => Ok(true),
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Option<Point> {
-        if start == end {
-            return None;
-        }
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
+        assert!(start != end);
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -242,29 +248,29 @@ impl CurveLike for Ellipse {
                 let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 // println!("mid: {:?}", mid);
                 if mid.norm() == 0.0 {
-                    return Some(self.transform_point_from_circle(
+                    return Ok(self.transform_point_from_circle(
                         Point::unit_z().cross(start_rel).normalize().unwrap(),
                     ));
                 }
                 let mid = mid.normalize().unwrap();
                 // println!("mid: {:?}", mid);
                 let p1 = self.transform_point_from_circle(mid);
-                if self.between(p1, Some(start), Some(end)) {
-                    return Some(p1);
+                if self.between(p1, Some(start), Some(end)).unwrap() {
+                    return Ok(p1);
                 } else {
-                    return Some(-mid + self.basis);
+                    return Ok(-mid + self.basis);
                 }
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                return Some(self.basis - (start - self.basis));
+                return Ok(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                return Some(self.basis - (end - self.basis));
+                return Ok(self.basis - (end - self.basis));
             }
             (None, None) => {
-                return Some(self.basis + self.major_radius);
+                return Ok(self.basis + self.major_radius);
             }
         }
     }
@@ -287,7 +293,11 @@ impl CurveLike for Ellipse {
         self.basis + x * self.major_radius + y * self.minor_radius
     }
 
-    fn get_bounding_box(&self, start: Option<Point>, end: Option<Point>) -> BoundingBox {
+    fn get_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+    ) -> GeometryResult<BoundingBox> {
         if let Some(start) = start {
             assert!(self.on_curve(start));
         }
@@ -297,7 +307,7 @@ impl CurveLike for Ellipse {
         match (start, end) {
             (Some(start), Some(end)) => {
                 if start == end {
-                    return BoundingBox::new(start, start);
+                    return Ok(BoundingBox::new(start, start));
                 }
             }
             _ => {}
@@ -316,12 +326,12 @@ impl CurveLike for Ellipse {
 
         let extremal_points = self.get_extremal_points();
         for point in extremal_points {
-            if self.between(point, start, end) {
+            if self.between(point, start, end).unwrap() {
                 bounding_box.add_point(point);
             }
         }
 
-        bounding_box
+        Ok(bounding_box)
     }
 
     fn shrink_bounding_box(
@@ -329,7 +339,7 @@ impl CurveLike for Ellipse {
         _start: Option<Point>,
         _end: Option<Point>,
         _bounding_box: BoundingBox,
-    ) -> BoundingBox {
+    ) -> GeometryResult<BoundingBox> {
         todo!("Implement this")
     }
 

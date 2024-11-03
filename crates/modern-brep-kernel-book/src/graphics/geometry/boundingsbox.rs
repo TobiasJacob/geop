@@ -22,7 +22,7 @@ mod tests {
 
         let p1 = ellipse1.curve.project(Point::from_f64(0.1, 0.1, 0.1));
         let p2 = ellipse1.curve.project(Point::from_f64(-0.1, 0.1, 0.1));
-        let bounding_box = ellipse1.curve.get_bounding_box(Some(p1), Some(p2));
+        let bounding_box = ellipse1.curve.get_bounding_box(Some(p1), Some(p2)).unwrap();
 
         let mut scene = Scene::new(
             vec![],

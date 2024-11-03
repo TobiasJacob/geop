@@ -26,7 +26,8 @@ pub fn edge_edge_intersection(edge_self: &Edge, edge_other: &Edge) -> EdgeEdgeIn
             let same_dir = edge_self
                 .curve
                 .tangent(edge_self.get_midpoint())
-                .dot(edge_other.curve.tangent(edge_self.get_midpoint()))
+                .unwrap()
+                .dot(edge_other.curve.tangent(edge_self.get_midpoint()).unwrap())
                 > 0.0;
             let edge_other = if same_dir {
                 edge_other.clone()

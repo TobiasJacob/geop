@@ -95,7 +95,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
     for point in intersection_points.iter() {
         let distance = (other - *point).norm();
         if distance < closest_distance.lower_bound {
-            let curve_dir = geodesic.curve.tangent(*point);
+            let curve_dir = geodesic.curve.tangent(*point).unwrap();
             let normal = volume.boundary_normal(*point);
             closest_distance = distance;
             closest_intersect_from_inside = normal.is_from_inside(curve_dir);

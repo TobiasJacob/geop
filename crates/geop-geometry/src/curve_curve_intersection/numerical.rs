@@ -17,10 +17,12 @@ fn curve_curve_intersection_numerical_iteration(
     // println!("interval_self: {:?}", interval_self);
     // println!("interval_other: {:?}", interval_other);
     // For enhanced numerical stability, for small intervals, we approximate the curve as a line.
-    let bounding_box_self =
-        edge_self.get_bounding_box(Some(interval_self.0), Some(interval_self.1));
-    let bounding_box_other =
-        edge_other.get_bounding_box(Some(interval_other.0), Some(interval_other.1));
+    let bounding_box_self = edge_self
+        .get_bounding_box(Some(interval_self.0), Some(interval_self.1))
+        .unwrap();
+    let bounding_box_other = edge_other
+        .get_bounding_box(Some(interval_other.0), Some(interval_other.1))
+        .unwrap();
 
     println!("bounding box self: {}", bounding_box_self);
     println!("bounding box other: {}", bounding_box_other);

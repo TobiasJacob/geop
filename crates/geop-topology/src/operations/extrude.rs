@@ -77,7 +77,7 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                 };
 
                 let midpoint = circle.get_midpoint(top.start, top.end).unwrap();
-                let inwards_direction = direction.cross(circle.tangent(midpoint));
+                let inwards_direction = direction.cross(circle.tangent(midpoint).unwrap());
                 let normal_outwards = inwards_direction.dot(midpoint - circle.basis) > 0.0;
 
                 let cylinder = Surface::Cylinder(Cylinder::new(
