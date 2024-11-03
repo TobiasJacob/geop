@@ -1,8 +1,10 @@
+use std::fmt::Display;
+
 use crate::{
     bounding_box::BoundingBox,
     color::Category10Color,
     efloat::EFloat64,
-    geometry_error::{GeometryError, GeometryResult},
+    geometry_error::{GeometryError, GeometryResult, WithContext},
     geometry_scene::GeometryScene,
     point::Point,
     transforms::Transform,
@@ -31,6 +33,16 @@ impl Line {
             );
         }
         Ok(Line { basis, direction })
+    }
+
+    fn assert_on_curve(&self, p: Point, variable_name: &str) -> GeometryResult<()> {
+        if !self.on_curve(p) {
+            return Err(GeometryError::new(format!(
+                "Point {} {} is not on line {}",
+                variable_name, p, self
+            )));
+        }
+        Ok(())
     }
 
     pub fn transform(&self, transform: Transform) -> Self {
@@ -64,28 +76,19 @@ impl CurveLike for Line {
     }
 
     fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
-        if !self.on_curve(x) {
-            return Err(GeometryError::new(format!("Point x {} is not on line", x))
-                .with_context_scene(
-                    format!("Calculate the distance between {} and {}.", x, y),
-                    GeometryScene {
-                        points: vec![(x, Category10Color::Orange)],
-                        curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
-                        surfaces: vec![],
-                    },
-                ));
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!("Calculate the distance between {} and {}.", x, y),
+                GeometryScene {
+                    points: vec![(x, Category10Color::Orange), (y, Category10Color::Orange)],
+                    curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
         };
-        if !self.on_curve(y) {
-            return Err(GeometryError::new(format!("Point y {} is not on line", y))
-                .with_context_scene(
-                    format!("Calculate the distance between {} and {}.", x, y),
-                    GeometryScene {
-                        points: vec![(y, Category10Color::Orange)],
-                        curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
-                        surfaces: vec![],
-                    },
-                ));
-        };
+
+        self.assert_on_curve(x, "x").with_context(&error_context)?;
+        self.assert_on_curve(y, "y").with_context(&error_context)?;
         let v = x - y;
         Ok(v.norm())
     }
@@ -96,14 +99,42 @@ impl CurveLike for Line {
         end: Option<Point>,
         t: f64,
     ) -> GeometryResult<Point> {
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!(
+                    "Interpolating between {:?} and {:?} with t={}",
+                    start, end, t
+                ),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Orange),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Line(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok(start + (end - start) * EFloat64::from(t))
             }
-            (Some(start), None) => Ok(start + self.direction * EFloat64::from(t * HORIZON_DIST)),
+            (Some(start), None) => {
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                Ok(start + self.direction * EFloat64::from(t * HORIZON_DIST))
+            }
             (None, Some(end)) => {
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok(end - self.direction * EFloat64::from((1.0 - t) * HORIZON_DIST))
             }
             (None, None) => {
@@ -193,5 +224,11 @@ impl CurveLike for Line {
 impl PartialEq for Line {
     fn eq(&self, other: &Line) -> bool {
         self.direction == other.direction && (self.basis - other.basis).is_parallel(self.direction)
+    }
+}
+
+impl Display for Line {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Line {} + t * {}", self.basis, self.direction)
     }
 }

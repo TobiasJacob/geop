@@ -71,3 +71,22 @@ impl std::error::Error for GeometryError {
 }
 
 pub type GeometryResult<T> = Result<T, GeometryError>;
+
+pub trait WithContext<T> {
+    fn with_context(
+        self,
+        context_generator: &dyn Fn(GeometryError) -> GeometryError,
+    ) -> GeometryResult<T>;
+}
+
+impl<T> WithContext<T> for GeometryResult<T> {
+    fn with_context(
+        self,
+        context_generator: &dyn Fn(GeometryError) -> GeometryError,
+    ) -> GeometryResult<T> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(err) => Err(context_generator(err)),
+        }
+    }
+}
