@@ -1,9 +1,10 @@
 use std::fmt::Display;
 
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
     bounding_box::BoundingBox,
     color::Category10Color,
-    efloat::EFloat64,
     geometry_error::{GeometryError, GeometryResult, WithContext},
     geometry_scene::GeometryScene,
     point::Point,

@@ -70,10 +70,7 @@ mod tests {
 
     fn geometry_error_to_scene(e: &GeometryError) -> Scene {
         match e {
-            GeometryError::Root {
-                message: _,
-                backtrace: _,
-            } => Scene::new(vec![], vec![], vec![], vec![]),
+            GeometryError::Root(_) => Scene::new(vec![], vec![], vec![], vec![]),
             GeometryError::Context {
                 message: _,
                 error_scene,

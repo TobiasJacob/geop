@@ -53,8 +53,10 @@ pub fn line_cylinder_intersection(line: &Line, cylinder: &Cylinder) -> CylinderL
 
 #[cfg(test)]
 mod tests {
+    use geop_algebra::efloat::EFloat64;
+
     use super::*;
-    use crate::{curves::line::Line, efloat::EFloat64, point::Point, surfaces::cylinder::Cylinder};
+    use crate::{curves::line::Line, point::Point, surfaces::cylinder::Cylinder};
 
     #[test]
     fn test_line_cylinder_intersection_line() {

@@ -1,7 +1,7 @@
+use geop_algebra::efloat::EFloat64;
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curves::CurveLike,
-    efloat::EFloat64,
     point::Point,
 };
 

@@ -1,4 +1,6 @@
-use crate::{curves::CurveLike, efloat::EFloat64, point::Point, surfaces::SurfaceLike};
+use geop_algebra::efloat::EFloat64;
+
+use crate::{curves::CurveLike, point::Point, surfaces::SurfaceLike};
 
 pub mod circle_cylinder;
 pub mod circle_plane;

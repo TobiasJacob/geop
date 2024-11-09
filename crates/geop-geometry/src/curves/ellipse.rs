@@ -1,6 +1,7 @@
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
-    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
-    transforms::Transform,
+    bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
 };
 
 use super::{curve::Curve, CurveLike};
@@ -102,15 +103,15 @@ impl Ellipse {
         // .cloned()
         // .collect()
         let mut points = Vec::with_capacity(6);
-        if let Some(disc_x) = disc_x {
+        if let Ok(disc_x) = disc_x {
             points.push(self.basis + disc_x);
             points.push(self.basis - disc_x);
         }
-        if let Some(disc_y) = disc_y {
+        if let Ok(disc_y) = disc_y {
             points.push(self.basis + disc_y);
             points.push(self.basis - disc_y);
         }
-        if let Some(disc_z) = disc_z {
+        if let Ok(disc_z) = disc_z {
             points.push(self.basis + disc_z);
             points.push(self.basis - disc_z);
         }

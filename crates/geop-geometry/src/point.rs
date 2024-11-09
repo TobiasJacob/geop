@@ -3,7 +3,9 @@ use std::{
     ops::{Add, Div, Mul, Neg, Sub},
 };
 
-use crate::efloat::EFloat64;
+use geop_algebra::efloat::EFloat64;
+
+use crate::geometry_error::GeometryResult;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -53,9 +55,9 @@ impl Point {
         )
     }
 
-    pub fn normalize(self) -> Option<Point> {
+    pub fn normalize(self) -> GeometryResult<Point> {
         let norm = self.norm();
-        Some(Point::new(
+        Ok(Point::new(
             (self.x / norm)?,
             (self.y / norm)?,
             (self.z / norm)?,
@@ -72,27 +74,27 @@ impl Point {
         dot == 0.0
     }
 
-    pub fn angle(&self, other: Point) -> Option<EFloat64> {
+    pub fn angle(&self, other: Point) -> GeometryResult<EFloat64> {
         let dot = self.dot(other);
         let norm = self.norm() * other.norm();
         let dot_norm = (dot / norm)?;
         if dot_norm >= 1.0 {
-            return Some(EFloat64::zero());
+            return Ok(EFloat64::zero());
         }
         if dot_norm <= -1.0 {
-            return Some(EFloat64::pi());
+            return Ok(EFloat64::pi());
         }
-        Some(dot_norm.acos())
+        Ok(dot_norm.acos())
     }
 
     // Oriented angle between two vectors around a normal vector. Measured from self to other.
-    pub fn angle2(&self, other: Point, normal: Point) -> Option<EFloat64> {
+    pub fn angle2(&self, other: Point, normal: Point) -> GeometryResult<EFloat64> {
         let cross = self.cross(other);
         let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
-            return Some(-angle);
+            return Ok(-angle);
         }
-        Some(angle)
+        Ok(angle)
     }
 
     pub fn zero() -> Point {
@@ -161,10 +163,10 @@ impl Mul<Point> for EFloat64 {
 }
 
 impl Div<EFloat64> for Point {
-    type Output = Option<Point>;
+    type Output = GeometryResult<Point>;
 
-    fn div(self, other: EFloat64) -> Option<Point> {
-        Some(Point::new(
+    fn div(self, other: EFloat64) -> GeometryResult<Point> {
+        Ok(Point::new(
             (self.x / other)?,
             (self.y / other)?,
             (self.z / other)?,

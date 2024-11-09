@@ -1,6 +1,18 @@
 use std::backtrace::Backtrace;
 
+use geop_algebra::algebra_error::AlgebraError;
+
 use crate::geometry_scene::GeometryScene;
+
+pub enum GeometryErrorRoot {
+    InGeometryCrate {
+        message: String,
+        backtrace: Backtrace,
+    },
+    FromAlgebraError {
+        algebra_error: AlgebraError,
+    },
+}
 
 pub enum GeometryError {
     Context {
@@ -8,16 +20,13 @@ pub enum GeometryError {
         error_scene: Option<GeometryScene>,
         inner_error: Box<GeometryError>,
     },
-    Root {
-        message: String,
-        backtrace: Backtrace,
-    },
+    Root(GeometryErrorRoot),
 }
 
 impl GeometryError {
     pub fn new(message: String) -> GeometryError {
         let backtrace = Backtrace::capture();
-        GeometryError::Root { message, backtrace }
+        GeometryError::Root(GeometryErrorRoot::InGeometryCrate { message, backtrace })
     }
 
     pub fn with_context(self, message: String) -> GeometryError {
@@ -49,10 +58,13 @@ impl std::fmt::Display for GeometryError {
                 writeln!(f, "  GeometryContext: {}", message)?;
                 Ok(())
             }
-            GeometryError::Root { message, backtrace } => {
+            GeometryError::Root(GeometryErrorRoot::InGeometryCrate { message, backtrace }) => {
                 writeln!(f, "GeometryError")?;
                 writeln!(f, "Backtrace: {}", backtrace)?;
                 writeln!(f, "RootError: {}", message)
+            }
+            GeometryError::Root(GeometryErrorRoot::FromAlgebraError { algebra_error }) => {
+                write!(f, "{}", algebra_error)
             }
         }
     }
@@ -67,6 +79,18 @@ impl std::fmt::Debug for GeometryError {
 impl std::error::Error for GeometryError {
     fn description(&self) -> &str {
         "A geometry error occurred"
+    }
+}
+
+impl From<&str> for GeometryError {
+    fn from(message: &str) -> Self {
+        GeometryError::new(message.to_string())
+    }
+}
+
+impl From<AlgebraError> for GeometryError {
+    fn from(error: AlgebraError) -> Self {
+        GeometryError::new(error.to_string())
     }
 }
 

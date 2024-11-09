@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bytemuck = { version = "1.13.1", features = [ "derive" ] }
+geop-algebra.workspace=true
 geop-geometry.workspace=true
 geop-topology.workspace=true
 geop-rasterize.workspace=true

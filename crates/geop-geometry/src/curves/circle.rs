@@ -1,6 +1,7 @@
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
-    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
-    transforms::Transform,
+    bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
 };
 
 use super::{curve::Curve, CurveLike};

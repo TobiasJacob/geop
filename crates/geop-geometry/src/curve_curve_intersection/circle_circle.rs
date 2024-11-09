@@ -1,9 +1,10 @@
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
     curve_surface_intersection::circle_plane::{
         circle_plane_intersection, CirclePlaneIntersection,
     },
     curves::{circle::Circle, CurveLike},
-    efloat::EFloat64,
     point::Point,
     surfaces::plane::Plane,
 };

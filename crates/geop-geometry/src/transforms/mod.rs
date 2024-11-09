@@ -1,6 +1,8 @@
 use std::{fmt::Display, ops::Mul};
 
-use crate::{efloat::EFloat64, point::Point};
+use geop_algebra::efloat::EFloat64;
+
+use crate::point::Point;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Transform {

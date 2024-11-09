@@ -1,4 +1,6 @@
-use crate::{curves::line::Line, efloat::EFloat64, point::Point, surfaces::sphere::Sphere};
+use geop_algebra::efloat::EFloat64;
+
+use crate::{curves::line::Line, point::Point, surfaces::sphere::Sphere};
 
 pub enum LineSphereIntersection {
     TwoPoints(Point, Point),

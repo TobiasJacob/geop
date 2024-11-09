@@ -1,6 +1,7 @@
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
     curves::{circle::Circle, curve::Curve},
-    efloat::EFloat64,
     point::Point,
     transforms::Transform,
 };

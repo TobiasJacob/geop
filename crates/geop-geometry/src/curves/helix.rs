@@ -1,8 +1,10 @@
 use core::f64;
 
+use geop_algebra::efloat::EFloat64;
+
 use crate::{
-    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
-    transforms::Transform, HORIZON_DIST,
+    bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
+    HORIZON_DIST,
 };
 
 use super::{curve::Curve, CurveLike};

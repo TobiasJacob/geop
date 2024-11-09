@@ -2,6 +2,7 @@
 resolver = "2"
 
 members = [
+    "crates/geop-algebra",
     "crates/geop-geometry",
     "crates/geop-topology",
     "crates/geop-booleans",
@@ -9,6 +10,10 @@ members = [
     "crates/geop-wgpu",
     "crates/modern-brep-kernel-book",
 ]
+
+[workspace.dependencies.geop-algebra]
+version = "0.1.0"
+path = "crates/geop-algebra"
 
 [workspace.dependencies.geop-geometry]
 version = "0.1.0"
