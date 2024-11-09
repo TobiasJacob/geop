@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use crate::{bounding_box::BoundingBox, point::Point, transforms::Transform};
+use crate::{
+    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
+    transforms::Transform,
+};
 
 use super::{
     circle::{Circle, CircleTransform},
@@ -44,7 +47,7 @@ impl CurveLike for Curve {
     }
 
     // Normalized Tangent / Direction of the curve at the given point.
-    fn tangent(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> GeometryResult<Point> {
         match self {
             Curve::Line(line) => line.tangent(p),
             Curve::Circle(circle) => circle.tangent(p),
@@ -63,8 +66,8 @@ impl CurveLike for Curve {
         }
     }
 
-    // Returns the distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    // Returns the distance between x and y.  Fails if x and y are not on the curve.
+    fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
         match self {
             Curve::Line(line) => line.distance(x, y),
             Curve::Circle(circle) => circle.distance(x, y),
@@ -74,7 +77,12 @@ impl CurveLike for Curve {
     }
 
     // Interpolate between start and end at t. t is between 0 and 1.
-    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        t: f64,
+    ) -> GeometryResult<Point> {
         match self {
             Curve::Line(line) => line.interpolate(start, end, t),
             Curve::Circle(circle) => circle.interpolate(start, end, t),
@@ -83,8 +91,8 @@ impl CurveLike for Curve {
         }
     }
 
-    // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    // Checks if m is between x and y. m==x and m==y are true. start == end is allowed.
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
         match self {
             Curve::Line(line) => line.between(m, start, end),
             Curve::Circle(circle) => circle.between(m, start, end),
@@ -96,7 +104,8 @@ impl CurveLike for Curve {
     // Get the midpoint between start and end.
     // This will guarantee that between(start, midpoint, end) is true and midpoint != start and midpoint != end.
     // If start or end is None, the midpoint is a point that is a unit distance away from the other point.
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    // This operation will fail if start == end.
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
         match self {
             Curve::Line(line) => line.get_midpoint(start, end),
             Curve::Circle(circle) => circle.get_midpoint(start, end),
@@ -115,16 +124,32 @@ impl CurveLike for Curve {
         }
     }
 
+    // Returns a bounding box that contains the curve.
     fn get_bounding_box(
         &self,
-        interval_self: Option<Point>,
-        midpoint_self: Option<Point>,
-    ) -> BoundingBox {
+        start: Option<Point>,
+        end: Option<Point>,
+    ) -> GeometryResult<BoundingBox> {
         match self {
-            Curve::Line(line) => line.get_bounding_box(interval_self, midpoint_self),
-            Curve::Circle(circle) => circle.get_bounding_box(interval_self, midpoint_self),
-            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(interval_self, midpoint_self),
-            Curve::Helix(helix) => helix.get_bounding_box(interval_self, midpoint_self),
+            Curve::Line(line) => line.get_bounding_box(start, end),
+            Curve::Circle(circle) => circle.get_bounding_box(start, end),
+            Curve::Ellipse(ellipse) => ellipse.get_bounding_box(start, end),
+            Curve::Helix(helix) => helix.get_bounding_box(start, end),
+        }
+    }
+
+    // Shrinks a bounding box to the smallest box that contains still the same part of the curve. The new box is <= the old box.
+    fn shrink_bounding_box(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        bounding_box: BoundingBox,
+    ) -> GeometryResult<BoundingBox> {
+        match self {
+            Curve::Line(line) => line.shrink_bounding_box(start, end, bounding_box),
+            Curve::Circle(circle) => circle.shrink_bounding_box(start, end, bounding_box),
+            Curve::Ellipse(ellipse) => ellipse.shrink_bounding_box(start, end, bounding_box),
+            Curve::Helix(helix) => helix.shrink_bounding_box(start, end, bounding_box),
         }
     }
 

@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use geop_geometry::{
     curves::{curve::Curve, CurveLike},
+    efloat::EFloat64,
     point::Point,
     transforms::Transform,
 };
@@ -86,22 +87,22 @@ impl Edge {
     }
 
     pub fn get_midpoint(&self) -> Point {
-        self.curve.get_midpoint(self.start, self.end)
+        self.curve.get_midpoint(self.start, self.end).unwrap()
     }
 
     pub fn tangent(&self, p: Point) -> Point {
         assert!(edge_point_contains(self, p) != EdgePointContains::Outside);
-        self.curve.tangent(p).normalize().unwrap()
+        self.curve.tangent(p).unwrap().normalize().unwrap()
     }
 
     pub fn interpolate(&self, t: f64) -> Point {
         assert!(t >= 0.0 && t <= 1.0);
-        self.curve.interpolate(self.start, self.end, t)
+        self.curve.interpolate(self.start, self.end, t).unwrap()
     }
 
-    pub fn length(&self) -> Option<f64> {
+    pub fn length(&self) -> Option<EFloat64> {
         match (self.start, self.end) {
-            (Some(start), Some(end)) => Some(self.curve.distance(start, end)),
+            (Some(start), Some(end)) => Some(self.curve.distance(start, end).unwrap()),
             _ => None,
         }
     }

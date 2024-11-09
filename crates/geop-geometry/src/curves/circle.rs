@@ -1,4 +1,7 @@
-use crate::{point::Point, transforms::Transform, EQ_THRESHOLD};
+use crate::{
+    bounding_box::BoundingBox, efloat::EFloat64, geometry_error::GeometryResult, point::Point,
+    transforms::Transform,
+};
 
 use super::{curve::Curve, CurveLike};
 
@@ -16,16 +19,16 @@ pub enum CircleTransform {
 }
 
 impl Circle {
-    pub fn new(basis: Point, normal: Point, radius: f64) -> Circle {
+    pub fn new(basis: Point, normal: Point, radius: EFloat64) -> Circle {
         assert!(normal.is_normalized());
-        let radius = match Point::unit_x().cross(normal).norm_sq()
-            > Point::unit_y().cross(normal).norm_sq()
+        let radius = match Point::unit_x().cross(normal).norm_sq().lower_bound
+            > Point::unit_y().cross(normal).norm_sq().lower_bound
         {
             true => Point::unit_x().cross(normal).normalize().unwrap() * radius,
             false => Point::unit_y().cross(normal).normalize().unwrap() * radius,
         };
         assert!(
-            normal.dot(radius).abs() < EQ_THRESHOLD,
+            normal.dot(radius) == 0.0,
             "Radius and normal must be orthogonal"
         );
         Circle {
@@ -40,8 +43,7 @@ impl Circle {
         let basis = transform * self.basis;
         let normal = transform * (self.normal + self.basis) - basis;
         let radius = transform * (self.radius + self.basis) - basis;
-        let scale_factor = radius.norm() / self.radius.norm();
-        assert!((normal.norm() - scale_factor * self.normal.norm()) < EQ_THRESHOLD, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
+        assert!(transform.uniform_scale_factor() > 0.0, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
         CircleTransform::Circle(Circle::new(
             basis,
             normal.normalize().unwrap(),
@@ -66,24 +68,29 @@ impl CurveLike for Circle {
         Curve::Circle(self.neg())
     }
 
-    fn tangent(&self, p: Point) -> Point {
+    fn tangent(&self, p: Point) -> GeometryResult<Point> {
         assert!(self.on_curve(p));
-        self.normal.cross(p - self.basis).normalize().unwrap()
+        Ok(self.normal.cross(p - self.basis).normalize().unwrap())
     }
 
     fn on_curve(&self, p: Point) -> bool {
-        (p - self.basis).dot(self.normal).abs() < EQ_THRESHOLD
-            && ((p - self.basis).norm() - self.radius.norm()).abs() < EQ_THRESHOLD
+        (p - self.basis).dot(self.normal) == 0.0
+            && ((p - self.basis).norm() - self.radius.norm()) == 0.0
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
         assert!(self.on_curve(x));
         assert!(self.on_curve(y));
         let angle = (x - self.basis).angle(y - self.basis);
-        self.radius.norm() * angle.unwrap()
+        Ok(self.radius.norm() * angle.unwrap())
     }
 
-    fn interpolate(&self, start: Option<Point>, end: Option<Point>, t: f64) -> Point {
+    fn interpolate(
+        &self,
+        start: Option<Point>,
+        end: Option<Point>,
+        t: f64,
+    ) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
@@ -96,11 +103,12 @@ impl CurveLike for Circle {
                 let y_end = self.dir_cross.dot(end);
                 let angle1 = y_start.atan2(x_start);
                 let mut angle2 = y_end.atan2(x_end);
-                if angle2 < angle1 {
-                    angle2 += 2.0 * std::f64::consts::PI;
+                assert!(angle2 != angle1);
+                if angle2.upper_bound < angle1.lower_bound {
+                    angle2 = angle2 + EFloat64::two_pi();
                 }
-                let angle = angle1 + t * (angle2 - angle1);
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                let angle = angle1 + EFloat64::from(t) * (angle2 - angle1);
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
@@ -108,8 +116,8 @@ impl CurveLike for Circle {
                 let x_start = self.radius.dot(start);
                 let y_start = self.dir_cross.dot(start);
                 let angle1 = y_start.atan2(x_start);
-                let angle = angle1 + t * std::f64::consts::PI * 2.0;
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                let angle = angle1 + EFloat64::from(t * std::f64::consts::PI * 2.0);
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
@@ -117,18 +125,19 @@ impl CurveLike for Circle {
                 let x_end = self.radius.dot(end);
                 let y_end = self.dir_cross.dot(end);
                 let angle2 = y_end.atan2(x_end);
-                let angle = angle2 + t * std::f64::consts::PI * 2.0;
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                let angle = angle2 + EFloat64::from(t * std::f64::consts::PI * 2.0);
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
             (None, None) => {
-                let angle = t * std::f64::consts::PI * 2.0;
-                angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis
+                let angle = EFloat64::from(t * std::f64::consts::PI * 2.0);
+                Ok(angle.cos() * self.radius + angle.sin() * self.dir_cross + self.basis)
             }
         }
     }
 
+    // TODO: Assert start != end
     // Checks if m is between x and y. m==x and m==y are true.
-    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> bool {
+    fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
         assert!(self.on_curve(m));
         match (start, end) {
             (Some(start), Some(end)) => {
@@ -140,56 +149,57 @@ impl CurveLike for Circle {
                 let angle_start = self.dir_cross.dot(start).atan2(self.radius.dot(start));
                 let mut angle_end = self.dir_cross.dot(end).atan2(self.radius.dot(end));
                 let mut angle_m = self.dir_cross.dot(m).atan2(self.radius.dot(m));
-                if angle_end < angle_start {
-                    angle_end += 2.0 * std::f64::consts::PI;
+                if angle_end.upper_bound < angle_start.lower_bound {
+                    angle_end = angle_end + EFloat64::two_pi();
                 }
-                if angle_m < angle_start {
-                    angle_m += 2.0 * std::f64::consts::PI;
+                if angle_m.upper_bound < angle_start.lower_bound {
+                    angle_m = angle_m + EFloat64::two_pi();
                 }
-                angle_start <= angle_m && angle_m <= angle_end
+                Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.upper_bound)
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                true
+                Ok(true)
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                true
+                Ok(true)
             }
-            (None, None) => true,
+            (None, None) => Ok(true),
         }
     }
 
-    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> Point {
+    fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
         match (start, end) {
             (Some(start), Some(end)) => {
                 assert!(self.on_curve(start));
                 assert!(self.on_curve(end));
                 let start_rel = start - self.basis;
                 let end_rel = end - self.basis;
-                let mid = ((start_rel + end_rel) / 2.0).unwrap();
-                if mid.norm() < EQ_THRESHOLD {
-                    return self.normal.cross(start_rel).normalize().unwrap() * self.radius.norm()
-                        + self.basis;
+                let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
+                if mid.norm() == 0.0 {
+                    return Ok(self.normal.cross(start_rel).normalize().unwrap()
+                        * self.radius.norm()
+                        + self.basis);
                 }
                 let mid = mid.normalize().unwrap() * self.radius.norm();
                 let p1 = mid + self.basis;
-                if self.between(p1, Some(start), Some(end)) {
-                    return p1;
+                if self.between(p1, Some(start), Some(end)).unwrap() {
+                    return Ok(p1);
                 } else {
-                    return -mid + self.basis;
+                    return Ok(-mid + self.basis);
                 }
             }
             (Some(start), None) => {
                 assert!(self.on_curve(start));
-                return self.basis - (start - self.basis);
+                return Ok(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
                 assert!(self.on_curve(end));
-                return self.basis - (end - self.basis);
+                return Ok(self.basis - (end - self.basis));
             }
             (None, None) => {
-                return self.basis + self.radius;
+                return Ok(self.basis + self.radius);
             }
         }
     }
@@ -204,7 +214,16 @@ impl CurveLike for Circle {
         &self,
         _interval_self: Option<Point>,
         _midpoint_self: Option<Point>,
-    ) -> crate::bounding_box::BoundingBox {
+    ) -> GeometryResult<BoundingBox> {
+        todo!("Implement this")
+    }
+
+    fn shrink_bounding_box(
+        &self,
+        _start: Option<Point>,
+        _end: Option<Point>,
+        _bounding_box: BoundingBox,
+    ) -> GeometryResult<BoundingBox> {
         todo!("Implement this")
     }
 

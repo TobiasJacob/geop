@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    use geop_geometry::point::Point;
+    use geop_geometry::{efloat::EFloat64, point::Point};
     use geop_topology::{
         primitive_objects::edges::{
             arc::primitive_arc, circle::primitive_circle, line::primitive_line,
@@ -15,14 +15,22 @@ mod tests {
 
     #[rstest]
     async fn test_edges(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_line(Point::new(-1.0, 0.0, 1.0), Point::new(1.0, 0.0, 1.0));
+        let edge = primitive_line(
+            Point::from_f64(-1.0, 0.0, 1.0),
+            Point::from_f64(1.0, 0.0, 1.0),
+        )
+        .unwrap();
         let edge2 = primitive_arc(
-            Point::new(1.0, 0.0, 0.0),
-            Point::new(-1.0, 0.0, 0.0),
-            3.0,
+            Point::from_f64(1.0, 0.0, 0.0),
+            Point::from_f64(-1.0, 0.0, 0.0),
+            EFloat64::from(3.0),
             -Point::unit_y(),
         );
-        let edge3 = primitive_circle(Point::new(0.0, 0.0, -1.0), -Point::unit_y(), 0.6);
+        let edge3 = primitive_circle(
+            Point::from_f64(0.0, 0.0, -1.0),
+            -Point::unit_y(),
+            EFloat64::from(0.6),
+        );
         let mut scene = Scene::new(
             vec![],
             vec![],
@@ -50,7 +58,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/topology/edges.png"),
             )
             .await;

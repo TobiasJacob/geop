@@ -51,7 +51,7 @@ impl<'a> GeopWindow<'a> {
 
         // let vertex_buffer = rasterize_contour_triangle(
         //     contour,
-        //     Point::new(0.0, 0.0, 100.0),
+        //     Point::from_f64(0.0, 0.0, 100.0),
         //     0.01,
         //     [1.0, 1.0, 1.0]
         // );

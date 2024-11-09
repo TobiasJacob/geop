@@ -1,6 +1,6 @@
 use surface::{Surface, TangentPoint};
 
-use crate::{curves::curve::Curve, point::Point, transforms::Transform};
+use crate::{curves::curve::Curve, efloat::EFloat64, point::Point, transforms::Transform};
 
 pub mod cylinder;
 pub mod plane;
@@ -21,10 +21,10 @@ pub trait SurfaceLike {
     fn on_surface(&self, p: Point) -> bool;
 
     // Returns the Riemannian metric between u and v
-    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> f64;
+    fn metric(&self, x: Point, u: TangentPoint, v: TangentPoint) -> EFloat64;
 
     // Returns the Riemannian distance between x and y.
-    fn distance(&self, x: Point, y: Point) -> f64;
+    fn distance(&self, x: Point, y: Point) -> EFloat64;
 
     // Exponential of u at base x. u_z is ignored.
     fn exp(&self, x: Point, u: TangentPoint) -> Point;

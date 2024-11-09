@@ -1,36 +1,47 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::{
+    fmt::Display,
+    ops::{Add, Div, Mul, Neg, Sub},
+};
 
-use crate::EQ_THRESHOLD;
+use crate::efloat::EFloat64;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+    pub x: EFloat64,
+    pub y: EFloat64,
+    pub z: EFloat64,
 }
 
 impl Point {
-    pub fn new(x: f64, y: f64, z: f64) -> Point {
+    pub fn new(x: EFloat64, y: EFloat64, z: EFloat64) -> Point {
         Point { x, y, z }
     }
 
-    pub fn norm(self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    pub fn from_f64(x: f64, y: f64, z: f64) -> Point {
+        Point {
+            x: EFloat64::from(x),
+            y: EFloat64::from(y),
+            z: EFloat64::from(z),
+        }
     }
 
-    pub fn norm_sq(self) -> f64 {
+    pub fn norm_sq(self) -> EFloat64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    pub fn norm(self) -> EFloat64 {
+        self.norm_sq().sqrt().unwrap()
+    }
+
     pub fn is_normalized(self) -> bool {
-        return (self.norm_sq() - 1.0).abs() < EQ_THRESHOLD;
+        return self.norm_sq() == 1.0;
     }
 
     pub fn is_zero(self) -> bool {
-        self.x.abs() < EQ_THRESHOLD && self.y.abs() < EQ_THRESHOLD && self.z.abs() < EQ_THRESHOLD
+        self.x == 0.0 && self.y == 0.0 && self.z == 0.0
     }
 
-    pub fn dot(self, other: Point) -> f64 {
+    pub fn dot(self, other: Point) -> EFloat64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
@@ -42,13 +53,13 @@ impl Point {
         )
     }
 
-    // TODO: This operation should return a Result, as the operation is not always possible. It fails when norm is zero. This is not as rare as it seems. It helps users to catch bugs.
     pub fn normalize(self) -> Option<Point> {
         let norm = self.norm();
-        if norm < EQ_THRESHOLD {
-            return None;
-        }
-        Some(Point::new(self.x / norm, self.y / norm, self.z / norm))
+        Some(Point::new(
+            (self.x / norm)?,
+            (self.y / norm)?,
+            (self.z / norm)?,
+        ))
     }
 
     pub fn is_parallel(self, other: Point) -> bool {
@@ -58,27 +69,24 @@ impl Point {
 
     pub fn is_perpendicular(self, other: Point) -> bool {
         let dot = self.dot(other);
-        dot.abs() < EQ_THRESHOLD
+        dot == 0.0
     }
 
-    pub fn angle(&self, other: Point) -> Option<f64> {
+    pub fn angle(&self, other: Point) -> Option<EFloat64> {
         let dot = self.dot(other);
         let norm = self.norm() * other.norm();
-        if norm < EQ_THRESHOLD {
-            return None;
+        let dot_norm = (dot / norm)?;
+        if dot_norm >= 1.0 {
+            return Some(EFloat64::zero());
         }
-        let dot_norm = dot / norm;
-        if dot_norm > 1.0 - EQ_THRESHOLD {
-            return Some(0.0);
-        }
-        if dot_norm < -1.0 + EQ_THRESHOLD {
-            return Some(std::f64::consts::PI);
+        if dot_norm <= -1.0 {
+            return Some(EFloat64::pi());
         }
         Some(dot_norm.acos())
     }
 
     // Oriented angle between two vectors around a normal vector. Measured from self to other.
-    pub fn angle2(&self, other: Point, normal: Point) -> Option<f64> {
+    pub fn angle2(&self, other: Point, normal: Point) -> Option<EFloat64> {
         let cross = self.cross(other);
         let angle = self.angle(other)?;
         if cross.dot(normal) < 0.0 {
@@ -88,19 +96,19 @@ impl Point {
     }
 
     pub fn zero() -> Point {
-        Point::new(0.0, 0.0, 0.0)
+        Point::new(EFloat64::zero(), EFloat64::zero(), EFloat64::zero())
     }
 
     pub fn unit_x() -> Point {
-        Point::new(1.0, 0.0, 0.0)
+        Point::new(EFloat64::one(), EFloat64::zero(), EFloat64::zero())
     }
 
     pub fn unit_y() -> Point {
-        Point::new(0.0, 1.0, 0.0)
+        Point::new(EFloat64::zero(), EFloat64::one(), EFloat64::zero())
     }
 
     pub fn unit_z() -> Point {
-        Point::new(0.0, 0.0, 1.0)
+        Point::new(EFloat64::zero(), EFloat64::zero(), EFloat64::one())
     }
 }
 
@@ -120,31 +128,31 @@ impl Sub for Point {
     }
 }
 
-impl Add<f64> for Point {
+impl Add<EFloat64> for Point {
     type Output = Self;
 
-    fn add(self, other: f64) -> Point {
+    fn add(self, other: EFloat64) -> Point {
         Point::new(self.x + other, self.y + other, self.z + other)
     }
 }
 
-impl Sub<f64> for Point {
+impl Sub<EFloat64> for Point {
     type Output = Self;
 
-    fn sub(self, other: f64) -> Point {
+    fn sub(self, other: EFloat64) -> Point {
         Point::new(self.x - other, self.y - other, self.z - other)
     }
 }
 
-impl Mul<f64> for Point {
+impl Mul<EFloat64> for Point {
     type Output = Self;
 
-    fn mul(self, other: f64) -> Point {
+    fn mul(self, other: EFloat64) -> Point {
         Point::new(self.x * other, self.y * other, self.z * other)
     }
 }
 
-impl Mul<Point> for f64 {
+impl Mul<Point> for EFloat64 {
     type Output = Point;
 
     fn mul(self, other: Point) -> Point {
@@ -152,14 +160,15 @@ impl Mul<Point> for f64 {
     }
 }
 
-impl Div<f64> for Point {
+impl Div<EFloat64> for Point {
     type Output = Option<Point>;
 
-    fn div(self, other: f64) -> Option<Point> {
-        if other.abs() <= EQ_THRESHOLD {
-            return None;
-        }
-        Some(Point::new(self.x / other, self.y / other, self.z / other))
+    fn div(self, other: EFloat64) -> Option<Point> {
+        Some(Point::new(
+            (self.x / other)?,
+            (self.y / other)?,
+            (self.z / other)?,
+        ))
     }
 }
 
@@ -173,8 +182,12 @@ impl Neg for Point {
 
 impl PartialEq for Point {
     fn eq(&self, other: &Point) -> bool {
-        (self.x - other.x).abs() < EQ_THRESHOLD
-            && (self.y - other.y).abs() < EQ_THRESHOLD
-            && (self.z - other.z).abs() < EQ_THRESHOLD
+        (self.x - other.x) == 0.0 && (self.y - other.y) == 0.0 && (self.z - other.z) == 0.0
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Point({}, {}, {})", self.x, self.y, self.z)
     }
 }

@@ -1,6 +1,7 @@
 use geop_geometry::{
     curve_curve_intersection::curve_curve::{curve_curve_intersection, CurveCurveIntersection},
     curves::curve::Curve,
+    efloat::EFloat64,
     point::Point,
     surfaces::SurfaceLike,
 };
@@ -70,9 +71,9 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
                 let start_i = (point - point_array.basis).dot(point_array.extend_dir);
                 intersection_points.push(point_array.basis + start_i * point_array.extend_dir);
                 intersection_points
-                    .push(point_array.basis + (start_i + 1.0) * point_array.extend_dir);
+                    .push(point_array.basis + (start_i + EFloat64::one()) * point_array.extend_dir);
                 intersection_points
-                    .push(point_array.basis + (start_i - 1.0) * point_array.extend_dir);
+                    .push(point_array.basis + (start_i - EFloat64::one()) * point_array.extend_dir);
             }
             CurveCurveIntersection::Curve(_curve) => {
                 if let Some(start) = edge.start {
@@ -96,7 +97,7 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
 
     for int in intersection_points {
         let distance = face.surface.distance(point, int);
-        if distance < closest_distance {
+        if distance < closest_distance.lower_bound {
             let curve_dir = geodesic.tangent(int);
             let normal = face.surface.normal(int);
             let contour_dir = face.boundary_tangent(int);

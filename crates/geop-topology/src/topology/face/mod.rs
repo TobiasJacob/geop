@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use geop_geometry::{
     curve_surface_intersection::curve_surface::curve_surface_intersection,
+    efloat::EFloat64,
     point::Point,
     surfaces::{surface::Surface, SurfaceLike},
     transforms::Transform,
@@ -110,7 +111,7 @@ impl Face {
         }
 
         let p = self.boundaries[0].edges[0].get_midpoint();
-        let dist = 0.01;
+        let dist = EFloat64::from(0.01);
         let normal = self.normal(p);
         let tangent = self.boundary_tangent(p);
         let extend_dir = normal.cross(*tangent.expect_on_edge()) * dist;

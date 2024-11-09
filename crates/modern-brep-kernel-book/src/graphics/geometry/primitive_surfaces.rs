@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::point::Point;
+    use geop_geometry::{efloat::EFloat64, point::Point};
     use geop_rasterize::face::rasterize_face_into_triangle_list;
     use geop_topology::{
         primitive_objects::faces::{
@@ -27,7 +27,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_plane.png"),
             )
             .await;
@@ -35,7 +35,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_sphere(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_sphere(Point::zero(), 1.0);
+        let face = primitive_sphere(Point::zero(), EFloat64::from(1.0));
         let scene = Scene::new(vec![], vec![(face, Color::light_gray())], vec![], vec![]);
         renderer
             .await
@@ -43,7 +43,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_sphere.png"),
             )
             .await;
@@ -51,7 +51,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_cylinder(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::from(1.0));
         let scene = Scene::new(
             vec![],
             vec![(face.clone(), Color::light_gray())],
@@ -64,7 +64,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -10.0, 0.0),
+                Point::from_f64(0.0, -10.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_cylinder.png"),
             )
             .await;

@@ -16,7 +16,7 @@ pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
     if Some(point) == edge.start || Some(point) == edge.end {
         return EdgePointContains::OnPoint(point);
     }
-    if edge.curve.between(point, edge.start, edge.end) {
+    if edge.curve.between(point, edge.start, edge.end).unwrap() {
         return EdgePointContains::Inside;
     }
     EdgePointContains::Outside
@@ -33,21 +33,25 @@ mod tests {
 
     #[test]
     fn test_edge_point_contains() {
-        let edge = primitive_line(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
+        let edge = primitive_line(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )
+        .unwrap();
         assert_eq!(
-            edge_point_contains(&edge, Point::new(0.5, 0.0, 0.0)),
+            edge_point_contains(&edge, Point::from_f64(0.5, 0.0, 0.0)),
             EdgePointContains::Inside
         );
         assert_eq!(
-            edge_point_contains(&edge, Point::new(0.0, 0.0, 0.0)),
-            EdgePointContains::OnPoint(Point::new(0.0, 0.0, 0.0))
+            edge_point_contains(&edge, Point::from_f64(0.0, 0.0, 0.0)),
+            EdgePointContains::OnPoint(Point::from_f64(0.0, 0.0, 0.0))
         );
         assert_eq!(
-            edge_point_contains(&edge, Point::new(1.0, 0.0, 0.0)),
-            EdgePointContains::OnPoint(Point::new(1.0, 0.0, 0.0))
+            edge_point_contains(&edge, Point::from_f64(1.0, 0.0, 0.0)),
+            EdgePointContains::OnPoint(Point::from_f64(1.0, 0.0, 0.0))
         );
         assert_eq!(
-            edge_point_contains(&edge, Point::new(1.5, 0.0, 0.0)),
+            edge_point_contains(&edge, Point::from_f64(1.5, 0.0, 0.0)),
             EdgePointContains::Outside
         );
     }

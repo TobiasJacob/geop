@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use geop_geometry::point::Point;
+use geop_geometry::{color::Category10Color, point::Point};
 
 use super::{edge::Edge, face::Face, volume::Volume};
 
@@ -15,6 +15,31 @@ pub struct Color {
 impl Color {
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { r, g, b, a }
+    }
+
+    pub fn from_category_color(color: Category10Color) -> Color {
+        // #1f77b4
+        // #ff7f0e
+        // #2ca02c
+        // #d62728
+        // #9467bd
+        // #8c564b
+        // #e377c2
+        // #7f7f7f
+        // #bcbd22
+        // #17becf
+        match color {
+            Category10Color::Blue => Color::new(0.12, 0.47, 0.71, 1.0),
+            Category10Color::Orange => Color::new(1.0, 0.5, 0.0, 1.0),
+            Category10Color::Green => Color::new(0.18, 0.59, 0.29, 1.0),
+            Category10Color::Red => Color::new(0.85, 0.33, 0.1, 1.0),
+            Category10Color::Purple => Color::new(0.58, 0.4, 0.74, 1.0),
+            Category10Color::Brown => Color::new(0.55, 0.34, 0.29, 1.0),
+            Category10Color::Pink => Color::new(0.75, 0.58, 0.83, 1.0),
+            Category10Color::Gray => Color::new(0.5, 0.5, 0.5, 1.0),
+            Category10Color::Olive => Color::new(0.74, 0.83, 0.56, 1.0),
+            Category10Color::Cyan => Color::new(0.09, 0.65, 0.74, 1.0),
+        }
     }
 
     pub fn standard_pallet(dark_mode: bool) -> (Color, Color, Color, Color) {

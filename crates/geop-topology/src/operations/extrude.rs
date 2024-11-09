@@ -1,13 +1,16 @@
 use std::rc::Rc;
 
 use geop_geometry::{
-    curves::{curve::Curve, line::Line, CurveLike},
+    curves::{curve::Curve, CurveLike},
     point::Point,
     surfaces::{cylinder::Cylinder, plane::Plane, surface::Surface},
     transforms::Transform,
 };
 
-use crate::topology::{contour::Contour, edge::Edge, face::Face, shell::Shell, volume::Volume};
+use crate::{
+    primitive_objects::edges::line::primitive_line,
+    topology::{contour::Contour, face::Face, shell::Shell, volume::Volume},
+};
 
 pub fn extrude(start_face: Face, direction: Point) -> Volume {
     let end_face = start_face
@@ -33,19 +36,11 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     .flip();
 
                 let right = match (bottom.end, top.start) {
-                    (Some(start), Some(end)) => Some(Edge::new(
-                        Some(start),
-                        Some(end),
-                        Curve::Line(Line::new(start, end - start)),
-                    )),
+                    (Some(start), Some(end)) => Some(primitive_line(start, end).unwrap()),
                     _ => None,
                 };
                 let left = match (top.end, bottom.start) {
-                    (Some(start), Some(end)) => Some(Edge::new(
-                        Some(start),
-                        Some(end),
-                        Curve::Line(Line::new(start, end - start)),
-                    )),
+                    (Some(start), Some(end)) => Some(primitive_line(start, end).unwrap()),
                     _ => None,
                 };
 
@@ -73,24 +68,16 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     .flip();
 
                 let right = match (bottom.end, top.start) {
-                    (Some(start), Some(end)) => Some(Edge::new(
-                        Some(start),
-                        Some(end),
-                        Curve::Line(Line::new(start, end - start)),
-                    )),
+                    (Some(start), Some(end)) => Some(primitive_line(start, end).unwrap()),
                     _ => None,
                 };
                 let left = match (top.end, bottom.start) {
-                    (Some(start), Some(end)) => Some(Edge::new(
-                        Some(start),
-                        Some(end),
-                        Curve::Line(Line::new(start, end - start)),
-                    )),
+                    (Some(start), Some(end)) => Some(primitive_line(start, end).unwrap()),
                     _ => None,
                 };
 
-                let midpoint = circle.get_midpoint(top.start, top.end);
-                let inwards_direction = direction.cross(circle.tangent(midpoint));
+                let midpoint = circle.get_midpoint(top.start, top.end).unwrap();
+                let inwards_direction = direction.cross(circle.tangent(midpoint).unwrap());
                 let normal_outwards = inwards_direction.dot(midpoint - circle.basis) > 0.0;
 
                 let cylinder = Surface::Cylinder(Cylinder::new(

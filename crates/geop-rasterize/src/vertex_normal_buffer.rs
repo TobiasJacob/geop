@@ -1,34 +1,59 @@
-use geop_geometry::point::Point;
+use float_next_after::NextAfter;
+use geop_geometry::{efloat::EFloat64, point::Point};
 use geop_topology::topology::scene::Color;
 
 // This is called RenderVertex to distinguish it from Vertex from topology package.
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 #[repr(C)]
 pub struct RenderNormalVertex {
-    pub position: [f32; 3],
+    pub min_position: [f32; 3],
+    pub max_position: [f32; 3],
     pub color: [f32; 4],
-    pub normal: [f32; 3],
+    pub min_normal: [f32; 3],
+    pub max_normal: [f32; 3],
 }
 
 impl RenderNormalVertex {
     pub fn new(p: Point, color: Color, normal: Point) -> Self {
         RenderNormalVertex {
-            position: [p.x as f32, p.y as f32, p.z as f32],
-            color: [
-                color.r as f32,
-                color.g as f32,
-                color.b as f32,
-                color.a as f32,
+            min_position: [
+                p.x.lower_bound as f32,
+                p.y.lower_bound as f32,
+                p.z.lower_bound as f32,
             ],
-            normal: [normal.x as f32, normal.y as f32, normal.z as f32],
+            max_position: [
+                p.x.upper_bound as f32,
+                p.y.upper_bound as f32,
+                p.z.upper_bound as f32,
+            ],
+            color: [color.r, color.g, color.b, color.a],
+            min_normal: [
+                normal.x.lower_bound as f32,
+                normal.y.lower_bound as f32,
+                normal.z.lower_bound as f32,
+            ],
+            max_normal: [
+                normal.x.upper_bound as f32,
+                normal.y.upper_bound as f32,
+                normal.z.upper_bound as f32,
+            ],
         }
     }
 
     pub fn point(&self) -> Point {
         Point::new(
-            self.position[0] as f64,
-            self.position[1] as f64,
-            self.position[2] as f64,
+            EFloat64::new(
+                (self.max_position[0]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[0]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
+            EFloat64::new(
+                (self.max_position[1]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[1]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
+            EFloat64::new(
+                (self.max_position[2]).next_after(f32::INFINITY) as f64 + 1e-15,
+                (self.min_position[2]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
+            ),
         )
     }
 }
@@ -36,11 +61,7 @@ impl RenderNormalVertex {
 // Implement conversion to Point
 impl From<RenderNormalVertex> for Point {
     fn from(v: RenderNormalVertex) -> Self {
-        Point::new(
-            v.position[0] as f64,
-            v.position[1] as f64,
-            v.position[2] as f64,
-        )
+        v.point()
     }
 }
 

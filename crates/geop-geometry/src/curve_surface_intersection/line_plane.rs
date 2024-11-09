@@ -16,15 +16,16 @@ pub fn line_plane_intersection(a: &Line, b: &Plane) -> LinePlaneIntersection {
     let v = a.direction;
     let a = a.basis;
 
-    if (n.dot(v)).abs() < crate::EQ_THRESHOLD {
-        if (n.dot(a) - n.dot(p)).abs() < crate::EQ_THRESHOLD {
-            return LinePlaneIntersection::Line(Line::new(a, v));
+    if (n.dot(v)).abs() <= 0.0 {
+        if (n.dot(a) - n.dot(p)).abs() <= 0.0 {
+            return LinePlaneIntersection::Line(Line::new(a, v).unwrap());
         } else {
             return LinePlaneIntersection::None;
         }
     }
 
     let t = (n.dot(p) - n.dot(a)) / n.dot(v);
+    let t = t.unwrap();
     LinePlaneIntersection::Point(a + v * t)
 }
 
@@ -34,17 +35,21 @@ mod tests {
 
     #[test]
     fn test_intersect() {
-        let line = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
+        let line = Line::new(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )
+        .unwrap();
         let plane = Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 0.0, 1.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 0.0, 1.0),
         );
         let intersection = line_plane_intersection(&line, &plane);
         match intersection {
             LinePlaneIntersection::Line(line) => {
-                assert!((line.basis - Point::new(0.0, 0.0, 0.0)).norm() < crate::EQ_THRESHOLD);
-                assert!((line.direction - Point::new(1.0, 0.0, 0.0)).norm() < crate::EQ_THRESHOLD);
+                assert!((line.basis - Point::from_f64(0.0, 0.0, 0.0)).norm() <= 0.0);
+                assert!((line.direction - Point::from_f64(1.0, 0.0, 0.0)).norm() <= 0.0);
             }
             _ => panic!("Expected a line-plane intersection."),
         }
@@ -52,11 +57,15 @@ mod tests {
 
     #[test]
     fn test_parallel() {
-        let line = Line::new(Point::new(0.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
+        let line = Line::new(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )
+        .unwrap();
         let plane = Plane::new(
-            Point::new(0.0, 0.0, 1.0),
-            Point::new(0.0, 1.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 0.0, 1.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
         );
         let intersection = line_plane_intersection(&line, &plane);
         match intersection {

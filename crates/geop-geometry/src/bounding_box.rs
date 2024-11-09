@@ -1,4 +1,6 @@
-use crate::point::Point;
+use std::fmt::Display;
+
+use crate::{efloat::EFloat64, point::Point};
 
 #[derive(Debug, Clone)]
 pub struct BoundingBox {
@@ -12,24 +14,24 @@ impl BoundingBox {
     }
 
     // Checks if the 3d bounding boxes intersect in at least one point.
-    pub fn intersects(&self, other: &BoundingBox, tolerance: f64) -> bool {
+    pub fn intersects(&self, other: &BoundingBox) -> bool {
         // Check for overlap in the x dimension
         let x_overlap =
-            self.min.x <= other.max.x + tolerance && self.max.x >= other.min.x - tolerance;
+            self.min.x <= other.max.x.upper_bound && self.max.x >= other.min.x.lower_bound;
 
         // Check for overlap in the y dimension
         let y_overlap =
-            self.min.y <= other.max.y + tolerance && self.max.y >= other.min.y - tolerance;
+            self.min.y <= other.max.y.upper_bound && self.max.y >= other.min.y.lower_bound;
 
         // Check for overlap in the z dimension
         let z_overlap =
-            self.min.z <= other.max.z + tolerance && self.max.z >= other.min.z - tolerance;
+            self.min.z <= other.max.z.upper_bound && self.max.z >= other.min.z.lower_bound;
 
         // Bounding boxes intersect if there is overlap in all three dimensions
         x_overlap && y_overlap && z_overlap
     }
 
-    pub fn max_size(&self) -> f64 {
+    pub fn max_size(&self) -> EFloat64 {
         let diff = self.max - self.min;
         diff.x.max(diff.y).max(diff.z)
     }
@@ -47,5 +49,13 @@ impl BoundingBox {
         let mut bounding_box = BoundingBox::new(interval_self_1, interval_self_1);
         bounding_box.add_point(interval_self_2);
         bounding_box
+    }
+}
+
+impl Display for BoundingBox {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Bounding Box:")?;
+        writeln!(f, "Min: {}", self.min)?;
+        writeln!(f, "Max: {}", self.max)
     }
 }

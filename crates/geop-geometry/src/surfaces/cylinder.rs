@@ -1,8 +1,9 @@
 use crate::{
     curves::{circle::Circle, curve::Curve, helix::Helix, line::Line, CurveLike},
+    efloat::EFloat64,
     point::Point,
     transforms::Transform,
-    EQ_THRESHOLD, HORIZON_DIST,
+    HORIZON_DIST,
 };
 
 use super::{
@@ -20,10 +21,15 @@ pub struct Cylinder {
 }
 
 impl Cylinder {
-    pub fn new(basis: Point, extend_dir: Point, radius: f64, normal_outwards: bool) -> Cylinder {
+    pub fn new(
+        basis: Point,
+        extend_dir: Point,
+        radius: EFloat64,
+        normal_outwards: bool,
+    ) -> Cylinder {
         let extend_dir = extend_dir.normalize().unwrap();
         let radius = match Point::unit_x().cross(extend_dir).norm_sq()
-            > Point::unit_y().cross(extend_dir).norm_sq()
+            > Point::unit_y().cross(extend_dir).norm_sq().lower_bound
         {
             true => Point::unit_x().cross(extend_dir).normalize().unwrap() * radius,
             false => Point::unit_y().cross(extend_dir).normalize().unwrap() * radius,
@@ -83,16 +89,17 @@ impl SurfaceLike for Cylinder {
         let height_project = p_project.dot(self.extend_dir) * self.extend_dir;
         let radius_project = p_project - height_project;
         let dist = radius_project.norm();
-        (dist - self.radius.norm()).abs() < EQ_THRESHOLD
+        (dist - self.radius.norm()) == 0.0
     }
 
-    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> EFloat64 {
         u.dot(v)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
-        assert!(self.on_surface(x));
-        assert!(self.on_surface(y));
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
+        assert!(self.on_surface(x), "{:?} has to be on {:?}", x, self);
+        assert!(self.on_surface(y), "{:?} has to be on {:?}", y, self);
+        println!("x: {:?} y: {:?}", x, y);
         let x = x - self.basis;
         let height_diff = (y - x).dot(self.extend_dir);
         let x = x - x.dot(self.extend_dir) * self.extend_dir;
@@ -100,7 +107,9 @@ impl SurfaceLike for Cylinder {
         let y = y - y.dot(self.extend_dir) * self.extend_dir;
         let angle = x.angle(y).unwrap();
         let cylinder_dit = self.radius.norm() * angle;
-        return (cylinder_dit * cylinder_dit + height_diff * height_diff).sqrt();
+        return (cylinder_dit * cylinder_dit + height_diff * height_diff)
+            .sqrt()
+            .unwrap();
     }
 
     fn exp(&self, x: Point, u: TangentPoint) -> Point {
@@ -109,7 +118,7 @@ impl SurfaceLike for Cylinder {
         let height_diff = u.dot(self.extend_dir);
         let u = u - height_diff * self.extend_dir;
         let u_norm = u.norm();
-        if u_norm < EQ_THRESHOLD {
+        if u_norm <= 0.0 {
             return x + height_diff * self.extend_dir;
         }
         let u_normalized = (u / u_norm).unwrap();
@@ -128,17 +137,17 @@ impl SurfaceLike for Cylinder {
         let x = x - x.dot(self.extend_dir) * self.extend_dir;
         let y = y - y.dot(self.extend_dir) * self.extend_dir;
         let angle = x.angle(y).unwrap();
-        if angle < EQ_THRESHOLD {
+        if angle <= 0.0 {
             return Some(height_diff * self.extend_dir);
         }
         let x = x.normalize().unwrap();
         let y = y.normalize().unwrap();
 
         let dir = y - x.dot(y) * x;
-        assert!(dir.dot(self.extend_dir).abs() < EQ_THRESHOLD);
+        assert!(dir.dot(self.extend_dir) == 0.0);
 
         // This means that we are on the opposite side of the cylinder
-        if dir.norm() < EQ_THRESHOLD {
+        if dir.norm() == 0.0 {
             return None;
         }
 
@@ -165,14 +174,14 @@ impl SurfaceLike for Cylinder {
         let p_proj = p_loc - p_height * self.extend_dir;
         let q_proj = q_loc - self.extend_dir * q_height;
         let angle = p_proj.angle(q_proj).unwrap();
-        if angle < EQ_THRESHOLD {
-            return Curve::Line(Line::new(p, q - p));
+        if angle <= 0.0 {
+            return Curve::Line(Line::new(p, (q - p).normalize().unwrap()).unwrap());
         }
         let helix_basis = self.basis + p_height * self.extend_dir;
         let helix_radius = p_proj;
         let helix_pitch =
-            (self.extend_dir * (q_height - p_height) * 2.0 * std::f64::consts::PI / angle).unwrap();
-        if helix_pitch.norm() < EQ_THRESHOLD {
+            (self.extend_dir * (q_height - p_height) * EFloat64::two_pi() / angle).unwrap();
+        if helix_pitch.norm() == 0.0 {
             return Curve::Circle(Circle::new(
                 self.basis + p_height * self.extend_dir,
                 self.extend_dir.normalize().unwrap(),
@@ -196,9 +205,10 @@ impl SurfaceLike for Cylinder {
         for i in 0..n {
             for j in 0..m {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
+                let theta = EFloat64::from(theta);
                 let v = j as f64 / (m as f64 - 1.0);
                 let point = self.basis
-                    + (v - 0.5) * HORIZON_DIST * self.extend_dir
+                    + EFloat64::from((v - 0.5) * HORIZON_DIST) * self.extend_dir
                     + theta.cos() * self.radius
                     + theta.sin() * self.dir_cross;
                 assert!(self.on_surface(point));
@@ -219,7 +229,7 @@ impl SurfaceLike for Cylinder {
         let point = point - self.basis;
         let point = point - point.dot(self.extend_dir) * self.extend_dir;
         let dist = point.norm();
-        if dist < EQ_THRESHOLD {
+        if dist <= 0.0 {
             return None;
         }
         let normal = point / dist;
@@ -231,7 +241,7 @@ impl SurfaceLike for Cylinder {
 impl PartialEq for Cylinder {
     fn eq(&self, other: &Cylinder) -> bool {
         self.basis == other.basis
-            && (self.radius.norm() - other.radius.norm() < EQ_THRESHOLD)
+            && (self.radius.norm() - other.radius.norm() == 0.0)
             && self.extend_dir.is_parallel(other.extend_dir)
             && self.normal_outwards == other.normal_outwards
     }

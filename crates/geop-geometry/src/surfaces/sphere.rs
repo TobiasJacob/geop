@@ -1,8 +1,8 @@
 use crate::{
     curves::{circle::Circle, curve::Curve},
+    efloat::EFloat64,
     point::Point,
     transforms::Transform,
-    EQ_THRESHOLD,
 };
 
 use super::{
@@ -13,7 +13,7 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct Sphere {
     pub basis: Point,
-    pub radius: f64,
+    pub radius: EFloat64,
     pub normal_outwards: bool,
 }
 
@@ -23,7 +23,7 @@ pub enum SphereTransform {
 }
 
 impl Sphere {
-    pub fn new(basis: Point, radius: f64, normal_outwards: bool) -> Sphere {
+    pub fn new(basis: Point, radius: EFloat64, normal_outwards: bool) -> Sphere {
         Sphere {
             basis,
             radius,
@@ -70,14 +70,14 @@ impl SurfaceLike for Sphere {
     fn on_surface(&self, p: Point) -> bool {
         let diff = p - self.basis;
         let dist = diff.norm_sq();
-        (dist - self.radius * self.radius).abs() < EQ_THRESHOLD
+        (dist - self.radius * self.radius) == 0.0
     }
 
-    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> f64 {
+    fn metric(&self, _x: Point, u: TangentPoint, v: TangentPoint) -> EFloat64 {
         u.dot(v)
     }
 
-    fn distance(&self, x: Point, y: Point) -> f64 {
+    fn distance(&self, x: Point, y: Point) -> EFloat64 {
         assert!(self.on_surface(x));
         assert!(self.on_surface(y));
         let angle = (x - self.basis).angle(y - self.basis).unwrap();
@@ -87,7 +87,7 @@ impl SurfaceLike for Sphere {
     fn exp(&self, x: Point, u: TangentPoint) -> Point {
         assert!(self.on_surface(x));
 
-        if u.norm() < EQ_THRESHOLD {
+        if u.norm() == 0.0 {
             return x;
         }
         let u_norm = u.norm();
@@ -107,7 +107,7 @@ impl SurfaceLike for Sphere {
         let dir = y2 - x2.dot(y2) * x2;
         let dir_norm = dir.norm();
         // For the case that we are on the opposite side of the sphere
-        if dir_norm < EQ_THRESHOLD {
+        if dir_norm <= 0.0 {
             return None;
         }
         Some(self.distance(x, y) * (dir / dir_norm).unwrap())
@@ -133,7 +133,7 @@ impl SurfaceLike for Sphere {
                     None => return Some(-y),
                     Some(u) => {
                         let u_norm = u.norm();
-                        if u_norm < EQ_THRESHOLD {
+                        if u_norm <= 0.0 {
                             return Some(v);
                         }
                         let u_normalized = (u / u_norm).unwrap();
@@ -165,7 +165,9 @@ impl SurfaceLike for Sphere {
         for i in 0..n {
             for j in 0..m {
                 let theta = 2.0 * std::f64::consts::PI * i as f64 / n as f64;
+                let theta = EFloat64::from(theta);
                 let phi = std::f64::consts::PI * j as f64 / (m - 1) as f64;
+                let phi = EFloat64::from(phi);
                 let x = self.basis.x + self.radius * theta.cos() * phi.sin();
                 let y = self.basis.y + self.radius * theta.sin() * phi.sin();
                 let z = self.basis.z + self.radius * phi.cos();
@@ -177,17 +179,17 @@ impl SurfaceLike for Sphere {
 
     fn project(&self, point: Point) -> Point {
         let diff = point - self.basis;
-        let dist = diff.norm();
-        if dist < EQ_THRESHOLD {
+        let dist: EFloat64 = diff.norm();
+        if dist <= 0.0 {
             return self.basis;
         }
-        self.basis + diff * (self.radius / dist)
+        self.basis + diff * (self.radius / dist).unwrap()
     }
 
     fn unsigned_l2_squared_distance_gradient(&self, point: Point) -> Option<Point> {
         let diff = point - self.basis;
         let diff_norm = diff.norm();
-        if diff_norm < EQ_THRESHOLD {
+        if diff_norm <= 0.0 {
             return None;
         }
         let dist = diff.norm() - self.radius;
@@ -198,7 +200,7 @@ impl SurfaceLike for Sphere {
 impl PartialEq for Sphere {
     fn eq(&self, other: &Sphere) -> bool {
         self.basis == other.basis
-            && (self.radius - other.radius).abs() < EQ_THRESHOLD
+            && (self.radius - other.radius) == 0.0
             && self.normal_outwards == other.normal_outwards
     }
 }

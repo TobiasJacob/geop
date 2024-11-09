@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::point::Point;
+    use geop_geometry::{efloat::EFloat64, point::Point};
     use geop_topology::{
         primitive_objects::edges::{
             circle::primitive_circle, ellipse::primitive_ellipse, helix::primitive_helix,
@@ -15,7 +15,10 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_line(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_infinite_line(Point::new(-1.0, 0.0, 0.0), Point::new(1.0, 0.0, 0.0));
+        let edge = primitive_infinite_line(
+            Point::from_f64(-1.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        );
         let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
@@ -23,7 +26,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_line.png"),
             )
             .await;
@@ -31,7 +34,7 @@ mod tests {
 
     #[rstest]
     async fn test_primitive_circle(#[future] renderer: Box<HeadlessRenderer>) {
-        let edge = primitive_circle(Point::zero(), Point::unit_y(), 1.0);
+        let edge = primitive_circle(Point::zero(), Point::unit_y(), EFloat64::from(1.0));
         let scene = Scene::new(vec![], vec![], vec![(edge, Color::white())], vec![]);
         renderer
             .await
@@ -39,7 +42,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_circle.png"),
             )
             .await;
@@ -50,8 +53,8 @@ mod tests {
         let ellipse1 = primitive_ellipse(
             Point::zero(),
             Point::unit_y(),
-            Point::unit_x() * 1.5,
-            Point::unit_z() * 0.5,
+            Point::unit_x() * EFloat64::from(1.5),
+            Point::unit_z() * EFloat64::from(0.5),
         );
         let scene = Scene::new(
             vec![],
@@ -65,7 +68,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_ellipse.png"),
             )
             .await;
@@ -86,7 +89,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/primitive_helix.png"),
             )
             .await;

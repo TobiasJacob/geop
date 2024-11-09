@@ -2,12 +2,12 @@ use std::rc::Rc;
 use std::{panic, vec};
 
 use geop_booleans::difference::face_face::face_face_difference;
+use geop_geometry::efloat::EFloat64;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
     point::Point,
     surfaces::{plane::Plane, surface::Surface},
     transforms::Transform,
-    EQ_THRESHOLD,
 };
 use geop_rasterize::{
     edge::rasterize_edge_into_line_list,
@@ -36,12 +36,16 @@ use winit::{event_loop::EventLoop, window::WindowBuilder};
 pub fn linear_edge(s: Point, e: Point) -> Edge {
     let p1 = s;
     let p2 = e;
-    Edge::new(Some(s), Some(e), Curve::Line(Line::new(p1, p2 - p1)))
+    Edge::new(
+        Some(s),
+        Some(e),
+        Curve::Line(Line::new(p1, (p2 - p1).normalize().unwrap()).unwrap()),
+    )
 }
 
 pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
     assert!(
-        (s - center).norm_sq() - (e - center).norm_sq() < EQ_THRESHOLD,
+        (s - center).norm_sq() - (e - center).norm_sq() <= 0.0,
         "Circular edge must have same distance to center point"
     );
     let point = s;
@@ -50,7 +54,7 @@ pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
         Some(e),
         Curve::Circle(Circle::new(
             center,
-            Point::new(0.0, 0.0, 1.0),
+            Point::from_f64(0.0, 0.0, 1.0),
             (point - center).norm(),
         )),
     )
@@ -61,10 +65,10 @@ async fn run() {
     let window = WindowBuilder::new().build(&event_loop).unwrap();
 
     let result = panic::catch_unwind(|| {
-        let v1 = Point::new(0.2, 0.2, 0.0);
-        let v2 = Point::new(0.8, 0.2, 0.0);
-        let v3 = Point::new(0.8, 0.8, 0.0);
-        let v4 = Point::new(0.2, 0.8, 0.0);
+        let v1 = Point::from_f64(0.2, 0.2, 0.0);
+        let v2 = Point::from_f64(0.8, 0.2, 0.0);
+        let v3 = Point::from_f64(0.8, 0.8, 0.0);
+        let v4 = Point::from_f64(0.2, 0.8, 0.0);
 
         let contour = Contour::new(vec![
             linear_edge(v1.clone(), v2.clone()),
@@ -74,9 +78,9 @@ async fn run() {
             linear_edge(v4.clone(), v1.clone()),
         ]);
 
-        let v5 = Point::new(0.5, 0.5, 0.0);
-        let v6 = Point::new(0.5, 0.6, 0.0);
-        let v7 = Point::new(0.6, 0.6, 0.0);
+        let v5 = Point::from_f64(0.5, 0.5, 0.0);
+        let v6 = Point::from_f64(0.5, 0.6, 0.0);
+        let v7 = Point::from_f64(0.6, 0.6, 0.0);
 
         let inner_contour = Contour::new(vec![
             linear_edge(v5.clone(), v6.clone()),
@@ -85,9 +89,9 @@ async fn run() {
         ]);
 
         let surface = Rc::new(Surface::Plane(Plane::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(1.0, 0.0, 0.0),
-            Point::new(0.0, 1.0, 0.0),
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+            Point::from_f64(0.0, 1.0, 0.0),
         )));
 
         // Loop shifted by 0.1 in x and y direction
@@ -96,36 +100,40 @@ async fn run() {
             vec![contour.clone(), inner_contour.clone()],
             surface.clone(),
         );
-        let face2 = face1.transform(Transform::from_translation(Point::new(0.2, 0.2, 0.0)));
+        let face2 = face1.transform(Transform::from_translation(Point::from_f64(0.2, 0.2, 0.0)));
 
         let union_face = face_face_difference(&face2, &face1)[1].clone();
 
-        let _object = extrude(union_face.clone(), Point::new(0.0, 0.0, -0.5));
+        let _object = extrude(union_face.clone(), Point::from_f64(0.0, 0.0, -0.5));
 
-        let mut sphere = primitive_sphere(Point::zero(), 1.0);
+        let mut sphere = primitive_sphere(Point::zero(), EFloat64::one());
         sphere.boundaries.push(Contour::new(vec![primitive_circle(
             Point::zero(),
-            Point::new(0.5, 0.5, 0.5),
-            1.0,
+            Point::from_f64(0.5, 0.5, 0.5),
+            EFloat64::one(),
         )]));
 
-        let p1 = Point::new(-1.0, 0.0, 1.0);
-        let p2 = Point::new(-1.0, 0.0, -1.0);
-        let p3 = Point::new(1.0, 0.0, -1.0);
-        let p4 = Point::new(1.0, 0.0, 1.0);
+        let p1 = Point::from_f64(-1.0, 0.0, 1.0);
+        let p2 = Point::from_f64(-1.0, 0.0, -1.0);
+        let p3 = Point::from_f64(1.0, 0.0, -1.0);
+        let p4 = Point::from_f64(1.0, 0.0, 1.0);
 
         let mut edges = Vec::new();
         for (p1, p2) in &[(p1, p2), (p2, p3), (p3, p4)] {
-            edges.push(primitive_line(*p1, *p2));
+            edges.push(primitive_line(*p1, *p2).unwrap());
         }
-        edges.push(primitive_arc(p4, p1, 1.6, -Point::unit_y()));
+        edges.push(primitive_arc(p4, p1, EFloat64::from(1.6), -Point::unit_y()));
 
-        let hole = primitive_circle(Point::new(0.0, 0.0, 0.2), Point::unit_y(), 0.3);
+        let hole = primitive_circle(
+            Point::from_f64(0.0, 0.0, 0.2),
+            Point::unit_y(),
+            EFloat64::from(0.3),
+        );
 
         let hole2 = primitive_rectangle_curve(
-            Point::new(0.0, 0.0, -0.5),
-            Point::unit_x() * 0.5,
-            -Point::unit_z() * 0.1,
+            Point::from_f64(0.0, 0.0, -0.5),
+            Point::unit_x() * EFloat64::from(0.5),
+            -Point::unit_z() * EFloat64::from(0.1),
         );
 
         let face1 = Face::new(

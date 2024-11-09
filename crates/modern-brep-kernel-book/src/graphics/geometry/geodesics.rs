@@ -3,6 +3,7 @@ mod tests {
     use std::borrow::Borrow;
 
     use geop_geometry::{
+        efloat::EFloat64,
         point::Point,
         surfaces::{surface::Surface, SurfaceLike},
     };
@@ -20,18 +21,18 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_sphere(Point::zero(), 1.0);
+        let face = primitive_sphere(Point::zero(), EFloat64::one());
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         scene.faces.push((face.clone(), Color::light_gray()));
 
         let points = vec![
-            Point::new(0.1, -1.0, 0.7),
-            Point::new(-0.3, -0.8, 0.5),
-            Point::new(0.5, -1.4, -0.3),
-            Point::new(-0.2, -0.8, -0.5),
-            Point::new(-0.2, -1.4, 0.3),
+            Point::from_f64(0.1, -1.0, 0.7),
+            Point::from_f64(-0.3, -0.8, 0.5),
+            Point::from_f64(0.5, -1.4, -0.3),
+            Point::from_f64(-0.2, -0.8, -0.5),
+            Point::from_f64(-0.2, -1.4, 0.3),
         ]
         .iter()
         .map(|p| p.normalize().unwrap())
@@ -85,7 +86,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/geodesics.png"),
             )
             .await;
@@ -93,23 +94,23 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics2(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::one());
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         scene.faces.push((face.clone(), Color::light_gray()));
 
         let points = vec![
-            Point::new(0.1, -1.0, 0.7),
-            Point::new(-0.3, -0.8, 0.5),
-            Point::new(1.5, -1.4, -0.3),
-            Point::new(-0.2, -0.8, -0.5),
-            Point::new(-0.2, -1.4, 0.2),
+            Point::from_f64(0.1, -1.0, 0.7),
+            Point::from_f64(-0.3, -0.8, 0.5),
+            Point::from_f64(1.5, -1.4, -0.3),
+            Point::from_f64(-0.2, -0.8, -0.5),
+            Point::from_f64(-0.2, -1.4, 0.2),
         ]
         .iter()
         .map(|p| {
             let mut p2 = p.clone();
-            p2.z = 0.0;
+            p2.z = EFloat64::zero();
             let mut p2 = p2.normalize().unwrap();
             p2.z = p.z;
             p2
@@ -164,7 +165,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/geodesics2.png"),
             )
             .await;
@@ -172,23 +173,23 @@ mod tests {
 
     #[rstest]
     async fn test_geodesics_debug(#[future] renderer: Box<HeadlessRenderer>) {
-        let face = primitive_cylinder(Point::zero(), Point::unit_z(), 1.0);
+        let face = primitive_cylinder(Point::zero(), Point::unit_z(), EFloat64::one());
 
         let mut scene = Scene::new(vec![], vec![], vec![], vec![]);
 
         scene.faces.push((face.clone(), Color::light_gray()));
 
         let points = vec![
-            Point::new(0.1, -1.0, 0.7),
-            Point::new(-0.3, -0.8, 0.5),
-            Point::new(0.5, -1.4, -0.3),
-            Point::new(-0.2, -0.8, -0.5),
-            Point::new(-0.2, -1.4, 0.3),
+            Point::from_f64(0.1, -1.0, 0.7),
+            Point::from_f64(-0.3, -0.8, 0.5),
+            Point::from_f64(0.5, -1.4, -0.3),
+            Point::from_f64(-0.2, -0.8, -0.5),
+            Point::from_f64(-0.2, -1.4, 0.3),
         ]
         .iter()
         .map(|p| {
             let mut p2 = p.clone();
-            p2.z = 0.0;
+            p2.z = EFloat64::zero();
             let mut p2 = p2.normalize().unwrap();
             p2.z = p.z;
             p2
@@ -215,7 +216,7 @@ mod tests {
                 &scene,
                 false,
                 false,
-                Point::new(0.0, -3.0, 0.0),
+                Point::from_f64(0.0, -3.0, 0.0),
                 std::path::Path::new("src/generated_images/geometry/geodesics_debug.png"),
             )
             .await;

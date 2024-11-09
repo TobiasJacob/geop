@@ -12,9 +12,11 @@ struct Light {
 var<uniform> light: Light;
 
 struct VertexInput {
-    @location(0) position: vec3<f32>,
-    @location(1) color: vec4<f32>,
-    @location(2) normal: vec3<f32>,
+    @location(0) min_position: vec3<f32>,
+    @location(1) max_position: vec3<f32>,
+    @location(2) color: vec4<f32>,
+    @location(3) min_normal: vec3<f32>,
+    @location(4) max_normal: vec3<f32>,
 };
 
 struct VertexOutput {
@@ -33,9 +35,9 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
 
-    out.position = camera.view_proj * vec4<f32>(in.position, 1.0);
+    out.position = camera.view_proj * vec4<f32>(vec3<f32>(in.min_position + in.max_position) / 2.0, 1.0);
     out.color = in.color;
-    out.normal = in.normal;
+    out.normal = vec3<f32>(vec3<f32>(in.min_normal + in.max_normal) / 2.0);
     
     return out;
 }

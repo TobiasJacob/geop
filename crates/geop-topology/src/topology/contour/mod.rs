@@ -153,6 +153,7 @@ impl Contour {
             if self.edges[start_i]
                 .curve
                 .between(start, self.edges[start_i].start, Some(end))
+                .unwrap()
             {
                 result.push(Edge::new(
                     Some(start.clone()),

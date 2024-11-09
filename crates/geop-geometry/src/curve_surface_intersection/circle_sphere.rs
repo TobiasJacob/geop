@@ -59,12 +59,12 @@ pub fn circle_sphere_intersection(circle: &Circle, sphere: &Sphere) -> CircleSph
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{curves::circle::Circle, point::Point, surfaces::sphere::Sphere};
+    use crate::{curves::circle::Circle, efloat::EFloat64, point::Point, surfaces::sphere::Sphere};
 
     #[test]
     fn test_circle_sphere_intersection() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::zero(), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::zero(), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::Circle(c) => {
                 assert_eq!(c.basis, Point::zero());
@@ -77,12 +77,12 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_two_points() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::unit_x(), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::unit_x(), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::TwoPoints(p1, p2) => {
-                assert_eq!(p1, Point::new(0.5, -0.8660254037844386, 0.0));
-                assert_eq!(p2, Point::new(0.5, 0.8660254037844386, 0.0));
+                assert_eq!(p1, Point::from_f64(0.5, -0.8660254037844386, 0.0));
+                assert_eq!(p2, Point::from_f64(0.5, 0.8660254037844386, 0.0));
             }
             _ => panic!("Expected two points"),
         }
@@ -90,11 +90,11 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_one_point() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::new(2.0, 0.0, 0.0), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::from_f64(2.0, 0.0, 0.0), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::OnePoint(p1) => {
-                assert_eq!(p1, Point::new(1.0, 0.0, 0.0));
+                assert_eq!(p1, Point::from_f64(1.0, 0.0, 0.0));
             }
             _ => panic!("Expected one point"),
         }
@@ -102,8 +102,8 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_none() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::new(10.0, 0.0, 0.0), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::from_f64(10.0, 0.0, 0.0), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::None => {}
             _ => panic!("Expected None"),
@@ -112,11 +112,11 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_one_point_tangent() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::new(1.0, 0.0, 1.0), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::from_f64(1.0, 0.0, 1.0), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::OnePoint(p1) => {
-                assert_eq!(p1, Point::new(1.0, 0.0, 0.0));
+                assert_eq!(p1, Point::from_f64(1.0, 0.0, 0.0));
             }
             _ => panic!("Expected one point"),
         }
@@ -124,8 +124,8 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_none_tangent() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::new(10.0, 0.0, 1.0), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::from_f64(10.0, 0.0, 1.0), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::None => {}
             _ => panic!("Expected None"),
@@ -134,8 +134,8 @@ mod tests {
 
     #[test]
     fn test_circle_sphere_intersection_none_nowhere_close() {
-        let circle = Circle::new(Point::zero(), Point::unit_z(), 1.0);
-        let sphere = Sphere::new(Point::new(10.0, 10.0, 10.0), 1.0, true);
+        let circle = Circle::new(Point::zero(), Point::unit_z(), EFloat64::one());
+        let sphere = Sphere::new(Point::from_f64(10.0, 10.0, 10.0), EFloat64::one(), true);
         match circle_sphere_intersection(&circle, &sphere) {
             CircleSphereIntersection::None => {}
             _ => panic!("Expected None"),

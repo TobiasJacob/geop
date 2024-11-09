@@ -15,7 +15,7 @@ pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
 
     if v1.is_parallel(v2) {
         if (p1 - p2).is_parallel(v1) {
-            return LineLineIntersection::Line(Line::new(p1, v1));
+            return LineLineIntersection::Line(Line::new(p1, v1).unwrap());
         } else {
             return LineLineIntersection::None;
         }
@@ -23,6 +23,7 @@ pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection {
 
     let cross_product = v1.cross(v2);
     let t = (p2 - p1).cross(v2).dot(cross_product) / cross_product.norm_sq();
+    let t = t.unwrap();
     let p = p1 + v1 * t;
 
     if (p - p1).is_parallel(v1) && (p - p2).is_parallel(v2) {
@@ -38,36 +39,60 @@ mod tests {
 
     #[test]
     fn test_line_line_intersection() {
-        let l1 = Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(1.0, 0.0, 0.0));
-        let l2 = Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(0.0, 1.0, 0.0));
+        let l1 = Line::new(
+            Point::from_f64(-2.0, 1.0, 4.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )
+        .unwrap();
+        let l2 = Line::new(
+            Point::from_f64(-2.0, 1.0, 4.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+        )
+        .unwrap();
         let i = line_line_intersection(&l1, &l2);
         match i {
             LineLineIntersection::Point(p) => {
-                assert_eq!(p, Point::new(-2.0, 1.0, 4.0));
+                assert_eq!(p, Point::from_f64(-2.0, 1.0, 4.0));
             }
             _ => panic!("Expected point intersection"),
         }
 
-        let l3 = Line::new(Point::new(0.0, 1.0, 4.0), Point::new(2.0, 0.0, 0.0));
+        let l3 = Line::new(
+            Point::from_f64(0.0, 1.0, 4.0),
+            Point::from_f64(2.0, 0.0, 0.0).normalize().unwrap(),
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l3) {
             LineLineIntersection::Line(l) => {
                 assert_eq!(
                     l,
-                    Line::new(Point::new(-2.0, 1.0, 4.0), Point::new(1.0, 0.0, 0.0))
+                    Line::new(
+                        Point::from_f64(-2.0, 1.0, 4.0),
+                        Point::from_f64(1.0, 0.0, 0.0)
+                    )
+                    .unwrap()
                 );
             }
             _ => panic!("Expected line intersection"),
         }
 
-        let l4 = Line::new(Point::new(0.0, -1.0, 4.0), Point::new(0.0, 1.0, 0.0));
+        let l4 = Line::new(
+            Point::from_f64(0.0, -1.0, 4.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l4) {
             LineLineIntersection::Point(p) => {
-                assert_eq!(p, Point::new(0.0, 1.0, 4.0));
+                assert_eq!(p, Point::from_f64(0.0, 1.0, 4.0));
             }
             _ => panic!("Expected point intersection"),
         }
 
-        let l5 = Line::new(Point::new(0.0, 1.0, 3.0), Point::new(0.0, 1.0, 0.0));
+        let l5 = Line::new(
+            Point::from_f64(0.0, 1.0, 3.0),
+            Point::from_f64(0.0, 1.0, 0.0),
+        )
+        .unwrap();
         match line_line_intersection(&l1, &l5) {
             LineLineIntersection::None => {}
             _ => panic!("Expected no intersection"),

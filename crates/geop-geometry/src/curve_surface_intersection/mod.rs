@@ -1,4 +1,4 @@
-use crate::{curves::CurveLike, point::Point, surfaces::SurfaceLike};
+use crate::{curves::CurveLike, efloat::EFloat64, point::Point, surfaces::SurfaceLike};
 
 pub mod circle_cylinder;
 pub mod circle_plane;
@@ -20,8 +20,8 @@ pub fn curve_surface_intersection_numerical(
         let mut initial_guess = initial_guess;
         for _ in 0..100 {
             let grad = surface.unsigned_l2_squared_distance_gradient(initial_guess);
-            let tangent = curve.tangent(initial_guess);
-            initial_guess = initial_guess + tangent * step_size;
+            let tangent = curve.tangent(initial_guess).unwrap();
+            initial_guess = initial_guess + tangent * EFloat64::from(step_size);
             initial_guess = curve.project(initial_guess);
 
             if grad.is_none() {
