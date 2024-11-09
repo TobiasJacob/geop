@@ -39,6 +39,17 @@ impl MonomialPolynom {
     pub fn is_zero(&self) -> bool {
         self.monomials.len() == 0
     }
+
+    pub fn pow(&self, power: usize) -> Self {
+        if power == 0 {
+            return Self::from_factor(EFloat64::one());
+        }
+        let mut result = self.clone();
+        for _ in 1..power {
+            result = &result * self;
+        }
+        result
+    }
 }
 
 impl PartialEq for MonomialPolynom {
@@ -148,6 +159,19 @@ impl std::fmt::Display for &MonomialPolynom {
         }
         write!(f, ")")?;
         Ok(())
+    }
+}
+
+// Mul with Efloat
+impl std::ops::Mul<EFloat64> for &MonomialPolynom {
+    type Output = MonomialPolynom;
+
+    fn mul(self, other: EFloat64) -> MonomialPolynom {
+        let mut result = vec![EFloat64::zero(); self.monomials.len()];
+        for i in 0..result.len() {
+            result[i] = self.monomials[i] * other;
+        }
+        MonomialPolynom::new(result)
     }
 }
 

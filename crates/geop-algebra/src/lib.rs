@@ -1,5 +1,7 @@
 pub mod algebra_error;
+pub mod bernstein_basis;
 pub mod efloat;
+pub mod factorial;
 pub mod monomial_polynom;
 
 pub fn add(left: u64, right: u64) -> u64 {
