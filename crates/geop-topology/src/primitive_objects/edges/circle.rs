@@ -4,9 +4,9 @@ use geop_geometry::{
     point::Point,
 };
 
-use crate::topology::edge::Edge;
+use crate::topology::contour_no_point::ContourNoPoint;
 
-pub fn primitive_circle(basis: Point, normal: Point, radius: EFloat64) -> Edge {
+pub fn primitive_circle(basis: Point, normal: Point, radius: EFloat64) -> ContourNoPoint {
     let c = Circle::new(basis, normal.normalize().unwrap(), radius);
-    Edge::new(None, None, Curve::Circle(c))
+    ContourNoPoint::new(Curve::Circle(c))
 }

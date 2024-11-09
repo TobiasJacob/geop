@@ -6,20 +6,17 @@ use geop_geometry::{
     surfaces::SurfaceLike,
 };
 
-use crate::topology::{
-    contour::{curve_contour::CurveContour, Contour},
-    edge::Edge,
-    face::Face,
-};
+use crate::topology::{contour::Contour, contour_no_point::ContourNoPoint, edge::Edge, face::Face};
 
-use super::edge_point::{edge_point_contains, EdgePointContains};
+use super::{
+    contour_point::contour_point_contains,
+    edge_point::{edge_point_contains, EdgePointContains},
+};
 
 #[derive(Clone, Debug)]
 pub enum FacePointContains {
     Inside,
-    OnCurveContour(CurveContour),
-    OnPoint(Point),
-    OnEdge(Edge),
+    OnContour(Contour),
     Outside,
     NotOnSurface,
 }
@@ -47,24 +44,11 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
 
     // If the point is on the border, it is part of the set
     for contour in face.boundaries.iter() {
-        match contour {
-            Contour::ConnectedEdge(edges) => {
-                for edge in edges.edges.iter() {
-                    match edge_point_contains(&edge, point) {
-                        EdgePointContains::Inside => {
-                            return FacePointContains::OnEdge(edge.clone())
-                        }
-                        EdgePointContains::OnPoint(point) => {
-                            return FacePointContains::OnPoint(point)
-                        }
-                        EdgePointContains::Outside => continue,
-                    }
-                }
+        match contour_point_contains(contour, point) {
+            EdgePointContains::Outside => {}
+            _ => {
+                return FacePointContains::OnContour(contour.clone());
             }
-            Contour::Curve(curve) => match curve.curve.on_curve(point) {
-                true => return FacePointContains::OnCurveContour(curve.clone()),
-                false => continue,
-            },
         }
     }
     // Draw a line from the point to a random point on the border.
@@ -86,10 +70,10 @@ pub fn face_point_contains(face: &Face, point: Point) -> FacePointContains {
     let mut intersection_points = Vec::<Point>::new();
     for boundary in face.boundaries.iter() {
         match boundary {
-            Contour::Curve(_) => {
+            Contour::ContourNoPoint(_) => {
                 todo!("This case should only happen when the contour is a curve");
             }
-            Contour::ConnectedEdge(boundary) => {
+            Contour::ContourMultiPoint(boundary) => {
                 for edge in boundary.edges.iter() {
                     match curve_curve_intersection(&edge.curve, &geodesic.curve) {
                         CurveCurveIntersection::FinitePoints(points) => {

@@ -8,7 +8,7 @@ use geop_geometry::{
 };
 
 use crate::topology::{
-    contour::{curve_contour::CurveContour, Contour},
+    contour::{contour_no_point::ContourNoPoint, Contour},
     edge::Edge,
     face::Face,
     volume::Volume,
@@ -19,7 +19,7 @@ use super::face_point::{face_point_contains, FacePointContains};
 pub enum VolumePointContains {
     Inside,
     OnFace(Face),
-    OnCurveContour(CurveContour),
+    OnCurveContour(ContourNoPoint),
     OnEdge(Edge),
     OnPoint(Point),
     Outside,
@@ -54,7 +54,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
             CurveSurfaceIntersection::Curve(_) => {
                 for contour in face.boundaries.iter() {
                     match contour {
-                        Contour::ConnectedEdge(contour) => {
+                        Contour::ContourMultiPoint(contour) => {
                             for edge in contour.edges.iter() {
                                 match curve_curve_intersection(&geodesic.curve, &edge.curve) {
                                     CurveCurveIntersection::FinitePoints(points) => {
@@ -80,7 +80,7 @@ pub fn volume_point_contains(volume: &Volume, other: Point) -> VolumePointContai
                                 }
                             }
                         }
-                        Contour::Curve(curve) => {
+                        Contour::ContourNoPoint(curve) => {
                             match curve_curve_intersection(&geodesic.curve, &curve.curve) {
                                 CurveCurveIntersection::FinitePoints(points) => {
                                     for point in points {

@@ -6,7 +6,7 @@ use super::edge_point::{edge_point_contains, EdgePointContains};
 
 pub fn contour_point_contains(contour: &Contour, point: Point) -> EdgePointContains {
     match contour {
-        Contour::Curve(curve_contour) => match curve_contour.curve.on_curve(point) {
+        Contour::ContourNoPoint(curve_contour) => match curve_contour.curve.on_curve(point) {
             true => {
                 return EdgePointContains::Inside;
             }
@@ -14,7 +14,20 @@ pub fn contour_point_contains(contour: &Contour, point: Point) -> EdgePointConta
                 return EdgePointContains::Outside;
             }
         },
-        Contour::ConnectedEdge(composite_contour) => {
+        Contour::ContourSinglePoint(single_contour) => {
+            if point == single_contour.point {
+                return EdgePointContains::OnPoint(single_contour.point);
+            }
+            match single_contour.curve.on_curve(point) {
+                true => {
+                    return EdgePointContains::Inside;
+                }
+                false => {
+                    return EdgePointContains::Outside;
+                }
+            }
+        }
+        Contour::ContourMultiPoint(composite_contour) => {
             for edge in composite_contour.edges.iter() {
                 let contains: EdgePointContains = edge_point_contains(edge, point);
                 match contains {

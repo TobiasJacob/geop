@@ -9,14 +9,7 @@ use geop_geometry::{
 
 use crate::{
     primitive_objects::edges::line::primitive_line,
-    topology::{
-        contour::{
-            connected_egde_contour::ConnectedEdgeContour, curve_contour::CurveContour, Contour,
-        },
-        face::Face,
-        shell::Shell,
-        volume::Volume,
-    },
+    topology::{contour::Contour, face::Face, shell::Shell, volume::Volume},
 };
 
 pub fn extrude(start_face: Face, direction: Point) -> Volume {
@@ -29,7 +22,10 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
     let end_boundaries = &end_face.boundaries;
     for j in 0..start_boundaries.len() {
         match (&start_boundaries[j], &end_boundaries[j]) {
-            (Contour::ConnectedEdge(start_contour), Contour::ConnectedEdge(end_contour)) => {
+            (
+                Contour::ContourMultiPoint(start_contour),
+                Contour::ContourMultiPoint(end_contour),
+            ) => {
                 let start_edges = start_contour.edges.clone();
                 let end_edges = end_contour.edges.clone();
                 for i in 0..start_edges.len() {
@@ -94,9 +90,9 @@ pub fn extrude(start_face: Face, direction: Point) -> Volume {
                     }
                 }
             }
-            (Contour::Curve(start_curve), Contour::Curve(end_curve)) => {
+            (Contour::ContourNoPoint(start_curve), Contour::ContourNoPoint(end_curve)) => {
                 match (&start_curve.curve, &end_curve.curve) {
-                    (Curve::Circle(start_circle), Curve::Circle(end_circle)) => {
+                    (Curve::Circle(start_circle), Curve::Circle(_end_circle)) => {
                         let top = start_curve.flip();
                         let bottom = end_curve.flip();
 

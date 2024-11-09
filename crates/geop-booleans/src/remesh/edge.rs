@@ -7,7 +7,7 @@ use geop_topology::{
     topology::edge::Edge,
 };
 
-use crate::split_if_necessary::point_split_edge::split_edge_by_points_if_necessary;
+use crate::split_if_necessary::point_split_edge::split_contour_by_points_if_necessary;
 
 pub fn edge_split_points(a: &Edge, b: &Edge) -> Vec<Point> {
     let mut split_points = Vec::<Point>::new();
@@ -47,8 +47,8 @@ pub enum EdgeRemesh {
 pub fn edge_split(edge_a: &Edge, edge_b: &Edge) -> Vec<EdgeRemesh> {
     let intersections = edge_split_points(edge_a, edge_b);
 
-    let mut edges_a = split_edge_by_points_if_necessary(edge_a, intersections.as_slice());
-    let mut edges_b = split_edge_by_points_if_necessary(edge_b, intersections.as_slice());
+    let mut edges_a = split_contour_by_points_if_necessary(edge_a, intersections.as_slice());
+    let mut edges_b = split_contour_by_points_if_necessary(edge_b, intersections.as_slice());
 
     let mut result = Vec::<EdgeRemesh>::new();
     for a in edges_a.drain(..) {

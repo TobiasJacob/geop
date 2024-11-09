@@ -3,9 +3,14 @@ use geop_geometry::{
     point::Point,
 };
 
-use crate::topology::edge::Edge;
+use crate::topology::contour_no_point::ContourNoPoint;
 
-pub fn primitive_helix(basis: Point, pitch: Point, radius: Point, right_winding: bool) -> Edge {
+pub fn primitive_helix(
+    basis: Point,
+    pitch: Point,
+    radius: Point,
+    right_winding: bool,
+) -> ContourNoPoint {
     let h = Helix::new(basis, pitch, radius, right_winding);
-    Edge::new(None, None, Curve::Helix(h))
+    ContourNoPoint::new(Curve::Helix(h))
 }

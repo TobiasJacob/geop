@@ -77,4 +77,5 @@ A crate used to render the graphics for the book, and contains the book.
 - [ ] Make the folders with just one mod file in geop topology just a file (e.g. edge.rs instead of edge/mod.rs)
 - [ ] Remove interpolate function from core
 - [ ] Implement numerical boundingbox checking and remove all intersection methods from geop geometry
+- [ ] Make the point containment checks part of the struct and remove the contains method
 

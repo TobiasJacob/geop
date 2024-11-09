@@ -2,6 +2,7 @@ pub mod debug_data;
 pub mod topology;
 
 pub mod contains;
+pub mod hit_test;
 pub mod operations;
 pub mod primitive_objects;
 pub mod topology_error;

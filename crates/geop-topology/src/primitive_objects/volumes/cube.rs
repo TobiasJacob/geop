@@ -40,7 +40,7 @@ pub fn primitive_cube(size_x: EFloat64, size_y: EFloat64, size_z: EFloat64) -> V
     let edge4 = primitive_line(p4, p1).unwrap();
 
     let face = Face::new(
-        vec![Contour::new(vec![
+        vec![Contour::from_edges(vec![
             edge1.clone(),
             edge2.clone(),
             edge3.clone(),

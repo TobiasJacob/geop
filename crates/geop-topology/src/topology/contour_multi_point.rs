@@ -11,15 +11,15 @@ use crate::{
     topology::edge::Edge,
 };
 
-use super::{ContourTangent, EdgeIndex};
+use super::contour::{ContourTangent, EdgeIndex};
 
 #[derive(Debug, Clone)]
-pub struct ConnectedEdgeContour {
+pub struct ContourMultiPoint {
     pub edges: Vec<Edge>,
 }
 
-impl ConnectedEdgeContour {
-    pub fn new(edges: Vec<Edge>) -> ConnectedEdgeContour {
+impl ContourMultiPoint {
+    pub fn new(edges: Vec<Edge>) -> ContourMultiPoint {
         assert!(edges.len() > 0);
         for i in 0..edges.len() {
             let edge = edges[i].clone();
@@ -27,7 +27,7 @@ impl ConnectedEdgeContour {
             assert!(edge.bounds.end == next_edge.bounds.start);
         }
         assert!(edges[0].bounds.start == edges[edges.len() - 1].bounds.end);
-        ConnectedEdgeContour { edges }
+        ContourMultiPoint { edges }
     }
 
     pub fn all_points(&self) -> Vec<Point> {
@@ -38,23 +38,23 @@ impl ConnectedEdgeContour {
         return points;
     }
 
-    pub fn flip(&self) -> ConnectedEdgeContour {
+    pub fn flip(&self) -> ContourMultiPoint {
         let edges = self
             .edges
             .iter()
             .rev()
             .map(|e| e.flip())
             .collect::<Vec<Edge>>();
-        ConnectedEdgeContour::new(edges)
+        ContourMultiPoint::new(edges)
     }
 
-    pub fn transform(&self, transform: Transform) -> ConnectedEdgeContour {
+    pub fn transform(&self, transform: Transform) -> ContourMultiPoint {
         let edges = self
             .edges
             .iter()
             .map(|e| e.transform(transform))
             .collect::<Vec<Edge>>();
-        ConnectedEdgeContour::new(edges)
+        ContourMultiPoint::new(edges)
     }
 
     // Returns an edge that contains the point, or None if the point is not on the contour.
@@ -152,7 +152,7 @@ impl ConnectedEdgeContour {
         result
     }
 
-    pub fn get_subcurve_single_point(&self, point: Point) -> Vec<Edge> {
+    pub fn insert_point(&self, point: Point) -> ContourMultiPoint {
         let i = match self.get_edge_index(point) {
             EdgeIndex::OnEdge(i) => i,
             EdgeIndex::OnCorner(i, _) => i,
@@ -191,11 +191,11 @@ impl ConnectedEdgeContour {
                     .clone(),
             ));
         }
-        result
+        ContourMultiPoint::new(result)
     }
 }
 
-impl Display for ConnectedEdgeContour {
+impl Display for ContourMultiPoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Contour: ")?;
         for edge in self.edges.iter() {

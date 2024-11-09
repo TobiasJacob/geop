@@ -1,3 +1,8 @@
+use geop_topology::topology::{
+    contour::{contour_no_point::ContourNoPoint, contour_single_point::ContourSinglePoint},
+    edge::Edge,
+};
+
 pub mod contains;
 pub mod difference;
 pub mod intersections;
@@ -6,6 +11,12 @@ pub mod split_if_necessary;
 pub mod union;
 
 // use topology::scene::Scene;
+
+pub enum BooleanPrimitiveEdge {
+    ContourNoPoint(ContourNoPoint),
+    ContourSinglePoint(ContourSinglePoint),
+    Edge(Edge),
+}
 
 // #[derive(Clone, Debug)]
 // struct GeopTopologyError {

@@ -17,7 +17,7 @@ pub fn primitive_rectangle(position: Point, dir1: Point, dir2: Point) -> Face {
     let v4 = position + dir1 - dir2;
 
     Face::new(
-        vec![Contour::new(vec![
+        vec![Contour::from_edges(vec![
             primitive_line(v1, v2).unwrap(),
             primitive_line(v2, v3).unwrap(),
             primitive_line(v3, v4).unwrap(),

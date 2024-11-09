@@ -3,14 +3,14 @@ use geop_geometry::{
     point::Point,
 };
 
-use crate::topology::edge::Edge;
+use crate::topology::contour_no_point::ContourNoPoint;
 
 pub fn primitive_ellipse(
     basis: Point,
     normal: Point,
     major_radius: Point,
     minor_radius: Point,
-) -> Edge {
+) -> ContourNoPoint {
     let e = Ellipse::new(basis, normal, major_radius, minor_radius);
-    Edge::new(None, None, Curve::Ellipse(e))
+    ContourNoPoint::new(Curve::Ellipse(e))
 }

@@ -1,4 +1,7 @@
 pub mod contour;
+pub mod contour_multi_point;
+pub mod contour_no_point;
+pub mod contour_single_point;
 pub mod edge;
 pub mod face;
 pub mod scene;

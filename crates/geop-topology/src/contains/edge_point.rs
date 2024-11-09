@@ -10,15 +10,35 @@ pub enum EdgePointContains {
 }
 
 pub fn edge_point_contains(edge: &Edge, point: Point) -> EdgePointContains {
-    if !edge.curve.on_curve(point) {
-        return EdgePointContains::Outside;
-    }
+    // if !edge.curve.on_curve(point) {
+    //     return EdgePointContains::Outside;
+    // }
     if point == edge.bounds.start || point == edge.bounds.end {
         return EdgePointContains::OnPoint(point);
     }
-    if edge.curve.between(point, &edge.bounds).unwrap() {
+
+    // let bbs = vec![edge.bounding_box()];
+    // loop {
+    //     bbs = bbs.subdivide();
+    //     bbs = bbs.filter_map(|bb| edge.shrink_bb(bb));
+    //     bbs = bbs.filter(|bb| bb.contains(point));
+    //     if bbs.is_small() {
+    //         return EdgePointContains::Inside;
+    //     }
+    //     if bbs.is_empty() {
+    //         return EdgePointContains::Outside;
+    //     }
+    // }
+
+    let p2 = edge.project(point);
+    if p2 == point {
         return EdgePointContains::Inside;
     }
+    return EdgePointContains::Outside;
+
+    // if edge.curve.between(point, &edge.bounds).unwrap() {
+    //     return EdgePointContains::Inside;
+    // }
     EdgePointContains::Outside
 }
 

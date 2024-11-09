@@ -8,28 +8,29 @@ use geop_geometry::{
 
 use crate::topology::edge::Edge;
 
-use super::ContourTangent;
+use super::{contour::ContourTangent, contour_multi_point::ContourMultiPoint};
 
 #[derive(Debug, Clone)]
-pub struct CurveContour {
+pub struct ContourSinglePoint {
     pub curve: Curve,
+    pub point: Point,
 }
 
-impl CurveContour {
-    pub fn new(curve: Curve) -> CurveContour {
-        CurveContour { curve }
+impl ContourSinglePoint {
+    pub fn new(curve: Curve, point: Point) -> ContourSinglePoint {
+        ContourSinglePoint { curve, point }
     }
 
     pub fn all_points(&self) -> Vec<Point> {
         return vec![];
     }
 
-    pub fn flip(&self) -> CurveContour {
-        CurveContour::new(self.curve.neg())
+    pub fn flip(&self) -> ContourSinglePoint {
+        ContourSinglePoint::new(self.curve.neg(), self.point)
     }
 
-    pub fn transform(&self, transform: Transform) -> CurveContour {
-        CurveContour::new(self.curve.transform(transform))
+    pub fn transform(&self, transform: Transform) -> ContourSinglePoint {
+        ContourSinglePoint::new(self.curve.transform(transform), transform * self.point)
     }
 
     pub fn tangent(&self, p: Point) -> ContourTangent {
@@ -50,16 +51,16 @@ impl CurveContour {
         )]
     }
 
-    pub fn get_subcurve_single_point(&self, point: Point) -> Vec<Edge> {
-        vec![Edge::new(
-            Bounds::new(point, point).unwrap(),
-            self.curve.clone(),
-        )]
+    pub fn insert_point(&self, point: Point) -> ContourMultiPoint {
+        ContourMultiPoint::new(vec![
+            Edge::new(Bounds::new(self.point, point).unwrap(), self.curve.clone()),
+            Edge::new(Bounds::new(point, self.point).unwrap(), self.curve.clone()),
+        ])
     }
 }
 
-impl Display for CurveContour {
+impl Display for ContourSinglePoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "CurveContour {:?}", self.curve)
+        write!(f, "ContourSinglePoint {:?} {:?}", self.curve, self.point)
     }
 }

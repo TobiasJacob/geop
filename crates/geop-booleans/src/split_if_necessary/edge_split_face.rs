@@ -72,10 +72,9 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                             }
                         } else {
                             // Make it 1 contour
-                            let mut edges =
-                                start_contour.get_subcurve_single_point(edge.start.unwrap());
+                            let mut edges = start_contour.insert_point(edge.start.unwrap());
                             edges.push(edge.clone());
-                            edges.extend(end_contour.get_subcurve_single_point(edge.end.unwrap()));
+                            edges.extend(end_contour.insert_point(edge.end.unwrap()));
                             edges.push(edge.flip());
                             new_contours.push(Contour::new(edges));
                             // Push the rest of the contours
@@ -90,8 +89,7 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                     }
                     Option::None => {
                         // Make it 1 contour
-                        let mut edges =
-                            start_contour.get_subcurve_single_point(edge.start.unwrap());
+                        let mut edges = start_contour.insert_point(edge.start.unwrap());
                         edges.push(edge.clone());
                         edges.push(edge.flip());
                         new_contours.push(Contour::new(edges));
@@ -106,7 +104,7 @@ pub fn split_face_by_edge_if_necessary(face: &Face, edge: &Edge) -> Vec<Face> {
                 Option::None => match end_contour {
                     Option::Some(end_contour) => {
                         // Make it 1 contour
-                        let mut edges = end_contour.get_subcurve_single_point(edge.end.unwrap());
+                        let mut edges = end_contour.insert_point(edge.end.unwrap());
                         edges.push(edge.flip());
                         edges.push(edge.clone());
                         new_contours.push(Contour::new(edges));
