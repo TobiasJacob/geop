@@ -41,6 +41,20 @@ impl MonomialPolynom {
     }
 }
 
+impl PartialEq for MonomialPolynom {
+    fn eq(&self, other: &Self) -> bool {
+        if self.monomials.len() != other.monomials.len() {
+            return false;
+        }
+        for i in 0..self.monomials.len() {
+            if self.monomials[i] != other.monomials[i] {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 impl std::ops::Add for &MonomialPolynom {
     type Output = MonomialPolynom;
 
