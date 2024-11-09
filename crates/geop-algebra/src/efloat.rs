@@ -325,7 +325,7 @@ impl Display for EFloat64 {
         // Write Scientific notation
         write!(
             f,
-            "[{:.2e} +- {:.2e}]",
+            "[{:.2e}+-{:.2e}]",
             (self.upper_bound + self.lower_bound) / 2.0,
             (self.upper_bound - self.lower_bound) / 2.0
         )
