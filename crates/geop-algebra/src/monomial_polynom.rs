@@ -1,6 +1,7 @@
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
+    HasZero,
 };
 
 #[derive(Debug, Clone)]
@@ -16,6 +17,10 @@ impl MonomialPolynom {
             monomials.pop();
         }
         Self { monomials }
+    }
+
+    pub fn zero() -> Self {
+        Self::new(vec![])
     }
 
     pub fn from_factor(factor: EFloat64) -> Self {
@@ -172,6 +177,12 @@ impl std::ops::Mul<EFloat64> for &MonomialPolynom {
             result[i] = self.monomials[i] * other;
         }
         MonomialPolynom::new(result)
+    }
+}
+
+impl HasZero for MonomialPolynom {
+    fn zero() -> Self {
+        MonomialPolynom::zero()
     }
 }
 

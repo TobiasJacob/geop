@@ -17,8 +17,10 @@ impl BernsteinBasis {
         let mut b = vec![vec![EFloat64::zero(); self.degree + 1]; self.degree + 1];
         b[0][0] = EFloat64::one();
         for n in 1..=self.degree {
-            let min_i = n.saturating_sub(self.index);
             let max_i = n.min(self.degree + self.index - n);
+            let min_i = 0;
+            // TODO: This is the original code, but it seems to be wrong. Fix it.
+            // let min_i = n.saturating_sub(self.index);
             for i in min_i..=max_i {
                 if i == 0 {
                     b[i][n] = (EFloat64::one() - t) * b[i][n - 1];
@@ -55,6 +57,16 @@ mod tests {
     #[test]
     fn test_bernstein_basis() {
         let b = BernsteinBasis::new(3, 5);
+        let as_mon = b.to_monomial_polynom();
+        println!("{}", &as_mon);
+        for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
+            let t = EFloat64::from(t);
+            assert_eq!(b.eval(t), as_mon.eval(t));
+        }
+    }
+    #[test]
+    fn test_bernstein_basis2() {
+        let b = BernsteinBasis::new(1, 5);
         let as_mon = b.to_monomial_polynom();
         println!("{}", &as_mon);
         for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
