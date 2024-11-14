@@ -17,7 +17,9 @@ impl BernsteinBasis {
         let mut b = vec![vec![EFloat64::zero(); self.degree + 1]; self.degree + 1];
         b[0][0] = EFloat64::one();
         for n in 1..=self.degree {
-            for i in 0..=n {
+            let min_i = n.saturating_sub(self.index);
+            let max_i = n.min(self.degree + self.index - n);
+            for i in min_i..=max_i {
                 if i == 0 {
                     b[i][n] = (EFloat64::one() - t) * b[i][n - 1];
                 } else if i == n {

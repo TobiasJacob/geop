@@ -1,5 +1,6 @@
 pub mod algebra_error;
 pub mod bernstein_basis;
+pub mod bernstein_polynomial;
 pub mod efloat;
 pub mod factorial;
 pub mod monomial_polynom;
