@@ -322,6 +322,18 @@ impl PartialOrd<f64> for EFloat64 {
     }
 }
 
+impl PartialOrd<EFloat64> for EFloat64 {
+    fn partial_cmp(&self, other: &EFloat64) -> Option<std::cmp::Ordering> {
+        if self.upper_bound < other.lower_bound {
+            Some(std::cmp::Ordering::Less)
+        } else if self.lower_bound > other.upper_bound {
+            Some(std::cmp::Ordering::Greater)
+        } else {
+            Some(std::cmp::Ordering::Equal)
+        }
+    }
+}
+
 impl Display for EFloat64 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // Write Scientific notation

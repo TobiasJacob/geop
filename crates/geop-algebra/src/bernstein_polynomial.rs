@@ -23,7 +23,7 @@ where
         let mut result = T::zero();
 
         for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1);
+            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1).unwrap();
             let basis_eval = basis.eval(t);
             result = result + coeff.clone() * basis_eval;
         }
@@ -34,7 +34,7 @@ where
     pub fn to_monomial_polynom(&self) -> MonomialPolynom {
         let mut result = MonomialPolynom::zero();
         for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1);
+            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1).unwrap();
             let basis_monomial = basis.to_monomial_polynom();
             let coeff = coeff.to_monomial_polynom();
             let term = &coeff * &basis_monomial;

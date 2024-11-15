@@ -1,6 +1,11 @@
 use std::vec;
 
-use crate::{efloat::EFloat64, factorial::binomial_coefficient, monomial_polynom::MonomialPolynom};
+use crate::{
+    algebra_error::{AlgebraError, AlgebraResult},
+    efloat::EFloat64,
+    factorial::binomial_coefficient,
+    monomial_polynom::MonomialPolynom,
+};
 
 pub struct BernsteinBasis {
     index: usize,  // i in book
@@ -8,8 +13,14 @@ pub struct BernsteinBasis {
 }
 
 impl BernsteinBasis {
-    pub fn new(index: usize, degree: usize) -> Self {
-        Self { index, degree }
+    pub fn new(index: usize, degree: usize) -> AlgebraResult<BernsteinBasis> {
+        if index > degree {
+            return Err(AlgebraError::new(format!(
+                "BernsteinBasis invalid input: index {} is greater than degree {}",
+                index, degree
+            )));
+        }
+        Ok(Self { index, degree })
     }
 
     pub fn eval(&self, t: EFloat64) -> EFloat64 {
@@ -56,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_bernstein_basis() {
-        let b = BernsteinBasis::new(3, 5);
+        let b = BernsteinBasis::new(3, 5).unwrap();
         let as_mon = b.to_monomial_polynom();
         println!("{}", &as_mon);
         for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
@@ -66,7 +77,7 @@ mod tests {
     }
     #[test]
     fn test_bernstein_basis2() {
-        let b = BernsteinBasis::new(1, 5);
+        let b = BernsteinBasis::new(1, 5).unwrap();
         let as_mon = b.to_monomial_polynom();
         println!("{}", &as_mon);
         for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
