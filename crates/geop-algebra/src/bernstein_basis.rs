@@ -5,6 +5,7 @@ use crate::{
     efloat::EFloat64,
     factorial::binomial_coefficient,
     monomial_polynom::MonomialPolynom,
+    SingleDimensionFunction,
 };
 
 pub struct BernsteinBasis {
@@ -23,7 +24,18 @@ impl BernsteinBasis {
         Ok(Self { index, degree })
     }
 
-    pub fn eval(&self, t: EFloat64) -> EFloat64 {
+    pub fn to_monomial_polynom(&self) -> MonomialPolynom {
+        let fact1 = MonomialPolynom::new(vec![EFloat64::one(), -EFloat64::one()]);
+        let fact2 = MonomialPolynom::new(vec![EFloat64::zero(), EFloat64::one()]);
+        let coeff = binomial_coefficient(self.degree, self.index);
+        let coeff = EFloat64::from(coeff as f64);
+        let result = &(&fact1.pow(self.degree - self.index) * coeff) * &fact2.pow(self.index);
+        result
+    }
+}
+
+impl SingleDimensionFunction for BernsteinBasis {
+    fn eval(&self, t: EFloat64) -> EFloat64 {
         // Use the de Casteljau algorithm to evaluate the Bernstein basis
         let mut b = vec![vec![EFloat64::zero(); self.degree + 1]; self.degree + 1];
         b[0][0] = EFloat64::one();
@@ -43,15 +55,6 @@ impl BernsteinBasis {
             }
         }
         b[self.index][self.degree]
-    }
-
-    pub fn to_monomial_polynom(&self) -> MonomialPolynom {
-        let fact1 = MonomialPolynom::new(vec![EFloat64::one(), -EFloat64::one()]);
-        let fact2 = MonomialPolynom::new(vec![EFloat64::zero(), EFloat64::one()]);
-        let coeff = binomial_coefficient(self.degree, self.index);
-        let coeff = EFloat64::from(coeff as f64);
-        let result = &(&fact1.pow(self.degree - self.index) * coeff) * &fact2.pow(self.index);
-        result
     }
 }
 

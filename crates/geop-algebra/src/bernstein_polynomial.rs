@@ -1,6 +1,6 @@
 use crate::{
     bernstein_basis::BernsteinBasis, efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero,
-    ToMonomialPolynom,
+    MultiDimensionFunction, SingleDimensionFunction, ToMonomialPolynom,
 };
 
 pub struct BernsteinPolynomial<T> {
@@ -19,18 +19,6 @@ where
         Self { coefficients }
     }
 
-    pub fn eval(&self, t: EFloat64) -> T {
-        let mut result = T::zero();
-
-        for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1).unwrap();
-            let basis_eval = basis.eval(t);
-            result = result + coeff.clone() * basis_eval;
-        }
-
-        result
-    }
-
     pub fn to_monomial_polynom(&self) -> MonomialPolynom {
         let mut result = MonomialPolynom::zero();
         for (i, coeff) in self.coefficients.iter().enumerate() {
@@ -39,6 +27,27 @@ where
             let coeff = coeff.to_monomial_polynom();
             let term = &coeff * &basis_monomial;
             result = &result + &term;
+        }
+
+        result
+    }
+}
+
+impl<T> MultiDimensionFunction<T> for BernsteinPolynomial<T>
+where
+    T: Clone,
+    T: std::ops::Add<Output = T>,
+    T: std::ops::Mul<EFloat64, Output = T>,
+    T: HasZero,
+    T: ToMonomialPolynom,
+{
+    fn eval(&self, t: EFloat64) -> T {
+        let mut result = T::zero();
+
+        for (i, coeff) in self.coefficients.iter().enumerate() {
+            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1).unwrap();
+            let basis_eval = basis.eval(t);
+            result = result + coeff.clone() * basis_eval;
         }
 
         result

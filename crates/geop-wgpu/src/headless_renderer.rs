@@ -108,6 +108,101 @@ impl HeadlessRenderer {
         }
     }
 
+    pub async fn render_buffers_to_file(
+        &mut self,
+        vertex_buffer: VertexBuffer,
+        edge_buffer: EdgeBuffer,
+        triangle_buffer: TriangleBuffer,
+        dark_mode: bool,
+        camera_pos: Point,
+        file_path: &std::path::Path,
+    ) {
+        let (background_color, _, _, _) = Color::standard_pallet(dark_mode);
+        let u32_size = std::mem::size_of::<u32>() as u32;
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+        {
+            let render_pass_desc = wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &self.texture_view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: background_color.r as f64,
+                            g: background_color.g as f64,
+                            b: background_color.b as f64,
+                            a: background_color.a as f64,
+                        }),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.pipeline_manager.depth_texture.view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
+                    }),
+                    stencil_ops: None,
+                }),
+                timestamp_writes: None,
+                occlusion_query_set: None,
+            };
+
+            let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
+            self.pipeline_manager
+                .update_camera_pos(&self.queue, camera_pos);
+            self.pipeline_manager
+                .update_edges(&self.queue, &edge_buffer);
+            self.pipeline_manager
+                .update_triangles(&self.queue, &triangle_buffer);
+            self.pipeline_manager
+                .update_vertices(&self.queue, &vertex_buffer);
+            self.pipeline_manager.run_pipelines(&mut render_pass);
+        }
+
+        encoder.copy_texture_to_buffer(
+            wgpu::ImageCopyTexture {
+                aspect: wgpu::TextureAspect::All,
+                texture: &self.texture,
+                mip_level: 0,
+                origin: wgpu::Origin3d::ZERO,
+            },
+            wgpu::ImageCopyBuffer {
+                buffer: &self.output_buffer,
+                layout: wgpu::ImageDataLayout {
+                    offset: 0,
+                    bytes_per_row: Some(u32_size * self.texture_size),
+                    rows_per_image: Some(self.texture_size),
+                },
+            },
+            self.copy_size,
+        );
+        self.queue.submit(Some(encoder.finish()));
+
+        let buffer_slice = self.output_buffer.slice(..);
+
+        // NOTE: We have to create the mapping THEN device.poll() before await
+        // the future. Otherwise the application will freeze.
+        let (tx, rx) = futures_intrusive::channel::shared::oneshot_channel();
+        buffer_slice.map_async(wgpu::MapMode::Read, move |result| {
+            tx.send(result).unwrap();
+        });
+        self.device.poll(wgpu::Maintain::Wait);
+        rx.receive().await.unwrap().unwrap();
+
+        let data = buffer_slice.get_mapped_range();
+
+        use image::{ImageBuffer, Rgba};
+        let buffer =
+            ImageBuffer::<Rgba<u8>, _>::from_raw(self.texture_size, self.texture_size, data)
+                .unwrap();
+        // Create folder if it doesn't exist
+        std::fs::create_dir_all(file_path.parent().unwrap()).unwrap();
+        buffer.save(file_path).unwrap();
+    }
+
     pub async fn render_to_file(
         &mut self,
         scene: &Scene,

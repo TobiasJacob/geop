@@ -1,3 +1,4 @@
+pub mod algebra;
 pub mod booleans;
 pub mod geometry;
 pub mod topology;

@@ -27,7 +27,7 @@ impl BSplineBasis {
         // Check knot vector is valid
         if knot_vector.len() != degree + 2 {
             return Err(AlgebraError::new(format!(
-                "BSplineBasis invalid input: knot vector length {} is not equal to degree + 2 {}",
+                "BSplineBasis invalid input: knot vector length {} is not equal to degree + 2 ({})",
                 knot_vector.len(),
                 degree + 2
             )));
