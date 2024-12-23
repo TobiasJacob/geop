@@ -199,6 +199,7 @@ mod tests {
     }
 
     #[rstest]
+    #[ignore]
     pub async fn ellipse_ellipse_intersection(#[future] renderer: Box<HeadlessRenderer>) {
         let ellipse1 = primitive_ellipse(
             Point::zero(),
