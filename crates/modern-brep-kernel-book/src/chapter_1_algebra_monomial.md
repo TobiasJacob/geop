@@ -8,4 +8,9 @@ pub struct MonomialPolynom {
 }
 ```
 
-We can add and multiply these polynomials, and use numerics to find intersections.
+We can add and multiply these polynomials, and use them as algebraic expressions for lines, circles, and so on. This is the plot for
+
+$$p(x) = 0.2 + 0.4 x + 1.8 x^2 -1.7 x^3$$
+
+![Monomial Function](./generated_images/algebra/monomial_polynom.png)
+

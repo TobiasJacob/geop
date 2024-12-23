@@ -1,7 +1,7 @@
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
-    HasZero,
+    HasZero, OneDimensionFunction,
 };
 
 #[derive(Debug, Clone)]
@@ -33,14 +33,6 @@ impl MonomialPolynom {
         Self::new(monomials)
     }
 
-    pub fn eval(&self, x: EFloat64) -> EFloat64 {
-        let mut result = EFloat64::zero();
-        for i in 0..self.monomials.len() {
-            result = result + self.monomials[i] * x.powi(i as i32);
-        }
-        result
-    }
-
     pub fn is_zero(&self) -> bool {
         self.monomials.len() == 0
     }
@@ -52,6 +44,16 @@ impl MonomialPolynom {
         let mut result = self.clone();
         for _ in 1..power {
             result = &result * self;
+        }
+        result
+    }
+}
+
+impl OneDimensionFunction for MonomialPolynom {
+    fn eval(&self, x: EFloat64) -> EFloat64 {
+        let mut result = EFloat64::zero();
+        for i in 0..self.monomials.len() {
+            result = result + self.monomials[i] * x.powi(i as i32);
         }
         result
     }
