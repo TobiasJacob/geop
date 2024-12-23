@@ -365,6 +365,7 @@ mod tests {
 
     #[test]
     fn test_efloat_add() {
+        assert!(0.1 + 0.2 != 0.3);
         let a = EFloat64::from(0.1);
         let b = EFloat64::from(0.2);
         let c = a + b;

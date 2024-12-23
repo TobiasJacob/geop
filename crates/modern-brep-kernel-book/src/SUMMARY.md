@@ -1,6 +1,10 @@
 # Summary
 
-- [Overview](./chapter_1_overview.md)
+- [Overview](./chapter_0_overview.md)
+- [Algebra](./chapter_1_algebra.md)
+    - [EFloat Interval Arithmetic](./chapter_1_algebra_efloat.md)
+    - [Monomial Polynomials](./chapter_1_algebra_monomial.md)
+    - [Bernstein Polynomials](./chapter_1_algebra_bernstein.md)
 - [Geometry](./chapter_2_geometry.md)
     - [Curves](./chapter_2_geometry_curves.md)
     - [Surfaces](./chapter_2_geometry_surfaces.md)
