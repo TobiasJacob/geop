@@ -112,6 +112,10 @@ impl Point {
     pub fn unit_z() -> Point {
         Point::new(EFloat64::zero(), EFloat64::zero(), EFloat64::one())
     }
+
+    pub fn ones() -> Point {
+        Point::new(EFloat64::one(), EFloat64::one(), EFloat64::one())
+    }
 }
 
 impl Add for Point {
