@@ -85,6 +85,24 @@ impl PipelineManager {
         );
     }
 
+    pub fn update_camera_orthogonal(
+        &mut self,
+        queue: &wgpu::Queue,
+        x_min: f32,
+        x_max: f32,
+        y_min: f32,
+        y_max: f32,
+    ) {
+        self.camera_pipeline
+            .camera_uniform
+            .update_view_ortho(x_min, x_max, y_min, y_max, -100.0, 100.0);
+        queue.write_buffer(
+            &self.camera_pipeline.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_pipeline.camera_uniform]),
+        )
+    }
+
     pub fn update_camera_pos(
         &mut self,
         queue: &wgpu::Queue,

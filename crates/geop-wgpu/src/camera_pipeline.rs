@@ -56,6 +56,18 @@ impl CameraUniform {
     pub fn update_view_proj(&mut self, camera: &Camera) {
         self.view_proj = camera.build_view_projection_matrix().into();
     }
+
+    pub fn update_view_ortho(
+        &mut self,
+        left: f32,
+        right: f32,
+        bottom: f32,
+        top: f32,
+        znear: f32,
+        zfar: f32,
+    ) {
+        self.view_proj = cgmath::ortho(left, right, bottom, top, znear, zfar).into();
+    }
 }
 
 pub struct CameraPipeline {

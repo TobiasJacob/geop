@@ -1,11 +1,14 @@
 #[cfg(test)]
 mod tests {
     use geop_algebra::{
-        bernstein_polynomial::BernsteinPolynomial, bspline_curve::BSplineCurve, efloat::EFloat64,
+        bernstein_basis::BernsteinBasis, bernstein_polynomial::BernsteinPolynomial,
+        efloat::EFloat64,
     };
     use geop_geometry::point::Point;
     use geop_rasterize::{
-        functions::rasterize_multidimensional_function_in_1d, triangle_buffer::TriangleBuffer,
+        edge_buffer::EdgeBuffer,
+        functions::{rasterize_multidimensional_function_in_1d, rasterize_onedimensional_function},
+        triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };
     use geop_topology::topology::scene::Color;
@@ -33,8 +36,32 @@ mod tests {
                 edge_buffer,
                 TriangleBuffer::empty(),
                 false,
-                Point::from_f64(0.0, -4.0, 0.0),
+                (0.0, 1.0),
+                (0.0, 1.0),
                 std::path::Path::new("src/generated_images/algebra/bernstein.png"),
+            )
+            .await;
+    }
+    #[rstest]
+    async fn test_bernstein_basis(#[future] renderer: Box<HeadlessRenderer>) {
+        let mut edge_buffer = EdgeBuffer::empty();
+
+        for i in 0..=5 {
+            let curve = BernsteinBasis::new(i, 5).unwrap();
+            let edge_buffer_i = rasterize_onedimensional_function(&curve, Color::black());
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                VertexBuffer::empty(),
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (0.0, 1.0),
+                (0.0, 1.0),
+                std::path::Path::new("src/generated_images/algebra/bernstein_basis.png"),
             )
             .await;
     }

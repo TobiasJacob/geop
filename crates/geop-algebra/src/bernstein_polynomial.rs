@@ -1,6 +1,6 @@
 use crate::{
     bernstein_basis::BernsteinBasis, efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero,
-    MultiDimensionFunction, SingleDimensionFunction, ToMonomialPolynom,
+    MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
 };
 
 pub struct BernsteinPolynomial<T> {

@@ -5,7 +5,7 @@ use crate::{
     efloat::EFloat64,
     factorial::binomial_coefficient,
     monomial_polynom::MonomialPolynom,
-    SingleDimensionFunction,
+    OneDimensionFunction,
 };
 
 pub struct BernsteinBasis {
@@ -34,7 +34,7 @@ impl BernsteinBasis {
     }
 }
 
-impl SingleDimensionFunction for BernsteinBasis {
+impl OneDimensionFunction for BernsteinBasis {
     fn eval(&self, t: EFloat64) -> EFloat64 {
         // Use the de Casteljau algorithm to evaluate the Bernstein basis
         let mut b = vec![vec![EFloat64::zero(); self.degree + 1]; self.degree + 1];

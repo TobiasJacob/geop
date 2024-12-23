@@ -114,7 +114,8 @@ impl HeadlessRenderer {
         edge_buffer: EdgeBuffer,
         triangle_buffer: TriangleBuffer,
         dark_mode: bool,
-        camera_pos: Point,
+        (x_min, x_max): (f32, f32),
+        (y_min, y_max): (f32, f32),
         file_path: &std::path::Path,
     ) {
         let (background_color, _, _, _) = Color::standard_pallet(dark_mode);
@@ -152,7 +153,7 @@ impl HeadlessRenderer {
 
             let mut render_pass = encoder.begin_render_pass(&render_pass_desc);
             self.pipeline_manager
-                .update_camera_pos(&self.queue, camera_pos);
+                .update_camera_orthogonal(&self.queue, x_min, x_max, y_min, y_max);
             self.pipeline_manager
                 .update_edges(&self.queue, &edge_buffer);
             self.pipeline_manager

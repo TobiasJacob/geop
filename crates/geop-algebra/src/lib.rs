@@ -18,7 +18,7 @@ pub trait ToMonomialPolynom {
     fn to_monomial_polynom(&self) -> MonomialPolynom;
 }
 
-pub trait SingleDimensionFunction {
+pub trait OneDimensionFunction {
     fn eval(&self, t: EFloat64) -> EFloat64;
 }
 
