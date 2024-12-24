@@ -17,4 +17,3 @@ Here is a picture of the Basis functions \\(B_{0, 5}\\) to \\(B_{5, 5}\\):
 And this is the Bernstein polynomial with coefficients `0.0, 0.6, 0.1, 0.8, 0.3`:
 
 ![Bernstein Function](./generated_images/algebra/bernstein.png)
-
