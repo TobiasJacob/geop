@@ -58,7 +58,8 @@ mod tests {
         for n in 0..max_n {
             for i in 0..=n {
                 let curve = BernsteinBasis::new(i, n).unwrap();
-                let mut edge_buffer_i = rasterize_onedimensional_function(&curve, Color::black());
+                let mut edge_buffer_i =
+                    rasterize_onedimensional_function(&curve, Color::black(), -2.0, 3.0);
                 let t =
                     Transform::from_translation(
                         Point::unit_y() * EFloat64::from((max_n - 1 - n) as f64 / max_n as f64),
@@ -83,7 +84,7 @@ mod tests {
                 edge_buffer,
                 TriangleBuffer::empty(),
                 false,
-                (-0.1, 1.1),
+                (-0.5, 1.5),
                 (-0.1, 1.1),
                 std::path::Path::new("src/generated_images/algebra/bernstein_basis.png"),
             )

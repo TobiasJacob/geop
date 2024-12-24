@@ -27,7 +27,12 @@ mod tests {
             EFloat64::from(1.8),
             EFloat64::from(-1.7),
         ]);
-        edge_buffer.join(&rasterize_onedimensional_function(&curve, Color::black()));
+        edge_buffer.join(&rasterize_onedimensional_function(
+            &curve,
+            Color::black(),
+            0.0,
+            1.0,
+        ));
 
         let mut renderer = renderer.await;
         renderer
