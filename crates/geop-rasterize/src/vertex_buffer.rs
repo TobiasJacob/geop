@@ -1,7 +1,7 @@
 use core::f32;
 
 use float_next_after::NextAfter;
-use geop_geometry::{efloat::EFloat64, point::Point};
+use geop_geometry::{efloat::EFloat64, point::Point, transforms::Transform};
 use geop_topology::topology::scene::Color;
 
 // This is called RenderVertex to distinguish it from Vertex from topology package.
@@ -45,6 +45,25 @@ impl RenderVertex {
                 (self.min_position[2]).next_after(f32::NEG_INFINITY) as f64 - 1e-15,
             ),
         )
+    }
+
+    pub fn transform(&mut self, transform: &Transform) {
+        let p = self.point();
+        // RenderVertex::new(
+        //     *transform * p,
+        //     Color::new(self.color[0], self.color[1], self.color[2], self.color[3]),
+        // )
+        let p = *transform * p;
+        self.min_position = [
+            p.x.lower_bound as f32,
+            p.y.lower_bound as f32,
+            p.z.lower_bound as f32,
+        ];
+        self.max_position = [
+            p.x.upper_bound as f32,
+            p.y.upper_bound as f32,
+            p.z.upper_bound as f32,
+        ];
     }
 }
 

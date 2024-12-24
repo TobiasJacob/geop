@@ -4,9 +4,9 @@ mod tests {
         bernstein_basis::BernsteinBasis, bernstein_polynomial::BernsteinPolynomial,
         efloat::EFloat64,
     };
-    use geop_geometry::point::Point;
+    use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
-        edge_buffer,
+        edge_buffer::EdgeBuffer,
         functions::{
             rasterize_coordinate_system, rasterize_multidimensional_function_in_1d,
             rasterize_onedimensional_function,
@@ -52,16 +52,28 @@ mod tests {
     }
     #[rstest]
     async fn test_bernstein_basis(#[future] renderer: Box<HeadlessRenderer>) {
-        let mut edge_buffer = rasterize_coordinate_system(
-            Point::zero(),
-            Point::ones(),
-            Point::ones() * EFloat64::from(0.1),
-        );
+        let mut edge_buffer = EdgeBuffer::empty();
 
-        for i in 0..=5 {
-            let curve = BernsteinBasis::new(i, 5).unwrap();
-            let edge_buffer_i = rasterize_onedimensional_function(&curve, Color::black());
-            edge_buffer.join(&edge_buffer_i);
+        let max_n = 5;
+        for n in 0..max_n {
+            for i in 0..=n {
+                let curve = BernsteinBasis::new(i, n).unwrap();
+                let mut edge_buffer_i = rasterize_onedimensional_function(&curve, Color::black());
+                let t =
+                    Transform::from_translation(
+                        Point::unit_y() * EFloat64::from((max_n - 1 - n) as f64 / max_n as f64),
+                    ) * Transform::from_scale(Point::from_f64(1.0, 1.0 / max_n as f64 * 0.8, 1.0));
+                edge_buffer_i.transform(&t);
+                edge_buffer.join(&edge_buffer_i);
+
+                let mut coordinate_system_buffer = rasterize_coordinate_system(
+                    Point::zero(),
+                    Point::ones(),
+                    Point::from_f64(0.1, 0.1, 0.1),
+                );
+                coordinate_system_buffer.transform(&t);
+                edge_buffer.join(&coordinate_system_buffer);
+            }
         }
 
         let mut renderer = renderer.await;

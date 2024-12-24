@@ -1,4 +1,4 @@
-use geop_geometry::{efloat::EFloat64, point::Point};
+use geop_geometry::{efloat::EFloat64, point::Point, transforms::Transform};
 use geop_topology::topology::scene::Color;
 
 use crate::vertex_buffer::RenderVertex;
@@ -59,5 +59,12 @@ impl EdgeBuffer {
 
     pub fn join(&mut self, other: &EdgeBuffer) {
         self.edges.extend_from_slice(&other.edges);
+    }
+
+    pub fn transform(&mut self, transform: &Transform) {
+        for edge in &mut self.edges {
+            edge.start.transform(transform);
+            edge.end.transform(transform);
+        }
     }
 }

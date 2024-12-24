@@ -33,6 +33,10 @@ impl MonomialPolynom {
         Self::new(monomials)
     }
 
+    pub fn degree(&self) -> usize {
+        self.monomials.len() - 1
+    }
+
     pub fn is_zero(&self) -> bool {
         self.monomials.len() == 0
     }

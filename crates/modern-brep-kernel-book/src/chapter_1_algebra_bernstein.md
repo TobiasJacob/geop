@@ -10,7 +10,7 @@ pub struct BernsteinPolynomial<T> {
 
 Every polynomial can be converted from monomial to Bernstein representation and back. Bernstein Polynomials have better numerical properties than monomial polynomials, and are therefore used in many geometric algorithms.
 
-Here is a picture of the Basis functions \\(B_{0, 5}\\) to \\(B_{5, 5}\\):
+Here is a picture of the Basis functions from \\(B_{0, 0}\\) (top) to \\(B_{0, 5}\\)...\\(B_{5, 5}\\) (bottom):
 
 ![Bernstein Basis Functions](./generated_images/algebra/bernstein_basis.png)
 

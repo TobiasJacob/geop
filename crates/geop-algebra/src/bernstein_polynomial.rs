@@ -19,6 +19,18 @@ where
         Self { coefficients }
     }
 
+    // pub fn from_monomail_polynom(monomial_polynom: MonomialPolynom) -> Self {
+    //     // let mut coefficients = Vec::new();
+    //     // for i in 0..=monomial_polynom.degree() {
+    //     //     let basis = BernsteinBasis::new(i, monomial_polynom.degree()).unwrap();
+    //     //     let basis_monomial = basis.to_monomial_polynom();
+    //     //     let coeff = monomial_polynom.coefficient(&basis_monomial);
+    //     //     coefficients.push(coeff);
+    //     // }
+
+    //     // Self { coefficients }
+    // }
+
     pub fn to_monomial_polynom(&self) -> MonomialPolynom {
         let mut result = MonomialPolynom::zero();
         for (i, coeff) in self.coefficients.iter().enumerate() {
