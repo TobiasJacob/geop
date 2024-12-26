@@ -1,7 +1,12 @@
 use geop_algebra::efloat::EFloat64;
 
 use crate::{
-    bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
+    bounding_box::BoundingBox,
+    color::Category10Color,
+    geometry_error::{GeometryError, GeometryResult, WithContext},
+    geometry_scene::GeometryScene,
+    point::Point,
+    transforms::Transform,
 };
 
 use super::{curve::Curve, CurveLike};
@@ -20,24 +25,40 @@ pub enum CircleTransform {
 }
 
 impl Circle {
-    pub fn new(basis: Point, normal: Point, radius: EFloat64) -> Circle {
-        assert!(normal.is_normalized());
+    pub fn try_new(basis: Point, normal: Point, radius: EFloat64) -> GeometryResult<Circle> {
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!(
+                    "Create a circle at {} with normal {} and radius {}.",
+                    basis, normal, radius
+                ),
+                GeometryScene::with_points(vec![
+                    (basis, Category10Color::Orange),
+                    (basis + normal, Category10Color::Green),
+                    (basis + radius, Category10Color::Blue),
+                ]),
+            )
+        };
+        if !normal.is_normalized() {
+            return Err(GeometryError::new("Normal must be normalized".to_string()))
+                .with_context(&error_context);
+        }
+        if radius <= 0.0 {
+            return Err(GeometryError::new("Radius must be positive".to_string()))
+                .with_context(&error_context);
+        }
         let radius = match Point::unit_x().cross(normal).norm_sq().lower_bound
             > Point::unit_y().cross(normal).norm_sq().lower_bound
         {
             true => Point::unit_x().cross(normal).normalize().unwrap() * radius,
             false => Point::unit_y().cross(normal).normalize().unwrap() * radius,
         };
-        assert!(
-            normal.dot(radius) == 0.0,
-            "Radius and normal must be orthogonal"
-        );
-        Circle {
+        Ok(Circle {
             basis,
             normal,
             radius,
             dir_cross: normal.cross(radius),
-        }
+        })
     }
 
     pub fn transform(&self, transform: Transform) -> CircleTransform {
@@ -45,15 +66,15 @@ impl Circle {
         let normal = transform * (self.normal + self.basis) - basis;
         let radius = transform * (self.radius + self.basis) - basis;
         assert!(transform.uniform_scale_factor() > 0.0, "Circle can only be transformed with uniform scaling. An extension of this method is planned to return ellipsis.");
-        CircleTransform::Circle(Circle::new(
-            basis,
-            normal.normalize().unwrap(),
-            radius.norm(),
-        ))
+        CircleTransform::Circle(
+            Circle::try_new(basis, normal.normalize().unwrap(), radius.norm())
+                .expect("Circle should still be a circle after transform"),
+        )
     }
 
     pub fn neg(&self) -> Circle {
-        Circle::new(self.basis, -self.normal, self.radius.norm())
+        Circle::try_new(self.basis, -self.normal, self.radius.norm())
+            .expect("Circle parameters should be valid")
     }
 }
 

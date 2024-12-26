@@ -1,6 +1,6 @@
 use std::backtrace::Backtrace;
 
-use geop_geometry::geometry_error::GeometryError;
+use geop_geometry::geometry_error::{GeometryError, GeometryResult};
 
 use crate::topology_scene::TopologyScene;
 
@@ -29,6 +29,10 @@ impl TopologyError {
         TopologyError::Root(TopologyErrorRoot::InTopologyCrate { message, backtrace })
     }
 
+    pub fn from_geometry_error(geometry_error: GeometryError) -> TopologyError {
+        TopologyError::Root(TopologyErrorRoot::FromGeometryError { geometry_error })
+    }
+
     pub fn with_context(self, message: String) -> TopologyError {
         TopologyError::Context {
             message,
@@ -43,15 +47,6 @@ impl TopologyError {
             error_scene: Some(error_scene),
             inner_error: Box::new(self),
         }
-    }
-}
-
-// From GeometryError
-impl From<GeometryError> for TopologyError {
-    fn from(error: GeometryError) -> TopologyError {
-        TopologyError::Root(TopologyErrorRoot::FromGeometryError {
-            geometry_error: error,
-        })
     }
 }
 
@@ -82,7 +77,7 @@ impl std::fmt::Display for TopologyError {
 
 impl std::fmt::Debug for TopologyError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "GeometryError: {}", self)
+        write!(f, "{}", self)
     }
 }
 
@@ -92,4 +87,48 @@ impl std::error::Error for TopologyError {
     }
 }
 
+impl From<&str> for TopologyError {
+    fn from(message: &str) -> Self {
+        TopologyError::new(message.to_string())
+    }
+}
+
+impl From<GeometryError> for TopologyError {
+    fn from(error: GeometryError) -> Self {
+        TopologyError::from_geometry_error(error)
+    }
+}
+
 pub type TopologyResult<T> = Result<T, TopologyError>;
+
+pub trait WithContext<T> {
+    fn with_context(
+        self,
+        context_generator: &dyn Fn(TopologyError) -> TopologyError,
+    ) -> TopologyResult<T>;
+}
+
+impl<T> WithContext<T> for TopologyResult<T> {
+    fn with_context(
+        self,
+        context_generator: &dyn Fn(TopologyError) -> TopologyError,
+    ) -> TopologyResult<T> {
+        self.map_err(|e| context_generator(e))
+    }
+}
+
+pub trait ElevateToTopology<T> {
+    fn elevate(
+        self,
+        context_generator: &dyn Fn(TopologyError) -> TopologyError,
+    ) -> Result<T, TopologyError>;
+}
+
+impl<T> ElevateToTopology<T> for GeometryResult<T> {
+    fn elevate(
+        self,
+        context_generator: &dyn Fn(TopologyError) -> TopologyError,
+    ) -> Result<T, TopologyError> {
+        self.map_err(|e| context_generator(TopologyError::from(e)))
+    }
+}

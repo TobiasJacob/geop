@@ -1,6 +1,6 @@
 use std::backtrace::Backtrace;
 
-use geop_algebra::algebra_error::AlgebraError;
+use geop_algebra::algebra_error::{AlgebraError, AlgebraResult};
 
 use crate::geometry_scene::GeometryScene;
 
@@ -27,6 +27,10 @@ impl GeometryError {
     pub fn new(message: String) -> GeometryError {
         let backtrace = Backtrace::capture();
         GeometryError::Root(GeometryErrorRoot::InGeometryCrate { message, backtrace })
+    }
+
+    pub fn from_algebra_error(algebra_error: AlgebraError) -> GeometryError {
+        GeometryError::Root(GeometryErrorRoot::FromAlgebraError { algebra_error })
     }
 
     pub fn with_context(self, message: String) -> GeometryError {
@@ -72,7 +76,7 @@ impl std::fmt::Display for GeometryError {
 
 impl std::fmt::Debug for GeometryError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "GeometryError: {}", self)
+        write!(f, "{}", self)
     }
 }
 
@@ -90,7 +94,7 @@ impl From<&str> for GeometryError {
 
 impl From<AlgebraError> for GeometryError {
     fn from(error: AlgebraError) -> Self {
-        GeometryError::new(error.to_string())
+        GeometryError::from_algebra_error(error)
     }
 }
 
@@ -112,5 +116,21 @@ impl<T> WithContext<T> for GeometryResult<T> {
             Ok(v) => Ok(v),
             Err(err) => Err(context_generator(err)),
         }
+    }
+}
+
+pub trait ElevateToGeometry<T> {
+    fn elevate(
+        self,
+        context_generator: &dyn Fn(GeometryError) -> GeometryError,
+    ) -> Result<T, GeometryError>;
+}
+
+impl<T> ElevateToGeometry<T> for AlgebraResult<T> {
+    fn elevate(
+        self,
+        context_generator: &dyn Fn(GeometryError) -> GeometryError,
+    ) -> Result<T, GeometryError> {
+        self.map_err(|e| context_generator(GeometryError::from(e)))
     }
 }

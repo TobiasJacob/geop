@@ -6,15 +6,20 @@ use crate::{
 };
 
 // Simple struct that guarantees that the basis is orthogonal. The length of the vectors is not guaranteed to be 1.
-pub struct Basis {
+pub struct CoordinateSystem {
     pub basis: Point,
     pub x: Point,
     pub y: Point,
     pub z: Point,
 }
 
-impl Basis {
-    pub fn from_points(basis: Point, x: Point, y: Point, z: Point) -> GeometryResult<Basis> {
+impl CoordinateSystem {
+    pub fn from_points(
+        basis: Point,
+        x: Point,
+        y: Point,
+        z: Point,
+    ) -> GeometryResult<CoordinateSystem> {
         if !x.is_perpendicular(y) || !x.is_perpendicular(z) || !y.is_perpendicular(z) {
             return Err(
                 GeometryError::new("The basis vectors are not orthogonal.".to_string())
@@ -29,6 +34,6 @@ impl Basis {
                     ),
             );
         }
-        Ok(Basis { basis, x, y, z })
+        Ok(CoordinateSystem { basis, x, y, z })
     }
 }

@@ -52,11 +52,14 @@ pub fn circular_edge(s: Point, e: Point, center: Point) -> Edge {
     Edge::new(
         Some(s),
         Some(e),
-        Curve::Circle(Circle::new(
-            center,
-            Point::from_f64(0.0, 0.0, 1.0),
-            (point - center).norm(),
-        )),
+        Curve::Circle(
+            Circle::try_new(
+                center,
+                Point::from_f64(0.0, 0.0, 1.0),
+                (point - center).norm(),
+            )
+            .unwrap(),
+        ),
     )
 }
 

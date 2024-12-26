@@ -49,7 +49,7 @@ impl Line {
     pub fn transform(&self, transform: Transform) -> Self {
         let basis = transform * self.basis;
         let direction = transform * (self.direction + self.basis) - basis;
-        Line::new(basis, direction.normalize().unwrap()).expect("Direction must be normalized")
+        Line::new(basis, direction.normalize().unwrap()).expect("Direction is already normalized")
     }
 
     pub fn neg(&self) -> Line {

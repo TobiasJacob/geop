@@ -47,7 +47,7 @@ impl std::fmt::Display for AlgebraError {
 
 impl std::fmt::Debug for AlgebraError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "AlgebraError: {}", self)
+        write!(f, "{}", self)
     }
 }
 

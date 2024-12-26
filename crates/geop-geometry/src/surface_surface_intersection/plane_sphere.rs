@@ -19,11 +19,9 @@ pub fn plane_sphere_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersecti
     if rho < r.upper_bound && rho > -r.upper_bound {
         let new_circle_center = a.basis + n * rho;
         let new_circle_radius = (r * r - rho * rho).sqrt();
-        return PlaneSphereIntersection::Circle(Circle::new(
-            new_circle_center,
-            n,
-            new_circle_radius.unwrap(),
-        ));
+        return PlaneSphereIntersection::Circle(
+            Circle::try_new(new_circle_center, n, new_circle_radius.unwrap()).unwrap(),
+        );
     } else if rho == r || rho == -r {
         return PlaneSphereIntersection::Point(a.basis + n * -rho);
     } else {

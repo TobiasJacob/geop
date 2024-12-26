@@ -20,6 +20,6 @@ pub fn primitive_arc(from: Point, to: Point, radius: EFloat64, normal: Point) ->
     Edge::new(
         Some(from),
         Some(to),
-        Curve::Circle(Circle::new(center, normal, radius)),
+        Curve::Circle(Circle::try_new(center, normal, radius).unwrap()),
     )
 }

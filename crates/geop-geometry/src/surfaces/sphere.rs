@@ -155,8 +155,8 @@ impl SurfaceLike for Sphere {
         assert!(self.on_surface(q));
         assert!(p != q);
         let normal = (p - self.basis).cross(q - self.basis).normalize().unwrap();
-        let circle = Circle::new(self.basis, normal, self.radius);
-        Curve::Circle(circle)
+        let circle = Circle::try_new(self.basis, normal, self.radius);
+        Curve::Circle(circle.unwrap())
     }
 
     fn point_grid(&self, density: f64) -> Vec<Point> {

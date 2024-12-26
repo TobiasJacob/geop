@@ -1,17 +1,32 @@
 use geop_geometry::{
+    color::Category10Color,
     curves::{curve::Curve, line::Line},
     point::Point,
 };
 
 use crate::{
     topology::edge::Edge,
-    topology_error::{TopologyError, TopologyResult},
+    topology_error::{ElevateToTopology, TopologyError, TopologyResult},
+    topology_scene::TopologyScene,
 };
 
 pub fn primitive_line(start: Point, end: Point) -> TopologyResult<Edge> {
-    let l = Line::new(start, (end - start).normalize().unwrap()).map_err(|e| {
-        TopologyError::from(e).with_context(format!("Create linear edge from {} to {}", start, end))
-    })?;
+    let context = |err: TopologyError| {
+        err.with_context_scene(
+            format!("Creating primitive line from {} to {}", start, end),
+            TopologyScene::with_points(vec![
+                (start, Category10Color::Blue),
+                (end, Category10Color::Orange),
+            ]),
+        )
+    };
+    let direction = (end - start).normalize().elevate(&context)?;
+    // .map_err(|err| {
+    //     TopologyError::from_geometry_error(err)
+    //         .with_context("Normalize direction of new line".to_string())
+    // })
+    // .with_context(&context)?;
+    let l = Line::new(start, direction).elevate(&context)?;
     Ok(Edge::new(Some(start), Some(end), Curve::Line(l)))
 }
 

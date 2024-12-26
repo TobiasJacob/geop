@@ -5,7 +5,7 @@ use std::{
 
 use geop_algebra::efloat::EFloat64;
 
-use crate::geometry_error::GeometryResult;
+use crate::geometry_error::{ElevateToGeometry, GeometryError, GeometryResult};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -56,11 +56,12 @@ impl Point {
     }
 
     pub fn normalize(self) -> GeometryResult<Point> {
+        let context = |err: GeometryError| err.with_context(format!("Normalizing point {}", self));
         let norm = self.norm();
         Ok(Point::new(
-            (self.x / norm)?,
-            (self.y / norm)?,
-            (self.z / norm)?,
+            (self.x / norm).elevate(&context)?,
+            (self.y / norm).elevate(&context)?,
+            (self.z / norm).elevate(&context)?,
         ))
     }
 

@@ -53,11 +53,12 @@ mod tests {
     #[test]
     fn test_circle_plane_intersection_complete() {
         // test the case where the circle lies completely on the plane
-        let circle = Circle::new(
+        let circle = Circle::try_new(
             Point::from_f64(0.5, 0.5, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::two(),
-        );
+        )
+        .unwrap();
 
         let plane = Plane::new(
             Point::from_f64(0.0, 0.0, 0.0),
@@ -76,11 +77,12 @@ mod tests {
     #[test]
     fn test_circle_plane_intersection_tangent() {
         // test the case where the circle is tangent to the plane, so one intersection point
-        let circle = Circle::new(
+        let circle = Circle::try_new(
             Point::from_f64(0.0, 0.0, -1.0),
             Point::from_f64(0.0, 1.0, 0.0),
             EFloat64::one(),
-        );
+        )
+        .unwrap();
 
         let plane = Plane::new(
             Point::from_f64(0.0, 0.0, 0.0),

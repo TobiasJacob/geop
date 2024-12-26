@@ -36,7 +36,9 @@ pub fn circle_circle_intersection(
     if n1.is_parallel(n2) && n1.is_perpendicular(p1 - p2) {
         // Check if both circles have the same centerpoint
         if d == 0.0 && (r1 - r2) == 0.0 {
-            return CircleCircleIntersection::Circle(Circle::new(p1, n1, radius_backup.norm()));
+            return CircleCircleIntersection::Circle(
+                Circle::try_new(p1, n1, radius_backup.norm()).unwrap(),
+            );
         }
         // Check if both circles are concentric
         else if d == 0.0 && r1 != r2 {
@@ -128,26 +130,30 @@ mod tests {
 
     #[test]
     fn test_circle_circle_intersection() {
-        let a = Circle::new(
+        let a = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 3.0).normalize().unwrap(),
             EFloat64::two(),
-        );
-        let b = Circle::new(
+        )
+        .unwrap();
+        let b = Circle::try_new(
             Point::from_f64(1.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0).normalize().unwrap(),
             EFloat64::two(),
-        );
-        let c: Circle = Circle::new(
+        )
+        .unwrap();
+        let c: Circle = Circle::try_new(
             Point::from_f64(4.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 2.0).normalize().unwrap(),
             EFloat64::two(),
-        );
-        let d = Circle::new(
+        )
+        .unwrap();
+        let d = Circle::try_new(
             Point::from_f64(6.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 2.0).normalize().unwrap(),
             EFloat64::two(),
-        );
+        )
+        .unwrap();
 
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::TwoPoint(p1, p2) => {
@@ -194,31 +200,35 @@ mod tests {
 
     #[test]
     fn test_circle_circle_intersection_not_coplanar() {
-        let a = Circle::new(
+        let a = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::one(),
-        );
-        let b = Circle::new(
+        )
+        .unwrap();
+        let b = Circle::try_new(
             Point::from_f64(1.0, 0.0, 2.0),
             Point::from_f64(-1.0, 0.0, 0.0),
             EFloat64::one(),
-        );
+        )
+        .unwrap();
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::None => {}
             _ => panic!("Should be None!"),
         }
 
-        let a = Circle::new(
+        let a = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::one(),
-        );
-        let b = Circle::new(
+        )
+        .unwrap();
+        let b = Circle::try_new(
             Point::from_f64(1.0, 0.0, 1.0),
             Point::from_f64(-1.0, 0.0, 0.0),
             EFloat64::one(),
-        );
+        )
+        .unwrap();
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::OnePoint(p) => {
                 assert_eq!(p, Point::from_f64(1.0, 0.0, 0.0));
@@ -226,16 +236,18 @@ mod tests {
             _ => panic!("Should be one point!"),
         }
 
-        let a = Circle::new(
+        let a = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::one(),
-        );
-        let b = Circle::new(
+        )
+        .unwrap();
+        let b = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(-1.0, 0.0, 0.0),
             EFloat64::one(),
-        );
+        )
+        .unwrap();
         match circle_circle_intersection(&a, &b) {
             CircleCircleIntersection::TwoPoint(p1, p2) => {
                 assert_eq!(p1, Point::from_f64(0.0, -1.0, 0.0));

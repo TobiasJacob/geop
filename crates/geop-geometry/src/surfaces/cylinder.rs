@@ -183,11 +183,14 @@ impl SurfaceLike for Cylinder {
         let helix_pitch =
             (self.extend_dir * (q_height - p_height) * EFloat64::two_pi() / angle).unwrap();
         if helix_pitch.norm() == 0.0 {
-            return Curve::Circle(Circle::new(
-                self.basis + p_height * self.extend_dir,
-                self.extend_dir.normalize().unwrap(),
-                helix_radius.norm(),
-            ));
+            return Curve::Circle(
+                Circle::try_new(
+                    self.basis + p_height * self.extend_dir,
+                    self.extend_dir.normalize().unwrap(),
+                    helix_radius.norm(),
+                )
+                .unwrap(),
+            );
         }
         let helix = Curve::Helix(Helix::new(helix_basis, helix_pitch, helix_radius, true));
         assert!(helix.on_curve(p));

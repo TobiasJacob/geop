@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn test_circle_line_intersection() {
-        let c = Circle::new(
+        let c = Circle::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::one(),
@@ -63,7 +63,7 @@ mod tests {
             Point::from_f64(1.0, 0.0, 0.0),
         )
         .unwrap();
-        let i = circle_line_intersection(&c, &l);
+        let i = circle_line_intersection(&c.unwrap(), &l);
         match i {
             CircleLineIntersection::TwoPoint(p1, p2) => {
                 assert_eq!(p1, Point::from_f64(-1.0, 0.0, 0.0));
