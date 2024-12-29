@@ -10,7 +10,15 @@ use geop_geometry::{
 use crate::contains::edge_point::{edge_point_contains, EdgePointContains};
 
 #[derive(Clone, Debug)]
+pub enum EdgeBounds {
+    NoBounds,
+    Anchored(Point), // Used after "Split Edge (Circle) by Point" step in 3D booleans
+    StartEnd(Point, Point),
+}
+
+#[derive(Clone, Debug)]
 pub struct Edge {
+    // pub bounds: EdgeBounds, // TODO: Use this instead of start and end
     pub start: Option<Point>,
     pub end: Option<Point>,
     pub curve: Curve,
@@ -27,43 +35,7 @@ impl Edge {
         if let Some(end) = end {
             assert!(curve.on_curve(end));
         }
-        match start {
-            Some(start) => match end {
-                Some(end) => {
-                    let start = start;
-                    let end = end;
-                    match start == end {
-                        true => Edge {
-                            start: None,
-                            end: None,
-                            curve,
-                        },
-                        false => Edge {
-                            start: Some(start),
-                            end: Some(end),
-                            curve,
-                        },
-                    }
-                }
-                None => Edge {
-                    start: Some(start),
-                    end: None,
-                    curve,
-                },
-            },
-            None => match end {
-                Some(end) => Edge {
-                    start: None,
-                    end: Some(end),
-                    curve,
-                },
-                None => Edge {
-                    start: None,
-                    end: None,
-                    curve,
-                },
-            },
-        }
+        Edge { start, end, curve }
     }
 
     pub fn from_curve(curve: Curve) -> Edge {
