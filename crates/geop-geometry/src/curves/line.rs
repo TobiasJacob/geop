@@ -66,7 +66,8 @@ impl CurveLike for Line {
         Curve::Line(self.neg())
     }
 
-    fn tangent(&self, _p: Point) -> GeometryResult<Point> {
+    fn tangent(&self, p: Point) -> GeometryResult<Point> {
+        self.assert_on_curve(p, "p")?;
         Ok(self.direction.clone())
     }
 
