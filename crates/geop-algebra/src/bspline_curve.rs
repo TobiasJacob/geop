@@ -1,6 +1,6 @@
 use crate::{
     algebra_error::AlgebraResult, bspline_basis::BSplineBasis, efloat::EFloat64, HasZero,
-    MultiDimensionFunction, ToMonomialPolynom,
+    MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
 };
 
 pub struct BSplineCurve<T> {

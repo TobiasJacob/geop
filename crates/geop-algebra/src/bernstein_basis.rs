@@ -42,7 +42,7 @@ impl OneDimensionFunction for BernsteinBasis {
         for n in 1..=self.degree {
             let max_i = n.min(self.degree + self.index - n);
             let min_i = 0;
-            // TODO: This is the original code, but it seems to be wrong. Fix it.
+            // TODO: The following line should work, but it seems to be wrong. Fix it.
             // let min_i = n.saturating_sub(self.index);
             for i in min_i..=max_i {
                 if i == 0 {
