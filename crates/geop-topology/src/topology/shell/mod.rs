@@ -31,12 +31,11 @@ impl ShellNormal {
                     det > 0.0
                 }
                 ShellNormal::OnPoint(tangent1, tangent2, tangent3) => {
-                    // check determinant of the matrix [tangent1, face1dir - curve_dir, face2dir - curve_dir]
+                    // check determinant of the matrix [tangent1 - curve_dir, tangent2 - curve_dir, tangent3 - curve_dir]
                     let tangent1 = tangent1.normalize().unwrap();
                     let tangent2 = tangent2.normalize().unwrap();
                     let tangent3 = tangent3.normalize().unwrap();
-                    let curve_dir = -curve_dir.normalize().unwrap();
-                    let curve_dir = -curve_dir.normalize().unwrap();
+                    let curve_dir = curve_dir.normalize().unwrap();
                     let det = (tangent1 - curve_dir)
                         .cross(tangent2 - curve_dir)
                         .dot(tangent3 - curve_dir);
