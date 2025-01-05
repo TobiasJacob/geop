@@ -1,16 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{
-        bernstein_basis::BernsteinBasis, bernstein_polynomial::BernsteinPolynomial,
-        bspline_basis::BSplineBasis, efloat::EFloat64,
-    };
+    use geop_algebra::{bspline_basis::BSplineBasis, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
-        functions::{
-            rasterize_coordinate_system, rasterize_multidimensional_function_in_1d,
-            rasterize_onedimensional_function,
-        },
+        functions::{rasterize_coordinate_system, rasterize_onedimensional_function},
         triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };

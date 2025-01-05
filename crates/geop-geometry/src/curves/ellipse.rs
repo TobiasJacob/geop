@@ -1,7 +1,14 @@
+use std::fmt::Display;
+
 use geop_algebra::efloat::EFloat64;
 
 use crate::{
-    bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
+    bounding_box::BoundingBox,
+    color::Category10Color,
+    geometry_error::{GeometryError, GeometryResult, WithContext},
+    geometry_scene::GeometryScene,
+    point::Point,
+    transforms::Transform,
 };
 
 use super::{curve::Curve, CurveLike};
@@ -15,40 +22,88 @@ pub struct Ellipse {
 }
 
 impl Ellipse {
-    pub fn new(basis: Point, normal: Point, major_radius: Point, minor_radius: Point) -> Ellipse {
-        assert!(normal.is_normalized());
-        assert!(
-            normal.dot(major_radius) == 0.0,
-            "Major radius and normal must be orthogonal"
-        );
-        assert!(
-            normal.dot(minor_radius) == 0.0,
-            "Minor radius and normal must be orthogonal"
-        );
-        assert!(
-            major_radius.dot(minor_radius) == 0.0,
-            "Major and minor radii must be orthogonal"
-        );
-        Ellipse {
+    pub fn try_new(
+        basis: Point,
+        normal: Point,
+        major_radius: Point,
+        minor_radius: Point,
+    ) -> GeometryResult<Ellipse> {
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!(
+                    "Create an ellipse at {} with normal {}, major_radius {} and minor_radius {}.",
+                    basis, normal, major_radius, minor_radius
+                ),
+                GeometryScene::with_points(vec![
+                    (basis, Category10Color::Orange),
+                    (basis + normal, Category10Color::Green),
+                    (basis + major_radius, Category10Color::Blue),
+                    (basis + minor_radius, Category10Color::Red),
+                ]),
+            )
+        };
+        if !normal.is_normalized() {
+            return Err(GeometryError::new("Normal must be normalized".to_string()))
+                .with_context(&error_context);
+        }
+        if normal.dot(major_radius) != 0.0 {
+            return Err(GeometryError::new(
+                "Major radius and normal must be orthogonal".to_string(),
+            ))
+            .with_context(&error_context);
+        }
+        if normal.dot(minor_radius) != 0.0 {
+            return Err(GeometryError::new(
+                "Minor radius and normal must be orthogonal".to_string(),
+            ))
+            .with_context(&error_context);
+        }
+        if major_radius.dot(minor_radius) != 0.0 {
+            return Err(GeometryError::new(
+                "Major and minor radii must be orthogonal".to_string(),
+            ))
+            .with_context(&error_context);
+        }
+        Ok(Ellipse {
             basis,
             normal,
             major_radius,
             minor_radius,
-        }
+        })
     }
 
-    fn transform_point_to_circle(&self, p: Point) -> Point {
-        assert!(self.on_curve(p));
+    fn assert_on_curve(&self, p: Point, variable_name: &str) -> GeometryResult<()> {
+        if !self.on_curve(p) {
+            return Err(GeometryError::new(format!(
+                "Point {} {} is not on ellipse {}",
+                variable_name, p, self
+            )));
+        }
+        Ok(())
+    }
+
+    fn transform_point_to_circle(&self, p: Point) -> GeometryResult<Point> {
+        self.assert_on_curve(p, "p")?;
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm_sq();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm_sq();
-        Point::new(x.unwrap(), y.unwrap(), EFloat64::zero())
+        Ok(Point::new(x.unwrap(), y.unwrap(), EFloat64::zero()))
     }
 
-    fn transform_point_from_circle(&self, p: Point) -> Point {
-        assert!(p.z == 0.0);
-        assert!(p.is_normalized());
-        p.x * self.major_radius + p.y * self.minor_radius + self.basis
+    fn transform_point_from_circle(&self, p: Point) -> GeometryResult<Point> {
+        if p.z != 0.0 {
+            return Err(GeometryError::new(format!(
+                "Point p {} is has z component different from 0 in transform_point_from_circle.",
+                p
+            )));
+        }
+        if !p.is_normalized() {
+            return Err(GeometryError::new(format!(
+                "Point p {} is not normalized in transform_point_from_circle.",
+                p
+            )));
+        }
+        Ok(p.x * self.major_radius + p.y * self.minor_radius + self.basis)
     }
 
     pub fn transform(&self, transform: Transform) -> Ellipse {
@@ -56,16 +111,18 @@ impl Ellipse {
         let normal = transform * (self.normal + self.basis) - basis;
         let major_radius = transform * (self.major_radius + self.basis) - basis;
         let minor_radius = transform * (self.minor_radius + self.basis) - basis;
-        Ellipse::new(basis, normal, major_radius, minor_radius)
+        Ellipse::try_new(basis, normal, major_radius, minor_radius)
+            .expect("Transform of ellipse will always succeed")
     }
 
     pub fn neg(&self) -> Ellipse {
-        Ellipse::new(
+        Ellipse::try_new(
             self.basis,
             -self.normal,
             self.major_radius,
             self.minor_radius,
         )
+        .expect("Negation of ellipse will always succeed")
     }
 
     pub fn get_extremal_points(&self) -> Vec<Point> {
@@ -91,17 +148,6 @@ impl Ellipse {
             + self.minor_radius * self.minor_radius.z)
             / disc_z;
 
-        // vec![
-        //     self.basis + disc_x,
-        //     self.basis - disc_x,
-        //     self.basis + disc_y,
-        //     self.basis - disc_y,
-        //     self.basis + disc_z,
-        //     self.basis - disc_z,
-        // ]
-        // .iter() // Filter nan. Nan means that the ellipse is parallel to a plane, so there is no extremal point.
-        // .cloned()
-        // .collect()
         let mut points = Vec::with_capacity(6);
         if let Ok(disc_x) = disc_x {
             points.push(self.basis + disc_x);
@@ -129,7 +175,7 @@ impl CurveLike for Ellipse {
     }
 
     fn tangent(&self, p: Point) -> GeometryResult<Point> {
-        assert!(self.on_curve(p));
+        self.assert_on_curve(p, "p")?;
         let p = p - self.basis;
         let x = self.major_radius.dot(p) / self.major_radius.norm();
         let y = self.minor_radius.dot(p) / self.minor_radius.norm();
@@ -147,8 +193,22 @@ impl CurveLike for Ellipse {
     }
 
     fn distance(&self, x: Point, y: Point) -> GeometryResult<EFloat64> {
-        assert!(self.on_curve(x));
-        assert!(self.on_curve(y));
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!(
+                    "Calculate distance between x {} and y {} on ellipse {}",
+                    x, y, self
+                ),
+                GeometryScene {
+                    points: vec![(x, Category10Color::Orange), (y, Category10Color::Green)],
+                    curves: vec![(Curve::Ellipse(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
+        self.assert_on_curve(x, "x").with_context(&error_context)?;
+        self.assert_on_curve(y, "y").with_context(&error_context)?;
         let angle = (x - self.basis).angle(y - self.basis).unwrap();
         Ok(self.major_radius.norm() * angle)
     }
@@ -159,10 +219,31 @@ impl CurveLike for Ellipse {
         end: Option<Point>,
         t: f64,
     ) -> GeometryResult<Point> {
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!(
+                    "Interpolating between {:?} and {:?} with t={}",
+                    start, end, t
+                ),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Blue),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Ellipse(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 let start = start - self.basis;
                 let end = end - self.basis;
                 let x_start = self.major_radius.dot(start);
@@ -179,6 +260,8 @@ impl CurveLike for Ellipse {
                 Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
             (Some(start), None) => {
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
                 let start = start - self.basis;
                 let x_start = self.major_radius.dot(start);
                 let y_start = self.minor_radius.dot(start);
@@ -187,6 +270,8 @@ impl CurveLike for Ellipse {
                 Ok(angle.cos() * self.major_radius + angle.sin() * self.minor_radius + self.basis)
             }
             (None, Some(end)) => {
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 let end = end - self.basis;
                 let x_end = self.major_radius.dot(end);
                 let y_end = self.minor_radius.dot(end);
@@ -202,11 +287,31 @@ impl CurveLike for Ellipse {
     }
 
     fn between(&self, m: Point, start: Option<Point>, end: Option<Point>) -> GeometryResult<bool> {
-        assert!(self.on_curve(m));
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!("Checking if {} is between {:?} and {:?}", m, start, end),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Blue),
+                        (Some(m), Category10Color::Green),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Ellipse(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
+        self.assert_on_curve(m, "m").with_context(&error_context)?;
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 let start = start - self.basis;
                 let end = end - self.basis;
                 let m = m - self.basis;
@@ -225,11 +330,13 @@ impl CurveLike for Ellipse {
                 Ok(angle_start <= angle_m.upper_bound && angle_m <= angle_end.lower_bound)
             }
             (Some(start), None) => {
-                assert!(self.on_curve(start));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
                 Ok(true)
             }
             (None, Some(end)) => {
-                assert!(self.on_curve(end));
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 Ok(true)
             }
             (None, None) => Ok(true),
@@ -237,25 +344,57 @@ impl CurveLike for Ellipse {
     }
 
     fn get_midpoint(&self, start: Option<Point>, end: Option<Point>) -> GeometryResult<Point> {
-        assert!(start != end);
+        let error_context = |err: GeometryError| {
+            err.with_context_scene(
+                format!("Midpoint between {:?} and {:?}", start, end),
+                GeometryScene {
+                    points: vec![
+                        (start, Category10Color::Orange),
+                        (end, Category10Color::Blue),
+                    ]
+                    .into_iter()
+                    .filter_map(|(p, c)| p.map(|p| (p, c)))
+                    .collect(),
+                    curves: vec![(Curve::Ellipse(self.clone()), Category10Color::Gray)],
+                    surfaces: vec![],
+                },
+            )
+        };
+
         match (start, end) {
             (Some(start), Some(end)) => {
-                assert!(self.on_curve(start));
-                assert!(self.on_curve(end));
-                let start_rel = self.transform_point_to_circle(start);
-                let end_rel = self.transform_point_to_circle(end);
+                if start == end {
+                    return Err(error_context(GeometryError::new(
+                        "Start and end are the same".to_string(),
+                    )));
+                }
+
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
+                let start_rel = self
+                    .transform_point_to_circle(start)
+                    .expect("Start is on curve");
+                let end_rel = self
+                    .transform_point_to_circle(end)
+                    .expect("End is on curve");
                 // println!("start_rel: {:?}", start_rel);
                 // println!("end_rel: {:?}", end_rel);
                 let mid = ((start_rel + end_rel) / EFloat64::two()).unwrap();
                 // println!("mid: {:?}", mid);
                 if mid.norm() == 0.0 {
-                    return Ok(self.transform_point_from_circle(
-                        Point::unit_z().cross(start_rel).normalize().unwrap(),
-                    ));
+                    return Ok(self
+                        .transform_point_from_circle(
+                            Point::unit_z().cross(start_rel).normalize().unwrap(),
+                        )
+                        .unwrap());
                 }
                 let mid = mid.normalize().unwrap();
                 // println!("mid: {:?}", mid);
-                let p1 = self.transform_point_from_circle(mid);
+                let p1 = self
+                    .transform_point_from_circle(mid)
+                    .expect("Mid is on curve");
                 if self.between(p1, Some(start), Some(end)).unwrap() {
                     return Ok(p1);
                 } else {
@@ -263,11 +402,13 @@ impl CurveLike for Ellipse {
                 }
             }
             (Some(start), None) => {
-                assert!(self.on_curve(start));
+                self.assert_on_curve(start, "start")
+                    .with_context(&error_context)?;
                 return Ok(self.basis - (start - self.basis));
             }
             (None, Some(end)) => {
-                assert!(self.on_curve(end));
+                self.assert_on_curve(end, "end")
+                    .with_context(&error_context)?;
                 return Ok(self.basis - (end - self.basis));
             }
             (None, None) => {
@@ -349,12 +490,21 @@ impl CurveLike for Ellipse {
     }
 }
 
-// Implement partial equality for ellipse
 impl PartialEq for Ellipse {
     fn eq(&self, other: &Ellipse) -> bool {
         self.basis == other.basis
             && self.normal == other.normal
             && self.major_radius == other.major_radius
             && self.minor_radius == other.minor_radius
+    }
+}
+
+impl Display for Ellipse {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "Ellipse at {} with normal {}, major radius {} and minor radius {}",
+            self.basis, self.normal, self.major_radius, self.minor_radius
+        )
     }
 }

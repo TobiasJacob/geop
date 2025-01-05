@@ -11,6 +11,6 @@ pub fn primitive_ellipse(
     major_radius: Point,
     minor_radius: Point,
 ) -> Edge {
-    let e = Ellipse::new(basis, normal, major_radius, minor_radius);
+    let e = Ellipse::try_new(basis, normal, major_radius, minor_radius).unwrap();
     Edge::new(None, None, Curve::Ellipse(e))
 }

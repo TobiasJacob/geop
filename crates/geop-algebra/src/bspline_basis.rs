@@ -109,18 +109,18 @@ impl PartialEq for BSplineBasis {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    // #[test]
-    // fn test_bspline_basis() {
-    //     let b = BSplineBasis::new(0, 0, vec![EFloat64::from(0.0), EFloat64::from(1.0)]).unwrap();
-    //     let as_mon = b.to_monomial_polynom();
-    //     println!("{}", &as_mon);
-    //     for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
-    //         let t = EFloat64::from(t);
-    //         assert_eq!(b.eval(t), as_mon.eval(t));
-    //     }
-    // }
-}
+//     // #[test]
+//     // fn test_bspline_basis() {
+//     //     let b = BSplineBasis::new(0, 0, vec![EFloat64::from(0.0), EFloat64::from(1.0)]).unwrap();
+//     //     let as_mon = b.to_monomial_polynom();
+//     //     println!("{}", &as_mon);
+//     //     for t in [0.15, 0.2, 0.67, 0.43456, 0.6373] {
+//     //         let t = EFloat64::from(t);
+//     //         assert_eq!(b.eval(t), as_mon.eval(t));
+//     //     }
+//     // }
+// }
