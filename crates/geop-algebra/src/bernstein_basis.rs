@@ -1,4 +1,4 @@
-use std::vec;
+use std::{fmt::Display, vec};
 
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
@@ -61,6 +61,12 @@ impl OneDimensionFunction for BernsteinBasis {
 impl PartialEq for BernsteinBasis {
     fn eq(&self, other: &Self) -> bool {
         self.index == other.index && self.degree == other.degree
+    }
+}
+
+impl Display for BernsteinBasis {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "B_{{{},{}}}(x)", self.index, self.degree)
     }
 }
 

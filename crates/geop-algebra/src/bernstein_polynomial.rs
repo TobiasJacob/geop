@@ -1,8 +1,11 @@
+use std::fmt::Display;
+
 use crate::{
     bernstein_basis::BernsteinBasis, efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero,
     MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
 };
 
+// Represents a polynomial in the form of a_{0} B_{0,n}
 pub struct BernsteinPolynomial<T> {
     coefficients: Vec<T>,
 }
@@ -12,21 +15,19 @@ impl BernsteinPolynomial<EFloat64> {
         Self { coefficients }
     }
 
+    pub fn degree(&self) -> usize {
+        self.coefficients.len() - 1
+    }
+
     pub fn from_monomial_polynom(monomial_polynom: MonomialPolynom) -> Self {
         let n = monomial_polynom.degree(); // Degree of the polynomial
-        let mut bernstein_coeffs = monomial_polynom.monomials.clone();
+        let mut bernstein_coeffs = vec![EFloat64::zero(); n + 1];
 
-        // Divide by binomial coefficients
-        for k in 0..=n {
-            bernstein_coeffs[k] = (bernstein_coeffs[k].clone()
-                / EFloat64::from(binomial_coefficient(n, k) as f64))
-            .unwrap();
-        }
-
-        // Recursively accumulate sums
-        for k in (1..=n).rev() {
-            for j in 0..k {
-                bernstein_coeffs[j] = bernstein_coeffs[j].clone() + bernstein_coeffs[j + 1].clone();
+        for i in 0..=n {
+            for k in 0..=i {
+                let factor = binomial_coefficient(i, k) / binomial_coefficient(n, k);
+                bernstein_coeffs[i] = bernstein_coeffs[i]
+                    + EFloat64::from(factor as f64) * monomial_polynom.monomials[k].clone();
             }
         }
 
@@ -34,20 +35,21 @@ impl BernsteinPolynomial<EFloat64> {
     }
 
     pub fn to_monomial_polynom(&self) -> MonomialPolynom {
-        let n = self.coefficients.len() - 1; // Degree of the polynomial
-        let mut monomial_coeffs = self.coefficients.clone();
+        let n = self.degree(); // Degree of the polynomial
+        let mut monomial_coeffs = vec![EFloat64::zero(); n + 1];
 
-        // Recursively compute differences
-        for k in (1..=n).rev() {
-            for j in 0..k {
-                monomial_coeffs[j] = monomial_coeffs[j].clone() - monomial_coeffs[j + 1].clone();
+        for i in 0..=n {
+            for k in 0..=i {
+                let factor = binomial_coefficient(n, i) * binomial_coefficient(i, k);
+                if (i - k) % 2 == 0 {
+                    // (-1)^{i-k} = 1
+                    monomial_coeffs[i] = monomial_coeffs[i]
+                        + EFloat64::from(factor as f64) * self.coefficients[k].clone();
+                } else {
+                    monomial_coeffs[i] = monomial_coeffs[i]
+                        - EFloat64::from(factor as f64) * self.coefficients[k].clone();
+                }
             }
-        }
-
-        // Multiply by binomial coefficients
-        for k in 0..=n {
-            monomial_coeffs[k] =
-                monomial_coeffs[k].clone() * EFloat64::from(binomial_coefficient(n, k) as f64);
         }
 
         MonomialPolynom::new(monomial_coeffs)
@@ -106,9 +108,20 @@ fn binomial_coefficient(n: usize, k: usize) -> usize {
     }
 }
 
-impl std::fmt::Debug for BernsteinPolynomial<EFloat64> {
+impl Display for BernsteinPolynomial<EFloat64> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Bernstein Polynomial: {:?}", self.coefficients)
+        let mut first = true;
+        let n = self.degree();
+        for (i, coeff) in self.coefficients.iter().enumerate() {
+            if *coeff != EFloat64::zero() {
+                if !first {
+                    write!(f, " + ")?;
+                }
+                write!(f, "{} B_{{{},{}}}(t)", coeff, i, n)?;
+                first = false;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -129,11 +142,19 @@ mod tests {
         let monomial = bernstein.to_monomial_polynom();
         let monomial2 = bernstein.to_monomial_polynom_slow();
         assert_eq!(monomial.monomials, monomial2.monomials);
+        // println!("Bernstein Polynomial: {}", &bernstein);
+        println!("Monomial Polynomial: {}", &monomial);
+        println!("Monomial Polynomial (slow): {}", &monomial2);
 
         let back_to_bernstein = BernsteinPolynomial::from_monomial_polynom(monomial.clone());
 
+        println!("Bernstein Polynomial: {}", &bernstein);
+        println!(
+            "Bernstein Polynomial (from monomial): {}",
+            &back_to_bernstein
+        );
+
         assert_eq!(back_to_bernstein.coefficients, coeffs);
-        println!("Monomial Polynomial: {}", &monomial);
     }
 
     #[test]
@@ -150,6 +171,6 @@ mod tests {
 
         assert_eq!(back_to_monomial.monomials, monomial_coeffs.monomials);
         assert_eq!(back_to_monomial_slow.monomials, monomial_coeffs.monomials);
-        println!("Bernstein Polynomial: {:?}", &bernstein);
+        println!("Bernstein Polynomial: {}", &bernstein);
     }
 }

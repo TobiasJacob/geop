@@ -158,7 +158,6 @@ impl std::ops::Div for &MonomialPolynom {
 impl std::fmt::Display for &MonomialPolynom {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut first = true;
-        write!(f, "(")?;
         for i in (0..self.monomials.len()).rev() {
             if *self.monomials.get(i).unwrap() != 0.0 {
                 if !first {
@@ -168,7 +167,6 @@ impl std::fmt::Display for &MonomialPolynom {
                 first = false;
             }
         }
-        write!(f, ")")?;
         Ok(())
     }
 }

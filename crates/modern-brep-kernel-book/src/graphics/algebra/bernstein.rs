@@ -58,6 +58,7 @@ mod tests {
         for n in 0..max_n {
             for i in 0..=n {
                 let curve = BernsteinBasis::new(i, n).unwrap();
+                println!("{}: {}", &curve, &curve.to_monomial_polynom());
                 let mut edge_buffer_i =
                     rasterize_onedimensional_function(&curve, Color::black(), -2.0, 3.0);
                 let t =
