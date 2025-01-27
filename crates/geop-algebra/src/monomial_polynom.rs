@@ -1,19 +1,22 @@
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
-    HasZero, OneDimensionFunction,
+    AlgebraicValue, HasZero, OneDimensionFunction,
 };
 
 #[derive(Debug, Clone)]
-pub struct MonomialPolynom {
-    pub monomials: Vec<EFloat64>,
+pub struct MonomialPolynom<T> {
+    pub monomials: Vec<T>,
 }
 
-impl MonomialPolynom {
-    pub fn new(monomials: Vec<EFloat64>) -> Self {
+impl<T> MonomialPolynom<T>
+where
+    T: AlgebraicValue,
+{
+    pub fn new(monomials: Vec<T>) -> Self {
         // Strip leading zeros
         let mut monomials = monomials;
-        while monomials.len() > 0 && *monomials.last().unwrap() == 0.0 {
+        while monomials.len() > 0 && *monomials.last().unwrap() == T::zero() {
             monomials.pop();
         }
         Self { monomials }
@@ -23,12 +26,12 @@ impl MonomialPolynom {
         Self::new(vec![])
     }
 
-    pub fn from_factor(factor: EFloat64) -> Self {
+    pub fn from_factor(factor: T) -> Self {
         Self::new(vec![factor])
     }
 
-    pub fn from_factor_and_power(factor: EFloat64, power: usize) -> Self {
-        let mut monomials = vec![EFloat64::zero(); power];
+    pub fn from_factor_and_power(factor: T, power: usize) -> Self {
+        let mut monomials = vec![T::zero(); power];
         monomials.push(factor);
         Self::new(monomials)
     }
@@ -43,7 +46,7 @@ impl MonomialPolynom {
 
     pub fn pow(&self, power: usize) -> Self {
         if power == 0 {
-            return Self::from_factor(EFloat64::one());
+            return Self::from_factor(T::one());
         }
         let mut result = self.clone();
         for _ in 1..power {
@@ -53,9 +56,12 @@ impl MonomialPolynom {
     }
 }
 
-impl OneDimensionFunction for MonomialPolynom {
+impl<T> OneDimensionFunction for MonomialPolynom<T>
+where
+    T: AlgebraicValue,
+{
     fn eval(&self, x: EFloat64) -> EFloat64 {
-        let mut result = EFloat64::zero();
+        let mut result = T::zero();
         for i in 0..self.monomials.len() {
             result = result + self.monomials[i] * x.powi(i as i32);
         }
@@ -63,7 +69,10 @@ impl OneDimensionFunction for MonomialPolynom {
     }
 }
 
-impl PartialEq for MonomialPolynom {
+impl<T> PartialEq for MonomialPolynom<T>
+where
+    T: AlgebraicValue,
+{
     fn eq(&self, other: &Self) -> bool {
         if self.monomials.len() != other.monomials.len() {
             return false;
@@ -77,24 +86,30 @@ impl PartialEq for MonomialPolynom {
     }
 }
 
-impl std::ops::Add for &MonomialPolynom {
-    type Output = MonomialPolynom;
+impl<T> std::ops::Add for &MonomialPolynom<T>
+where
+    T: AlgebraicValue,
+{
+    type Output = MonomialPolynom<T>;
 
-    fn add(self, other: &MonomialPolynom) -> MonomialPolynom {
-        let mut result = vec![EFloat64::zero(); self.monomials.len().max(other.monomials.len())];
+    fn add(self, other: &MonomialPolynom<T>) -> MonomialPolynom<T> {
+        let mut result = vec![T::zero(); self.monomials.len().max(other.monomials.len())];
         for i in 0..result.len() {
-            result[i] = *self.monomials.get(i).unwrap_or(&EFloat64::zero())
-                + *other.monomials.get(i).unwrap_or(&EFloat64::zero());
+            result[i] = *self.monomials.get(i).unwrap_or(&T::zero())
+                + *other.monomials.get(i).unwrap_or(&T::zero());
         }
         MonomialPolynom::new(result)
     }
 }
 
-impl std::ops::Mul for &MonomialPolynom {
-    type Output = MonomialPolynom;
+impl<T> std::ops::Mul for &MonomialPolynom<T>
+where
+    T: AlgebraicValue,
+{
+    type Output = MonomialPolynom<T>;
 
-    fn mul(self, other: &MonomialPolynom) -> MonomialPolynom {
-        let mut result = vec![EFloat64::zero(); self.monomials.len() + other.monomials.len()];
+    fn mul(self, other: &MonomialPolynom<T>) -> MonomialPolynom<T> {
+        let mut result = vec![T::zero(); self.monomials.len() + other.monomials.len()];
         for i in 0..self.monomials.len() {
             for j in 0..other.monomials.len() {
                 result[i + j] = result[i + j] + self.monomials[i] * other.monomials[j];

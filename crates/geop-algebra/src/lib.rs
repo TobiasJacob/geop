@@ -14,8 +14,12 @@ pub trait HasZero {
     fn zero() -> Self;
 }
 
-pub trait ToMonomialPolynom {
-    fn to_monomial_polynom(&self) -> MonomialPolynom;
+pub trait HasOne {
+    fn one() -> Self;
+}
+
+pub trait ToMonomialPolynom<T> {
+    fn to_monomial_polynom(&self) -> MonomialPolynom<T>;
 }
 
 pub trait OneDimensionFunction {
@@ -24,4 +28,15 @@ pub trait OneDimensionFunction {
 
 pub trait MultiDimensionFunction<T> {
     fn eval(&self, t: EFloat64) -> T;
+}
+
+// This is real values or for example a vector. They can be added, multiplied with a scalar and have a zero value.
+trait AlgebraicValue:
+    Clone
+    + std::ops::Add<Output = Self>
+    + std::ops::Mul<EFloat64, Output = Self>
+    + HasZero
+    + HasOne
+    + PartialEq
+{
 }

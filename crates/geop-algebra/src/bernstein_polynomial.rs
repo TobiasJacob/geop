@@ -18,7 +18,16 @@ impl BernsteinPolynomial<EFloat64> {
     pub fn degree(&self) -> usize {
         self.coefficients.len() - 1
     }
+}
 
+impl<T> BernsteinPolynomial<T>
+where
+    T: Clone,
+    T: std::ops::Add<Output = T>,
+    T: std::ops::Mul<EFloat64, Output = T>,
+    T: HasZero,
+    T: ToMonomialPolynom,
+{
     pub fn from_monomial_polynom(monomial_polynom: MonomialPolynom) -> Self {
         let n = monomial_polynom.degree(); // Degree of the polynomial
         let mut bernstein_coeffs = vec![EFloat64::zero(); n + 1];
@@ -57,16 +66,6 @@ impl BernsteinPolynomial<EFloat64> {
 
         MonomialPolynom::new(monomial_coeffs)
     }
-}
-
-impl<T> BernsteinPolynomial<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: HasZero,
-    T: ToMonomialPolynom,
-{
     pub fn to_monomial_polynom_slow(&self) -> MonomialPolynom {
         let mut result = MonomialPolynom::zero();
         for (i, coeff) in self.coefficients.iter().enumerate() {
