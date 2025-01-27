@@ -1,16 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{
-        bernstein_basis::BernsteinBasis, bernstein_polynomial::BernsteinPolynomial,
-        efloat::EFloat64,
-    };
+    use geop_algebra::{bernstein_polynomial::BernsteinPolynomial, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
-        functions::{
-            rasterize_coordinate_system, rasterize_multidimensional_function_in_1d,
-            rasterize_onedimensional_function,
-        },
+        functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
         triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };
@@ -30,7 +24,8 @@ mod tests {
             EFloat64::from(0.3),
         ]);
 
-        let mut edge_buffer = rasterize_multidimensional_function_in_1d(&curve, Color::black());
+        let mut edge_buffer =
+            rasterize_multidimensional_function_in_1d(&curve, Color::black(), 0.0, 1.0);
         edge_buffer.join(&rasterize_coordinate_system(
             Point::zero(),
             Point::ones(),
@@ -50,6 +45,7 @@ mod tests {
             )
             .await;
     }
+
     #[rstest]
     async fn test_bernstein_basis(#[future] renderer: Box<HeadlessRenderer>) {
         let mut edge_buffer = EdgeBuffer::empty();
@@ -57,10 +53,11 @@ mod tests {
         let max_n = 5;
         for n in 0..max_n {
             for i in 0..=n {
-                let curve = BernsteinBasis::new(i, n).unwrap();
+                // let curve = BernsteinBasis::new(i, n).unwrap();
+                let curve = BernsteinPolynomial::bernstein_basis(i, n);
                 println!("{}: {}", &curve, &curve.to_monomial_polynom());
                 let mut edge_buffer_i =
-                    rasterize_onedimensional_function(&curve, Color::black(), -2.0, 3.0);
+                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -2.0, 3.0);
                 let t =
                     Transform::from_translation(
                         Point::unit_y() * EFloat64::from((max_n - 1 - n) as f64 / max_n as f64),

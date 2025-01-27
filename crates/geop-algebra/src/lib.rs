@@ -1,5 +1,4 @@
 pub mod algebra_error;
-pub mod bernstein_basis;
 pub mod bernstein_polynomial;
 pub mod bspline_basis;
 pub mod bspline_curve;

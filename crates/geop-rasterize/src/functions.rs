@@ -62,12 +62,14 @@ pub fn rasterize_multidimensional_function(
 pub fn rasterize_multidimensional_function_in_1d(
     edge: &impl MultiDimensionFunction<EFloat64>,
     color: Color,
+    x_min: f64,
+    x_max: f64,
 ) -> EdgeBuffer {
     let n = 100;
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {
-        let v1 = (j as f64) / n as f64;
-        let v2 = ((j + 1) as f64) / n as f64;
+        let v1 = (j as f64) / n as f64 * (x_max - x_min) + x_min;
+        let v2 = ((j + 1) as f64) / n as f64 * (x_max - x_min) + x_min;
         edges.push(RenderEdge::new(
             Point::unit_x() * EFloat64::from(v1) + Point::unit_y() * edge.eval(EFloat64::from(v1)),
             Point::unit_x() * EFloat64::from(v2) + Point::unit_y() * edge.eval(EFloat64::from(v2)),
