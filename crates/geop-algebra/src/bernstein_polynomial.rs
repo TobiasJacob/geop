@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::{
     bernstein_basis::BernsteinBasis, efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero,
-    MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
+    MultiDimensionFunction, ToMonomialPolynom,
 };
 
 // Represents a polynomial in the form of a_{0} B_{0,n}
@@ -81,6 +81,15 @@ where
     }
 }
 
+// From https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
+// def de_casteljau(t: float, coefs: list[float]) -> float:
+//     """De Casteljau's algorithm."""
+//     beta = coefs.copy()  # values in this list are overridden
+//     n = len(beta)
+//     for j in range(1, n):
+//         for k in range(n - j):
+//             beta[k] = beta[k] * (1 - t) + beta[k + 1] * t
+//     return beta[0]
 impl<T> MultiDimensionFunction<T> for BernsteinPolynomial<T>
 where
     T: Clone,
@@ -90,15 +99,15 @@ where
     T: ToMonomialPolynom,
 {
     fn eval(&self, t: EFloat64) -> T {
-        let mut result = T::zero();
-
-        for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BernsteinBasis::new(i, self.coefficients.len() - 1).unwrap();
-            let basis_eval = basis.eval(t);
-            result = result + coeff.clone() * basis_eval;
+        let mut beta = self.coefficients.clone();
+        let n = beta.len();
+        for j in 1..n {
+            for k in 0..n - j {
+                beta[k] = beta[k].clone() * (EFloat64::one() - t.clone())
+                    + beta[k + 1].clone() * t.clone();
+            }
         }
-
-        result
+        beta[0].clone()
     }
 }
 
@@ -130,6 +139,8 @@ impl Display for BernsteinPolynomial<EFloat64> {
 
 #[cfg(test)]
 mod tests {
+    use crate::OneDimensionFunction;
+
     use super::*;
 
     #[test]
@@ -175,5 +186,25 @@ mod tests {
         assert_eq!(back_to_monomial.monomials, monomial_coeffs.monomials);
         assert_eq!(back_to_monomial_slow.monomials, monomial_coeffs.monomials);
         println!("Bernstein Polynomial: {}", &bernstein);
+    }
+
+    #[test]
+    fn test_bernstein_eval() {
+        let coeffs = vec![
+            EFloat64::from(1.0),
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(5.0),
+            EFloat64::from(3.0),
+        ];
+        let bernstein = BernsteinPolynomial::new(coeffs.clone());
+        let monomial = bernstein.to_monomial_polynom();
+
+        let t = EFloat64::from(0.5);
+        let eval = bernstein.eval(t);
+        let eval_monomial = monomial.eval(t);
+        assert_eq!(eval, eval_monomial);
+        println!("Bernstein Polynomial: {}", &bernstein);
+        println!("Bernstein Polynomial at {}: {}", t, eval);
     }
 }

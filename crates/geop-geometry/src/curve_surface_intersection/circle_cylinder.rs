@@ -28,10 +28,10 @@ pub fn circle_cylinder_intersection(
         // parallel circle touches the cylinder from the outside
         if s == 0.0 {
             let shared_dir = (distance / distance.norm()).unwrap();
-            
+
             // Calculate touch point at cylinder's surface
             let touch_point = cylinder.basis + shared_dir * cylinder.radius.norm();
-            
+
             // Add the z-coordinate from the circle's height
             let height = circle.basis.dot(cylinder.extend_dir);
             let p = touch_point + height * cylinder.extend_dir;
@@ -60,11 +60,12 @@ mod tests {
         );
 
         for z_dim in 0..=10 {
-            let circle = Circle::new(
+            let circle = Circle::try_new(
                 Point::from_f64(10.0, 0.0, z_dim as f64),
                 Point::from_f64(0.0, 0.0, 1.0),
                 EFloat64::from(10.0),
-            );
+            )
+            .unwrap();
             match circle_cylinder_intersection(&circle, &cylinder) {
                 CircleCylinderIntersection::Circle(circle) => {
                     assert_eq!(circle, circle);
@@ -84,11 +85,12 @@ mod tests {
         );
 
         for z_dim in 0..=10 {
-            let circle = Circle::new(
+            let circle = Circle::try_new(
                 Point::from_f64(18.0, 0.0, z_dim as f64),
                 Point::from_f64(0.0, 0.0, 1.0),
                 EFloat64::from(8.0),
-            );
+            )
+            .unwrap();
             match circle_cylinder_intersection(&circle, &cylinder) {
                 CircleCylinderIntersection::OnePoint(p) => {
                     assert_eq!(p, Point::from_f64(10.0, 0.0, z_dim as f64));
@@ -107,11 +109,12 @@ mod tests {
             true,
         );
 
-        let circle = Circle::new(
+        let circle = Circle::try_new(
             Point::from_f64(20.0, 0.0, 5.0),
             Point::from_f64(0.0, 0.0, 1.0),
             EFloat64::from(8.0),
-        );
+        )
+        .unwrap();
         match circle_cylinder_intersection(&circle, &cylinder) {
             CircleCylinderIntersection::None => {}
             _ => panic!("Intersection should be None"),
