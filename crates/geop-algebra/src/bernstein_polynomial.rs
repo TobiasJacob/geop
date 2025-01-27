@@ -63,6 +63,24 @@ impl BernsteinPolynomial<EFloat64> {
 
         MonomialPolynom::new(monomial_coeffs)
     }
+
+    //$$ c_i^{n+r} = \sum_{j = max(0, i - r)}^{min(n, i)} \frac{\binom{r}{i - j} \binom{n}{j}}{\binom{n + r}{i}} c_i^n $$
+    pub fn elevate_degree(&self, r: usize) -> Self {
+        let n = self.degree();
+        let mut new_coeffs = vec![EFloat64::zero(); n + r + 1];
+
+        for i in 0..=n + r {
+            for j in i.saturating_sub(r)..=n.min(i) {
+                let factor = (EFloat64::from(
+                    (binomial_coefficient(r, i - j) * binomial_coefficient(n, j)) as f64,
+                ) / EFloat64::from(binomial_coefficient(n + r, i) as f64))
+                .unwrap();
+                new_coeffs[i] = new_coeffs[i] + factor * self.coefficients[j].clone();
+            }
+        }
+
+        Self::new(new_coeffs)
+    }
 }
 
 // From https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
@@ -185,5 +203,44 @@ mod tests {
         assert_eq!(eval, eval_monomial);
         println!("Bernstein Polynomial: {}", &bernstein);
         println!("Bernstein Polynomial at {}: {}", t, eval);
+    }
+
+    #[test]
+    fn test_bernstein_elevate_degree() {
+        let coeffs = vec![
+            EFloat64::from(1.0),
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(5.0),
+            EFloat64::from(3.0),
+        ];
+        let bernstein = BernsteinPolynomial::new(coeffs.clone());
+
+        let r = 2;
+        let elevated_bernstein = bernstein.elevate_degree(r);
+
+        println!("Bernstein Polynomial: {}", &bernstein);
+        println!("Elevated Bernstein Polynomial: {}", &elevated_bernstein);
+
+        for t in 0..=10 {
+            let t = EFloat64::from(t as f64 / 10.0);
+            assert_eq!(bernstein.eval(t), elevated_bernstein.eval(t), "t = {}", t);
+        }
+    }
+
+    #[test]
+    fn test_bernstein_elevate_degree2() {
+        let coeffs = vec![EFloat64::from(1.0), EFloat64::from(2.0)];
+        let bernstein = BernsteinPolynomial::new(coeffs.clone());
+
+        println!("Bernstein Polynomial: {}", &bernstein);
+        println!(
+            "Elevated Bernstein Polynomial: {}",
+            &bernstein.elevate_degree(1)
+        );
+        println!(
+            "Elevated Bernstein Polynomial 2: {}",
+            &bernstein.elevate_degree(2)
+        );
     }
 }

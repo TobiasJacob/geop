@@ -18,7 +18,7 @@ Now to find the intersection, we have to solve
 $$u_1(p(t)) = 0$$
 $$u_2(p(t)) = 0$$
 
-This is a system of equations which is polynomial in nature. We can convert this system of equations into a single polynomial equation using Bernstein Polynomials. The IPP algorithm can then find the roots of this polynomial equation. This is how we can find the intersection of a line and a circle.
+This is a system of equations which is polynomial in nature. We can solve multiple systems of polynomial equations with IPP.
 
 #### Curve curve intersection
 
@@ -26,9 +26,9 @@ This is a table to show which roots to find depending on if the curve is explici
 
 | Curve 1           | Curve 2     | Roots to find |
 |-------------------|-------------|---------------|
-| Implicit \\(u_1, u_2\\) | Implicit \\(v_1, v_2\\) | \\(u_1(x, y, z) \cdot u_2(x, y, z) \cdot v_1(x, y, z) \cdot v_2(x, y, z)\\) |
-| Implicit \\(u_1, u_2\\) | Explicit \\(p(t_2)\\) | \\(u_1(p(t_2)) \cdot u_2(p(t_2))\\) |
-| Explicit \\(p(t_1)\\) | Explicit \\(p(t_2)\\) | \\((p(t_1) - p(t_2))^2\\) |
+| Implicit \\(u_1, u_2\\) | Implicit \\(v_1, v_2\\) | \\(u_1(x, y, z) = 0, u_2(x, y, z) = 0, v_1(x, y, z) = 0, v_2(x, y, z) = 0\\) |
+| Implicit \\(u_1, u_2\\) | Explicit \\(p(t_2)\\) | \\(u_1(p(t_2)) = 0, u_2(p(t_2)) = 0\\) |
+| Explicit \\(p(t_1)\\) | Explicit \\(p(t_2)\\) | \\(p(t_1) - p(t_2) = 0\\) |
 
 Since we can add, multiply and compose algebraic expressions, we can easily find the intersection of two curves. We just setup the "Roots to find" equation and let the IPP algorithm do the rest.
 
@@ -38,10 +38,10 @@ We expect the solution to be either a curve (if the curves are equal), or a set 
 
 | Curve 1           | Surface 2     | Roots to find |
 |-------------------|-------------|---------------|
-| Implicit \\(u_1, u_2\\) | Implicit \\(v_1\\) | \\(u_1(x, y, z) \cdot u_2(x, y, z) \cdot v_1(x, y, z)\\) |
-| Implicit \\(u_1, u_2\\) | Explicit \\(p(t_2, t_3)\\) | \\(u_1(p(t_3, t_4)) \cdot u_2(p(t_3, t_4))\\) |
-| Explicit \\(p(t_1)\\) | Implicit \\(v_1\\) | \\(v_1(p(t_1))\\) |
-| Explicit \\(p(t_1)\\) | Explicit \\(p(t_2, t_3)\\) | \\((p(t_1) - p(t_2, t_3))^2\\) |
+| Implicit \\(u_1, u_2\\) | Implicit \\(v_1\\) | \\(u_1(x, y, z) = 0, u_2(x, y, z) = 0, v_1(x, y, z) = 0\\) |
+| Implicit \\(u_1, u_2\\) | Explicit \\(p(t_2, t_3)\\) | \\(u_1(p(t_3, t_4)) = 0, u_2(p(t_3, t_4)) = 0\\) |
+| Explicit \\(p(t_1)\\) | Implicit \\(v_1\\) | \\(v_1(p(t_1)) = 0\\) |
+| Explicit \\(p(t_1)\\) | Explicit \\(p(t_2, t_3)\\) | \\(p(t_1) - p(t_2, t_3)  = 0\\) |
 
 We expect the solution to be either a curve (if the curve is embedded in the surface), or a set of points.
 
@@ -49,9 +49,9 @@ We expect the solution to be either a curve (if the curve is embedded in the sur
 
 | Surface 1           | Surface 2     | Roots to find |
 |-------------------|-------------|---------------|
-| Implicit \\(u_1\\) | Implicit \\(v_1\\) | \\(u_1(x, y, z) \cdot v_1(x, y, z)\\) |
-| Implicit \\(u_1\\) | Explicit \\(p(t_3, t_4)\\) | \\(u_1(p(t_3, t_4))\\) |
-| Explicit \\(p(t_1, t_2)\\) | Explicit \\(p(t_3, t_4)\\) | \\((p(t_1, t_2) - p(t_3, t_4))^2\\) |
+| Implicit \\(u_1\\) | Implicit \\(v_1\\) | \\(u_1(x, y, z) = 0, v_1(x, y, z) = 0\\) |
+| Implicit \\(u_1\\) | Explicit \\(p(t_3, t_4)\\) | \\(u_1(p(t_3, t_4)) = 0\\) |
+| Explicit \\(p(t_1, t_2)\\) | Explicit \\(p(t_3, t_4)\\) | \\(p(t_1, t_2) - p(t_3, t_4) = 0\\) |
 
 We expect the solution to be either a surface (if the two surfaces are equal), or a set of points and curves.
 

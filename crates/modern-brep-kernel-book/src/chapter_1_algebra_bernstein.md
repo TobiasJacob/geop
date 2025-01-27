@@ -59,7 +59,7 @@ and
 
 $$ a_i = \sum_{k=0}^i \frac{\binom{i}{k}}{\binom{n}{k}} c_k $$
 
-For example, for \\(n=4\\), the factors for converting to monomial are
+(Equation 3 `Farouki 1988`). For example, for \\(n=4\\), the factors for converting to monomial are
 
 ```
 1.00e0
@@ -79,8 +79,39 @@ and for converting to Bernstein are
 1.00e0  1.00e0  1.00e0  1.00e0  1.00e0
 ```
 
-## Adding Bernstein Polynomials
+## Evaluation of Bernstein Polynomials
 
+The evaluation of a Bernstein polynomial is done by the de Casteljau algorithm. The de Casteljau algorithm is a recursive algorithm that evaluates a polynomial at a given point. The algorithm is based on the fact that the Bernstein basis functions are recursively defined. The algorithm is as follows:
 
+```rust
+impl<T> BernsteinPolynomial<T> {
+    fn eval(&self, t: EFloat64) -> T {
+        let mut beta = self.coefficients.clone();
+        let n = beta.len();
+        for j in 1..n {
+            for k in 0..n - j {
+                beta[k] = beta[k].clone() * (EFloat64::one() - t.clone())
+                    + beta[k + 1].clone() * t.clone();
+            }
+        }
+        beta[0].clone()
+    }
+}
+```
 
+This is described in Wikipedia.
+
+## Degree Elevation
+
+Equation 27 of `Farouki 1988` describes how to elevate the degree of a Bernstein polynomial. The new coefficients are given by
+
+$$ c_i^{n+r} = \sum_{j = max(0, i - r)}^{min(n, i)} \frac{\binom{r}{i - j} \binom{n}{j}}{\binom{n + r}{i}} c_i^n $$
+
+Here is an example of degree elevation from degree 1 to 3:
+
+```
+Bernstein Polynomial: 1.00e0 B_{0,1}(t) + 2.00e0 B_{1,1}(t)
+Elevated Bernstein Polynomial: 1.00e0 B_{0,2}(t) + 1.50e0 B_{1,2}(t) + 2.00e0 B_{2,2}(t)
+Elevated Bernstein Polynomial 2: 1.00e0 B_{0,3}(t) + 1.33e0 B_{1,3}(t) + 1.67e0 B_{2,3}(t) + 2.00e0 B_{3,3}(t)
+```
 
