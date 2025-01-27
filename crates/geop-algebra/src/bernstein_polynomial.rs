@@ -25,10 +25,15 @@ impl BernsteinPolynomial<EFloat64> {
 
         for i in 0..=n {
             for k in 0..=i {
-                let factor = binomial_coefficient(i, k) / binomial_coefficient(n, k);
-                bernstein_coeffs[i] = bernstein_coeffs[i]
-                    + EFloat64::from(factor as f64) * monomial_polynom.monomials[k].clone();
+                let factor = (EFloat64::from(binomial_coefficient(i, k) as f64)
+                    / EFloat64::from(binomial_coefficient(n, k) as f64))
+                .unwrap();
+
+                print!("{}\t", factor);
+                bernstein_coeffs[i] =
+                    bernstein_coeffs[i] + factor * monomial_polynom.monomials[k].clone();
             }
+            println!();
         }
 
         Self::new(bernstein_coeffs)
@@ -41,15 +46,13 @@ impl BernsteinPolynomial<EFloat64> {
         for i in 0..=n {
             for k in 0..=i {
                 let factor = binomial_coefficient(n, i) * binomial_coefficient(i, k);
-                if (i - k) % 2 == 0 {
-                    // (-1)^{i-k} = 1
-                    monomial_coeffs[i] = monomial_coeffs[i]
-                        + EFloat64::from(factor as f64) * self.coefficients[k].clone();
-                } else {
-                    monomial_coeffs[i] = monomial_coeffs[i]
-                        - EFloat64::from(factor as f64) * self.coefficients[k].clone();
-                }
+                let sign = if (i - k) % 2 == 0 { 1 } else { -1 };
+                let factor = EFloat64::from(sign as f64) * EFloat64::from(factor as f64);
+                print!("{}\t", factor);
+
+                monomial_coeffs[i] = monomial_coeffs[i] + factor * self.coefficients[k].clone();
             }
+            println!();
         }
 
         MonomialPolynom::new(monomial_coeffs)

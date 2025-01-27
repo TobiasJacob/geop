@@ -59,6 +59,26 @@ and
 
 $$ a_i = \sum_{k=0}^i \frac{\binom{i}{k}}{\binom{n}{k}} c_k $$
 
+For example, for \\(n=4\\), the factors for converting to monomial are
+
+```
+1.00e0
+-4.00e0 4.00e0
+6.00e0  -1.20e1 6.00e0
+-4.00e0 1.20e1  -1.20e1 4.00e0
+1.00e0  -4.00e0 6.00e0  -4.00e0 1.00e0
+```
+
+and for converting to Bernstein are
+
+```
+1.00e0
+1.00e0  2.50e-1
+1.00e0  5.00e-1 1.67e-1
+1.00e0  7.50e-1 5.00e-1 2.50e-1
+1.00e0  1.00e0  1.00e0  1.00e0  1.00e0
+```
+
 ## Adding Bernstein Polynomials
 
 
