@@ -115,3 +115,8 @@ Elevated Bernstein Polynomial: 1.00e0 B_{0,2}(t) + 1.50e0 B_{1,2}(t) + 2.00e0 B_
 Elevated Bernstein Polynomial 2: 1.00e0 B_{0,3}(t) + 1.33e0 B_{1,3}(t) + 1.67e0 B_{2,3}(t) + 2.00e0 B_{3,3}(t)
 ```
 
+# Bezier curves
+
+If we use a Bernstein Polynomial with Points instead of EFloats for the coefficients, we get a Bezier Curve.
+
+![Bezier Curve](./generated_images/algebra/bezier_curve.png)

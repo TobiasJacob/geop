@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Div, Mul, Neg, Sub},
 };
 
-use geop_algebra::efloat::EFloat64;
+use geop_algebra::{efloat::EFloat64, HasZero};
 
 use crate::geometry_error::{ElevateToGeometry, GeometryError, GeometryResult};
 
@@ -116,6 +116,12 @@ impl Point {
 
     pub fn ones() -> Point {
         Point::new(EFloat64::one(), EFloat64::one(), EFloat64::one())
+    }
+}
+
+impl HasZero for Point {
+    fn zero() -> Point {
+        Point::zero()
     }
 }
 

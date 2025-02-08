@@ -1,9 +1,6 @@
 use std::fmt::Display;
 
-use crate::{
-    efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero, MultiDimensionFunction,
-    ToMonomialPolynom,
-};
+use crate::{efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero, MultiDimensionFunction};
 
 // Represents a polynomial in the form of a_{0} B_{0,n}
 pub struct BernsteinPolynomial<T> {
@@ -11,20 +8,6 @@ pub struct BernsteinPolynomial<T> {
 }
 
 impl BernsteinPolynomial<EFloat64> {
-    pub fn new(coefficients: Vec<EFloat64>) -> Self {
-        Self { coefficients }
-    }
-
-    pub fn bernstein_basis(i: usize, n: usize) -> Self {
-        let mut coefficients = vec![EFloat64::zero(); n + 1];
-        coefficients[i] = EFloat64::one();
-        Self::new(coefficients)
-    }
-
-    pub fn degree(&self) -> usize {
-        self.coefficients.len() - 1
-    }
-
     pub fn from_monomial_polynom(monomial_polynom: MonomialPolynom) -> Self {
         let n = monomial_polynom.degree(); // Degree of the polynomial
         let mut bernstein_coeffs = vec![EFloat64::zero(); n + 1];
@@ -64,10 +47,32 @@ impl BernsteinPolynomial<EFloat64> {
         MonomialPolynom::new(monomial_coeffs)
     }
 
+    pub fn bernstein_basis(i: usize, n: usize) -> Self {
+        let mut coefficients = vec![EFloat64::zero(); n + 1];
+        coefficients[i] = EFloat64::one();
+        Self::new(coefficients)
+    }
+}
+
+impl<T> BernsteinPolynomial<T>
+where
+    T: Clone,
+    T: std::ops::Add<Output = T>,
+    T: std::ops::Mul<EFloat64, Output = T>,
+    T: HasZero,
+{
+    pub fn new(coefficients: Vec<T>) -> Self {
+        Self { coefficients }
+    }
+
+    pub fn degree(&self) -> usize {
+        self.coefficients.len() - 1
+    }
+
     //$$ c_i^{n+r} = \sum_{j = max(0, i - r)}^{min(n, i)} \frac{\binom{r}{i - j} \binom{n}{j}}{\binom{n + r}{i}} c_i^n $$
     pub fn elevate_degree(&self, r: usize) -> Self {
         let n = self.degree();
-        let mut new_coeffs = vec![EFloat64::zero(); n + r + 1];
+        let mut new_coeffs = vec![T::zero(); n + r + 1];
 
         for i in 0..=n + r {
             for j in i.saturating_sub(r)..=n.min(i) {
@@ -75,7 +80,7 @@ impl BernsteinPolynomial<EFloat64> {
                     (binomial_coefficient(r, i - j) * binomial_coefficient(n, j)) as f64,
                 ) / EFloat64::from(binomial_coefficient(n + r, i) as f64))
                 .unwrap();
-                new_coeffs[i] = new_coeffs[i] + factor * self.coefficients[j].clone();
+                new_coeffs[i] = new_coeffs[i].clone() + (self.coefficients[j].clone() * factor);
             }
         }
 
@@ -98,7 +103,6 @@ where
     T: std::ops::Add<Output = T>,
     T: std::ops::Mul<EFloat64, Output = T>,
     T: HasZero,
-    T: ToMonomialPolynom,
 {
     fn eval(&self, t: EFloat64) -> T {
         let mut beta = self.coefficients.clone();

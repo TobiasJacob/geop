@@ -1,10 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use geop_algebra::{bernstein_polynomial::BernsteinPolynomial, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
-        edge_buffer::EdgeBuffer,
-        functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
+        edge_buffer::{EdgeBuffer, RenderEdge},
+        functions::{
+            rasterize_coordinate_system, rasterize_multidimensional_function,
+            rasterize_multidimensional_function_in_1d,
+        },
         triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };
@@ -85,6 +90,53 @@ mod tests {
                 (-0.5, 1.5),
                 (-0.1, 1.1),
                 std::path::Path::new("src/generated_images/algebra/bernstein_basis.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_bezier_curve(#[future] renderer: Box<HeadlessRenderer>) {
+        let mut edge_buffer = EdgeBuffer::empty();
+
+        let control_points = vec![
+            Point::from_f64(0.0, 0.2, 0.0),
+            Point::from_f64(0.3333, 1.0, 0.0),
+            Point::from_f64(0.6667, 0.0, 0.0),
+            Point::from_f64(1.0, 0.8, 0.0),
+        ];
+        // For loop to add the control point lines to the edge buffer
+        for i in 0..control_points.len() - 1 {
+            let edge_buffer_i = EdgeBuffer::new(vec![RenderEdge::new(
+                control_points[i],
+                control_points[(i + 1) % control_points.len()],
+                Color::gray(),
+            )]);
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let curve = BernsteinPolynomial::new(control_points);
+
+        // let curve = BernsteinBasis::new(i, n).unwrap();
+        let edge_buffer_i = rasterize_multidimensional_function(&curve, Color::black());
+        edge_buffer.join(&edge_buffer_i);
+
+        let coordinate_system_buffer = rasterize_coordinate_system(
+            Point::zero(),
+            Point::ones(),
+            Point::from_f64(0.1, 0.1, 0.1),
+        );
+        edge_buffer.join(&coordinate_system_buffer);
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                VertexBuffer::empty(),
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (-0.5, 1.5),
+                (-0.1, 1.1),
+                std::path::Path::new("src/generated_images/algebra/bezier_curve.png"),
             )
             .await;
     }
