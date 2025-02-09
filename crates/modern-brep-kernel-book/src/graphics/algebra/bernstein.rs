@@ -140,4 +140,99 @@ mod tests {
             )
             .await;
     }
+    #[rstest]
+    async fn test_subdivision(#[future] renderer: Box<HeadlessRenderer>) {
+        let mut edge_buffer = EdgeBuffer::empty();
+
+        let control_points = vec![
+            EFloat64::from(0.3),
+            EFloat64::from(0.1),
+            EFloat64::from(0.9),
+            EFloat64::from(0.5),
+        ];
+        // For loop to add the control point lines to the edge buffer
+        for i in 0..control_points.len() - 1 {
+            let edge_buffer_i = EdgeBuffer::new(vec![RenderEdge::new(
+                control_points[i] * Point::unit_y()
+                    + Point::unit_x() * EFloat64::from(i as f64 / 3.0),
+                control_points[(i + 1) % control_points.len()] * Point::unit_y()
+                    + Point::unit_x() * EFloat64::from((i + 1) as f64 / 3.0),
+                Color::gray(),
+            )]);
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let curve = BernsteinPolynomial::new(control_points.clone());
+
+        let split_point = 0.4;
+        let (curve1, curve2) = curve.subdivide(EFloat64::from(split_point));
+
+        let mut left_buffer =
+            rasterize_multidimensional_function_in_1d(&curve1, Color::red(), 0.0, 1.0);
+        left_buffer.transform(&Transform::from_scale(Point::from_f64(
+            split_point,
+            1.0,
+            1.0,
+        )));
+        edge_buffer.join(&left_buffer);
+        let mut right_buffer =
+            rasterize_multidimensional_function_in_1d(&curve2, Color::blue(), 0.0, 1.0);
+
+        right_buffer.transform(&Transform::from_scale(Point::from_f64(
+            1.0 - split_point,
+            1.0,
+            1.0,
+        )));
+        right_buffer.transform(&Transform::from_translation(
+            Point::unit_x() * EFloat64::from(split_point),
+        ));
+
+        edge_buffer.join(&right_buffer);
+
+        // Now visualize the control points for curve1
+        let mut control_points_buffer = EdgeBuffer::empty();
+        for i in 0..curve1.coefficients.len() - 1 {
+            let p1 = curve1.coefficients[i] * Point::unit_y()
+                + Point::unit_x() * EFloat64::from(i as f64 / 3.0 * split_point);
+            let p2 = curve1.coefficients[(i + 1) % curve1.coefficients.len()] * Point::unit_y()
+                + Point::unit_x() * EFloat64::from((i + 1) as f64 / 3.0 * split_point);
+
+            control_points_buffer.add(RenderEdge::new(p1, p2, Color::gray()));
+        }
+        edge_buffer.join(&control_points_buffer);
+
+        // Now visualize the control points for curve2
+        let mut control_points_buffer = EdgeBuffer::empty();
+        for i in 0..curve2.coefficients.len() - 1 {
+            let p1 = curve2.coefficients[i] * Point::unit_y()
+                + Point::unit_x() * EFloat64::from(i as f64 / 3.0 * (1.0 - split_point))
+                + Point::unit_x() * EFloat64::from(split_point);
+            let p2 = curve2.coefficients[(i + 1) % curve2.coefficients.len()] * Point::unit_y()
+                + Point::unit_x() * EFloat64::from((i + 1) as f64 / 3.0 * (1.0 - split_point))
+                + Point::unit_x() * EFloat64::from(split_point);
+
+            control_points_buffer.add(RenderEdge::new(p1, p2, Color::gray()));
+        }
+        edge_buffer.join(&control_points_buffer);
+
+        let coordinate_system_buffer = rasterize_coordinate_system(
+            Point::zero(),
+            Point::ones(),
+            Point::from_f64(0.1, 0.1, 0.1),
+        );
+        edge_buffer.join(&coordinate_system_buffer);
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                VertexBuffer::empty(),
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (-0.5, 1.5),
+                (-0.1, 1.1),
+                std::path::Path::new("src/generated_images/algebra/subdivision.png"),
+            )
+            .await;
+    }
 }

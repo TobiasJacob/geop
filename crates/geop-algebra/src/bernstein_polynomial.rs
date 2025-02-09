@@ -4,7 +4,7 @@ use crate::{efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero, MultiD
 
 // Represents a polynomial in the form of a_{0} B_{0,n}
 pub struct BernsteinPolynomial<T> {
-    coefficients: Vec<T>,
+    pub coefficients: Vec<T>,
 }
 
 impl BernsteinPolynomial<EFloat64> {
@@ -85,6 +85,27 @@ where
         }
 
         Self::new(new_coeffs)
+    }
+
+    // Use de Casteljau's algorithm to subdivide the polynomial
+    pub fn subdivide(&self, t: EFloat64) -> (BernsteinPolynomial<T>, BernsteinPolynomial<T>) {
+        let mut beta = self.coefficients.clone();
+        let n = beta.len();
+        let mut left = vec![T::zero(); n];
+        let mut right = vec![T::zero(); n];
+
+        left[0] = beta[0].clone();
+        right[n - 1] = beta[n - 1].clone();
+        for j in 1..n {
+            for k in 0..n - j {
+                beta[k] = beta[k].clone() * (EFloat64::one() - t.clone())
+                    + beta[k + 1].clone() * t.clone();
+            }
+            left[j] = beta[0].clone();
+            right[n - j - 1] = beta[n - j - 1].clone();
+        }
+
+        (Self::new(left), Self::new(right))
     }
 }
 
@@ -246,5 +267,44 @@ mod tests {
             "Elevated Bernstein Polynomial 2: {}",
             &bernstein.elevate_degree(2)
         );
+    }
+
+    #[test]
+    fn test_bernstein_subdivide() {
+        let coeffs = vec![
+            EFloat64::from(1.0),
+            EFloat64::from(2.0),
+            EFloat64::from(1.0),
+            EFloat64::from(5.0),
+            EFloat64::from(3.0),
+        ];
+        let bernstein = BernsteinPolynomial::new(coeffs.clone());
+
+        let t = EFloat64::from(0.5);
+        let (left, right) = bernstein.subdivide(t);
+
+        println!("Bernstein Polynomial: {}", &bernstein);
+        println!("Left Bernstein Polynomial: {}", &left);
+        println!("Right Bernstein Polynomial: {}", &right);
+
+        for t in 0..=10 {
+            let t = EFloat64::from(t as f64 / 10.0);
+            assert_eq!(
+                bernstein.eval((t / EFloat64::two()).unwrap()),
+                left.eval(t),
+                "t = {}",
+                t
+            );
+        }
+
+        for t in 0..=10 {
+            let t = EFloat64::from(t as f64 / 10.0);
+            assert_eq!(
+                bernstein.eval(((EFloat64::one() + t) / EFloat64::two()).unwrap()),
+                right.eval(t),
+                "t = {}",
+                t
+            );
+        }
     }
 }

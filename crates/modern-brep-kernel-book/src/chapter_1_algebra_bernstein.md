@@ -101,6 +101,14 @@ impl<T> BernsteinPolynomial<T> {
 
 This is described in Wikipedia.
 
+## Subdivision
+
+Interestingly, the betas which are computed in the de Casteljau algorithm can also be used to subdivide the polynomial. The [MIT Course](https://web.mit.edu/hyperbook/Patrikalakis-Maekawa-Cho/node13.html) has a nice visualization of this process.
+
+The betas form a pyramid, where the base (left in the image) is the original polynomial, and the top (right in the image) is the polynomial evaluated at \\(t\\). The subdivision is done by taking the left border of the pyramid and the right border of the pyramid, which are the two polynomials evaluated at \\(t\\), and the middle border, which is the polynomial evaluated at \\(t/2\\). Here you can see how the polynomial is subdivided into two polynomials, the red and the blue one:
+
+![Subdivision](./generated_images/algebra/subdivision.png)
+
 ## Degree Elevation
 
 Equation 27 of `Farouki 1988` describes how to elevate the degree of a Bernstein polynomial. The new coefficients are given by
@@ -114,6 +122,8 @@ Bernstein Polynomial: 1.00e0 B_{0,1}(t) + 2.00e0 B_{1,1}(t)
 Elevated Bernstein Polynomial: 1.00e0 B_{0,2}(t) + 1.50e0 B_{1,2}(t) + 2.00e0 B_{2,2}(t)
 Elevated Bernstein Polynomial 2: 1.00e0 B_{0,3}(t) + 1.33e0 B_{1,3}(t) + 1.67e0 B_{2,3}(t) + 2.00e0 B_{3,3}(t)
 ```
+
+
 
 # Bezier curves
 

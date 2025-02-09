@@ -61,6 +61,10 @@ impl EdgeBuffer {
         self.edges.extend_from_slice(&other.edges);
     }
 
+    pub fn add(&mut self, edge: RenderEdge) {
+        self.edges.push(edge);
+    }
+
     pub fn transform(&mut self, transform: &Transform) {
         for edge in &mut self.edges {
             edge.start.transform(transform);
