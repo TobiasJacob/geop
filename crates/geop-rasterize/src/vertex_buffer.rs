@@ -103,4 +103,8 @@ impl VertexBuffer {
     pub fn join(&mut self, other: &VertexBuffer) {
         self.vertices.extend_from_slice(&other.vertices);
     }
+
+    pub fn add(&mut self, vertex: RenderVertex) {
+        self.vertices.push(vertex);
+    }
 }

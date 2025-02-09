@@ -40,6 +40,13 @@ impl EFloat64 {
         EFloat64::new(value, value)
     }
 
+    pub fn new_union_f64(value1: f64, value2: f64) -> Self {
+        EFloat64::new(
+            value1.max(value2).next_after(f64::INFINITY),
+            value1.min(value2).next_after(f64::NEG_INFINITY),
+        )
+    }
+
     pub fn zero() -> Self {
         EFloat64::new(0.0, 0.0)
     }
@@ -227,6 +234,17 @@ impl EFloat64 {
 
     pub fn floor(&self) -> usize {
         self.lower_bound.floor() as usize
+    }
+
+    pub fn union(&self, other: Self) -> Self {
+        Self {
+            upper_bound: self.upper_bound.max(other.upper_bound),
+            lower_bound: self.lower_bound.min(other.lower_bound),
+        }
+    }
+
+    pub fn to_f64(&self) -> f64 {
+        (self.upper_bound + self.lower_bound) / 2.0
     }
 }
 

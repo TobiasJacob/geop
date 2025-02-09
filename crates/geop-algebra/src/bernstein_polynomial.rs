@@ -52,6 +52,68 @@ impl BernsteinPolynomial<EFloat64> {
         coefficients[i] = EFloat64::one();
         Self::new(coefficients)
     }
+
+    // Here comes the fun part: Now that we can subdivide a bernstein polynomial, we can use it to find roots. Using [Bézout's theorem](https://en.wikipedia.org/wiki/B%C3%A9zout%27s_theorem), we know that a polynomial has either infinitely many roots, or a finite number of roots.
+
+    // - If the polynomial has infinitely many roots, then the polynomial is the zero polynomial.
+    // - Otherwise, the polynomial has a finite number of roots.
+
+    // Next, we use the convex hull property of Bernstein Polynomials. The convex hull of a Bernstein Polynomial is the convex hull of the control points. If the convex hull of the control points does not contain the x-axis, then the polynomial has no roots. If the convex hull has both positive and negative y-values, then the polynomial may have roots.
+
+    // This results in a very simple algorithm to find the roots of a polynomial:
+    // - Subdivide the polynomial in the middle.
+    // - For each side:
+    //     - Check if the coefficients are all positive or all negative. If they are, then the polynomial has no roots.
+    //     - Otherwise, subdivide the polynomial again and repeat.
+    fn find_root_inner(&self, t_min: f64, t_max: f64) -> Vec<EFloat64> {
+        // If all coefficients are positive or all coefficients are negative, then the polynomial has no roots.
+        if self.coefficients.iter().all(|c| c.lower_bound > 0.0) {
+            return Vec::new();
+        }
+
+        if self.coefficients.iter().all(|c| c.upper_bound < 0.0) {
+            return Vec::new();
+        }
+        println!("t_min: {}, t_max: {}", t_min, t_max);
+
+        let t_split_l = (t_min + t_max) / 2.0;
+
+        let (left, right) = self.subdivide(EFloat64::from(0.5));
+        // If one of the polynomials has coefficients that all include 0, then we have reached the limits of the floating point precision.
+        // We have to stop here, because of this example
+        // Assume that we dug into [0, 0.0000001] and [0.0000001, 0.0000002].
+        // - The first polynomial coefficients are all 0.0, so its a root.
+        // - The second polynomial coefficients are all 0.0, except for the rightmost coefficient.
+        // The problem is now, that however often we subdivide the polynomial, the rightmost coefficient will always be > 0.0.
+        // So we have to stop as soon as we managed to get a polynomial with all coefficients being 0.0 and discard the other polynomial.
+        if left.coefficients.iter().all(|c| *c == 0.0)
+            || right.coefficients.iter().all(|c| *c == 0.0)
+        {
+            return vec![EFloat64::new_union_f64(t_min, t_max)];
+        }
+
+        let mut left_root = left.find_root_inner(t_min, t_split_l);
+        let mut right_root = right.find_root_inner(t_split_l, t_max);
+
+        if left_root.len() > 0 && right_root.len() > 0 {
+            if left_root[left_root.len() - 1] == right_root[0] {
+                let middle_root = left_root.pop().unwrap().union(right_root.remove(0));
+                left_root.push(middle_root);
+                left_root.extend(right_root);
+                return left_root;
+            }
+        }
+
+        left_root.extend(right_root);
+        return left_root;
+    }
+
+    // Finds all roots in the interval [0, 1]. If the polynomial is the zero polynomial, then it returns None.
+    // If the polynomial has no roots, then it returns an empty vector.
+    // Otherwise, it returns a vector of roots.
+    pub fn find_roots(&self) -> Option<Vec<EFloat64>> {
+        Some(self.find_root_inner(0.0, 1.0))
+    }
 }
 
 impl<T> BernsteinPolynomial<T>

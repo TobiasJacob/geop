@@ -11,7 +11,7 @@ mod tests {
             rasterize_multidimensional_function_in_1d,
         },
         triangle_buffer::TriangleBuffer,
-        vertex_buffer::VertexBuffer,
+        vertex_buffer::{RenderVertex, VertexBuffer},
     };
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
@@ -140,6 +140,7 @@ mod tests {
             )
             .await;
     }
+
     #[rstest]
     async fn test_subdivision(#[future] renderer: Box<HeadlessRenderer>) {
         let mut edge_buffer = EdgeBuffer::empty();
@@ -232,6 +233,211 @@ mod tests {
                 (-0.5, 1.5),
                 (-0.1, 1.1),
                 std::path::Path::new("src/generated_images/algebra/subdivision.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_root_finding1(#[future] renderer: Box<HeadlessRenderer>) {
+        let curve = BernsteinPolynomial::new(vec![
+            EFloat64::from(0.3),
+            EFloat64::from(-0.7),
+            EFloat64::from(0.8),
+            EFloat64::from(0.1),
+            EFloat64::from(-0.8),
+            EFloat64::from(0.4),
+            EFloat64::from(0.1),
+        ]);
+
+        let curve_buffer =
+            rasterize_multidimensional_function_in_1d(&curve, Color::black(), 0.0, 1.0);
+
+        let roots = curve.find_roots();
+
+        let mut edge_buffer = EdgeBuffer::empty();
+        edge_buffer.join(&curve_buffer);
+
+        let coordinate_system_buffer = rasterize_coordinate_system(
+            Point::zero(),
+            Point::ones(),
+            Point::from_f64(0.1, 0.1, 0.1),
+        );
+        edge_buffer.join(&coordinate_system_buffer);
+
+        let mut vertex_buffer = VertexBuffer::new(vec![]);
+        for root in roots.unwrap() {
+            println!("Root: {:?}", root);
+            let root_point = Point::from_f64(root.to_f64(), 0.0, 0.0);
+            vertex_buffer.add(RenderVertex::new(root_point, Color::red()));
+
+            // Draw a vertical line at the root
+            let edge_buffer_i = EdgeBuffer::new(vec![RenderEdge::new(
+                root_point + Point::unit_y() * EFloat64::from(-0.1),
+                root_point + Point::unit_y() * EFloat64::from(0.1),
+                Color::black(),
+            )]);
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                vertex_buffer,
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (-0.5, 1.5),
+                (-0.1, 1.1),
+                std::path::Path::new("src/generated_images/algebra/roots.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_root_finding2(#[future] renderer: Box<HeadlessRenderer>) {
+        let curve = BernsteinPolynomial::new(vec![
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(1.0),
+        ]);
+
+        let curve_buffer =
+            rasterize_multidimensional_function_in_1d(&curve, Color::black(), 0.0, 1.0);
+
+        let roots = curve.find_roots();
+
+        let mut edge_buffer = EdgeBuffer::empty();
+        edge_buffer.join(&curve_buffer);
+
+        let coordinate_system_buffer = rasterize_coordinate_system(
+            Point::zero(),
+            Point::ones(),
+            Point::from_f64(0.1, 0.1, 0.1),
+        );
+        edge_buffer.join(&coordinate_system_buffer);
+
+        let mut vertex_buffer = VertexBuffer::new(vec![]);
+        for root in roots.unwrap() {
+            println!("Root: {:?}", root);
+            let root_point = Point::from_f64(root.to_f64(), 0.0, 0.0);
+            vertex_buffer.add(RenderVertex::new(root_point, Color::red()));
+
+            // Draw a vertical line at the root
+            let edge_buffer_i = EdgeBuffer::new(vec![RenderEdge::new(
+                root_point + Point::unit_y() * EFloat64::from(-0.1),
+                root_point + Point::unit_y() * EFloat64::from(0.1),
+                Color::black(),
+            )]);
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                vertex_buffer,
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (-0.5, 1.5),
+                (-0.1, 1.1),
+                std::path::Path::new("src/generated_images/algebra/roots2.png"),
+            )
+            .await;
+    }
+
+    #[rstest]
+    async fn test_root_finding3(#[future] renderer: Box<HeadlessRenderer>) {
+        let curve = BernsteinPolynomial::new(vec![
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(0.0),
+            EFloat64::from(1.0),
+        ]);
+
+        let curve_buffer =
+            rasterize_multidimensional_function_in_1d(&curve, Color::black(), 0.0, 1.0);
+
+        let roots = curve.find_roots();
+
+        let mut edge_buffer = EdgeBuffer::empty();
+        edge_buffer.join(&curve_buffer);
+
+        let coordinate_system_buffer = rasterize_coordinate_system(
+            Point::zero(),
+            Point::ones(),
+            Point::from_f64(0.1, 0.1, 0.1),
+        );
+        edge_buffer.join(&coordinate_system_buffer);
+
+        let mut vertex_buffer = VertexBuffer::new(vec![]);
+        for root in roots.unwrap() {
+            println!("Root: {:?}", root);
+            let root_point = Point::from_f64(root.to_f64(), 0.0, 0.0);
+            vertex_buffer.add(RenderVertex::new(root_point, Color::red()));
+
+            // Draw a vertical line at the root
+            let edge_buffer_i = EdgeBuffer::new(vec![RenderEdge::new(
+                root_point + Point::unit_y() * EFloat64::from(-0.1),
+                root_point + Point::unit_y() * EFloat64::from(0.1),
+                Color::black(),
+            )]);
+            edge_buffer.join(&edge_buffer_i);
+        }
+
+        let mut renderer = renderer.await;
+        renderer
+            .render_buffers_to_file(
+                vertex_buffer,
+                edge_buffer,
+                TriangleBuffer::empty(),
+                false,
+                (-0.5, 1.5),
+                (-0.1, 1.1),
+                std::path::Path::new("src/generated_images/algebra/roots3.png"),
             )
             .await;
     }
