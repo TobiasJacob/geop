@@ -4,10 +4,7 @@ mod tests {
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
-        functions::{
-            rasterize_coordinate_system, rasterize_multidimensional_function_in_1d,
-            rasterize_onedimensional_function,
-        },
+        functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
         triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };

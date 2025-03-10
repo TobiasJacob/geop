@@ -68,6 +68,38 @@ impl<T> BSplineCurve<T> {
     pub fn degree(&self) -> usize {
         self.degree
     }
+
+    fn find_span(&self, t: EFloat64) -> Option<usize> {
+        // Handle edge cases
+        if t < self.knot_vector[0] {
+            return None;
+        }
+        if t >= self.knot_vector[self.knot_vector.len() - 1] {
+            return None;
+        }
+
+        // Linear search to find the correct span
+        let mut mid = 0;
+        while !(self.knot_vector[mid] <= t && t < self.knot_vector[mid + 1]) {
+            mid += 1;
+        }
+
+        // // Binary search to find the correct span
+        // let mut low = 0;
+        // let mut high = self.knot_vector.len() - 1;
+        // let mut mid = (low + high) / 2;
+
+        // while t < self.knot_vector[mid] || t >= self.knot_vector[mid + 1] {
+        //     if t < self.knot_vector[mid] {
+        //         high = mid;
+        //     } else {
+        //         low = mid;
+        //     }
+        //     mid = (low + high) / 2;
+        // }
+
+        Some(mid)
+    }
 }
 
 impl<T> BSplineCurve<T>
@@ -78,22 +110,15 @@ where
     T: HasZero,
     T: ToMonomialPolynom,
 {
-    pub fn eval_fast(&self, t: EFloat64) -> T {
-        // Follows https://en.wikipedia.org/wiki/De_Boor%27s_algorithm
-        let mut coeffs = self.coefficients.clone();
-        let k = coeffs.len();
-        let p = self.degree;
-        for r in 1..=self.degree {
-            for j in (self.degree..r - 1).rev() {
-                let alpha = ((t - self.knot_vector[j + k - p].clone())
-                    / (self.knot_vector[j + 1 + k - r].clone()
-                        - self.knot_vector[j + k - p].clone()))
-                .unwrap_or(EFloat64::zero()); // If denominator is zero, alpha value can be anything
-                coeffs[j] =
-                    coeffs[j - 1].clone() * (EFloat64::one() - alpha) + coeffs[j].clone() * alpha;
-            }
+    pub fn eval_slow(&self, t: EFloat64) -> T {
+        let mut result = T::zero();
+
+        for (i, coeff) in self.coefficients.iter().enumerate() {
+            let basis = BSplineBasis::new(i, self.degree, self.knot_vector.clone()).unwrap();
+            result = result + coeff.clone() * basis.eval(t);
         }
-        return coeffs[p].clone();
+
+        result
     }
 }
 
@@ -106,14 +131,52 @@ where
     T: ToMonomialPolynom,
 {
     fn eval(&self, t: EFloat64) -> T {
-        let mut result = T::zero();
+        // Follows https://en.wikipedia.org/wiki/De_Boor%27s_algorithm
 
-        for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BSplineBasis::new(i, self.degree, self.knot_vector.clone()).unwrap();
-            result = result + coeff.clone() * basis.eval(t);
+        // Find which knot span contains t
+        let k = self.find_span(t);
+        let p = self.degree;
+
+        let k = match k {
+            Some(k) => k,
+            None => return T::zero(),
+        };
+
+        // Initialize coefficients for the de Boor algorithm
+        let mut d = Vec::with_capacity(p + 1);
+
+        // Ensure we're not accessing out of bounds indices
+        for j in 0..=p {
+            if k + j < p || k + j - p >= self.coefficients.len() {
+                d.push(T::zero());
+            } else {
+                let idx = k + j - p;
+                d.push(self.coefficients[idx].clone());
+            }
         }
 
-        result
+        // Apply de Boor's algorithm
+        for r in 1..=p {
+            for j in (r..=p).rev() {
+                let alpha = match k + j < p || j + 1 + k - r >= self.knot_vector.len() {
+                    true => EFloat64::zero(),
+                    false => {
+                        let left_knot = self.knot_vector[j + k - p].clone();
+                        let right_knot = self.knot_vector[j + 1 + k - r].clone();
+
+                        // Avoid division by zero
+                        if left_knot == right_knot {
+                            EFloat64::zero()
+                        } else {
+                            ((t - left_knot) / (right_knot - left_knot)).unwrap_or(EFloat64::zero())
+                        }
+                    }
+                };
+                d[j] = d[j - 1].clone() * (EFloat64::one() - alpha) + d[j].clone() * alpha;
+            }
+        }
+
+        d[p].clone()
     }
 }
 
@@ -122,14 +185,13 @@ mod tests {
     use super::*;
     use crate::efloat::EFloat64;
 
-    // Helper function to convert Vec<f64> to Vec<EFloat64>
     fn to_efloat_vec(values: Vec<f64>) -> Vec<EFloat64> {
         values.into_iter().map(EFloat64::from).collect()
     }
 
     // Test for strictly increasing knot vector
     #[test]
-    fn test_strictly_increasing_knot_vector() {
+    fn test_values_equal() {
         // Create a B-spline curve with 2D points as coefficients
         let coefficients = vec![
             EFloat64::from(5.0),
@@ -148,9 +210,9 @@ mod tests {
 
         for t in test_params {
             let result_eval = bspline.eval(t);
-            let result_fast = bspline.eval_fast(t);
+            let result_2 = bspline.eval_slow(t);
 
-            assert_eq!(result_eval, result_fast);
+            assert_eq!(result_eval, result_2);
         }
     }
 }
