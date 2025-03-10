@@ -1,10 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{bspline_basis::BSplineBasis, efloat::EFloat64};
+    use geop_algebra::{bspline_curve::BSplineCurve, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
-        functions::{rasterize_coordinate_system, rasterize_onedimensional_function},
+        functions::{
+            rasterize_coordinate_system, rasterize_multidimensional_function_in_1d,
+            rasterize_onedimensional_function,
+        },
         triangle_buffer::TriangleBuffer,
         vertex_buffer::VertexBuffer,
     };
@@ -25,9 +28,10 @@ mod tests {
         let max_k = knot_vector.len() - 2;
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
-                let curve = BSplineBasis::new(i, k, knot_vector.clone()).unwrap();
+                let curve = BSplineCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone())
+                    .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_onedimensional_function(&curve, Color::black(), -0.0, 8.0);
+                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 8.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));
@@ -68,9 +72,10 @@ mod tests {
         let max_k = knot_vector.len() - 2;
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
-                let curve = BSplineBasis::new(i, k, knot_vector.clone()).unwrap();
+                let curve = BSplineCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone())
+                    .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_onedimensional_function(&curve, Color::black(), -0.0, 4.0);
+                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 4.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));
