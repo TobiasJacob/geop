@@ -105,6 +105,64 @@ impl<T> NurbsCurve<T> {
         }
         Some(mid)
     }
+
+    /// Subdivides the NURBS curve at parameter `t` into two new NurbsCurve segments.
+    ///
+    /// The method first inserts `t` repeatedly until its multiplicity equals degree+1 (i.e. a break point).
+    /// Then it splits the control net and knot vector into a left segment (defined over [a, t])
+    /// and a right segment (defined over [t, b]).
+    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(Self, Self)>
+    where
+        T: Clone,
+        T: std::ops::Add<Output = T>,
+        T: std::ops::Mul<EFloat64, Output = T>,
+        T: std::ops::Div<EFloat64, Output = AlgebraResult<T>>,
+        T: HasZero,
+        T: ToMonomialPolynom,
+    {
+        let p = self.degree;
+
+        // Ensure t lies within the valid parameter domain.
+        if t < self.knot_vector[p] || t > self.knot_vector[self.knot_vector.len() - p - 1] {
+            return Err(AlgebraError::new(
+                "Parameter t is out of the valid domain for subdivision".to_string(),
+            ));
+        }
+
+        // Determine the current multiplicity of t in the knot vector.
+        let current_multiplicity = self.knot_vector.iter().filter(|&knot| *knot == t).count();
+        // To split the curve, t must appear with multiplicity p+1.
+        let r = p - current_multiplicity;
+        let mut curve: NurbsCurve<T> = self.clone();
+        for _ in 0..r {
+            curve = curve.insert_knot(t.clone())?;
+        }
+
+        // We need an index i such that knots[i - p] == t and knots[i] == t.
+        let t_index = curve.find_span(t.clone());
+        let t_index = match t_index {
+            Some(idx) => idx,
+            None => {
+                return Err(AlgebraError::new(
+                    "Failed to locate knot with full multiplicity after insertion".to_string(),
+                ))
+            }
+        };
+
+        // The left segment uses control points and weights from 0 to (t_index - p) and knot vector from 0 to t_index.
+        let left_ctrl_pts = curve.coefficients[..=(t_index - p)].to_vec();
+        let left_weights = curve.weights[..=(t_index - p)].to_vec();
+        let left_knots = curve.knot_vector[..=t_index + 1].to_vec();
+        let left_curve = NurbsCurve::try_new(left_ctrl_pts, left_weights, left_knots, p)?;
+
+        // The right segment uses control points and weights from (t_index - p) to end and knot vector from t_index to end.
+        let right_ctrl_pts = curve.coefficients[(t_index - p)..].to_vec();
+        let right_weights = curve.weights[(t_index - p)..].to_vec();
+        let right_knots = curve.knot_vector[t_index - p..].to_vec();
+        let right_curve = NurbsCurve::try_new(right_ctrl_pts, right_weights, right_knots, p)?;
+
+        Ok((left_curve, right_curve))
+    }
 }
 
 /// A "slow" evaluation for a NURBS curve.
@@ -405,7 +463,7 @@ mod tests {
             0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 5.0, 5.0,
         ]);
 
-        let nurbs = NurbsCurve::try_new(coefficients, weights, knot_vector, 3).unwrap();
+        let nurbs = NurbsCurve::try_new(coefficients, weights, knot_vector, degree).unwrap();
         println!("nurbs: {}", nurbs);
 
         // Choose a subdivision parameter in the valid domain.
@@ -423,6 +481,83 @@ mod tests {
             let result2_eval = nurbs2.eval(t.clone());
             assert_eq!(result_eval, result2_eval);
         }
+        Ok(())
+    }
+
+    #[test]
+    fn test_nurbs_subdivide() -> AlgebraResult<()> {
+        // Create a NURBS curve with scalar control points.
+        let coefficients = vec![
+            EFloat64::from(5.0),
+            EFloat64::from(1.0),
+            EFloat64::from(3.0),
+            EFloat64::from(6.0),
+            EFloat64::from(32.0),
+            EFloat64::from(25.0),
+            EFloat64::from(4.0),
+            EFloat64::from(19.0),
+        ];
+
+        // Use non-uniform weights for demonstration.
+        let weights = to_efloat_vec(vec![1.0, 2.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0]);
+
+        // Strictly increasing knot vector
+        let knot_vector = to_efloat_vec(vec![
+            0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 5.0, 5.0,
+        ]);
+
+        let nurbs = NurbsCurve::try_new(coefficients, weights, knot_vector, 3).unwrap();
+        println!("Original NURBS: {}", nurbs);
+
+        // Choose a subdivision parameter in the valid domain.
+        let t = EFloat64::from(2.5);
+        // Subdivide the NURBS at t.
+        let (left, right) = nurbs.subdivide(t.clone())?;
+
+        println!("Left segment: {}", left);
+        println!("Right segment: {}", right);
+
+        // Test the left segment (from 0 to t)
+        for i in 0..100 {
+            let param = i as f64 / 100.0 * 2.5;
+            let param = EFloat64::from(param);
+            let orig_val = nurbs.eval(param.clone());
+            let left_val = left.eval(param.clone());
+            assert_eq!(
+                orig_val, left_val,
+                "Left segment evaluation at t={} does not match the original curve",
+                param
+            );
+        }
+
+        // Test the right segment (from t to 5.0)
+        for i in 0..100 {
+            let param = 2.5 + i as f64 / 100.0 * 2.5;
+            let param = EFloat64::from(param);
+            let orig_val = nurbs.eval(param.clone());
+            let right_val = right.eval(param.clone());
+            assert_eq!(
+                orig_val, right_val,
+                "Right segment evaluation at t={} does not match the original curve",
+                param
+            );
+        }
+
+        // Test that the segments join correctly at the subdivision point
+        let orig_val = nurbs.eval(t.clone());
+        let left_val = left.eval(t.clone());
+        let right_val = right.eval(t.clone());
+        assert_eq!(
+            orig_val, left_val,
+            "Left segment evaluation at subdivision point t={} does not match the original curve",
+            t
+        );
+        assert_eq!(
+            orig_val, right_val,
+            "Right segment evaluation at subdivision point t={} does not match the original curve",
+            t
+        );
+
         Ok(())
     }
 }
