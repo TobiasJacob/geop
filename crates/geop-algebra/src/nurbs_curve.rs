@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     bspline_curve::BSplineCurve,
@@ -105,9 +107,9 @@ impl<T> NurbsCurve<T> {
     }
 }
 
-/// A “slow” evaluation for a NURBS curve.
+/// A "slow" evaluation for a NURBS curve.
 /// This computes the weighted sum of the underlying B-spline basis functions and then normalizes.
-/// (It uses the BSplineCurve’s basis evaluation for each control point.)
+/// (It uses the BSplineCurve's basis evaluation for each control point.)
 impl<T> NurbsCurve<T>
 where
     T: Clone,
@@ -117,6 +119,69 @@ where
     T: HasZero,
     T: ToMonomialPolynom,
 {
+    fn insert_knot(&self, t: EFloat64) -> AlgebraResult<Self> {
+        let k = match self.find_span(t) {
+            Some(span) => span,
+            None => return Err("Knot not found".into()),
+        };
+        let p = self.degree;
+        let n = self.coefficients.len() - 1;
+
+        let mut new_coefficients = Vec::with_capacity(self.coefficients.len() + 1);
+        let mut new_weights = Vec::with_capacity(self.weights.len() + 1);
+        let mut new_knot_vector = Vec::with_capacity(self.knot_vector.len() + 1);
+
+        // Build new knot vector: copy knots up to k (inclusive), insert t, then copy the remaining knots.
+        for i in 0..=k {
+            new_knot_vector.push(self.knot_vector[i].clone());
+        }
+        new_knot_vector.push(t.clone());
+        for i in (k + 1)..self.knot_vector.len() {
+            new_knot_vector.push(self.knot_vector[i].clone());
+        }
+
+        // The new control points and weights:
+        // 1. Copy control points and weights unaffected by the insertion.
+        for i in 0..(k - p + 1) {
+            new_coefficients.push(self.coefficients[i].clone());
+            new_weights.push(self.weights[i].clone());
+        }
+
+        // 2. Recompute the control points and weights affected by the insertion.
+        for i in (k - p + 1)..=k {
+            // Compute alpha = (t - knot_vector[i]) / (knot_vector[i+p] - knot_vector[i])
+            let alpha = ((t.clone() - self.knot_vector[i].clone())
+                / (self.knot_vector[i + p].clone() - self.knot_vector[i].clone()))
+            .unwrap_or(EFloat64::zero());
+
+            // In homogeneous coordinates:
+            // Q[i] = (1 - alpha) * Q[i-1] + alpha * Q[i]
+            // where Q[i] = (w[i] * P[i], w[i])
+            let w1 = self.weights[i - 1].clone();
+            let w2 = self.weights[i].clone();
+            let p1 = self.coefficients[i - 1].clone();
+            let p2 = self.coefficients[i].clone();
+
+            // New weight: w_new = (1 - alpha) * w1 + alpha * w2
+            let new_weight =
+                w1.clone() * (EFloat64::one() - alpha.clone()) + w2.clone() * alpha.clone();
+            new_weights.push(new_weight.clone());
+
+            // New control point: P_new = ((1 - alpha) * w1 * P1 + alpha * w2 * P2) / w_new
+            let new_point = (p1 * w1 * (EFloat64::one() - alpha.clone()) + p2 * w2 * alpha)
+                / new_weight.clone();
+            new_coefficients.push(new_point?);
+        }
+
+        // 3. Copy the remaining control points and weights.
+        for i in k..=n {
+            new_coefficients.push(self.coefficients[i].clone());
+            new_weights.push(self.weights[i].clone());
+        }
+
+        NurbsCurve::try_new(new_coefficients, new_weights, new_knot_vector, self.degree)
+    }
+
     pub fn eval_slow(&self, t: EFloat64) -> AlgebraResult<T> {
         let mut numerator = T::zero();
         let mut denominator = EFloat64::zero();
@@ -141,6 +206,18 @@ where
     }
 }
 
+impl<T> Display for NurbsCurve<T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "NurbsCurve(")?;
+        for coeff in self.coefficients.iter() {
+            write!(f, "{}, ", coeff)?;
+        }
+        write!(f, ")")
+    }
+}
 /// Helper struct for homogeneous coordinates.
 #[derive(Clone)]
 struct NurbHelperPoint<T> {
@@ -199,7 +276,7 @@ where
 /// Evaluate a NURBS curve using a rational de Boor algorithm.
 /// This method first lifts the control points into homogeneous coordinates:
 /// Qᵢ = (wᵢ * Pᵢ, wᵢ)
-/// Then de Boor’s algorithm is applied and the resulting point is projected back
+/// Then de Boor's algorithm is applied and the resulting point is projected back
 /// (by dividing by its weight).
 impl<T> MultiDimensionFunction<T> for NurbsCurve<T>
 where
@@ -303,5 +380,49 @@ mod tests {
             let result_slow = nurbs.eval_slow(t);
             assert_eq!(result_eval, result_slow.unwrap());
         }
+    }
+
+    #[test]
+    fn test_nurbs_knot_insertion() -> AlgebraResult<()> {
+        // Create a NURBS curve with 2D points as coefficients
+        let coefficients = vec![
+            EFloat64::from(5.0),
+            EFloat64::from(1.0),
+            EFloat64::from(3.0),
+            EFloat64::from(6.0),
+            EFloat64::from(32.0),
+            EFloat64::from(25.0),
+            EFloat64::from(4.0),
+            EFloat64::from(19.0),
+        ];
+
+        // Use non-uniform weights for demonstration.
+        let weights = to_efloat_vec(vec![1.0, 2.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0]);
+        let degree = 3;
+
+        // Strictly increasing knot vector
+        let knot_vector = to_efloat_vec(vec![
+            0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 5.0, 5.0,
+        ]);
+
+        let nurbs = NurbsCurve::try_new(coefficients, weights, knot_vector, 3).unwrap();
+        println!("nurbs: {}", nurbs);
+
+        // Choose a subdivision parameter in the valid domain.
+        let t = EFloat64::from(2.5);
+        // Subdivide the NURBS at t.
+        let nurbs2 = nurbs.insert_knot(t.clone())?;
+
+        // print
+        println!("nurbs2: {}", nurbs2);
+
+        for i in 0..=100 {
+            let t = i as f64 / 100.0 * 7.0;
+            let t = EFloat64::from(t);
+            let result_eval = nurbs.eval(t.clone());
+            let result2_eval = nurbs2.eval(t.clone());
+            assert_eq!(result_eval, result2_eval);
+        }
+        Ok(())
     }
 }
