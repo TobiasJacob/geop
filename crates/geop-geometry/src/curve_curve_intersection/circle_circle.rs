@@ -66,7 +66,7 @@ pub fn circle_circle_intersection(
             let a = a.unwrap();
             let p = p1 + (p2 - p1).normalize().unwrap() * a;
             let h = (r1 * r1 - a * a).sqrt();
-            if let Some(h) = h {
+            if let Ok(h) = h {
                 let n = (p2 - p1)
                     .normalize()
                     .unwrap()

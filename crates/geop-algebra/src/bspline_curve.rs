@@ -388,12 +388,6 @@ mod tests {
         println!("left: {}", left);
         println!("right: {}", right);
 
-        // Evaluate the original curve at t.
-        let orig_val = bspline.eval(t.clone());
-        // Evaluate the left and right segments at t.
-        let left_val = left.eval(t.clone());
-        let right_val = right.eval(t.clone());
-
         for i in 0..100 {
             let t = i as f64 / 100.0 * 3.5;
             let t = EFloat64::from(t);

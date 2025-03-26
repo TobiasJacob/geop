@@ -1,3 +1,4 @@
+use geop_algebra::triangle::TriangleFace;
 use geop_geometry::point::Point;
 use geop_topology::topology::scene::Color;
 
@@ -41,6 +42,22 @@ impl TriangleBuffer {
     // New is only visible in this crate
     pub fn new(triangles: Vec<RenderTriangle>) -> Self {
         TriangleBuffer { triangles }
+    }
+
+    pub fn from_geop_triangle_buffer(triangles: Vec<TriangleFace>) -> Self {
+        let mut render_triangles = Vec::with_capacity(triangles.len());
+        for triangle in triangles {
+            render_triangles.push(RenderTriangle::new(
+                triangle.a,
+                triangle.b,
+                triangle.c,
+                Color::white(),
+                triangle.normal,
+                triangle.normal,
+                triangle.normal,
+            ));
+        }
+        TriangleBuffer::new(render_triangles)
     }
 
     pub fn empty() -> Self {

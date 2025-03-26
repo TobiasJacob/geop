@@ -152,7 +152,7 @@ impl<T> NurbHelperPoint<T>
 where
     T: HasZero,
 {
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Self {
             point: T::zero(),
             weight: EFloat64::zero(),

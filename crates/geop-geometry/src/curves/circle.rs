@@ -5,7 +5,7 @@ use geop_algebra::efloat::EFloat64;
 use crate::{
     bounding_box::BoundingBox,
     color::Category10Color,
-    geometry_error::{GeometryError, GeometryResult, WithContext},
+    geometry_error::{ElevateToGeometry, GeometryError, GeometryResult, WithContext},
     geometry_scene::GeometryScene,
     point::Point,
     transforms::Transform,
@@ -128,7 +128,7 @@ impl CurveLike for Circle {
         self.assert_on_curve(y, "y").with_context(&error_context)?;
         let angle = (x - self.basis)
             .angle(y - self.basis)
-            .with_context(&error_context)?;
+            .elevate(&error_context)?;
         Ok(self.radius.norm() * angle)
     }
 

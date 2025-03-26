@@ -71,11 +71,11 @@ impl EFloat64 {
         EFloat64::new(2.0 * PI, 2.0 * PI)
     }
 
-    pub fn sqrt(&self) -> Option<Self> {
+    pub fn sqrt(&self) -> AlgebraResult<Self> {
         if self.upper_bound < 0.0 {
-            return None;
+            return Err("Square root of negative number".into());
         }
-        Some(EFloat64::new(
+        Ok(EFloat64::new(
             self.upper_bound.sqrt() + 1E-15,
             self.lower_bound.max(0.0).sqrt() - 1E-15,
         ))

@@ -1,6 +1,7 @@
 use geop_geometry::{
     color::Category10Color,
     curves::{curve::Curve, line::Line},
+    geometry_error::{ElevateToGeometry, GeometryError},
     point::Point,
 };
 
@@ -20,7 +21,13 @@ pub fn primitive_line(start: Point, end: Point) -> TopologyResult<Edge> {
             ]),
         )
     };
-    let direction = (end - start).normalize().elevate(&context)?;
+    let context2 = |err: GeometryError| {
+        GeometryError::from(err).with_context("Normalize direction of new line".to_string())
+    };
+    let direction = (end - start)
+        .normalize()
+        .elevate(&context2)
+        .elevate(&context)?;
     // .map_err(|err| {
     //     TopologyError::from_geometry_error(err)
     //         .with_context("Normalize direction of new line".to_string())

@@ -5,6 +5,8 @@ pub mod efloat;
 pub mod factorial;
 pub mod monomial_polynom;
 pub mod nurbs_curve;
+pub mod triangle;
+pub mod point;
 
 use efloat::EFloat64;
 use monomial_polynom::MonomialPolynom;
