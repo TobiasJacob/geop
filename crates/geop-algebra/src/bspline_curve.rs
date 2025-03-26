@@ -1,7 +1,7 @@
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
-    HasZero, MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
+    HasZero, MultiDimensionFunction, ToMonomialPolynom,
 };
 
 pub struct BSplineCurve<T> {
@@ -82,20 +82,6 @@ impl<T> BSplineCurve<T> {
         while !(self.knot_vector[mid] <= t && t < self.knot_vector[mid + 1]) {
             mid += 1;
         }
-
-        // // Binary search to find the correct span
-        // let mut low = 0;
-        // let mut high = self.knot_vector.len() - 1;
-        // let mut mid = (low + high) / 2;
-
-        // while t < self.knot_vector[mid] || t >= self.knot_vector[mid + 1] {
-        //     if t < self.knot_vector[mid] {
-        //         high = mid;
-        //     } else {
-        //         low = mid;
-        //     }
-        //     mid = (low + high) / 2;
-        // }
 
         Some(mid)
     }
