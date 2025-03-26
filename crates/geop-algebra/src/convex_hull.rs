@@ -25,32 +25,45 @@ impl ConvexHull {
         &self.faces
     }
 
+    /// Returns the unique vertices of the convex hull.
+    fn unique_vertices(&self) -> Vec<Point> {
+        let mut vertices = Vec::new();
+        for face in &self.faces {
+            for &vertex in [face.a, face.b, face.c].iter() {
+                if !vertices.iter().any(|&v| v == vertex) {
+                    vertices.push(vertex);
+                }
+            }
+        }
+        vertices
+    }
+
     /// Checks if this convex hull intersects with another convex hull using the separating axis theorem.
     pub fn intersects(&self, other: &ConvexHull) -> bool {
+        // Get unique vertices for both hulls
+        let vertices1 = self.unique_vertices();
+        let vertices2 = other.unique_vertices();
+
         // For each face of both hulls, check if it can be used as a separating axis
         for face in self.faces.iter().chain(other.faces.iter()) {
             let normal = face.normal;
-            let mut min_self = EFloat64::from(f64::INFINITY);
-            let mut max_self = EFloat64::from(f64::NEG_INFINITY);
-            let mut min_other = EFloat64::from(f64::INFINITY);
-            let mut max_other = EFloat64::from(f64::NEG_INFINITY);
+            let mut min_self = EFloat64::from(1e10);
+            let mut max_self = EFloat64::from(-1e10);
+            let mut min_other = EFloat64::from(1e10);
+            let mut max_other = EFloat64::from(-1e10);
 
             // Project all vertices of self onto the normal
-            for face in &self.faces {
-                for &vertex in [face.a, face.b, face.c].iter() {
-                    let projected = vertex.dot(normal);
-                    min_self = min_self.min(projected);
-                    max_self = max_self.max(projected);
-                }
+            for &vertex in &vertices1 {
+                let projected = vertex.dot(normal);
+                min_self = min_self.min(projected);
+                max_self = max_self.max(projected);
             }
 
             // Project all vertices of other onto the normal
-            for face in &other.faces {
-                for &vertex in [face.a, face.b, face.c].iter() {
-                    let projected = vertex.dot(normal);
-                    min_other = min_other.min(projected);
-                    max_other = max_other.max(projected);
-                }
+            for &vertex in &vertices2 {
+                let projected = vertex.dot(normal);
+                min_other = min_other.min(projected);
+                max_other = max_other.max(projected);
             }
 
             // If there's a gap between the projections, we found a separating axis
@@ -77,25 +90,21 @@ impl ConvexHull {
                         let normal = (cross / cross_norm).unwrap();
 
                         // Project all vertices onto the normal
-                        let mut min_self = EFloat64::from(f64::INFINITY);
-                        let mut max_self = EFloat64::from(f64::NEG_INFINITY);
-                        let mut min_other = EFloat64::from(f64::INFINITY);
-                        let mut max_other = EFloat64::from(f64::NEG_INFINITY);
+                        let mut min_self = vertices1[0].dot(normal);
+                        let mut max_self = min_self;
+                        let mut min_other = vertices2[0].dot(normal);
+                        let mut max_other = min_other;
 
-                        for face in &self.faces {
-                            for &vertex in [face.a, face.b, face.c].iter() {
-                                let projected = vertex.dot(normal);
-                                min_self = min_self.min(projected);
-                                max_self = max_self.max(projected);
-                            }
+                        for &vertex in &vertices1 {
+                            let projected = vertex.dot(normal);
+                            min_self = min_self.min(projected);
+                            max_self = max_self.max(projected);
                         }
 
-                        for face in &other.faces {
-                            for &vertex in [face.a, face.b, face.c].iter() {
-                                let projected = vertex.dot(normal);
-                                min_other = min_other.min(projected);
-                                max_other = max_other.max(projected);
-                            }
+                        for &vertex in &vertices2 {
+                            let projected = vertex.dot(normal);
+                            min_other = min_other.min(projected);
+                            max_other = max_other.max(projected);
                         }
 
                         // If there's a gap between the projections, we found a separating axis

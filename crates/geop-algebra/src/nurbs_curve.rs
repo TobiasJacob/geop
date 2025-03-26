@@ -6,7 +6,6 @@ use crate::{
     convex_hull::ConvexHull,
     efloat::EFloat64,
     point::Point,
-    triangle::{quickhull, TriangleFace},
     HasZero, MultiDimensionFunction, ToMonomialPolynom,
 };
 
@@ -168,7 +167,7 @@ impl<T> NurbsCurve<T> {
     }
 
     /// Generates the convex hull of the control polygon using the Quickhull algorithm.
-    /// Returns a vector of TriangleFace representing the convex hull.
+    /// Returns a ConvexHull representing the convex hull of the control points.
     pub fn control_polygon_hull(&self) -> AlgebraResult<ConvexHull>
     where
         T: Clone + Into<Point>,
