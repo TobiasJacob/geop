@@ -1,6 +1,5 @@
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
-    bspline_basis::BSplineBasis,
     efloat::EFloat64,
     HasZero, MultiDimensionFunction, OneDimensionFunction, ToMonomialPolynom,
 };
@@ -114,7 +113,12 @@ where
         let mut result = T::zero();
 
         for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BSplineBasis::new(i, self.degree, self.knot_vector.clone()).unwrap();
+            let basis = BSplineCurve::<EFloat64>::try_new_from_basis(
+                i,
+                self.degree,
+                self.knot_vector.clone(),
+            )
+            .unwrap();
             result = result + coeff.clone() * basis.eval(t);
         }
 
