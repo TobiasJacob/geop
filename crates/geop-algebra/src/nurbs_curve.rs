@@ -142,12 +142,12 @@ where
 
 /// Helper struct for homogeneous coordinates.
 #[derive(Clone)]
-struct Homogeneous<T> {
+struct NurbHelperPoint<T> {
     point: T,
     weight: EFloat64,
 }
 
-impl<T> Homogeneous<T>
+impl<T> NurbHelperPoint<T>
 where
     T: HasZero,
 {
@@ -159,7 +159,7 @@ where
     }
 }
 
-impl<T> std::ops::Add for Homogeneous<T>
+impl<T> std::ops::Add for NurbHelperPoint<T>
 where
     T: std::ops::Add<Output = T>,
 {
@@ -172,7 +172,7 @@ where
     }
 }
 
-impl<T> std::ops::Mul<EFloat64> for Homogeneous<T>
+impl<T> std::ops::Mul<EFloat64> for NurbHelperPoint<T>
 where
     T: std::ops::Mul<EFloat64, Output = T>,
 {
@@ -185,12 +185,12 @@ where
     }
 }
 
-impl<T> std::ops::Mul<Homogeneous<T>> for EFloat64
+impl<T> std::ops::Mul<NurbHelperPoint<T>> for EFloat64
 where
     T: std::ops::Mul<EFloat64, Output = T>,
 {
-    type Output = Homogeneous<T>;
-    fn mul(self, rhs: Homogeneous<T>) -> Homogeneous<T> {
+    type Output = NurbHelperPoint<T>;
+    fn mul(self, rhs: NurbHelperPoint<T>) -> NurbHelperPoint<T> {
         rhs * self
     }
 }
@@ -210,7 +210,7 @@ where
     T: ToMonomialPolynom,
 {
     fn eval(&self, t: EFloat64) -> T {
-        return self.eval_slow(t).unwrap_or(T::zero());
+        // return self.eval_slow(t).unwrap_or(T::zero());
 
         let k = match self.find_span(t) {
             Some(span) => span,
@@ -218,18 +218,18 @@ where
         };
         let p = self.degree;
 
-        let mut d: Vec<Homogeneous<T>> = Vec::with_capacity(p + 1);
+        let mut d: Vec<NurbHelperPoint<T>> = Vec::with_capacity(p + 1);
 
         // Initialize homogeneous control points: Qᵢ = (wᵢ * Pᵢ, wᵢ)
         for j in 0..=p {
             if k + j < p || k + j - p >= self.coefficients.len() {
-                d.push(Homogeneous {
+                d.push(NurbHelperPoint {
                     point: T::zero(),
-                    weight: EFloat64::one(),
+                    weight: EFloat64::zero(),
                 });
             } else {
                 let idx = k + j - p;
-                d.push(Homogeneous {
+                d.push(NurbHelperPoint {
                     point: self.coefficients[idx].clone() * self.weights[idx],
                     weight: self.weights[idx],
                 });
