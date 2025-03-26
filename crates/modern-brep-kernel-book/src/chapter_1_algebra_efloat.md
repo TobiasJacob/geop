@@ -27,3 +27,42 @@ impl PartialEq for Point {
 ```
 
 So typically, EFloat64 is used for all calculations, and f64 is only used for comparison. This way, we can guarantee that the error bound is always within a certain range.
+
+## Things that return results instead of panicking
+
+There is a couple things which are usually a bad idea:
+- Dividing by EFloat64. This returns a AlgebraResult<EFloat64>. Why? Because of division by zero. If you divide by zero, the result is not a number. So we return a result instead of panicking.
+- Taking a square root of EFloat64. Well, usually a bad idea, since it is slow, and does not work for negative values.
+- Normalizing a Point. This returns a AlgebraResult<Point>. Why? Because if the point is at the origin, it cannot be normalized. So we return a result instead of panicking.
+
+Why does this matter? Take a look for example at this snipped to check if two homogenous points are equal:
+
+```rust
+// equality
+impl<T> PartialEq for Homogeneous<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        (self.point / self.weight).unwrap() == (other.point / other.weight).unwrap()
+    }
+}
+```
+
+Now this panics, if the points weight is 0. Take a look at this implementation instead
+
+```rust
+// equality
+impl<T> PartialEq for Homogeneous<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.point * other.weight == other.point * self.weight
+    }
+}
+```
+
+This implementation gets the same result, but without needing a division. Thus, it cannot panic, and the implementation is more robust.
+
+People tend to forget to check these edge cases, thus, geop uses the enhanced typing capabilities of Rust, to remind you that a division, or a normalization operation might fail.

@@ -124,13 +124,11 @@ where
         // Follows https://en.wikipedia.org/wiki/De_Boor%27s_algorithm
 
         // Find which knot span contains t
-        let k = self.find_span(t);
-        let p = self.degree;
-
-        let k = match k {
+        let k = match self.find_span(t) {
             Some(k) => k,
             None => return T::zero(),
         };
+        let p = self.degree;
 
         // Initialize coefficients for the de Boor algorithm
         let mut d = Vec::with_capacity(p + 1);
