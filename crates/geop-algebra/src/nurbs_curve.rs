@@ -11,6 +11,7 @@ use crate::{
 /// * `weights` are the associated weights (wᵢ).
 /// * `knot_vector` is the non-decreasing knot sequence.
 /// * `degree` is the polynomial degree (p).
+#[derive(Debug, Clone)]
 pub struct NurbsCurve<T> {
     pub coefficients: Vec<T>,
     pub weights: Vec<EFloat64>,
