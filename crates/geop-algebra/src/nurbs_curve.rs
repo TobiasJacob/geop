@@ -4,6 +4,8 @@ use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     bspline_curve::BSplineCurve,
     efloat::EFloat64,
+    point::Point,
+    triangle::{quickhull, TriangleFace},
     HasZero, MultiDimensionFunction, ToMonomialPolynom,
 };
 
@@ -162,6 +164,19 @@ impl<T> NurbsCurve<T> {
         let right_curve = NurbsCurve::try_new(right_ctrl_pts, right_weights, right_knots, p)?;
 
         Ok((left_curve, right_curve))
+    }
+
+    /// Generates the convex hull of the control polygon using the Quickhull algorithm.
+    /// Returns a vector of TriangleFace representing the convex hull.
+    pub fn convex_hull(&self) -> AlgebraResult<Vec<TriangleFace>>
+    where
+        T: Clone + Into<Point>,
+    {
+        // Convert control points to Points
+        let points: Vec<Point> = self.coefficients.iter().map(|p| p.clone().into()).collect();
+
+        // Use quickhull to generate the convex hull
+        quickhull(points)
     }
 }
 
