@@ -1,12 +1,13 @@
 pub mod algebra_error;
 pub mod bernstein_polynomial;
 pub mod bspline_curve;
+pub mod convex_hull;
 pub mod efloat;
 pub mod factorial;
 pub mod monomial_polynom;
 pub mod nurbs_curve;
-pub mod triangle;
 pub mod point;
+pub mod triangle;
 
 use efloat::EFloat64;
 use monomial_polynom::MonomialPolynom;

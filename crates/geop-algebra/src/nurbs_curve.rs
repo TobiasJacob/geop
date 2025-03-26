@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     bspline_curve::BSplineCurve,
+    convex_hull::ConvexHull,
     efloat::EFloat64,
     point::Point,
     triangle::{quickhull, TriangleFace},
@@ -168,7 +169,7 @@ impl<T> NurbsCurve<T> {
 
     /// Generates the convex hull of the control polygon using the Quickhull algorithm.
     /// Returns a vector of TriangleFace representing the convex hull.
-    pub fn convex_hull(&self) -> AlgebraResult<Vec<TriangleFace>>
+    pub fn control_polygon_hull(&self) -> AlgebraResult<ConvexHull>
     where
         T: Clone + Into<Point>,
     {
@@ -176,7 +177,7 @@ impl<T> NurbsCurve<T> {
         let points: Vec<Point> = self.coefficients.iter().map(|p| p.clone().into()).collect();
 
         // Use quickhull to generate the convex hull
-        quickhull(points)
+        Ok(ConvexHull::try_new(points)?)
     }
 }
 

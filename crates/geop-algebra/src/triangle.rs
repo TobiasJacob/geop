@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::{algebra_error::AlgebraResult, efloat::EFloat64, point::Point};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TriangleFace {
     pub a: Point,
     pub b: Point,
