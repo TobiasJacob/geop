@@ -1,4 +1,4 @@
-use crate::point::Point;
+use crate::{efloat::EFloat64, point::Point};
 
 /// A line segment in 3D space defined by its start and end points.
 #[derive(Debug, Clone, Copy)]

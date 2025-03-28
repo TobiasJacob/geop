@@ -4,6 +4,7 @@ pub mod bspline_curve;
 pub mod convex_hull;
 pub mod efloat;
 pub mod factorial;
+pub mod intersection;
 pub mod line;
 pub mod monomial_polynom;
 pub mod nurbs_curve;
