@@ -24,17 +24,27 @@ pub enum ConvexHull {
 impl ConvexHull {
     /// Creates a new convex hull from a set of points using the Quickhull algorithm.
     pub fn try_new(points: Vec<Point>) -> AlgebraResult<Self> {
-        match points.len() {
+        // Filter out duplicate points
+        let mut unique_points = Vec::new();
+        for point in points {
+            if !unique_points.iter().any(|&p| p == point) {
+                unique_points.push(point);
+            }
+        }
+
+        match unique_points.len() {
             0 => Err(AlgebraError::new(
                 "Cannot create convex hull from empty set of points".to_string(),
             )),
-            1 => Ok(Self::Point(points[0])),
-            2 => Ok(Self::Line(Line::new(points[0], points[1]))),
+            1 => Ok(Self::Point(unique_points[0])),
+            2 => Ok(Self::Line(Line::new(unique_points[0], unique_points[1]))),
             3 => Ok(Self::Triangle(TriangleFace::try_new(
-                points[0], points[1], points[2],
+                unique_points[0],
+                unique_points[1],
+                unique_points[2],
             )?)),
             _ => {
-                let faces = quickhull(points)?;
+                let faces = quickhull(unique_points)?;
                 Ok(Self::Polyhedron(faces))
             }
         }
@@ -176,11 +186,11 @@ impl ConvexHull {
             (Self::Point(p), Self::Polyhedron(faces))
             | (Self::Polyhedron(faces), Self::Point(p)) => {
                 for face in faces {
-                    if Self::point_triangle_intersection(p, face) {
-                        return true;
+                    if face.distance_to_point(p) > 0.0 {
+                        return false;
                     }
                 }
-                false
+                true
             }
             (Self::Line(l1), Self::Line(l2)) => Self::line_line_intersection(l1, l2),
             (Self::Line(l), Self::Triangle(t)) | (Self::Triangle(t), Self::Line(l)) => {
@@ -275,7 +285,7 @@ mod tests {
         let points2 = vec![
             Point::from_f64(2.0, 0.0, 0.0),
             Point::from_f64(3.0, 0.0, 0.0),
-            Point::from_f64(2.0, 1.0, 0.0),
+            Point::from_f64(2.0, 0.0, 0.0),
             Point::from_f64(2.0, 0.0, 1.0),
         ];
         let hull1 = ConvexHull::try_new(points1)?;
