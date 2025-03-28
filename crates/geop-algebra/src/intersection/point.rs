@@ -44,7 +44,7 @@ mod tests {
     fn test_point_line_intersection() -> AlgebraResult<()> {
         let p1 = Point::from_f64(0.0, 0.0, 0.0);
         let p2 = Point::from_f64(1.0, 1.0, 1.0);
-        let line = Line::new(p1, p2);
+        let line = Line::try_new(p1, p2)?;
 
         // Point on line
         let p_on = Point::from_f64(0.5, 0.5, 0.5);

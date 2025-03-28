@@ -66,36 +66,36 @@ mod tests {
     #[test]
     fn test_line_line_intersection() -> AlgebraResult<()> {
         // Intersecting lines
-        let l1 = Line::new(
+        let l1 = Line::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 1.0, 0.0),
-        );
-        let l2 = Line::new(
+        )?;
+        let l2 = Line::try_new(
             Point::from_f64(0.0, 1.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
+        )?;
         assert!(line_line_intersection(&l1, &l2));
 
         // Parallel non-intersecting lines
-        let l3 = Line::new(
+        let l3 = Line::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
-        let l4 = Line::new(
+        )?;
+        let l4 = Line::try_new(
             Point::from_f64(0.0, 1.0, 0.0),
             Point::from_f64(1.0, 1.0, 0.0),
-        );
+        )?;
         assert!(!line_line_intersection(&l3, &l4));
 
         // Skew lines
-        let l5 = Line::new(
+        let l5 = Line::try_new(
             Point::from_f64(0.0, 0.0, 0.0),
             Point::from_f64(1.0, 0.0, 0.0),
-        );
-        let l6 = Line::new(
+        )?;
+        let l6 = Line::try_new(
             Point::from_f64(0.0, 0.0, 1.0),
             Point::from_f64(1.0, 0.0, 1.0),
-        );
+        )?;
         assert!(!line_line_intersection(&l5, &l6));
 
         Ok(())
@@ -110,25 +110,52 @@ mod tests {
         )?;
 
         // Line intersecting triangle
-        let l1 = Line::new(
+        let l1 = Line::try_new(
             Point::from_f64(0.25, 0.25, -1.0),
             Point::from_f64(0.25, 0.25, 1.0),
-        );
+        )?;
         assert!(line_triangle_intersection(&l1, &triangle));
 
         // Line missing triangle
-        let l2 = Line::new(
+        let l2 = Line::try_new(
             Point::from_f64(0.25, 0.25, 1.0),
             Point::from_f64(0.25, 0.25, 2.0),
-        );
+        )?;
         assert!(!line_triangle_intersection(&l2, &triangle));
 
         // Line parallel to triangle
-        let l3 = Line::new(
+        let l3 = Line::try_new(
             Point::from_f64(0.0, 0.0, 1.0),
             Point::from_f64(1.0, 0.0, 1.0),
-        );
+        )?;
         assert!(!line_triangle_intersection(&l3, &triangle));
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_line_line_intersection_parallel() -> AlgebraResult<()> {
+        // Parallel lines
+        let l1 = Line::try_new(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )?;
+        let l2 = Line::try_new(
+            Point::from_f64(0.0, 1.0, 0.0),
+            Point::from_f64(1.0, 1.0, 0.0),
+        )?;
+        assert!(!line_line_intersection(&l1, &l2));
+
+        // Coincident lines
+        let l3 = Line::try_new(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )?;
+        let l4 = Line::try_new(
+            Point::from_f64(0.0, 0.0, 0.0),
+            Point::from_f64(1.0, 0.0, 0.0),
+        )?;
+        assert!(line_line_intersection(&l3, &l4));
 
         Ok(())
     }

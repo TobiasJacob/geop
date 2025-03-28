@@ -42,7 +42,10 @@ impl ConvexHull {
                 "Cannot create convex hull from empty set of points".to_string(),
             )),
             1 => Ok(Self::Point(unique_points[0])),
-            2 => Ok(Self::Line(Line::new(unique_points[0], unique_points[1]))),
+            2 => Ok(Self::Line(Line::try_new(
+                unique_points[0],
+                unique_points[1],
+            )?)),
             3 => Ok(Self::Triangle(TriangleFace::try_new(
                 unique_points[0],
                 unique_points[1],
