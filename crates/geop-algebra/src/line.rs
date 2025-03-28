@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{algebra_error::AlgebraResult, efloat::EFloat64, point::Point};
 
 /// A line segment in 3D space defined by its start and end points.
@@ -35,6 +37,12 @@ impl Line {
     /// Returns the length of the line segment.
     pub fn length(&self) -> f64 {
         self.direction().norm().to_f64()
+    }
+}
+
+impl Display for Line {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Line({} -> {})", self.start, self.end)
     }
 }
 

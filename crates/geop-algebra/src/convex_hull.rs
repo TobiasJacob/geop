@@ -2,7 +2,13 @@ use std::fmt::Display;
 
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
-    intersection::line::line_triangle_intersection,
+    intersection::{
+        line::line_triangle_intersection,
+        polyhedron::{
+            line_polyhedron_intersection, point_polyhedron_intersection,
+            polyhedron_polyhedron_intersection, triangle_polyhedron_intersection,
+        },
+    },
     line::Line,
     point::Point,
     triangle::{quickhull, TriangleFace},
@@ -69,45 +75,21 @@ impl ConvexHull {
                 point_triangle_intersection(p, t)
             }
             (Self::Point(p), Self::Polyhedron(faces))
-            | (Self::Polyhedron(faces), Self::Point(p)) => {
-                for face in faces {
-                    if face.distance_to_point(p) > 0.0 {
-                        return false;
-                    }
-                }
-                true
-            }
+            | (Self::Polyhedron(faces), Self::Point(p)) => point_polyhedron_intersection(p, faces),
             (Self::Line(l1), Self::Line(l2)) => line_line_intersection(l1, l2),
             (Self::Line(l), Self::Triangle(t)) | (Self::Triangle(t), Self::Line(l)) => {
                 line_triangle_intersection(l, t)
             }
             (Self::Line(l), Self::Polyhedron(faces)) | (Self::Polyhedron(faces), Self::Line(l)) => {
-                for face in faces {
-                    if line_triangle_intersection(l, face) {
-                        return true;
-                    }
-                }
-                false
+                line_polyhedron_intersection(l, faces)
             }
             (Self::Triangle(t1), Self::Triangle(t2)) => triangle_triangle_intersection(t1, t2),
             (Self::Triangle(t), Self::Polyhedron(faces))
             | (Self::Polyhedron(faces), Self::Triangle(t)) => {
-                for face in faces {
-                    if triangle_triangle_intersection(t, face) {
-                        return true;
-                    }
-                }
-                false
+                triangle_polyhedron_intersection(t, faces)
             }
             (Self::Polyhedron(faces1), Self::Polyhedron(faces2)) => {
-                for face1 in faces1 {
-                    for face2 in faces2 {
-                        if triangle_triangle_intersection(face1, face2) {
-                            return true;
-                        }
-                    }
-                }
-                false
+                polyhedron_polyhedron_intersection(faces1, faces2)
             }
         }
     }
@@ -116,11 +98,14 @@ impl ConvexHull {
 impl Display for ConvexHull {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Point(_) => write!(f, "ConvexHull::Point"),
-            Self::Line(_) => write!(f, "ConvexHull::Line"),
-            Self::Triangle(_) => write!(f, "ConvexHull::Triangle"),
+            Self::Point(p) => write!(f, "{}", p),
+            Self::Line(l) => write!(f, "{}", l),
+            Self::Triangle(t) => write!(f, "{}", t),
             Self::Polyhedron(faces) => {
-                write!(f, "ConvexHull::Polyhedron with {} faces", faces.len())
+                for face in faces {
+                    writeln!(f, "{}", face)?;
+                }
+                Ok(())
             }
         }
     }
@@ -173,6 +158,9 @@ mod tests {
         ];
         let hull1 = ConvexHull::try_new(points1)?;
         let hull2 = ConvexHull::try_new(points2)?;
+
+        println!("hull1: {}", hull1);
+        println!("hull2: {}", hull2);
         assert!(!hull1.intersects(&hull2));
 
         // Create two intersecting convex hulls

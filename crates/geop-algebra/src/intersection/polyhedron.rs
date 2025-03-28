@@ -30,6 +30,18 @@ pub fn line_polyhedron_intersection(line: &Line, faces: &[TriangleFace]) -> bool
     false
 }
 
+pub fn triangle_polyhedron_intersection(triangle: &TriangleFace, faces: &[TriangleFace]) -> bool {
+    if point_polyhedron_intersection(&triangle.a, faces) {
+        return true;
+    }
+    for face in faces {
+        if triangle_triangle_intersection(triangle, face) {
+            return true;
+        }
+    }
+    false
+}
+
 /// Checks if two polyhedra intersect
 pub fn polyhedron_polyhedron_intersection(
     faces1: &[TriangleFace],
@@ -42,10 +54,17 @@ pub fn polyhedron_polyhedron_intersection(
     if point_polyhedron_intersection(&faces1[0].a, faces2) {
         return true;
     }
+    if point_polyhedron_intersection(&faces2[0].a, faces1) {
+        return true;
+    }
     // Check if any triangle from one polyhedron intersects with any triangle from the other
     for face1 in faces1 {
         for face2 in faces2 {
             if triangle_triangle_intersection(face1, face2) {
+                // println!(
+                //     "triangle_triangle_intersection between {} and {}",
+                //     face1, face2
+                // );
                 return true;
             }
         }
