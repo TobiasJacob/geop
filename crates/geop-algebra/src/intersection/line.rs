@@ -1,24 +1,40 @@
-use crate::{line::Line, point::Point, triangle::TriangleFace};
+use crate::{line::Line, triangle::TriangleFace};
 
 /// Checks if two line segments intersect
 pub fn line_line_intersection(l1: &Line, l2: &Line) -> bool {
-    let dir1 = l1.direction();
-    let dir2 = l2.direction();
-    let cross = dir1.cross(dir2);
-    let cross_norm = cross.norm();
-    if cross_norm <= 0.0 {
-        // Lines are parallel, check if they overlap
-        let p1 = l1.start();
-        let p2 = l2.start();
-        let dir = p2 - p1;
-        let t = dir.cross(dir2).dot(cross) / cross_norm;
-        let u = dir.cross(dir1).dot(cross) / cross_norm;
-        if let (Ok(t), Ok(u)) = (t, u) {
-            return t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0;
+    let p = l1.start();
+    let r = l1.direction();
+    let q = l2.start();
+    let s = l2.direction();
+
+    let rxs = r.cross(s);
+
+    // Check if rxs is nearly zero -> lines are parallel
+    if rxs.norm() == 0.0 {
+        // Check if the segments are collinear
+        if (q - p).cross(r).norm() == 0.0 {
+            // Project q onto r to get a parameter t0 and check overlap
+            let t0 = (q - p).dot(r) / r.norm_sq();
+            if let Ok(t0) = t0 {
+                let tp = s.dot(r) / r.norm_sq();
+                if let Ok(tp) = tp {
+                    let t1 = t0 + tp;
+                    return (t0 >= 0.0 && t0 <= 1.0) || (t1 >= 0.0 && t1 <= 1.0);
+                }
+            }
         }
         return false;
     }
-    true
+
+    // For non-parallel lines, compute intersection parameters
+    let t = (q - p).cross(s).dot(rxs) / rxs.norm_sq();
+    let u = (q - p).cross(r).dot(rxs) / rxs.norm_sq();
+
+    if let (Ok(t), Ok(u)) = (t, u) {
+        t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0
+    } else {
+        false
+    }
 }
 
 /// Checks if a line segment intersects with a triangle
@@ -45,7 +61,7 @@ pub fn line_triangle_intersection(l: &Line, t: &TriangleFace) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::algebra_error::AlgebraResult;
+    use crate::{algebra_error::AlgebraResult, point::Point};
 
     #[test]
     fn test_line_line_intersection() -> AlgebraResult<()> {

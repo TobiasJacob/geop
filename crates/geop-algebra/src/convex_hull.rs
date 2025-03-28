@@ -165,7 +165,7 @@ mod tests {
         let points2 = vec![
             Point::from_f64(2.0, 0.0, 0.0),
             Point::from_f64(3.0, 0.0, 0.0),
-            Point::from_f64(2.0, 0.0, 0.0),
+            Point::from_f64(2.0, 1.0, 0.0),
             Point::from_f64(2.0, 0.0, 1.0),
         ];
         let hull1 = ConvexHull::try_new(points1)?;
