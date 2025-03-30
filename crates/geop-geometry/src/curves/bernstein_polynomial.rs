@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::{efloat::EFloat64, monomial_polynom::MonomialPolynom, HasZero, MultiDimensionFunction};
+use crate::{efloat::EFloat64, HasZero, MultiDimensionFunction};
+use crate::curves::monomial_polynom::MonomialPolynom;
 
 // Represents a polynomial in the form of a_{0} B_{0,n}
 #[derive(Debug, Clone)]

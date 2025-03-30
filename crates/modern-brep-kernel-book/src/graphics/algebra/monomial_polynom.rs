@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{efloat::EFloat64, monomial_polynom::MonomialPolynom};
+    use geop_geometry::efloat::EFloat64;
     use geop_geometry::point::Point;
     use geop_rasterize::{
         functions::{rasterize_coordinate_system, rasterize_onedimensional_function},
@@ -10,7 +10,7 @@ mod tests {
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-
+    use geop_geometry::curves::monomial_polynom::MonomialPolynom;
     use crate::tests::renderer;
 
     #[rstest]

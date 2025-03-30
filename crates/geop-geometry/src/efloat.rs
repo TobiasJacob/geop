@@ -7,8 +7,9 @@ use std::{
 use float_next_after::NextAfter;
 
 use crate::{
-    algebra_error::AlgebraResult, monomial_polynom::MonomialPolynom, HasZero, ToMonomialPolynom,
+    algebra_error::AlgebraResult, HasZero, ToMonomialPolynom,
 };
+use crate::curves::monomial_polynom::MonomialPolynom;
 
 #[derive(Debug, Clone, Copy)]
 pub struct EFloat64 {

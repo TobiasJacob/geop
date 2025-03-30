@@ -2,10 +2,10 @@ use std::fmt::Display;
 
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
-    bspline_curve::BSplineCurve,
     efloat::EFloat64,
     HasZero, MultiDimensionFunction, ToMonomialPolynom,
 };
+use crate::curves::bspline_curve::BSplineCurve;
 use crate::primitives::convex_hull::ConvexHull;
 use crate::primitives::point::Point;
 

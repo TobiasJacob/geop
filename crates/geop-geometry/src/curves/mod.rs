@@ -12,6 +12,10 @@ pub mod circle;
 pub mod ellipse;
 pub mod helix;
 pub mod line;
+pub mod bernstein_polynomial;
+pub mod bspline_curve;
+pub mod monomial_polynom;
+pub mod nurbs_curve;
 
 // CurveLike is a trait that all curves should implement.
 pub trait CurveLike {

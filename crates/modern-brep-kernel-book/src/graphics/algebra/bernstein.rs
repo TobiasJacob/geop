@@ -2,7 +2,7 @@
 mod tests {
     use std::vec;
 
-    use geop_geometry::{bernstein_polynomial::BernsteinPolynomial, efloat::EFloat64};
+    use geop_geometry::efloat::EFloat64;
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::{EdgeBuffer, RenderEdge},
@@ -16,7 +16,7 @@ mod tests {
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-
+    use geop_geometry::curves::bernstein_polynomial::BernsteinPolynomial;
     use crate::tests::renderer;
 
     #[rstest]

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_geometry::{efloat::EFloat64, nurbs_curve::NurbsCurve};
+    use geop_geometry::efloat::EFloat64;
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
@@ -11,7 +11,7 @@ mod tests {
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-
+    use geop_geometry::curves::nurbs_curve::NurbsCurve;
     use crate::tests::renderer;
 
     #[rstest]
