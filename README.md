@@ -18,7 +18,7 @@ Documentation: [Modern Brep Kernel Book](https://tobiasjacob.github.io/geop/)
 
     pub fn line_line_intersection(a: &Line, b: &Line) -> LineLineIntersection;
     ```
-- :rock: **Solid mathematical foundation:** We use Riemannian Manifolds to ensure numerical stability and accuracy.
+- :rock: **Solid mathematical foundation:** We use state-of-the-art algorithms and interval arithmatic for maximum numerical accuracry.
 - :heart: **Simplicity is key:** We avoid the half edge datastructure. Topological structures are contained by simple structs. We also avoid the use of abstract data types, instead curves and surfaces are represented as enum. This makes the code easier to understand and to use. Last but not least, we make sure to never expose the parameters of the geometric objects, but always work with reference points in 3D.
 - :100: **Code coverage:** We aim for 100% code coverage.
 
