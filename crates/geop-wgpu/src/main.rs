@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use std::{panic, vec};
 
-use geop_geometry::efloat::EFloat64;
 use geop_booleans::difference::face_face::face_face_difference;
+use geop_geometry::efloat::EFloat64;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},
     point::Point,
@@ -10,9 +10,7 @@ use geop_geometry::{
     transforms::Transform,
 };
 use geop_rasterize::{
-    edge::rasterize_edge_into_line_list,
     edge_buffer::EdgeBuffer,
-    face::rasterize_face_into_triangle_list,
     triangle_buffer::TriangleBuffer,
     vertex_buffer::VertexBuffer,
     volume::{
@@ -25,7 +23,6 @@ use geop_topology::primitive_objects::edges::arc::primitive_arc;
 use geop_topology::primitive_objects::edges::circle::primitive_circle;
 use geop_topology::primitive_objects::edges::line::primitive_line;
 use geop_topology::{
-    debug_data::get_debug_data,
     operations::extrude::extrude,
     primitive_objects::faces::sphere::primitive_sphere,
     topology::{contour::Contour, edge::Edge, face::Face, scene::Color},
@@ -191,25 +188,25 @@ async fn run() {
         Err(e) => {
             println!("Error: {:?}", e);
 
-            let debug_data = get_debug_data().unwrap();
+            // let debug_data = get_debug_data().unwrap();
 
-            let mut lines = EdgeBuffer::empty();
-            for (edge, debug_color) in debug_data.edges.iter() {
-                lines.join(&rasterize_edge_into_line_list(edge, debug_color.to_color()));
-            }
-            println!("Lines: {:?}", lines);
+            // let mut lines = EdgeBuffer::empty();
+            // for (edge, debug_color) in debug_data.edges.iter() {
+            //     lines.join(&rasterize_edge_into_line_list(edge, debug_color.to_color()));
+            // }
+            // println!("Lines: {:?}", lines);
 
-            let mut triangles = TriangleBuffer::empty();
-            for (face, debug_color) in debug_data.faces.iter() {
-                triangles.join(&rasterize_face_into_triangle_list(
-                    face,
-                    debug_color.to_color(),
-                ));
-            }
+            // let mut triangles = TriangleBuffer::empty();
+            // for (face, debug_color) in debug_data.faces.iter() {
+            //     triangles.join(&rasterize_face_into_triangle_list(
+            //         face,
+            //         debug_color.to_color(),
+            //     ));
+            // }
 
-            let window = GeopWindow::new(VertexBuffer::empty(), lines, triangles, &window).await;
-            println!("Error: {:?}", e);
-            window.show(event_loop);
+            // let window = GeopWindow::new(VertexBuffer::empty(), lines, triangles, &window).await;
+            // println!("Error: {:?}", e);
+            // window.show(event_loop);
         }
     }
 }
