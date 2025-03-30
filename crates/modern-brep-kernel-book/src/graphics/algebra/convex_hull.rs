@@ -2,7 +2,7 @@
 mod tests {
     use std::vec;
 
-    use geop_algebra::triangle::quickhull;
+    use geop_algebra::primitives::triangle::quickhull;
     use geop_geometry::point::Point;
     use geop_rasterize::{
         edge_buffer::EdgeBuffer, triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,

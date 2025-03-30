@@ -1,4 +1,4 @@
-use geop_algebra::triangle::TriangleFace;
+use geop_algebra::primitives::triangle::TriangleFace;
 use geop_geometry::point::Point;
 use geop_topology::topology::scene::Color;
 

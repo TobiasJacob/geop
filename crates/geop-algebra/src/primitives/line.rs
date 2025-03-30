@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::{algebra_error::AlgebraResult, point::Point};
+use crate::algebra_error::AlgebraResult;
+use crate::primitives::point::Point;
 
 /// A line segment in 3D space defined by its start and end points.
 #[derive(Debug, Clone, Copy)]

@@ -1,4 +1,6 @@
-use crate::{line::Line, point::Point, triangle::TriangleFace};
+use crate::primitives::triangle::TriangleFace;
+use crate::primitives::line::Line;
+use crate::primitives::point::Point;
 
 /// Checks if a point intersects with a line segment
 pub fn point_line_intersection(p: &Point, l: &Line) -> bool {

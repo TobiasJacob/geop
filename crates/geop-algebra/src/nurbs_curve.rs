@@ -3,11 +3,11 @@ use std::fmt::Display;
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     bspline_curve::BSplineCurve,
-    convex_hull::ConvexHull,
     efloat::EFloat64,
-    point::Point,
     HasZero, MultiDimensionFunction, ToMonomialPolynom,
 };
+use crate::primitives::convex_hull::ConvexHull;
+use crate::primitives::point::Point;
 
 /// A NURBS (Non-Uniform Rational B-Spline) curve.
 ///

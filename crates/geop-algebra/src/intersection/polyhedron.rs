@@ -1,5 +1,6 @@
-use crate::{line::Line, point::Point, triangle::TriangleFace};
-
+use crate::primitives::triangle::TriangleFace;
+use crate::primitives::line::Line;
+use crate::primitives::point::Point;
 use super::{line::line_triangle_intersection, triangle::triangle_triangle_intersection};
 
 /// Checks if a point is inside a convex polyhedron

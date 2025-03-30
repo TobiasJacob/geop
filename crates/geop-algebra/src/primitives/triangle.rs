@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::{algebra_error::AlgebraResult, efloat::EFloat64, point::Point};
+use crate::{algebra_error::AlgebraResult, efloat::EFloat64};
+use crate::primitives::point::Point;
 
 #[derive(Debug, Clone)]
 pub struct TriangleFace {

@@ -9,15 +9,15 @@ use crate::{
             polyhedron_polyhedron_intersection, triangle_polyhedron_intersection,
         },
     },
-    line::Line,
-    point::Point,
-    triangle::{quickhull, TriangleFace},
 };
 
 use crate::intersection::{
     line::line_line_intersection, point::point_line_intersection,
     point::point_triangle_intersection, triangle::triangle_triangle_intersection,
 };
+use crate::primitives::line::Line;
+use crate::primitives::point::Point;
+use crate::primitives::triangle::{quickhull, TriangleFace};
 
 /// A convex hull that can represent different geometric objects based on the number of points:
 /// - Single point

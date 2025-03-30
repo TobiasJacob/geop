@@ -1,5 +1,6 @@
-use super::point::point_triangle_intersection;
-use crate::{algebra_error::AlgebraResult, efloat::EFloat64, point::Point, triangle::TriangleFace};
+use crate::efloat::EFloat64;
+use crate::primitives::point::Point;
+use crate::primitives::triangle::TriangleFace;
 
 /// Checks if two triangles intersect using the Separating Axis Theorem
 pub fn triangle_triangle_intersection(t1: &TriangleFace, t2: &TriangleFace) -> bool {

@@ -1,4 +1,5 @@
-use crate::{line::Line, triangle::TriangleFace};
+use crate::primitives::triangle::TriangleFace;
+use crate::primitives::line::Line;
 
 /// Checks if two line segments intersect
 pub fn line_line_intersection(l1: &Line, l2: &Line) -> bool {
@@ -61,7 +62,8 @@ pub fn line_triangle_intersection(l: &Line, t: &TriangleFace) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{algebra_error::AlgebraResult, point::Point};
+    use crate::algebra_error::AlgebraResult;
+    use crate::primitives::point::Point;
 
     #[test]
     fn test_line_line_intersection() -> AlgebraResult<()> {

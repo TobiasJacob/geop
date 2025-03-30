@@ -1,2 +1,2 @@
 
-pub use geop_algebra::point::Point;
+pub use geop_algebra::primitives::point::Point;
