@@ -15,6 +15,19 @@ Well, there are some ideas that sounded good but turned out badly. Use this as a
 
 - **Comparing floats to 1e-8 to check for equality**: Bad idea. Use the EFloat class instead, that uses interval arithmetic and tracks the upper and lower boundary.
 - **Doing Algebra instead of numerical approxmations with subdivion**: In the first versions, a line-line intersection would return a line, or a point, or nothing. A circle-line intersectino would return two points, one point, or nothing. But after adding more and more geometric options, the N^2 complexity was too much implementation effort. The second idea was to use Algebra solvers, to solve each case algebraicly. But e.g. for nurbs-nurbs intersection, there is not even a closed formula, and if there were, it would have a degree of >300. So we discarded everything for a numerical approach with subdivision, which is very easy to understand and much more robust.
+- **Working with too many abstract types**: At first, nurbs etc. were implemented with generic types, which means that e.g. like this
+```rust
+    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(Self, Self)>
+    where
+        T: Clone,
+        T: std::ops::Add<Output = T>,
+        T: std::ops::Mul<EFloat64, Output = T>,
+        T: std::ops::Div<EFloat64, Output = AlgebraResult<T>>,
+        T: HasZero,
+        T: ToMonomialPolynom,
+```
+The problem with this was, that rust analyzer started to struggle with the type signatures, and the compile time started to grow. All of these T types were replaced with Point, which is a concrete type. Geop does not have a use case for generic types, so this was a bad idea.
+
 - **Doing algebra in rusts type system**: It is better that EFloat returns a result if you take a square root of a negative number, instead of panicking, or defining a type that is PositiveEfloat. The types tend to grow exponentially.
 - **Thinking coincident surfaces or curves are an edge case**: Surface surface intersection is not always a curve. It can be a subpart of the surface as well. While in most 3D applications, coincident surfaces are an edge-case, they are actually the default case in CAD applications. Same applies for curve-curve intersection.
 - **Inverting a matrix or calculating a derivative**: Geop does not use any algebra library in its core, since it is not needed. Inverting a matrix is to brittle. Derivatives tend to be zero in singular points, which is not helpful. Instead, geop uses a numerical approach with subdivision, which is works always, no matter how complex the geometry is.

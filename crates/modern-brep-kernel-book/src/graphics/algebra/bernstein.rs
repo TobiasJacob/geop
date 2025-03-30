@@ -2,6 +2,8 @@
 mod tests {
     use std::vec;
 
+    use crate::tests::renderer;
+    use geop_geometry::curves::bernstein_polynomial::BernsteinPolynomial;
     use geop_geometry::efloat::EFloat64;
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
@@ -16,8 +18,6 @@ mod tests {
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-    use geop_geometry::curves::bernstein_polynomial::BernsteinPolynomial;
-    use crate::tests::renderer;
 
     #[rstest]
     async fn test_bernstein(#[future] renderer: Box<HeadlessRenderer>) {
@@ -117,7 +117,7 @@ mod tests {
         let curve = BernsteinPolynomial::new(control_points);
 
         // let curve = BernsteinBasis::new(i, n).unwrap();
-        let edge_buffer_i = rasterize_multidimensional_function(&curve, Color::black());
+        let edge_buffer_i = rasterize_multidimensional_function(&curve, Color::black(), 0.0, 1.0);
         edge_buffer.join(&edge_buffer_i);
 
         let coordinate_system_buffer = rasterize_coordinate_system(

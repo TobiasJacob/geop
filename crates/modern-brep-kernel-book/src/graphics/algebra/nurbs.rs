@@ -1,7 +1,10 @@
 #[cfg(test)]
 mod tests {
+    use crate::tests::renderer;
+    use geop_geometry::curves::nurbs_curve::NurbsCurve;
     use geop_geometry::efloat::EFloat64;
     use geop_geometry::{point::Point, transforms::Transform};
+    use geop_rasterize::functions::rasterize_multidimensional_function;
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,
         functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
@@ -11,8 +14,6 @@ mod tests {
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-    use geop_geometry::curves::nurbs_curve::NurbsCurve;
-    use crate::tests::renderer;
 
     #[rstest]
     async fn test_nurbs_basis(#[future] renderer: Box<HeadlessRenderer>) {
@@ -26,9 +27,10 @@ mod tests {
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
                 let curve =
-                    NurbsCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone()).unwrap();
+                    NurbsCurve::try_new_from_basis(i, k, knot_vector.clone(), Point::unit_z())
+                        .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 8.0);
+                    rasterize_multidimensional_function(&curve, Color::black(), -0.0, 8.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));
@@ -70,9 +72,10 @@ mod tests {
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
                 let curve =
-                    NurbsCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone()).unwrap();
+                    NurbsCurve::try_new_from_basis(i, k, knot_vector.clone(), Point::unit_z())
+                        .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 4.0);
+                    rasterize_multidimensional_function(&curve, Color::black(), -0.0, 4.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));

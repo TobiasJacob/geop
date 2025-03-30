@@ -44,12 +44,14 @@ pub fn rasterize_coordinate_system(min: Point, max: Point, ticks: Point) -> Edge
 pub fn rasterize_multidimensional_function(
     edge: &impl MultiDimensionFunction<Point>,
     color: Color,
+    x_min: f64,
+    x_max: f64,
 ) -> EdgeBuffer {
     let n = 100;
     let mut edges = Vec::<RenderEdge>::with_capacity(n);
     for j in 0..n {
-        let v1 = (j as f64) / n as f64;
-        let v2 = ((j + 1) as f64) / n as f64;
+        let v1 = (j as f64) / n as f64 * (x_max - x_min) + x_min;
+        let v2 = ((j + 1) as f64) / n as f64 * (x_max - x_min) + x_min;
         edges.push(RenderEdge::new(
             edge.eval(EFloat64::from(v1)),
             edge.eval(EFloat64::from(v2)),

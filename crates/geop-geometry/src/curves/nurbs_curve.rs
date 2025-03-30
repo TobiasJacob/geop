@@ -1,13 +1,13 @@
 use std::fmt::Display;
 
-use crate::{
-    algebra_error::{AlgebraError, AlgebraResult},
-    efloat::EFloat64,
-    HasZero, MultiDimensionFunction, ToMonomialPolynom,
-};
 use crate::curves::bspline_curve::BSplineCurve;
 use crate::primitives::convex_hull::ConvexHull;
 use crate::primitives::point::Point;
+use crate::{
+    algebra_error::{AlgebraError, AlgebraResult},
+    efloat::EFloat64,
+    HasZero, MultiDimensionFunction,
+};
 
 /// A NURBS (Non-Uniform Rational B-Spline) curve.
 ///
@@ -16,14 +16,14 @@ use crate::primitives::point::Point;
 /// * `knot_vector` is the non-decreasing knot sequence.
 /// * `degree` is the polynomial degree (p).
 #[derive(Debug, Clone)]
-pub struct NurbsCurve<T> {
-    pub coefficients: Vec<T>,
+pub struct NurbsCurve {
+    pub coefficients: Vec<Point>,
     pub weights: Vec<EFloat64>,
     knot_vector: Vec<EFloat64>,
     degree: usize,
 }
 
-impl<T> NurbsCurve<T> {
+impl NurbsCurve {
     /// Create a new NURBS curve.
     ///
     /// Checks that:
@@ -31,7 +31,7 @@ impl<T> NurbsCurve<T> {
     /// - The knot vector length equals `coefficients.len() + 1 + degree`.
     /// - The knot vector is non-decreasing.
     pub fn try_new(
-        coefficients: Vec<T>,
+        coefficients: Vec<Point>,
         weights: Vec<EFloat64>,
         knot_vector: Vec<EFloat64>,
         degree: usize,
@@ -71,7 +71,8 @@ impl<T> NurbsCurve<T> {
         index: usize,
         degree: usize,
         knot_vector: Vec<EFloat64>,
-    ) -> AlgebraResult<NurbsCurve<EFloat64>>
+        unit_vector: Point,
+    ) -> AlgebraResult<NurbsCurve>
     where
         EFloat64: Clone + HasZero,
     {
@@ -82,8 +83,8 @@ impl<T> NurbsCurve<T> {
                 index, knot_vector.len(), degree
             )));
         }
-        let mut coefficients = vec![EFloat64::zero(); n];
-        coefficients[index] = EFloat64::one();
+        let mut coefficients = vec![Point::zero(); n];
+        coefficients[index] = unit_vector;
         let weights = vec![EFloat64::one(); n];
         NurbsCurve::try_new(coefficients, weights, knot_vector, degree)
     }
@@ -113,15 +114,7 @@ impl<T> NurbsCurve<T> {
     /// The method first inserts `t` repeatedly until its multiplicity equals degree+1 (i.e. a break point).
     /// Then it splits the control net and knot vector into a left segment (defined over [a, t])
     /// and a right segment (defined over [t, b]).
-    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(Self, Self)>
-    where
-        T: Clone,
-        T: std::ops::Add<Output = T>,
-        T: std::ops::Mul<EFloat64, Output = T>,
-        T: std::ops::Div<EFloat64, Output = AlgebraResult<T>>,
-        T: HasZero,
-        T: ToMonomialPolynom,
-    {
+    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(Self, Self)> {
         let p = self.degree;
 
         // Ensure t lies within the valid parameter domain.
@@ -135,7 +128,7 @@ impl<T> NurbsCurve<T> {
         let current_multiplicity = self.knot_vector.iter().filter(|&knot| *knot == t).count();
         // To split the curve, t must appear with multiplicity p+1.
         let r = p - current_multiplicity;
-        let mut curve: NurbsCurve<T> = self.clone();
+        let mut curve = self.clone();
         for _ in 0..r {
             curve = curve.insert_knot(t.clone())?;
         }
@@ -168,10 +161,7 @@ impl<T> NurbsCurve<T> {
 
     /// Generates the convex hull of the control polygon using the Quickhull algorithm.
     /// Returns a ConvexHull representing the convex hull of the control points.
-    pub fn control_polygon_hull(&self) -> AlgebraResult<ConvexHull>
-    where
-        T: Clone + Into<Point>,
-    {
+    pub fn control_polygon_hull(&self) -> AlgebraResult<ConvexHull> {
         // Convert control points to Points
         let points: Vec<Point> = self.coefficients.iter().map(|p| p.clone().into()).collect();
 
@@ -183,15 +173,7 @@ impl<T> NurbsCurve<T> {
 /// A "slow" evaluation for a NURBS curve.
 /// This computes the weighted sum of the underlying B-spline basis functions and then normalizes.
 /// (It uses the BSplineCurve's basis evaluation for each control point.)
-impl<T> NurbsCurve<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: std::ops::Div<EFloat64, Output = AlgebraResult<T>>,
-    T: HasZero,
-    T: ToMonomialPolynom,
-{
+impl NurbsCurve {
     fn insert_knot(&self, t: EFloat64) -> AlgebraResult<Self> {
         let k = match self.find_span(t) {
             Some(span) => span,
@@ -255,8 +237,8 @@ where
         NurbsCurve::try_new(new_coefficients, new_weights, new_knot_vector, self.degree)
     }
 
-    pub fn eval_slow(&self, t: EFloat64) -> AlgebraResult<T> {
-        let mut numerator = T::zero();
+    pub fn eval_slow(&self, t: EFloat64) -> AlgebraResult<Point> {
+        let mut numerator = Point::zero();
         let mut denominator = EFloat64::zero();
 
         for i in 0..self.coefficients.len() {
@@ -279,10 +261,7 @@ where
     }
 }
 
-impl<T> Display for NurbsCurve<T>
-where
-    T: Display,
-{
+impl Display for NurbsCurve {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "NurbsCurve(")?;
         for coeff in self.coefficients.iter() {
@@ -293,27 +272,21 @@ where
 }
 /// Helper struct for homogeneous coordinates.
 #[derive(Clone)]
-struct NurbHelperPoint<T> {
-    point: T,
+struct NurbHelperPoint {
+    point: Point,
     weight: EFloat64,
 }
 
-impl<T> NurbHelperPoint<T>
-where
-    T: HasZero,
-{
+impl NurbHelperPoint {
     pub fn zero() -> Self {
         Self {
-            point: T::zero(),
+            point: Point::zero(),
             weight: EFloat64::zero(),
         }
     }
 }
 
-impl<T> std::ops::Add for NurbHelperPoint<T>
-where
-    T: std::ops::Add<Output = T>,
-{
+impl std::ops::Add for NurbHelperPoint {
     type Output = Self;
     fn add(self, other: Self) -> Self {
         Self {
@@ -323,10 +296,7 @@ where
     }
 }
 
-impl<T> std::ops::Mul<EFloat64> for NurbHelperPoint<T>
-where
-    T: std::ops::Mul<EFloat64, Output = T>,
-{
+impl std::ops::Mul<EFloat64> for NurbHelperPoint {
     type Output = Self;
     fn mul(self, scalar: EFloat64) -> Self {
         Self {
@@ -336,12 +306,9 @@ where
     }
 }
 
-impl<T> std::ops::Mul<NurbHelperPoint<T>> for EFloat64
-where
-    T: std::ops::Mul<EFloat64, Output = T>,
-{
-    type Output = NurbHelperPoint<T>;
-    fn mul(self, rhs: NurbHelperPoint<T>) -> NurbHelperPoint<T> {
+impl std::ops::Mul<NurbHelperPoint> for EFloat64 {
+    type Output = NurbHelperPoint;
+    fn mul(self, rhs: NurbHelperPoint) -> NurbHelperPoint {
         rhs * self
     }
 }
@@ -351,31 +318,23 @@ where
 /// Qᵢ = (wᵢ * Pᵢ, wᵢ)
 /// Then de Boor's algorithm is applied and the resulting point is projected back
 /// (by dividing by its weight).
-impl<T> MultiDimensionFunction<T> for NurbsCurve<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: std::ops::Div<EFloat64, Output = AlgebraResult<T>>,
-    T: HasZero,
-    T: ToMonomialPolynom,
-{
-    fn eval(&self, t: EFloat64) -> T {
+impl MultiDimensionFunction<Point> for NurbsCurve {
+    fn eval(&self, t: EFloat64) -> Point {
         // return self.eval_slow(t).unwrap_or(T::zero());
 
         let k = match self.find_span(t) {
             Some(span) => span,
-            None => return T::zero(),
+            None => return Point::zero(),
         };
         let p = self.degree;
 
-        let mut d: Vec<NurbHelperPoint<T>> = Vec::with_capacity(p + 1);
+        let mut d: Vec<NurbHelperPoint> = Vec::with_capacity(p + 1);
 
         // Initialize homogeneous control points: Qᵢ = (wᵢ * Pᵢ, wᵢ)
         for j in 0..=p {
             if k + j < p || k + j - p >= self.coefficients.len() {
                 d.push(NurbHelperPoint {
-                    point: T::zero(),
+                    point: Point::zero(),
                     weight: EFloat64::zero(),
                 });
             } else {
@@ -412,9 +371,9 @@ where
         }
         let dh = d[p].clone();
         if dh.weight == EFloat64::zero() {
-            return T::zero();
+            return Point::zero();
         }
-        (dh.point / dh.weight).unwrap_or(T::zero())
+        (dh.point / dh.weight).unwrap_or(Point::zero())
     }
 }
 
@@ -431,10 +390,26 @@ mod tests {
     fn test_nurbs_values_equal() {
         // Create a NURBS curve with scalar control points.
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(2.0),
+            Point::new(
+                EFloat64::from(5.0),
+                EFloat64::from(0.0),
+                EFloat64::from(0.0),
+            ),
+            Point::new(
+                EFloat64::from(1.0),
+                EFloat64::from(0.0),
+                EFloat64::from(0.0),
+            ),
+            Point::new(
+                EFloat64::from(3.0),
+                EFloat64::from(0.0),
+                EFloat64::from(0.0),
+            ),
+            Point::new(
+                EFloat64::from(2.0),
+                EFloat64::from(0.0),
+                EFloat64::from(0.0),
+            ),
         ];
 
         // Use non-uniform weights for demonstration.
@@ -459,14 +434,14 @@ mod tests {
     fn test_nurbs_knot_insertion() -> AlgebraResult<()> {
         // Create a NURBS curve with 2D points as coefficients
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(6.0),
-            EFloat64::from(32.0),
-            EFloat64::from(25.0),
-            EFloat64::from(4.0),
-            EFloat64::from(19.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(6.0),
+            Point::unit_z() * EFloat64::from(32.0),
+            Point::unit_z() * EFloat64::from(25.0),
+            Point::unit_z() * EFloat64::from(4.0),
+            Point::unit_z() * EFloat64::from(19.0),
         ];
 
         // Use non-uniform weights for demonstration.
@@ -503,14 +478,14 @@ mod tests {
     fn test_nurbs_subdivide() -> AlgebraResult<()> {
         // Create a NURBS curve with scalar control points.
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(6.0),
-            EFloat64::from(32.0),
-            EFloat64::from(25.0),
-            EFloat64::from(4.0),
-            EFloat64::from(19.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(6.0),
+            Point::unit_z() * EFloat64::from(32.0),
+            Point::unit_z() * EFloat64::from(25.0),
+            Point::unit_z() * EFloat64::from(4.0),
+            Point::unit_z() * EFloat64::from(19.0),
         ];
 
         // Use non-uniform weights for demonstration.
