@@ -6,7 +6,7 @@ use crate::primitives::point::Point;
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
-    HasZero, MultiDimensionFunction,
+    MultiDimensionFunction,
 };
 
 /// A NURBS (Non-Uniform Rational B-Spline) curve.
@@ -72,10 +72,7 @@ impl NurbsCurve {
         degree: usize,
         knot_vector: Vec<EFloat64>,
         unit_vector: Point,
-    ) -> AlgebraResult<NurbsCurve>
-    where
-        EFloat64: Clone + HasZero,
-    {
+    ) -> AlgebraResult<NurbsCurve> {
         let n = knot_vector.len() - degree - 1;
         if index >= n {
             return Err(AlgebraError::new(format!(
@@ -319,7 +316,7 @@ impl std::ops::Mul<NurbHelperPoint> for EFloat64 {
 /// Qᵢ = (wᵢ * Pᵢ, wᵢ)
 /// Then de Boor's algorithm is applied and the resulting point is projected back
 /// (by dividing by its weight).
-impl MultiDimensionFunction<Point> for NurbsCurve {
+impl MultiDimensionFunction for NurbsCurve {
     fn eval(&self, t: EFloat64) -> Point {
         // return self.eval_slow(t).unwrap_or(T::zero());
 

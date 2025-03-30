@@ -6,10 +6,7 @@ use std::{
 
 use float_next_after::NextAfter;
 
-use crate::{
-    algebra_error::AlgebraResult, HasZero, ToMonomialPolynom,
-};
-use crate::curves::monomial_polynom::MonomialPolynom;
+use crate::algebra_error::AlgebraResult;
 
 #[derive(Debug, Clone, Copy)]
 pub struct EFloat64 {
@@ -363,18 +360,6 @@ impl Display for EFloat64 {
         //     (self.upper_bound - self.lower_bound) / 2.0
         // )
         write!(f, "{:.2e}", (self.upper_bound + self.lower_bound) / 2.0)
-    }
-}
-
-impl HasZero for EFloat64 {
-    fn zero() -> Self {
-        EFloat64::zero()
-    }
-}
-
-impl ToMonomialPolynom for EFloat64 {
-    fn to_monomial_polynom(&self) -> MonomialPolynom {
-        MonomialPolynom::new(vec![*self])
     }
 }
 

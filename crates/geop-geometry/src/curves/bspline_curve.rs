@@ -237,7 +237,7 @@ impl Display for BSplineCurve {
     }
 }
 
-impl MultiDimensionFunction<Point> for BSplineCurve {
+impl MultiDimensionFunction for BSplineCurve {
     fn eval(&self, t: EFloat64) -> Point {
         // Follows https://en.wikipedia.org/wiki/De_Boor%27s_algorithm
 

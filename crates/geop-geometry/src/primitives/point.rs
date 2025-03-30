@@ -3,7 +3,7 @@ use std::{
     ops::{Add, Div, Mul, Neg, Sub},
 };
 
-use crate::{algebra_error::AlgebraResult, efloat::EFloat64, HasZero};
+use crate::{algebra_error::AlgebraResult, efloat::EFloat64};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -113,12 +113,6 @@ impl Point {
 
     pub fn ones() -> Point {
         Point::new(EFloat64::one(), EFloat64::one(), EFloat64::one())
-    }
-}
-
-impl HasZero for Point {
-    fn zero() -> Point {
-        Point::zero()
     }
 }
 

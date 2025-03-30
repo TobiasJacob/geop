@@ -1,18 +1,20 @@
 use std::fmt::Display;
 
-use crate::{efloat::EFloat64, HasZero, MultiDimensionFunction};
-use crate::curves::monomial_polynom::MonomialPolynom;
+use crate::point::Point;
+use crate::{efloat::EFloat64, MultiDimensionFunction};
+
+use super::monomial_polynom::MonomialPolynom;
 
 // Represents a polynomial in the form of a_{0} B_{0,n}
 #[derive(Debug, Clone)]
-pub struct BernsteinPolynomial<T> {
-    pub coefficients: Vec<T>,
+pub struct BernsteinPolynomial {
+    pub coefficients: Vec<Point>,
 }
 
-impl BernsteinPolynomial<EFloat64> {
+impl BernsteinPolynomial {
     pub fn from_monomial_polynom(monomial_polynom: MonomialPolynom) -> Self {
         let n = monomial_polynom.degree(); // Degree of the polynomial
-        let mut bernstein_coeffs = vec![EFloat64::zero(); n + 1];
+        let mut bernstein_coeffs = vec![Point::zero(); n + 1];
 
         for i in 0..=n {
             for k in 0..=i {
@@ -32,7 +34,7 @@ impl BernsteinPolynomial<EFloat64> {
 
     pub fn to_monomial_polynom(&self) -> MonomialPolynom {
         let n = self.degree(); // Degree of the polynomial
-        let mut monomial_coeffs = vec![EFloat64::zero(); n + 1];
+        let mut monomial_coeffs = vec![Point::zero(); n + 1];
 
         for i in 0..=n {
             for k in 0..=i {
@@ -41,7 +43,7 @@ impl BernsteinPolynomial<EFloat64> {
                 let factor = EFloat64::from(sign as f64) * EFloat64::from(factor as f64);
                 print!("{}\t", factor);
 
-                monomial_coeffs[i] = monomial_coeffs[i] + factor * self.coefficients[k].clone();
+                monomial_coeffs[i] = monomial_coeffs[i] + self.coefficients[k].clone() * factor;
             }
             println!();
         }
@@ -49,9 +51,16 @@ impl BernsteinPolynomial<EFloat64> {
         MonomialPolynom::new(monomial_coeffs)
     }
 
-    pub fn bernstein_basis(i: usize, n: usize) -> Self {
-        let mut coefficients = vec![EFloat64::zero(); n + 1];
-        coefficients[i] = EFloat64::one();
+    pub fn bernstein_basis(i: usize, n: usize, up_vector: Point, direction_vector: Point) -> Self {
+        let mut coefficients = vec![Point::zero(); n + 1];
+        if n == 0 {
+            coefficients[0] = direction_vector;
+        } else {
+            for j in 0..=n {
+                coefficients[j] = direction_vector.clone() * EFloat64::from(j as f64 / n as f64);
+            }
+        }
+        coefficients[i] = coefficients[i] + up_vector;
         Self::new(coefficients)
     }
 
@@ -67,13 +76,13 @@ impl BernsteinPolynomial<EFloat64> {
     // - For each side:
     //     - Check if the coefficients are all positive or all negative. If they are, then the polynomial has no roots.
     //     - Otherwise, subdivide the polynomial again and repeat.
-    fn find_root_inner(&self, t_min: f64, t_max: f64) -> Vec<EFloat64> {
+    fn find_root_inner_z(&self, t_min: f64, t_max: f64) -> Vec<EFloat64> {
         // If all coefficients are positive or all coefficients are negative, then the polynomial has no roots.
-        if self.coefficients.iter().all(|c| c.lower_bound > 0.0) {
+        if self.coefficients.iter().all(|c| c.z.lower_bound > 0.0) {
             return Vec::new();
         }
 
-        if self.coefficients.iter().all(|c| c.upper_bound < 0.0) {
+        if self.coefficients.iter().all(|c| c.z.upper_bound < 0.0) {
             return Vec::new();
         }
         println!("t_min: {}, t_max: {}", t_min, t_max);
@@ -88,14 +97,14 @@ impl BernsteinPolynomial<EFloat64> {
         // - The second polynomial coefficients are all 0.0, except for the rightmost coefficient.
         // The problem is now, that however often we subdivide the polynomial, the rightmost coefficient will always be > 0.0.
         // So we have to stop as soon as we managed to get a polynomial with all coefficients being 0.0 and discard the other polynomial.
-        if left.coefficients.iter().all(|c| *c == 0.0)
-            || right.coefficients.iter().all(|c| *c == 0.0)
+        if left.coefficients.iter().all(|c| c.z == 0.0)
+            || right.coefficients.iter().all(|c| c.z == 0.0)
         {
             return vec![EFloat64::new_union_f64(t_min, t_max)];
         }
 
-        let mut left_root = left.find_root_inner(t_min, t_split_l);
-        let mut right_root = right.find_root_inner(t_split_l, t_max);
+        let mut left_root = left.find_root_inner_z(t_min, t_split_l);
+        let mut right_root = right.find_root_inner_z(t_split_l, t_max);
 
         if left_root.len() > 0 && right_root.len() > 0 {
             if left_root[left_root.len() - 1] == right_root[0] {
@@ -113,19 +122,13 @@ impl BernsteinPolynomial<EFloat64> {
     // Finds all roots in the interval [0, 1]. If the polynomial is the zero polynomial, then it returns None.
     // If the polynomial has no roots, then it returns an empty vector.
     // Otherwise, it returns a vector of roots.
-    pub fn find_roots(&self) -> Option<Vec<EFloat64>> {
-        Some(self.find_root_inner(0.0, 1.0))
+    pub fn find_roots_z(&self) -> Option<Vec<EFloat64>> {
+        Some(self.find_root_inner_z(0.0, 1.0))
     }
 }
 
-impl<T> BernsteinPolynomial<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: HasZero,
-{
-    pub fn new(coefficients: Vec<T>) -> Self {
+impl BernsteinPolynomial {
+    pub fn new(coefficients: Vec<Point>) -> Self {
         Self { coefficients }
     }
 
@@ -136,7 +139,7 @@ where
     //$$ c_i^{n+r} = \sum_{j = max(0, i - r)}^{min(n, i)} \frac{\binom{r}{i - j} \binom{n}{j}}{\binom{n + r}{i}} c_i^n $$
     pub fn elevate_degree(&self, r: usize) -> Self {
         let n = self.degree();
-        let mut new_coeffs = vec![T::zero(); n + r + 1];
+        let mut new_coeffs = vec![Point::zero(); n + r + 1];
 
         for i in 0..=n + r {
             for j in i.saturating_sub(r)..=n.min(i) {
@@ -152,11 +155,11 @@ where
     }
 
     // Use de Casteljau's algorithm to subdivide the polynomial
-    pub fn subdivide(&self, t: EFloat64) -> (BernsteinPolynomial<T>, BernsteinPolynomial<T>) {
+    pub fn subdivide(&self, t: EFloat64) -> (BernsteinPolynomial, BernsteinPolynomial) {
         let mut beta = self.coefficients.clone();
         let n = beta.len();
-        let mut left = vec![T::zero(); n];
-        let mut right = vec![T::zero(); n];
+        let mut left = vec![Point::zero(); n];
+        let mut right = vec![Point::zero(); n];
 
         left[0] = beta[0].clone();
         right[n - 1] = beta[n - 1].clone();
@@ -182,14 +185,8 @@ where
 //         for k in range(n - j):
 //             beta[k] = beta[k] * (1 - t) + beta[k + 1] * t
 //     return beta[0]
-impl<T> MultiDimensionFunction<T> for BernsteinPolynomial<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: HasZero,
-{
-    fn eval(&self, t: EFloat64) -> T {
+impl MultiDimensionFunction for BernsteinPolynomial {
+    fn eval(&self, t: EFloat64) -> Point {
         let mut beta = self.coefficients.clone();
         let n = beta.len();
         for j in 1..n {
@@ -211,12 +208,12 @@ fn binomial_coefficient(n: usize, k: usize) -> usize {
     }
 }
 
-impl Display for BernsteinPolynomial<EFloat64> {
+impl Display for BernsteinPolynomial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut first = true;
         let n = self.degree();
         for (i, coeff) in self.coefficients.iter().enumerate() {
-            if *coeff != EFloat64::zero() {
+            if *coeff != Point::zero() {
                 if !first {
                     write!(f, " + ")?;
                 }
@@ -230,18 +227,16 @@ impl Display for BernsteinPolynomial<EFloat64> {
 
 #[cfg(test)]
 mod tests {
-    use crate::OneDimensionFunction;
-
     use super::*;
 
     #[test]
     fn test_bernstein_to_monomial_conversion() {
         let coeffs = vec![
-            EFloat64::from(1.0),
-            EFloat64::from(2.0),
-            EFloat64::from(1.0),
-            EFloat64::from(5.0),
-            EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(3.0),
         ];
         let bernstein = BernsteinPolynomial::new(coeffs.clone());
         let monomial = bernstein.to_monomial_polynom();
@@ -262,9 +257,9 @@ mod tests {
     #[test]
     fn test_monomial_to_bernstein_conversion() {
         let monomial_coeffs = MonomialPolynom::new(vec![
-            EFloat64::from(3.0),
-            EFloat64::from(-2.0),
-            EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(-2.0),
+            Point::unit_z() * EFloat64::from(1.0),
         ]);
 
         let bernstein = BernsteinPolynomial::from_monomial_polynom(monomial_coeffs.clone());
@@ -277,11 +272,11 @@ mod tests {
     #[test]
     fn test_bernstein_eval() {
         let coeffs = vec![
-            EFloat64::from(1.0),
-            EFloat64::from(2.0),
-            EFloat64::from(1.0),
-            EFloat64::from(5.0),
-            EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(3.0),
         ];
         let bernstein = BernsteinPolynomial::new(coeffs.clone());
         let monomial = bernstein.to_monomial_polynom();
@@ -297,11 +292,11 @@ mod tests {
     #[test]
     fn test_bernstein_elevate_degree() {
         let coeffs = vec![
-            EFloat64::from(1.0),
-            EFloat64::from(2.0),
-            EFloat64::from(1.0),
-            EFloat64::from(5.0),
-            EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(3.0),
         ];
         let bernstein = BernsteinPolynomial::new(coeffs.clone());
 
@@ -319,7 +314,10 @@ mod tests {
 
     #[test]
     fn test_bernstein_elevate_degree2() {
-        let coeffs = vec![EFloat64::from(1.0), EFloat64::from(2.0)];
+        let coeffs = vec![
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+        ];
         let bernstein = BernsteinPolynomial::new(coeffs.clone());
 
         println!("Bernstein Polynomial: {}", &bernstein);
@@ -336,11 +334,11 @@ mod tests {
     #[test]
     fn test_bernstein_subdivide() {
         let coeffs = vec![
-            EFloat64::from(1.0),
-            EFloat64::from(2.0),
-            EFloat64::from(1.0),
-            EFloat64::from(5.0),
-            EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(3.0),
         ];
         let bernstein = BernsteinPolynomial::new(coeffs.clone());
 

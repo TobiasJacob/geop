@@ -1,5 +1,5 @@
-use curve::Curve;
 use crate::efloat::EFloat64;
+use curve::Curve;
 
 use crate::{
     bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,
@@ -7,13 +7,12 @@ use crate::{
 
 pub mod curve;
 
-// Alphabetic order
+pub mod bernstein_polynomial;
+pub mod bspline_curve;
 pub mod circle;
 pub mod ellipse;
 pub mod helix;
 pub mod line;
-pub mod bernstein_polynomial;
-pub mod bspline_curve;
 pub mod monomial_polynom;
 pub mod nurbs_curve;
 

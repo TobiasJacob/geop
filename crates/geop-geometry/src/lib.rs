@@ -19,20 +19,8 @@ pub mod surfaces;
 pub mod transforms;
 
 use efloat::EFloat64;
-use curves::monomial_polynom::MonomialPolynom;
+use point::Point;
 
-pub trait HasZero {
-    fn zero() -> Self;
-}
-
-pub trait ToMonomialPolynom {
-    fn to_monomial_polynom(&self) -> MonomialPolynom;
-}
-
-pub trait OneDimensionFunction {
-    fn eval(&self, t: EFloat64) -> EFloat64;
-}
-
-pub trait MultiDimensionFunction<T> {
-    fn eval(&self, t: EFloat64) -> T;
+pub trait MultiDimensionFunction {
+    fn eval(&self, t: EFloat64) -> Point;
 }

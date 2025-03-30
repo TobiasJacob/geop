@@ -1,5 +1,5 @@
 use geop_geometry::{color::Category10Color, point::Point};
-use geop_geometry::{efloat::EFloat64, MultiDimensionFunction, OneDimensionFunction};
+use geop_geometry::{efloat::EFloat64, MultiDimensionFunction};
 use geop_topology::topology::scene::Color;
 
 use crate::edge_buffer::{EdgeBuffer, RenderEdge};
@@ -42,7 +42,7 @@ pub fn rasterize_coordinate_system(min: Point, max: Point, ticks: Point) -> Edge
 
 // Rasterizes an edge loop into triangle list.
 pub fn rasterize_multidimensional_function(
-    edge: &impl MultiDimensionFunction<Point>,
+    edge: &impl MultiDimensionFunction,
     color: Color,
     x_min: f64,
     x_max: f64,
@@ -55,46 +55,6 @@ pub fn rasterize_multidimensional_function(
         edges.push(RenderEdge::new(
             edge.eval(EFloat64::from(v1)),
             edge.eval(EFloat64::from(v2)),
-            color,
-        ));
-    }
-    EdgeBuffer::new(edges)
-}
-
-pub fn rasterize_multidimensional_function_in_1d(
-    edge: &impl MultiDimensionFunction<EFloat64>,
-    color: Color,
-    x_min: f64,
-    x_max: f64,
-) -> EdgeBuffer {
-    let n = 100;
-    let mut edges = Vec::<RenderEdge>::with_capacity(n);
-    for j in 0..n {
-        let v1 = (j as f64) / n as f64 * (x_max - x_min) + x_min;
-        let v2 = ((j + 1) as f64) / n as f64 * (x_max - x_min) + x_min;
-        edges.push(RenderEdge::new(
-            Point::unit_x() * EFloat64::from(v1) + Point::unit_y() * edge.eval(EFloat64::from(v1)),
-            Point::unit_x() * EFloat64::from(v2) + Point::unit_y() * edge.eval(EFloat64::from(v2)),
-            color,
-        ));
-    }
-    EdgeBuffer::new(edges)
-}
-
-pub fn rasterize_onedimensional_function(
-    edge: &impl OneDimensionFunction,
-    color: Color,
-    x_min: f64,
-    x_max: f64,
-) -> EdgeBuffer {
-    let n = 100;
-    let mut edges = Vec::<RenderEdge>::with_capacity(n);
-    for j in 0..n {
-        let v1 = (j as f64) / n as f64 * (x_max - x_min) + x_min;
-        let v2 = ((j + 1) as f64) / n as f64 * (x_max - x_min) + x_min;
-        edges.push(RenderEdge::new(
-            Point::unit_x() * EFloat64::from(v1) + Point::unit_y() * edge.eval(EFloat64::from(v1)),
-            Point::unit_x() * EFloat64::from(v2) + Point::unit_y() * edge.eval(EFloat64::from(v2)),
             color,
         ));
     }
