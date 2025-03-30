@@ -2,7 +2,7 @@
 mod tests {
     use std::vec;
 
-    use geop_algebra::{bernstein_polynomial::BernsteinPolynomial, efloat::EFloat64};
+    use geop_geometry::{bernstein_polynomial::BernsteinPolynomial, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::{EdgeBuffer, RenderEdge},

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{bspline_curve::BSplineCurve, efloat::EFloat64};
+    use geop_geometry::{bspline_curve::BSplineCurve, efloat::EFloat64};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,

@@ -1,5 +1,5 @@
-use geop_algebra::{efloat::EFloat64, MultiDimensionFunction, OneDimensionFunction};
 use geop_geometry::{color::Category10Color, point::Point};
+use geop_geometry::{efloat::EFloat64, MultiDimensionFunction, OneDimensionFunction};
 use geop_topology::topology::scene::Color;
 
 use crate::edge_buffer::{EdgeBuffer, RenderEdge};

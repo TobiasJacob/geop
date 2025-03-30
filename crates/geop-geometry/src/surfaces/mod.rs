@@ -1,4 +1,4 @@
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 use surface::{Surface, TangentPoint};
 
 use crate::{curves::curve::Curve, point::Point, transforms::Transform};

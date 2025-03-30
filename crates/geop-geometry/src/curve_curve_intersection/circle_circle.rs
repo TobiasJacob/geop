@@ -1,4 +1,4 @@
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 
 use crate::{
     curve_surface_intersection::circle_plane::{

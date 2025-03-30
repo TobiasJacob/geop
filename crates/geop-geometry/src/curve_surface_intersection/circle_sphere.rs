@@ -58,7 +58,7 @@ pub fn circle_sphere_intersection(circle: &Circle, sphere: &Sphere) -> CircleSph
 
 #[cfg(test)]
 mod tests {
-    use geop_algebra::efloat::EFloat64;
+    use crate::efloat::EFloat64;
 
     use super::*;
     use crate::{curves::circle::Circle, point::Point, surfaces::sphere::Sphere};

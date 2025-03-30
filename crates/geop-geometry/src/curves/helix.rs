@@ -1,6 +1,6 @@
 use core::f64;
 
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 
 use crate::{
     bounding_box::BoundingBox, geometry_error::GeometryResult, point::Point, transforms::Transform,

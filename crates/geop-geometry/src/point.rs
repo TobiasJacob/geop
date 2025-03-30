@@ -1,2 +1,1 @@
-
-pub use geop_algebra::primitives::point::Point;
+pub use crate::primitives::point::Point;

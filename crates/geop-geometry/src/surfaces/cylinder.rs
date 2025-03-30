@@ -1,4 +1,4 @@
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 
 use crate::{
     curves::{circle::Circle, curve::Curve, helix::Helix, line::Line, CurveLike},

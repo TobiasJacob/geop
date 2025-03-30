@@ -31,7 +31,7 @@ pub fn plane_sphere_intersection(a: &Sphere, b: &Plane) -> PlaneSphereIntersecti
 
 #[cfg(test)]
 mod tests {
-    use geop_algebra::efloat::EFloat64;
+    use crate::efloat::EFloat64;
 
     use super::*;
 

@@ -47,7 +47,7 @@ pub fn circle_line_intersection(circle: &Circle, line: &Line) -> CircleLineInter
 
 #[cfg(test)]
 mod tests {
-    use geop_algebra::efloat::EFloat64;
+    use crate::efloat::EFloat64;
 
     use super::*;
 

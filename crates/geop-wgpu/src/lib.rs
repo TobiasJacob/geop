@@ -11,7 +11,7 @@ pub mod window_state;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use geop_algebra::efloat::EFloat64;
+    use geop_geometry::efloat::EFloat64;
     use geop_geometry::point::Point;
     use geop_topology::{
         primitive_objects::volumes::cube::primitive_cube,

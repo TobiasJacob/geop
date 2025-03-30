@@ -8,6 +8,5 @@ edition = "2021"
 [dependencies]
 geop-geometry.workspace=true
 geop-topology.workspace=true
-geop-algebra.workspace=true
 bytemuck = { version = "1.13.1", features = [ "derive" ] }
 float_next_after = "1.0.0"

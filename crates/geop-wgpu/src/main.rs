@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::{panic, vec};
 
-use geop_algebra::efloat::EFloat64;
+use geop_geometry::efloat::EFloat64;
 use geop_booleans::difference::face_face::face_face_difference;
 use geop_geometry::{
     curves::{circle::Circle, curve::Curve, line::Line},

@@ -45,7 +45,7 @@ pub fn circle_cylinder_intersection(
 
 #[cfg(test)]
 mod tests {
-    use geop_algebra::efloat::EFloat64;
+    use crate::efloat::EFloat64;
 
     use super::*;
 

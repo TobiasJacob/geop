@@ -1,7 +1,0 @@
-[package]
-name = "geop-algebra"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-float_next_after = "1.0.0"

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{efloat::EFloat64, monomial_polynom::MonomialPolynom};
+    use geop_geometry::{efloat::EFloat64, monomial_polynom::MonomialPolynom};
     use geop_geometry::point::Point;
     use geop_rasterize::{
         functions::{rasterize_coordinate_system, rasterize_onedimensional_function},

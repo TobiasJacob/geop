@@ -1,5 +1,5 @@
-use geop_algebra::primitives::triangle::TriangleFace;
 use geop_geometry::point::Point;
+use geop_geometry::primitives::triangle::TriangleFace;
 use geop_topology::topology::scene::Color;
 
 use crate::{

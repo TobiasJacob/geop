@@ -46,7 +46,7 @@ pub fn circle_plane_intersection(circle: &Circle, plane: &Plane) -> CirclePlaneI
 
 #[cfg(test)]
 mod tests {
-    use geop_algebra::efloat::EFloat64;
+    use crate::efloat::EFloat64;
 
     use super::*;
 

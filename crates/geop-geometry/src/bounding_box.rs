@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 
 use crate::point::Point;
 

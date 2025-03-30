@@ -1,6 +1,6 @@
 use std::backtrace::Backtrace;
 
-use geop_algebra::algebra_error::{AlgebraError, AlgebraResult};
+use crate::algebra_error::{AlgebraError, AlgebraResult};
 
 use crate::geometry_scene::GeometryScene;
 

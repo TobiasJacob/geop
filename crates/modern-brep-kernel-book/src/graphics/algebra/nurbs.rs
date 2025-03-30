@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use geop_algebra::{efloat::EFloat64, nurbs_curve::NurbsCurve};
+    use geop_geometry::{efloat::EFloat64, nurbs_curve::NurbsCurve};
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::{
         edge_buffer::EdgeBuffer,

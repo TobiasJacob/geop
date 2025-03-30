@@ -1,4 +1,4 @@
-use geop_algebra::efloat::EFloat64;
+use crate::efloat::EFloat64;
 
 use crate::{curves::line::Line, point::Point, surfaces::sphere::Sphere};
 
