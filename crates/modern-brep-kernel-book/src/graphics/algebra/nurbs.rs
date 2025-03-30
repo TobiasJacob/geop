@@ -6,10 +6,8 @@ mod tests {
     use geop_geometry::{point::Point, transforms::Transform};
     use geop_rasterize::functions::rasterize_multidimensional_function;
     use geop_rasterize::{
-        edge_buffer::EdgeBuffer,
-        functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
-        triangle_buffer::TriangleBuffer,
-        vertex_buffer::VertexBuffer,
+        edge_buffer::EdgeBuffer, functions::rasterize_coordinate_system,
+        triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
     };
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;

@@ -1,18 +1,17 @@
 #[cfg(test)]
 mod tests {
+    use crate::tests::renderer;
+    use geop_geometry::curves::bspline_curve::BSplineCurve;
     use geop_geometry::efloat::EFloat64;
     use geop_geometry::{point::Point, transforms::Transform};
+    use geop_rasterize::functions::rasterize_multidimensional_function;
     use geop_rasterize::{
-        edge_buffer::EdgeBuffer,
-        functions::{rasterize_coordinate_system, rasterize_multidimensional_function_in_1d},
-        triangle_buffer::TriangleBuffer,
-        vertex_buffer::VertexBuffer,
+        edge_buffer::EdgeBuffer, functions::rasterize_coordinate_system,
+        triangle_buffer::TriangleBuffer, vertex_buffer::VertexBuffer,
     };
     use geop_topology::topology::scene::Color;
     use geop_wgpu::headless_renderer::HeadlessRenderer;
     use rstest::rstest;
-    use geop_geometry::curves::bspline_curve::BSplineCurve;
-    use crate::tests::renderer;
 
     #[rstest]
     async fn test_bspline_basis(#[future] renderer: Box<HeadlessRenderer>) {
@@ -25,10 +24,11 @@ mod tests {
         let max_k = knot_vector.len() - 2;
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
-                let curve = BSplineCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone())
-                    .unwrap();
+                let curve =
+                    BSplineCurve::try_new_from_basis(i, k, knot_vector.clone(), Point::unit_z())
+                        .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 8.0);
+                    rasterize_multidimensional_function(&curve, Color::black(), -0.0, 8.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));
@@ -69,10 +69,11 @@ mod tests {
         let max_k = knot_vector.len() - 2;
         for k in 0..=max_k {
             for i in 0..=knot_vector.len() - k - 2 {
-                let curve = BSplineCurve::<EFloat64>::try_new_from_basis(i, k, knot_vector.clone())
-                    .unwrap();
+                let curve =
+                    BSplineCurve::try_new_from_basis(i, k, knot_vector.clone(), Point::unit_z())
+                        .unwrap();
                 let mut edge_buffer_i =
-                    rasterize_multidimensional_function_in_1d(&curve, Color::black(), -0.0, 4.0);
+                    rasterize_multidimensional_function(&curve, Color::black(), -0.0, 4.0);
                 let t = Transform::from_translation(
                     Point::unit_y() * EFloat64::from((max_k - k) as f64 / max_k as f64 * 6.0),
                 ) * Transform::from_scale(Point::from_f64(1.0, 0.8, 1.0));

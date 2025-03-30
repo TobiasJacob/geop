@@ -243,13 +243,14 @@ impl NurbsCurve {
 
         for i in 0..self.coefficients.len() {
             // Reuse the BSpline basis functions.
-            let basis = BSplineCurve::<EFloat64>::try_new_from_basis(
+            let basis = BSplineCurve::try_new_from_basis(
                 i,
                 self.degree,
                 self.knot_vector.clone(),
+                Point::unit_z(),
             )
             .unwrap();
-            let n = basis.eval(t);
+            let n = basis.eval(t).z;
             let wn = self.weights[i] * n;
             numerator = numerator + self.coefficients[i].clone() * wn;
             denominator = denominator + wn;
@@ -333,10 +334,7 @@ impl MultiDimensionFunction<Point> for NurbsCurve {
         // Initialize homogeneous control points: Qᵢ = (wᵢ * Pᵢ, wᵢ)
         for j in 0..=p {
             if k + j < p || k + j - p >= self.coefficients.len() {
-                d.push(NurbHelperPoint {
-                    point: Point::zero(),
-                    weight: EFloat64::zero(),
-                });
+                d.push(NurbHelperPoint::zero());
             } else {
                 let idx = k + j - p;
                 d.push(NurbHelperPoint {

@@ -3,22 +3,31 @@ use std::fmt::Display;
 use crate::{
     algebra_error::{AlgebraError, AlgebraResult},
     efloat::EFloat64,
-    HasZero, MultiDimensionFunction, ToMonomialPolynom,
+    point::Point,
+    MultiDimensionFunction,
 };
 
 #[derive(Debug, Clone)]
-pub struct BSplineCurve<T> {
-    pub coefficients: Vec<T>,   // p_i in book, len(coefficients) = n
-    knot_vector: Vec<EFloat64>, // t_k in book, len(knot_vector) = len(coefficients) + 1 + degree
-    degree: usize,              // k in book
+pub struct BSplineCurve {
+    pub coefficients: Vec<Point>,   // p_i in book, len(coefficients) = n
+    pub knot_vector: Vec<EFloat64>, // t_k in book, len(knot_vector) = len(coefficients) + 1 + degree
+    pub degree: usize,              // k in book
 }
 
-impl<T> BSplineCurve<T> {
+impl BSplineCurve {
     pub fn try_new(
-        coefficients: Vec<T>,
+        coefficients: Vec<Point>,
         knot_vector: Vec<EFloat64>,
         degree: usize, // k in book
     ) -> AlgebraResult<Self> {
+        if coefficients.len() <= degree {
+            return Err(AlgebraError::new(format!(
+                "BSplineCurve invalid input: coefficients.len() ({}) <= degree ({})",
+                coefficients.len(),
+                degree
+            )));
+        }
+
         if knot_vector.len() != coefficients.len() + 1 + degree {
             return Err(AlgebraError::new(format!(
                 "BSplineCurve invalid input: knot_vector.len() ({}) != coefficients.len() ({}) + 1 + degree ({})",
@@ -45,7 +54,8 @@ impl<T> BSplineCurve<T> {
         index: usize,
         degree: usize,
         knot_vector: Vec<EFloat64>,
-    ) -> AlgebraResult<BSplineCurve<EFloat64>> {
+        unit_vector: Point,
+    ) -> AlgebraResult<BSplineCurve> {
         if degree > knot_vector.len() - 2 {
             return Err(AlgebraError::new(format!(
                 "BSplineCurve invalid input: degree {} is greater than knot_vector.len() - 2 (len is {})",
@@ -61,9 +71,9 @@ impl<T> BSplineCurve<T> {
             )));
         }
 
-        let mut coefficients = vec![EFloat64::zero(); knot_vector.len() - degree - 1];
-        coefficients[index] = EFloat64::one();
-        return BSplineCurve::<EFloat64>::try_new(coefficients, knot_vector, degree);
+        let mut coefficients = vec![Point::zero(); knot_vector.len() - degree - 1];
+        coefficients[index] = unit_vector;
+        return BSplineCurve::try_new(coefficients, knot_vector, degree);
     }
 
     // k in book, needs to be >= 0
@@ -71,6 +81,7 @@ impl<T> BSplineCurve<T> {
         self.degree
     }
 
+    // Find the span index k such that knot_vector[k] <= t < knot_vector[k+1]
     fn find_span(&self, t: EFloat64) -> Option<usize> {
         // Handle edge cases
         if t < self.knot_vector[0] {
@@ -90,18 +101,10 @@ impl<T> BSplineCurve<T> {
     }
 }
 
-impl<T> BSplineCurve<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: HasZero,
-    T: ToMonomialPolynom,
-    T: Display,
-{
+impl BSplineCurve {
     /// Inserts the knot value `t` once into the B‑spline curve using the standard knot insertion algorithm.
     /// Returns a new BSplineCurve with an updated control net and knot vector.
-    fn insert_knot(&self, t: EFloat64) -> AlgebraResult<BSplineCurve<T>> {
+    fn insert_knot(&self, t: EFloat64) -> AlgebraResult<BSplineCurve> {
         // Find the span index k such that knot_vector[k] <= t < knot_vector[k+1]
         let k = match self.find_span(t.clone()) {
             Some(k) => k,
@@ -111,6 +114,7 @@ where
                 ))
             }
         };
+        println!("k: {}", k);
 
         let p = self.degree;
         let n = self.coefficients.len() - 1;
@@ -143,7 +147,7 @@ where
                 + self.coefficients[i].clone() * alpha;
             new_coeffs.push(new_point);
         }
-        // 3. Copy the remaining control points.
+        // 4. Copy the remaining control points.
         for i in k..=n {
             new_coeffs.push(self.coefficients[i].clone());
         }
@@ -156,7 +160,7 @@ where
     /// The method first inserts `t` repeatedly until its multiplicity equals degree+1 (i.e. a break point).
     /// Then it splits the control net and knot vector into a left segment (defined over [a, t])
     /// and a right segment (defined over [t, b]).
-    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(BSplineCurve<T>, BSplineCurve<T>)> {
+    pub fn subdivide(&self, t: EFloat64) -> AlgebraResult<(BSplineCurve, BSplineCurve)> {
         let p = self.degree;
 
         // Ensure t lies within the valid parameter domain.
@@ -170,8 +174,9 @@ where
         let current_multiplicity = self.knot_vector.iter().filter(|&knot| *knot == t).count();
         // To split the curve, t must appear with multiplicity p+1.
         let r = p - current_multiplicity;
-        let mut curve: BSplineCurve<T> = self.clone();
+        let mut curve = self.clone();
         for _ in 0..r {
+            println!("curve: {}", curve);
             curve = curve.insert_knot(t.clone())?;
         }
 
@@ -199,27 +204,25 @@ where
         Ok((left_curve, right_curve))
     }
 
-    pub fn eval_slow(&self, t: EFloat64) -> T {
-        let mut result = T::zero();
+    pub fn eval_slow(&self, t: EFloat64) -> Point {
+        let mut result = Point::zero();
 
         for (i, coeff) in self.coefficients.iter().enumerate() {
-            let basis = BSplineCurve::<EFloat64>::try_new_from_basis(
+            let basis = BSplineCurve::try_new_from_basis(
                 i,
                 self.degree,
                 self.knot_vector.clone(),
+                Point::unit_z(),
             )
             .unwrap();
-            result = result + coeff.clone() * basis.eval(t);
+            result = result + coeff.clone() * basis.eval(t).z;
         }
 
         result
     }
 }
 
-impl<T> Display for BSplineCurve<T>
-where
-    T: Display,
-{
+impl Display for BSplineCurve {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "BSplineCurve(")?;
         for coeff in self.coefficients.iter() {
@@ -234,21 +237,14 @@ where
     }
 }
 
-impl<T> MultiDimensionFunction<T> for BSplineCurve<T>
-where
-    T: Clone,
-    T: std::ops::Add<Output = T>,
-    T: std::ops::Mul<EFloat64, Output = T>,
-    T: HasZero,
-    T: ToMonomialPolynom,
-{
-    fn eval(&self, t: EFloat64) -> T {
+impl MultiDimensionFunction<Point> for BSplineCurve {
+    fn eval(&self, t: EFloat64) -> Point {
         // Follows https://en.wikipedia.org/wiki/De_Boor%27s_algorithm
 
         // Find which knot span contains t
         let k = match self.find_span(t) {
             Some(k) => k,
-            None => return T::zero(),
+            None => return Point::zero(),
         };
         let p = self.degree;
 
@@ -258,7 +254,7 @@ where
         // Ensure we're not accessing out of bounds indices
         for j in 0..=p {
             if k + j < p || k + j - p >= self.coefficients.len() {
-                d.push(T::zero());
+                d.push(Point::zero());
             } else {
                 let idx = k + j - p;
                 d.push(self.coefficients[idx].clone());
@@ -300,10 +296,10 @@ mod tests {
     fn test_values_equal() {
         // Create a B-spline curve with 2D points as coefficients
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(2.0),
         ];
 
         // Strictly increasing knot vector
@@ -326,14 +322,14 @@ mod tests {
     fn test_bspline_knot_insertion() -> AlgebraResult<()> {
         // Create a B-spline curve with 2D points as coefficients
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(6.0),
-            EFloat64::from(32.0),
-            EFloat64::from(25.0),
-            EFloat64::from(4.0),
-            EFloat64::from(19.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(6.0),
+            Point::unit_z() * EFloat64::from(32.0),
+            Point::unit_z() * EFloat64::from(25.0),
+            Point::unit_z() * EFloat64::from(4.0),
+            Point::unit_z() * EFloat64::from(19.0),
         ];
 
         // Strictly increasing knot vector
@@ -367,10 +363,10 @@ mod tests {
     fn test_bspline_subdivide1() -> AlgebraResult<()> {
         // Create a B-spline curve with 2D points as coefficients
         let coefficients = vec![
-            EFloat64::from(5.0),
-            EFloat64::from(1.0),
-            EFloat64::from(3.0),
-            EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(5.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(3.0),
+            Point::unit_z() * EFloat64::from(2.0),
         ];
 
         // Strictly increasing knot vector
@@ -417,13 +413,14 @@ mod tests {
 
     #[test]
     fn test_bspline_subdivide2() -> AlgebraResult<()> {
-        // Create a cubic (degree 3) clamped B‑spline curve.
-        // For a clamped B‑spline of degree 3 with 4 control points,
+        // Create a cubic (degree 2) clamped B‑spline curve.
+        // For a clamped B‑spline of degree 2 with 4 control points,
         // a common knot vector is [0, 0, 0, 0, 1, 1, 1, 1].
         let coefficients = vec![
-            EFloat64::from(1.0),
-            EFloat64::from(2.0),
-            EFloat64::from(4.0),
+            Point::unit_z() * EFloat64::from(1.0),
+            Point::unit_z() * EFloat64::from(2.0),
+            Point::unit_z() * EFloat64::from(4.0),
+            Point::unit_z() * EFloat64::from(2.0),
         ];
         let knot_vector = vec![
             EFloat64::from(0.0),
@@ -434,7 +431,7 @@ mod tests {
             EFloat64::from(1.0),
             EFloat64::from(1.0),
         ];
-        let bspline = BSplineCurve::try_new(coefficients, knot_vector, 3).unwrap();
+        let bspline = BSplineCurve::try_new(coefficients, knot_vector, 2).unwrap();
 
         // Choose a subdivision parameter in the valid domain.
         let t = EFloat64::from(0.5);
