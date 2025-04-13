@@ -1,8 +1,11 @@
 pub mod contains;
+pub mod curve_curve_intersection;
+pub mod curve_surface_intersection;
 pub mod difference;
 pub mod intersections;
 pub mod remesh;
 pub mod split_if_necessary;
+pub mod surface_surface_intersection;
 pub mod union;
 
 // use topology::scene::Scene;

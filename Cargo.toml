@@ -2,36 +2,31 @@
 resolver = "2"
 
 members = [
-    "crates/geop-geometry",
-    "crates/geop-topology",
-    "crates/geop-booleans",
-    "crates/geop-rasterize",
-    "crates/geop-wgpu",
-    "crates/modern-brep-kernel-book",
+    "crates/geop",
+#    "crates/geop-booleans",
+#    "crates/geop-rasterize",
+#    "crates/geop-wgpu",
+#    "crates/modern-brep-kernel-book",
 ]
 
-[workspace.dependencies.geop-geometry]
+[workspace.dependencies.geop]
 version = "0.1.0"
-path = "crates/geop-geometry"
+path = "crates/geop"
 
-[workspace.dependencies.geop-topology]
-version = "0.1.0"
-path = "crates/geop-topology"
+#[workspace.dependencies.geop-booleans]
+#version = "0.1.0"
+#path = "crates/geop-booleans"
 
-[workspace.dependencies.geop-booleans]
-version = "0.1.0"
-path = "crates/geop-booleans"
+#[workspace.dependencies.geop-rasterize]
+#version = "0.1.0"
+#path = "crates/geop-rasterize"
 
-[workspace.dependencies.geop-rasterize]
-version = "0.1.0"
-path = "crates/geop-rasterize"
+#[workspace.dependencies.geop-wgpu]
+#version = "0.1.0"
+#path = "crates/geop-wgpu"
 
-[workspace.dependencies.geop-wgpu]
-version = "0.1.0"
-path = "crates/geop-wgpu"
-
-[workspace.dependencies.modern-brep-kernel-book]
-version = "0.1.0"
-path = "crates/modern-brep-kernel-book"
+#[workspace.dependencies.modern-brep-kernel-book]
+#version = "0.1.0"
+#path = "crates/modern-brep-kernel-book"
 
 
